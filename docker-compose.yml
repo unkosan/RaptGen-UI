@@ -1,0 +1,31 @@
+version: '3'
+services:
+
+  visualizer:
+    build:
+      context: ./visualizer
+      dockerfile: Dockerfile
+    container_name: frontend
+    tty: true
+    ports:
+      - 3000:3000
+    volumes:
+      - ./visualizer:/app
+    environment:
+      - WATCHPACK_POLLING=true
+    command: sh -c "npm run dev"
+
+  back:
+    build:
+      context: ./raptgen
+      dockerfile: Dockerfile
+    container_name: backend
+    tty: true
+    ports:
+      - 8000:8000
+    volumes:
+      - ./raptgen:/app
+    environment:
+      - PYTHONPATH=/app
+    command: sh
+    # command: sh -c "uvicorn api:app --host 0.0.0.0"
