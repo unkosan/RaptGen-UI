@@ -15,6 +15,10 @@ dependencies:
   - centroid_rna_package=0.0.16
   - fastapi
   - uvicorn
+  - ipykernel
+  - ipython
+  - jupyter
+  - scipy
 
 variables:
   PYTHONPATH: /app
