@@ -16,4 +16,6 @@ ENV CONDA_DEFAULT_ENV raptgen
 ENV PATH /opt/conda/envs/raptgen/bin:$PATH
 ENV PYTHONPATH /app
 
+WORKDIR /app
+
 CMD [ "python3" ]
