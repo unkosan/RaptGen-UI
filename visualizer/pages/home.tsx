@@ -7,13 +7,7 @@ import {
     Container, 
     Row,
     Col,
-    Nav, 
-    Navbar, 
-    NavDropdown,
-    Dropdown,
     Form,
-    ToggleButton,
-    FormGroup,
     InputGroup,
     Button,
     Table,
@@ -23,22 +17,12 @@ import dynamic from 'next/dynamic';
 import { useState, useEffect, SetStateAction, Dispatch } from "react";
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
-const NavRaptGen = () => {
-    return (
-        <Navbar bg="primary" variant="dark">
-            <Container>
-                <Navbar.Brand>RaptGen Visualizer</Navbar.Brand>
-                <Nav className="me-auto">
-                    <Nav.Link>Viewer</Nav.Link>
-                    <Nav.Link>Upload VAE</Nav.Link>
-                    <Nav.Link>Upload GMM</Nav.Link>
-                    <Nav.Link>Upload Measured Data</Nav.Link>
-                    <Nav.Link>Remove Data</Nav.Link>
-                </Nav>
-            </Container>
-        </Navbar>
-    )
-}
+import NavRaptGen from "../components/NavRaptGen";
+import DataSelect from "../components/data-select";
+import MinCountForm from "../components/config-select";
+import SequenceTable from "../components/embed-sequences";
+import EncodePanel from "../components/embed-sequences";
+
 
 async function encode (seq: string[], session_ID: number) {
     const res = await fetch("http://localhost:8000/dev/sample/encode", {
@@ -261,7 +245,6 @@ const SideBar = () => {
     }
 
     const [ minCount, setMinCount ] = useState<number>(5);
-    const [ minCountValid, setMinCountValid ] = useState<boolean>(true);
 
     const [ encodeSingleSeq, setEncodeSeq ] = useState<string>("");
     const [ encodeSingleSeqValid, setEncodeSeqValid ] = useState<boolean>(true);
@@ -278,61 +261,6 @@ const SideBar = () => {
     const [ nameGMM, setNameGMM ] = useState<string>("");
     const [ nameMeasured, setNameMeasured ] = useState<string>("");
 
-    const [ nameListVAE, setNameListVAE ] = useState<string[]>([""]);
-    const [ nameListGMM, setNameListGMM ] = useState<string[]>([""]);
-    const [ nameListMeasured, setNameListMeasured ] = useState<string[]>([""]);
-
-    useEffect(() => {
-        const fetchNameList = async () => {
-            const res = await fetch("http://localhost:8000/dev/sample/VAEmodels");
-            const data = await res.json();
-            setNameListVAE(data.entries);
-            if (data.entries.length > 0) {
-                setNameVAE(data.entries[0]);
-            }
-        }
-        fetchNameList();
-    }, []);
-
-    useEffect(() => {
-        const fetchNameList = async () => {
-            const res = await fetch("http://localhost:8000/dev/sample/measuredData");
-            const data = await res.json();
-            setNameListMeasured(data.entries);
-            if (data.entries.length > 0) {
-                setNameMeasured(data.entries[0]);
-            }
-        }
-        fetchNameList();
-    }, []);
-
-    useEffect (() => {
-        if (nameVAE === "") {
-            setNameListGMM([""]);
-            return;
-        }
-        const fetchNameList = async () => {
-            const res = await fetch(
-                "http://localhost:8000/dev/sample/GMMmodels?"
-                + new URLSearchParams({
-                    "VAE_name": nameVAE,
-                })
-            );
-            const data = await res.json();
-            setNameListGMM(data.entries);
-        }
-        fetchNameList();
-    }, [nameVAE]);
-
-    const handleMinCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseInt(e.currentTarget.value);
-
-        const minCount = value;
-        setMinCount(minCount);
-
-        const minCountValid = !isNaN(value) && value >= 1;
-        setMinCountValid(minCountValid);
-    }
 
     const handleEncodeSeqChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.currentTarget.value;
@@ -445,152 +373,152 @@ const SideBar = () => {
         handleFunc();
     }
 
-    const sequenceTable = () => {
+    // const sequenceTable = () => {
 
-        // const [ seqFilter, setSeqFilter ] = useState<string[]>([""]);
+    //     // const [ seqFilter, setSeqFilter ] = useState<string[]>([""]);
 
-        type SequenceRecordProp = {
-            handleEncodeSeqList: Dispatch<SetStateAction<EncodeSequenceEntry[]>>;
-            encodeSeqList: EncodeSequenceEntry[];
-            entry: EncodeSequenceEntry;
-        }
+    //     type SequenceRecordProp = {
+    //         handleEncodeSeqList: Dispatch<SetStateAction<EncodeSequenceEntry[]>>;
+    //         encodeSeqList: EncodeSequenceEntry[];
+    //         entry: EncodeSequenceEntry;
+    //     }
             
-        const SequenceRecord = (props: SequenceRecordProp) => {
+    //     const SequenceRecord = (props: SequenceRecordProp) => {
 
-            const [ isEditing, setIsEditing ] = useState<boolean>(false);
-            const [ seqValue, setSeqValue ] = useState<string>(props.entry.seq);
-            const [ seqValid, setSeqValid ] = useState<boolean>(true);
+    //         const [ isEditing, setIsEditing ] = useState<boolean>(false);
+    //         const [ seqValue, setSeqValue ] = useState<string>(props.entry.seq);
+    //         const [ seqValid, setSeqValid ] = useState<boolean>(true);
             
-            const onShowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                const newEncodeSeqList = [...props.encodeSeqList];
-                const index = newEncodeSeqList.findIndex((entry) => entry.key === props.entry.key);
-                newEncodeSeqList[index].show = e.currentTarget.checked;
-                props.handleEncodeSeqList(newEncodeSeqList);
-            }
+    //         const onShowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //             const newEncodeSeqList = [...props.encodeSeqList];
+    //             const index = newEncodeSeqList.findIndex((entry) => entry.key === props.entry.key);
+    //             newEncodeSeqList[index].show = e.currentTarget.checked;
+    //             props.handleEncodeSeqList(newEncodeSeqList);
+    //         }
             
-            const onRemove = () => {
-                const newEncodeSeqList = [...props.encodeSeqList];
-                const index = newEncodeSeqList.findIndex((entry) => entry.key === props.entry.key);
-                newEncodeSeqList.splice(index, 1);
-                props.handleEncodeSeqList(newEncodeSeqList);
-            }
+    //         const onRemove = () => {
+    //             const newEncodeSeqList = [...props.encodeSeqList];
+    //             const index = newEncodeSeqList.findIndex((entry) => entry.key === props.entry.key);
+    //             newEncodeSeqList.splice(index, 1);
+    //             props.handleEncodeSeqList(newEncodeSeqList);
+    //         }
 
-            const onEdit = () => {
-                setIsEditing(true);
-            }
+    //         const onEdit = () => {
+    //             setIsEditing(true);
+    //         }
 
-            const onEditCancel = () => {
-                setSeqValue(props.entry.seq);
-                setIsEditing(false);
-            }
+    //         const onEditCancel = () => {
+    //             setSeqValue(props.entry.seq);
+    //             setIsEditing(false);
+    //         }
 
-            const onEditSave = async () => {
-                const newEncodeSeqList = [...props.encodeSeqList];
-                const index = newEncodeSeqList.findIndex((entry) => entry.key === props.entry.key);
+    //         const onEditSave = async () => {
+    //             const newEncodeSeqList = [...props.encodeSeqList];
+    //             const index = newEncodeSeqList.findIndex((entry) => entry.key === props.entry.key);
 
-                const { coord_x, coord_y } = await encode([seqValue], 42);
-                newEncodeSeqList[index].seq = seqValue;
-                newEncodeSeqList[index].coord_x = coord_x[0];
-                newEncodeSeqList[index].coord_y = coord_y[0];
+    //             const { coord_x, coord_y } = await encode([seqValue], 42);
+    //             newEncodeSeqList[index].seq = seqValue;
+    //             newEncodeSeqList[index].coord_x = coord_x[0];
+    //             newEncodeSeqList[index].coord_y = coord_y[0];
 
-                props.handleEncodeSeqList(newEncodeSeqList);
-                setIsEditing(false);
-            }
+    //             props.handleEncodeSeqList(newEncodeSeqList);
+    //             setIsEditing(false);
+    //         }
 
-            const validateSeq = (seq: string) => {
-                const regex = /^[ACGTUacgtu]+$/;
-                return regex.test(seq);
-            }
+    //         const validateSeq = (seq: string) => {
+    //             const regex = /^[ACGTUacgtu]+$/;
+    //             return regex.test(seq);
+    //         }
 
-            const onSeqChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                // uppercase and T to U
-                const seq = e.currentTarget.value.toUpperCase().replace(/T/g, "U");
-                setSeqValue(seq);
-                setSeqValid(validateSeq(seq));
-            }
+    //         const onSeqChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //             // uppercase and T to U
+    //             const seq = e.currentTarget.value.toUpperCase().replace(/T/g, "U");
+    //             setSeqValue(seq);
+    //             setSeqValid(validateSeq(seq));
+    //         }
 
-            if (isEditing) {
-                return (
-                    <tr key={props.entry.key} >
-                        <td><Form.Check type="checkbox" checked={props.entry.show} onChange={onShowChange} /></td>
-                        <td>{props.entry.id}</td>
-                        <td>
-                            <Form.Control
-                                type="text"
-                                value={seqValue}
-                                onChange={onSeqChange}
-                                isInvalid={!seqValid}
-                            />
-                            <Form.Control.Feedback type="invalid">Invalid sequence</Form.Control.Feedback>
-                        </td>
-                        <td>
-                            <Button variant="outline-secondary" onClick={onEditSave} disabled={!seqValid}>Save</Button>
-                            <Button variant="outline-danger" onClick={onEditCancel}>Cancel</Button>
-                        </td>
-                    </tr>
-                )
-            } else {
-                return (
-                    <tr key={props.entry.key} >
-                        <td><Form.Check type="checkbox" checked={props.entry.show} onChange={onShowChange} /></td>
-                        <td>{props.entry.id}</td>
-                        <td>{props.entry.seq}</td>
-                        <td>
-                            <Button variant="outline-secondary" onClick={onEdit}>Edit</Button>
-                            <Button variant="outline-danger" onClick={onRemove}>Remove</Button>
-                        </td>
-                    </tr>
-                )
-            }
-        }
+    //         if (isEditing) {
+    //             return (
+    //                 <tr key={props.entry.key} >
+    //                     <td><Form.Check type="checkbox" checked={props.entry.show} onChange={onShowChange} /></td>
+    //                     <td>{props.entry.id}</td>
+    //                     <td>
+    //                         <Form.Control
+    //                             type="text"
+    //                             value={seqValue}
+    //                             onChange={onSeqChange}
+    //                             isInvalid={!seqValid}
+    //                         />
+    //                         <Form.Control.Feedback type="invalid">Invalid sequence</Form.Control.Feedback>
+    //                     </td>
+    //                     <td>
+    //                         <Button variant="outline-secondary" onClick={onEditSave} disabled={!seqValid}>Save</Button>
+    //                         <Button variant="outline-danger" onClick={onEditCancel}>Cancel</Button>
+    //                     </td>
+    //                 </tr>
+    //             )
+    //         } else {
+    //             return (
+    //                 <tr key={props.entry.key} >
+    //                     <td><Form.Check type="checkbox" checked={props.entry.show} onChange={onShowChange} /></td>
+    //                     <td>{props.entry.id}</td>
+    //                     <td>{props.entry.seq}</td>
+    //                     <td>
+    //                         <Button variant="outline-secondary" onClick={onEdit}>Edit</Button>
+    //                         <Button variant="outline-danger" onClick={onRemove}>Remove</Button>
+    //                     </td>
+    //                 </tr>
+    //             )
+    //         }
+    //     }
 
-        return (
-            <>
-                <Table striped bordered hover>
-                    <thead>
-                        <tr>
-                            <th>Show</th>
-                            <th>ID</th>
-                            <th>Sequence</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {encodeSeqList.map((entry) => {
-                            // if (seqFilter.includes(entry.id)) {
-                            //     return <SequenceRecord key={entry.key} handleEncodeSeqList={setEncodeSeqList} encodeSeqList={encodeSeqList} entry={entry} />
-                            // } else {
-                            //     return null;
-                            // }
-                            return (
-                                <SequenceRecord 
-                                    key={entry.key} 
-                                    handleEncodeSeqList={setEncodeSeqList} 
-                                    encodeSeqList={encodeSeqList} 
-                                    entry={entry} 
-                                />
-                            );
-                        })}
-                        {/* {encodeSeqList.map((entry, index) => (
-                            <tr key={entry.id}>
-                                <td><Form.Check type="checkbox" checked={entry.show} onChange={(e) => {
-                                    const newEncodeSeqList = [...encodeSeqList];
-                                    newEncodeSeqList[index].show = e.currentTarget.checked;
-                                    setEncodeSeqList(newEncodeSeqList);} } /></td>
-                                <td>{entry.id}</td>
-                                <td>{entry.seq}</td>
-                                <td><Button onClick={(e) => {
-                                    const newEncodeSeqList = [...encodeSeqList];
-                                    newEncodeSeqList.splice(index, 1);
-                                    setEncodeSeqList(newEncodeSeqList);
-                                }}>−</Button></td>
-                            </tr>
-                        ))} */}
-                    </tbody>
-                </Table>
-            </>
-        );
-    }
+    //     return (
+    //         <>
+    //             <Table striped bordered hover>
+    //                 <thead>
+    //                     <tr>
+    //                         <th>Show</th>
+    //                         <th>ID</th>
+    //                         <th>Sequence</th>
+    //                         <th>Actions</th>
+    //                     </tr>
+    //                 </thead>
+    //                 <tbody>
+    //                     {encodeSeqList.map((entry) => {
+    //                         // if (seqFilter.includes(entry.id)) {
+    //                         //     return <SequenceRecord key={entry.key} handleEncodeSeqList={setEncodeSeqList} encodeSeqList={encodeSeqList} entry={entry} />
+    //                         // } else {
+    //                         //     return null;
+    //                         // }
+    //                         return (
+    //                             <SequenceRecord 
+    //                                 key={entry.key} 
+    //                                 handleEncodeSeqList={setEncodeSeqList} 
+    //                                 encodeSeqList={encodeSeqList} 
+    //                                 entry={entry} 
+    //                             />
+    //                         );
+    //                     })}
+    //                     {/* {encodeSeqList.map((entry, index) => (
+    //                         <tr key={entry.id}>
+    //                             <td><Form.Check type="checkbox" checked={entry.show} onChange={(e) => {
+    //                                 const newEncodeSeqList = [...encodeSeqList];
+    //                                 newEncodeSeqList[index].show = e.currentTarget.checked;
+    //                                 setEncodeSeqList(newEncodeSeqList);} } /></td>
+    //                             <td>{entry.id}</td>
+    //                             <td>{entry.seq}</td>
+    //                             <td><Button onClick={(e) => {
+    //                                 const newEncodeSeqList = [...encodeSeqList];
+    //                                 newEncodeSeqList.splice(index, 1);
+    //                                 setEncodeSeqList(newEncodeSeqList);
+    //                             }}>−</Button></td>
+    //                         </tr>
+    //                     ))} */}
+    //                 </tbody>
+    //             </Table>
+    //         </>
+    //     );
+    // }
 
     const handleSingleSeqButtonClick = () => {
         if (!encodeSingleSeqValid || encodeSingleSeq === "") {
@@ -633,41 +561,14 @@ const SideBar = () => {
     return (
         <>
             <legend>Data</legend>
-            <Form>
-                <Form.Group className="mb-3">
-                    <Form.Label htmlFor="modelNameVAE">Selected VAE Model</Form.Label>
-                    <Form.Select id="modelNameVAE" value={nameVAE} onChange={(e) => setNameVAE(e.currentTarget.value)}>
-                        {nameListVAE.map((name) => <option>{name}</option>)}
-                    </Form.Select>
-                </Form.Group>
+            <DataSelect setNameVAE={setNameVAE} setNameGMM={setNameGMM} setNameMeasured={setNameMeasured} />
 
-                <Form.Group className="mb-3">
-                    <Form.Label htmlFor="modelNameGMM">Selected GMM Model</Form.Label>
-                    <Form.Select id="modelNameGMM" value={nameGMM} onChange={(e) => setNameGMM(e.currentTarget.value)}>
-                        {nameListGMM.map((name) => <option>{name}</option>)}
-                    </Form.Select>
-                    <Form.Check type="switch" id="plotSwitchGMM" defaultChecked={false} label="draw GMM circles" />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                    <Form.Label htmlFor="measuredDataName">Selected measured value data</Form.Label>
-                    <Form.Select id="measuredDataName">
-                        {nameListMeasured.map((name) => <option>{name}</option>)}
-                    </Form.Select>
-                </Form.Group>
-            </Form>
-            
             <legend>Config</legend>
-            <Form.Group as={Row} className="mb-3">
-                <Form.Label column>Minimum count</Form.Label>
-                <Col>
-                    <Form.Control type="number" id="minCount" onChange={handleMinCountChange} value={minCount} isInvalid={!minCountValid}/>
-                    <Form.Control.Feedback type="invalid">Please enter a positive integer.</Form.Control.Feedback>
-                </Col>
-            </Form.Group>
+            <p> minCount = {minCount} </p>
+            <MinCountForm setMinCount={setMinCount} />
             
             <legend>Operation</legend>
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
                 <Form.Label>Encode Sequence</Form.Label>
                 <InputGroup hasValidation>
                     <Form.Control id="newSeqInput" onChange={handleEncodeSeqChange} value={encodeSingleSeq} isInvalid={!encodeSingleSeqValid}/>
@@ -687,7 +588,8 @@ const SideBar = () => {
             </Form.Group>
 
             <Form.Label>Sequences</Form.Label>
-            {sequenceTable()}
+            {/* <SequenceTable encodeSeqList={encodeSeqList} setEncodeSeqList={setEncodeSeqList} /> */}
+            <EncodePanel encodeSeqList={encodeSeqList} setEncodeSeqList={setEncodeSeqList} />
 
             <Form.Group className="mb-3">
                 <Form.Label>Download cluster</Form.Label>
@@ -769,7 +671,7 @@ const VisualizerPage: NextPage = () => {
           <link rel="icon" href="/favicon.ico" />
         </Head>
         <main>
-          <NavRaptGen />
+          <NavRaptGen current_page="viewer" />
           <Container>
             <h1>Viewer</h1>
             <hr />
