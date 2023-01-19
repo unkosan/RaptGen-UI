@@ -30,6 +30,7 @@ async def root():
 async def sampledata():
     df = pd.read_csv("./local/sampledata_reduced.csv")
     return df.to_dict(orient="list")
+    # return df.to_dict()
 
 @app.get("/dev/sample/seq")
 async def sampleseq():
@@ -91,7 +92,11 @@ class Sequence(BaseModel):
     seq: str
 
 model_dict = dict()
-model_dict.update({42: "test"})
+model_dict.update(
+    {
+        0: "okok",
+        42: "test",
+    })
 
 import numpy as np
 
@@ -108,6 +113,32 @@ async def encode_sample(seq_container: SeqContainer):
     }
 
     return result
+
+@app.get("/dev/sample/sessionId/")
+async def make_session_ID():
+    return {
+        "session_ID": 41
+    }
+
+class SessionID(BaseModel):
+    session_ID: int
+
+@app.post("/dev/sample/sessionId/kill")
+async def kill_session(session_ID: SessionID):
+    print(f"Killed session {session_ID.session_ID}")
+    return {
+        "message": "killed successfully"
+    }
+
+@app.get("/dev/sample/selex-config")
+async def selex_config():
+    return {
+       "forward_adapter": "GGGACCGAGTGTTCAGC",
+       "reverse_adapter": "GAGCTTGCACGTCGA", 
+       "tolerance": 0,
+       "min_count": 4,
+       "random_region_length": 10,
+    }
     
 @app.post("/dev/apitest/post")
 async def post_test(seq: Sequence):

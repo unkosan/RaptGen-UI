@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Form, Row, Col } from "react-bootstrap";
+import { setMinCount } from "./store-redux/selex-data";
+import { useDispatch } from "react-redux";
 
-type Props = {
-    setMinCount: React.Dispatch<React.SetStateAction<number>>;
-}
 
-const MinCountForm: React.FC<Props> = ({ setMinCount }) => {
+type Props = {}
 
-    const [ internalMinCount, setInternalMinCount ] = React.useState<number>(5);
-    const [ minCountValid, setMinCountValid ] = React.useState<boolean>(true);
+const MinCountForm: React.FC<Props> = () => {
+
+    const dispatch = useDispatch();
+
+    const [ internalMinCount, setInternalMinCount ] = useState<number>(5);
+    const [ minCountValid, setMinCountValid ] = useState<boolean>(true);
 
     const handleMinCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.currentTarget.value);
@@ -22,7 +25,7 @@ const MinCountForm: React.FC<Props> = ({ setMinCount }) => {
 
     useEffect(() => {
         if (minCountValid) {
-            setMinCount(internalMinCount);
+            dispatch(setMinCount(internalMinCount));
         }
     }, [internalMinCount, minCountValid]);
     

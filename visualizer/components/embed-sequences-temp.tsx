@@ -2,22 +2,28 @@ import axios from 'axios';
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { Form, Button, Table, InputGroup } from 'react-bootstrap';
 
-import { useDispatch } from 'react-redux';
-import { useSelector } from 'react-redux';
-import { RootState } from './store';
-
-import { setInputData } from './store-redux/input-data';
-import { InputDataElement } from './store-redux/input-data';
-
 axios.defaults.baseURL = 'http://localhost:8000/dev';
 
-type SequenceListProps = {
-    setEncodeSeqList: Dispatch<SetStateAction<InputDataElement[]>>;
-    encodeSeqList: InputDataElement[];
+type EncodeSequenceEntry = {
+    key: string;
+    id: string;
+    seq: string;
+    coord_x: number;
+    coord_y: number;
+    show: boolean;
+    from: 'fasta' | 'manual';
+    fasta_file: string | null;
 }
 
-type RecordProps = {
-    entry: InputDataElement;
+type SequenceListProps = {
+    setEncodeSeqList: Dispatch<SetStateAction<EncodeSequenceEntry[]>>;
+    encodeSeqList: EncodeSequenceEntry[];
+}
+
+type SequeceRecordProps = {
+    setEncodeSeqList: Dispatch<SetStateAction<EncodeSequenceEntry[]>>;
+    encodeSeqList: EncodeSequenceEntry[];
+    entry: EncodeSequenceEntry;
 }
 
 type EncodeResponse = {
@@ -25,32 +31,24 @@ type EncodeResponse = {
     coord_y: number[];
 }
 
-const SeqenceRecord: React.FC<RecordProps> = ({ entry }) => {
-
-    const inputData = useSelector((state: RootState) => state.inputData);
-    const dispatch = useDispatch();
+const SeqenceRecord: React.FC<SequeceRecordProps> = ({ setEncodeSeqList, encodeSeqList, entry }) => {
 
     const [ isEditing, setIsEditing ] = useState<boolean>(false);
     const [ seqValue, setSeqValue ] = useState<string>(entry.seq);
     const [ seqValid, setSeqValid ] = useState<boolean>(true);
     
     const onShowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let newInputData = [...inputData];
-        const newEncodeSeqList = newInputData.map((elem) => {
-            if (elem.key === entry.key) {
-                elem = {...elem};
-                elem.show = e.currentTarget.checked;
-            }
-            return elem;
-        });
-        dispatch(setInputData(newEncodeSeqList));
+        const newEncodeSeqList = [...encodeSeqList];
+        const index = newEncodeSeqList.findIndex((elem) => elem.key === entry.key);
+        newEncodeSeqList[index].show = e.currentTarget.checked;
+        setEncodeSeqList(newEncodeSeqList);
     }
     
     const onRemove = () => {
-        let newInputData = [...inputData];
-        const index = newInputData.findIndex((elem) => elem.key === entry.key);
-        newInputData.splice(index, 1);
-        dispatch(setInputData(newInputData));
+        const newEncodeSeqList = [...encodeSeqList];
+        const index = newEncodeSeqList.findIndex((elem) => elem.key === entry.key);
+        newEncodeSeqList.splice(index, 1);
+        setEncodeSeqList(newEncodeSeqList);
     }
 
     const onEdit = () => {
@@ -63,24 +61,20 @@ const SeqenceRecord: React.FC<RecordProps> = ({ entry }) => {
     }
 
     const onEditSave = async () => {
-        let newInputData = [...inputData];
-        const index = newInputData.findIndex((elem) => elem.key === entry.key);
+        const newEncodeSeqList = [...encodeSeqList];
+        const index = newEncodeSeqList.findIndex((elem) => elem.key === entry.key);
 
         const coords: EncodeResponse = await axios.post( "/sample/encode", {
             seq: [seqValue], 
             session_ID: 42
         }).then((res) => res.data);
         
-        let newEntry = {
-            ...inputData[index],
-            seq: seqValue,
-            coord_x: coords.coord_x[0],
-            coord_y: coords.coord_y[0],
-        }
+        
+        newEncodeSeqList[index].seq = seqValue;
+        newEncodeSeqList[index].coord_x = coords.coord_x[0];
+        newEncodeSeqList[index].coord_y = coords.coord_y[0];
 
-        newInputData[index] = newEntry;
-
-        dispatch(setInputData(newInputData));
+        setEncodeSeqList(newEncodeSeqList);
         setIsEditing(false);
     }
 
@@ -131,10 +125,7 @@ const SeqenceRecord: React.FC<RecordProps> = ({ entry }) => {
     }
 }
 
-const SequenceTable: React.FC = React.memo(() => {
-
-    const inputData = useSelector((state: RootState) => state.inputData);
-    
+const SequenceTable: React.FC<SequenceListProps> = React.memo<SequenceListProps>(({ setEncodeSeqList, encodeSeqList }) => {
     return (
         <Table striped bordered hover>
             <thead>
@@ -146,9 +137,11 @@ const SequenceTable: React.FC = React.memo(() => {
                 </tr>
             </thead>
             <tbody>
-                {inputData.map((entry) => (
+                {encodeSeqList.map((entry) => (
                     <SeqenceRecord
                         key={entry.key}
+                        setEncodeSeqList={setEncodeSeqList}
+                        encodeSeqList={encodeSeqList}
                         entry={entry}
                     />
                 ))}
@@ -157,10 +150,7 @@ const SequenceTable: React.FC = React.memo(() => {
     )
 })
 
-const SingleSequenceForm: React.FC = () => {
-    const dispatch = useDispatch();
-    const inputData = useSelector((state: RootState) => state.inputData);
-
+const SingleSequenceForm: React.FC<SequenceListProps> = ({ setEncodeSeqList, encodeSeqList }) => {
     const [ singleSequence, setSingleSequence ] = useState<string>("");
     const [ singleSequenceValid, setSingleSequenceValid ] = useState<boolean>(true);
     const [ singleSequenceId, setSingleSequenceId ] = useState<number>(0);
@@ -185,8 +175,8 @@ const SingleSequenceForm: React.FC = () => {
                 session_ID: 42
             }).then((res) => res.data);
             
-            let newInputData = [...inputData];
-            newInputData.push({
+            const newEncodeSeqList = [...encodeSeqList];
+            newEncodeSeqList.push({
                 key: String(singleSequenceId),
                 id: `manual_${singleSequenceId}`,
                 seq: singleSequence,
@@ -196,7 +186,7 @@ const SingleSequenceForm: React.FC = () => {
                 from: "manual",
                 fasta_file: null,
             });
-            dispatch(setInputData(newInputData));
+            setEncodeSeqList(newEncodeSeqList);
             setSingleSequence("");
             setSingleSequenceId(singleSequenceId + 1);
         } catch {
@@ -220,13 +210,11 @@ const SingleSequenceForm: React.FC = () => {
     )
 }
 
-const FastaUploader: React.FC = () => {
-    const dispatch = useDispatch();
-    const inputData = useSelector((state: RootState) => state.inputData);
-
-    const [ fastaSequences, setFastaSequences ] = useState<InputDataElement[]>([]);
+const FastaUploader: React.FC<SequenceListProps> = ({ setEncodeSeqList, encodeSeqList }) => {
+    const [ fastaSequences, setFastaSequences ] = useState<EncodeSequenceEntry[]>([]);
     const [ fastaFeedback, setFastaFeedback ] = useState<string>("Please upload a valid fasta file.");
     const [ isFastaValid, setIsFastaValid ] = useState<boolean>(true);
+
     
     const onFastaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.currentTarget.files;
@@ -251,7 +239,7 @@ const FastaUploader: React.FC = () => {
 
         let match: RegExpExecArray | null;
         let matchCount = 0;
-        let entries: InputDataElement[] = [];
+        let entries: EncodeSequenceEntry[] = [];
         while (match = fastaRegex.exec(content)) {
             matchCount++;
             const id = match[1];
@@ -314,7 +302,7 @@ const FastaUploader: React.FC = () => {
 
     useEffect(() => {
         if (fastaSequences.length > 0 && isFastaValid) {
-            dispatch(setInputData(inputData.concat(fastaSequences)));
+            setEncodeSeqList(encodeSeqList.concat(fastaSequences));
         }
     }, [fastaSequences, isFastaValid]);
 
@@ -327,27 +315,17 @@ const FastaUploader: React.FC = () => {
     )
 };
 
-const EncodePanel: React.FC = () => {
-    // const [ encodeSeqList, setEncodeSeqList ] = useState<InputDataElement[]>([]);
-
-    // const dispatch = useDispatch();
-    // const inputData = useSelector((state: any) => state.inputData.value);
-
-    // useEffect(() => {
-    //     dispatch(setInputData(encodeSeqList));
-    //     console.log(inputData);
-    // }, [encodeSeqList]);
-
+const EncodePanel: React.FC<SequenceListProps> = React.memo<SequenceListProps>(({ encodeSeqList, setEncodeSeqList }) => {
     return (
         <div className="encode-panel">
             <Form.Label>Encode Sequence</Form.Label>
-            <SingleSequenceForm />
+            <SingleSequenceForm setEncodeSeqList={setEncodeSeqList} encodeSeqList={encodeSeqList}/>
             <Form.Label>Encode Fastafile</Form.Label>
-            <FastaUploader />
+            <FastaUploader setEncodeSeqList={setEncodeSeqList} encodeSeqList={encodeSeqList}/>
             <Form.Label>Sequences</Form.Label>
-            <SequenceTable />
+            <SequenceTable encodeSeqList={encodeSeqList} setEncodeSeqList={setEncodeSeqList}/>
         </div>
     )
-};
+});
 
 export default EncodePanel;
