@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
-import random
 from pydantic import BaseModel
 from typing import List, Dict, Set
-import os
+
+from routers import session, test, data
 
 app = FastAPI()
 
@@ -22,37 +21,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(session.router)
+app.include_router(data.router)
+app.include_router(test.router)
+
 @app.get("/api/")
 async def root():
     return {
         "message": "OK"
     }
 
-global sessions: Dict[int, ] = dict()
-global DATA_PATH: str = "/app/local/down/data/"
-
-@app.get("/api/session/start")
-async def start_session(
-    VAE_name: str = "",
-):
-    if VAE_name == "":
-        return {
-            "session_id": 0
-        }
-    
-    # iterate over ./local/down/date/items/ and return a list of all items
-    vae_list = os.listdir(DATA_PATH)
-    
-
-
-    session_id: int
-    while True:
-        session_id = random.randint(1000000, 9999999)
-        if session_id not in sessions:
-            break
-    sessions.add(session_id)
-
-    return {
-        "session_id": session_id
-    }
-    
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=7000, reload=True)

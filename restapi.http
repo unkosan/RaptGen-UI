@@ -1,0 +1,29 @@
+POST http://localhost:8000/api/session/encode/no-id-test
+Content-Type: application/json
+
+{
+  "session_ID": 0,
+  "data": [
+    "AGGAUG", "AGGGAUGA"
+  ]
+}
+
+###
+GET http://localhost:8000/api/session/start?VAE_name=20220323_Lb01S_5R_tol0
+
+###
+GET http://localhost:8000/api/session/status
+
+###
+POST http://localhost:8000/api/session/encode
+Content-Type: application/json
+
+{
+  "session_ID": 5290489,
+  "data": [
+    "AGGAUG", "AGGGAUGA"
+  ]
+}
+
+###
+POST http://localhost:800/api/session/

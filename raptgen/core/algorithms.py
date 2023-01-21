@@ -13,7 +13,8 @@ import torch
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from raptgen.core.preprocessing import Transition, NucleotideID, State, ID_encode
+from .preprocessing import Transition, NucleotideID, State, ID_encode
+# from raptgen.core.preprocessing import Transition, NucleotideID, State, ID_encode
 
 def kld_loss(mus: Tensor, logvars: Tensor):
     """KL Divergence 項（正則化項）の計算を行う。
