@@ -5,7 +5,7 @@ type MeasuredDataElement = {
     ID: string;
     sequence: string;
     randomRegion: string;
-    hue: string;
+    hue: string | number;
     coord_x: number;
     coord_y: number;
 }

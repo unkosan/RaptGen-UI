@@ -46,6 +46,14 @@ type RequestDecode = {
     }]
 }
 
+type RequestWeblogo = {
+    session_id: number;
+    coords: [{
+        coord_x: number;
+        coord_y: number;
+    }]
+}
+
 type RequestSessionStatus = {}
 
 export type {
@@ -60,4 +68,6 @@ export type {
     RequestEncode,
     RequestDecode,
     RequestSessionStatus,
+
+    RequestWeblogo,
 }

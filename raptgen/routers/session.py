@@ -11,7 +11,7 @@ import pandas as pd
 from typing import Dict, List, Tuple
 from pydantic import BaseModel
 
-from core.algorithms import CNN_PHMM_VAE, embed_sequences, get_most_probable_seq
+from core.algorithms import CNN_PHMM_VAE, embed_sequences, get_most_probable_seq, draw_logo
 
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
@@ -27,12 +27,12 @@ class Coords(BaseModel):
     coord_y: float
 
 class CoordsData(BaseModel):
-    session_ID: int
-    data: List[Coords]
+    session_id: int
+    coords: List[Coords]
 
 class SeqsData(BaseModel):
-    session_ID: int
-    data: List[str]
+    session_id: int
+    sequences: List[str]
 
 @router.post("/api/session/encode/no-id-test")
 async def noid_encode(seqs_data: SeqsData):
@@ -105,10 +105,6 @@ def start_session(VAE_name: str = ""):
             "session_id": 0
         }
 
-    # get model length
-    df = pd.read_pickle(DATA_PATH + "/profile_dataframe.pkl")
-    model_len = df.loc[VAE_name, "pHMM_VAE_model_length"]
-
     # session id is a random number from 1000000 to 9999999
     global sessions
     session_id: int
@@ -120,6 +116,7 @@ def start_session(VAE_name: str = ""):
     # construct model
     with open(DATA_PATH + "items/" + VAE_name + "/VAE_model.pkl", "rb") as f:
         state_dict = CPU_Unpickler(f).load()
+    model_len = int(state_dict['decoder.emission.2.weight'].shape[0] / 4)
     model = CNN_PHMM_VAE(embed_size=2, motif_len=model_len)
     model.load_state_dict(state_dict)
     model.eval()
@@ -218,6 +215,63 @@ def get_session_status():
         "status": "success",
         "data": list(sessions.keys())
     }
+from fastapi.responses import Response
+import matplotlib.pyplot as plt
+from io import BytesIO
+import tempfile
+import subprocess
+
+@router.post(
+    "/api/session/decode/weblogo",
+    responses = {
+        200: { "content": {"image/png": {}} }
+    },
+    response_class=Response
+)
+async def get_weblogo(coords_data: CoordsData):
+    coords_dict = coords_data.dict()
+    coord = np.array([
+        coords_dict["data"][0]["coord_x"],
+        coords_dict["data"][0]["coord_y"]
+    ])
+    session_id = coords_data.session_id
+    model = sessions[session_id]
+
+    fig, ax = plt.subplots(1,1,figsize=(10,3), dpi=120)
+    draw_logo(
+        ax = ax,
+        coord = coord,
+        model = model,
+    )
+    bytes_io = BytesIO()
+    fig.savefig(bytes_io, format="png")
+    figdata = bytes_io.read()
+    return Response(
+        content = figdata,
+        media_type = "image/png",
+    )
+    
+@router.get(
+    "/api/tool/second-structure",
+    responses = {
+        200: { "content": {"image/png": {}} }
+    },
+    response_class=Response
+)
+def get_secondary_structure(sequence: str):
+    with tempfile.NamedTemporaryFile("w+", suffix=".fasta") as tempf_fasta, \
+         tempfile.NamedTemporaryFile("w+", suffix=".ps") as tempf_ps, \
+         tempfile.NamedTemporaryFile("w+b", suffix=".png") as tempf_png:
+        tempf_fasta.write(f">\n{sequence}")
+        tempf_fasta.flush()
+        subprocess.run(["centroid_fold", tempf_fasta.name, "--postscript", tempf_ps.name], stdout=subprocess.PIPE)
+        subprocess.run(["gs", "-o", tempf_png.name, "-sDEVICE=pngalpha", tempf_ps.name], stdout=subprocess.PIPE)
+        # encoded_ss = base64.b64encode(tempf_png.read())
+        figdata: bytes = tempf_png.read()
+    return Response(
+        content = figdata,
+        media_type = "image/png",
+    )
     
 if __name__ == "__main__":
     import uvicorn

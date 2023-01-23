@@ -13,8 +13,8 @@ type ResponseGmmModel = {
     status: 'success' | 'error';
     data: {
         weights: number[];
-        means: number[];
-        covariances: number[];
+        means: number[][];
+        covariances: number[][][];
     }
 }
 
@@ -37,7 +37,7 @@ type ResponseMeasuredDataNames = {
 type ResponseMeasuredData = {
     status: 'success' | 'error';
     data: {
-        hue: string | number;
+        hue: (string | number)[];
         ID: string[];
         Sequence: string[];
     }
