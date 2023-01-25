@@ -62,7 +62,7 @@ async def get_selex_data(VAE_model_name: str):
         }
     
     df = pd.read_pickle(DATA_PATH + 'items/' + VAE_model_name + "/unique_seq_dataframe.pkl")
-    df = df[['Seuqence', 'Duplicates', 'Without_Adapters', 'coord_x', 'coord_y']]
+    df = df[['Sequence', 'Duplicates', 'Without_Adapters', 'coord_x', 'coord_y']]
     return {
         "status": "success",
         "data": df.to_dict(orient="list"),

@@ -150,8 +150,8 @@ def end_session(session_id: int = 0):
 @router.post("/api/session/encode")
 async def encode(seqs_data: SeqsData):
     seqs_dict = seqs_data.dict()
-    seqs: List[str] = seqs_dict["data"]
-    session_ID: int = seqs_dict["session_ID"]
+    seqs: List[str] = seqs_dict["sequences"]
+    session_ID: int = seqs_dict["session_id"]
 
     if session_ID == 0:
         return {
@@ -180,11 +180,11 @@ async def decode(coords_data: CoordsData):
     coords_dict = coords_data.dict()
     coords_list = [
         [coord["coord_x"], coord["coord_y"]]
-        for coord in coords_dict["data"]
+        for coord in coords_dict["coords"]
     ]
     coords = np.array(coords_list)
     
-    session_ID: int = coords_dict["session_ID"]
+    session_ID: int = coords_dict["session_id"]
 
     if session_ID == 0:
         return {

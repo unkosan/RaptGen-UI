@@ -49,6 +49,7 @@ const LatentGraph: React.FC<Props> = () => {
     const inputData = useSelector((state: RootState) => state.inputData);
     const selexConfig = useSelector((state: RootState) => state.selexData.selexConfig);
     const vaeConfig = useSelector((state: RootState) => state.selexData.vaeConfig);
+    const gmmConfig = useSelector((state: RootState) => state.gmmData);
 
     const selexPlotData = useMemo(() => {
         const filteredSelexData = selexData.filter((d) => d.duplicates >= selexConfig.minCount);
@@ -79,6 +80,10 @@ const LatentGraph: React.FC<Props> = () => {
     }, [selexData, selexConfig, vaeConfig]);
 
     const measuredPlotData = useMemo(() => {
+        if (!measuredData.config.show) {
+            return [];
+        }
+
         let groups: {
             [keys: string]: MeasuredDataElement[]
         } = {}
@@ -137,6 +142,10 @@ const LatentGraph: React.FC<Props> = () => {
         };
         return inputPlotData;
     }, [inputData, vaeConfig]);
+
+    // const gmmPlotData = useMemo(() => {
+        
+    // })
     
     return (
         <Plot

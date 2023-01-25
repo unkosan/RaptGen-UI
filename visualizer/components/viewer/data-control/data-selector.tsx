@@ -85,6 +85,7 @@ const DataSelector: React.FC<Props> = React.memo<Props>((props) => {
                 alert(error);
             }
         }
+        fetchNameListGMM();
     }, [nameVAE]);
 
     useEffect(() => {

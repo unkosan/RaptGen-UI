@@ -31,3 +31,5 @@ const OperatorControl: React.FC = () => {
         </div>
     );
 }
+
+export default OperatorControl;

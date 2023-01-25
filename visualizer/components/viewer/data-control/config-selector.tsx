@@ -3,6 +3,8 @@ import { Form, Row, Col } from 'react-bootstrap';
 
 type Props = {
     minCount: number;
+    showGMM: boolean;
+    showMeasuredData: boolean;
     setMinCount: React.Dispatch<React.SetStateAction<number>>;
     setShowGMM: React.Dispatch<React.SetStateAction<boolean>>;
     setShowMeasuredData: React.Dispatch<React.SetStateAction<boolean>>;
@@ -31,8 +33,7 @@ const MinCountForm: React.FC<MinCountProps> = React.memo<MinCountProps>((props) 
         if (minCountValid) {
             props.setMinCount(minCount);
         }
-    }
-    , [minCount, minCountValid]);
+    }, [minCount, minCountValid]);
 
     return (
         <Form.Group as={Row} className="mb-3">
@@ -45,34 +46,33 @@ const MinCountForm: React.FC<MinCountProps> = React.memo<MinCountProps>((props) 
     )
 });
 
-const ConfigSelector: React.FC<Props> = React.memo<Props>((props) => {
+const ConfigSelector: React.FC<Props> = (props) => {
     const [ showGMM, setShowGMM ] = useState<boolean>(true);
-    const [ showMeasuredData, setShowMeasuredData ] = useState<boolean>(true);
-    const [ minCount, setMinCount ] = useState<number>(props.minCount);
-
-    useEffect(() => {
-        props.setShowGMM(showGMM);
-        props.setShowMeasuredData(showMeasuredData);
-        props.setMinCount(minCount);
-    }, [showGMM, showMeasuredData, minCount]);
-
     return (
         <div>
             <Form.Group as={Row} className="mb-3">
                 <Form.Label column>Show GMM</Form.Label>
                 <Col>
-                    <Form.Check type="switch" id="showGMM" onChange={() => setShowGMM(!showGMM)} checked={showGMM}/>
+                    <Form.Switch
+                        id="showGMM"
+                        onChange={() => props.setShowGMM(!props.showGMM)}
+                        // onChange={() => {
+                        //     console.log(`checked, ${showGMM}`);
+                        //     setShowGMM(!showGMM);
+                        // }}
+                        checked={showGMM}
+                    />
                 </Col>
             </Form.Group>
             <Form.Group as={Row} className="mb-3">
                 <Form.Label column>Show measured data</Form.Label>
                 <Col>
-                    <Form.Check type="switch" id="showMeasuredData" onChange={() => setShowMeasuredData(!showMeasuredData)} checked={showMeasuredData}/>
+                    <Form.Check type="switch" id="showMeasuredData" onChange={() => props.setShowMeasuredData(!props.showMeasuredData)} checked={props.showMeasuredData}/>
                 </Col>
             </Form.Group>
-            <MinCountForm minCount={minCount} setMinCount={setMinCount}/>
+            <MinCountForm minCount={props.minCount} setMinCount={props.setMinCount}/>
         </div>
     )
-});
+};
 
 export default ConfigSelector;

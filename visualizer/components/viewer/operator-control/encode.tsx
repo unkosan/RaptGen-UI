@@ -307,7 +307,7 @@ const EncodePanel: React.FC = () => {
     const [ inputSeqList, setInputSeqList ] = useState<InputDataElement[]>([]);
 
     useEffect(() => {
-        if (sessionId === 0) {
+        if (sessionId === 0 || inputSeqList.length === 0) {
             return;
         }
         const fetchData = async () => {

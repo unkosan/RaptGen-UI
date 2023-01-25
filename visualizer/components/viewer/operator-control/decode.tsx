@@ -46,7 +46,7 @@ const PointSelector: React.FC<PointSelectorProps> = (props) => {
         if (pointValidX && pointValidY) {
             props.setPoint({0: pointValueX, 1: pointValueY});
         }
-    })
+    }, [pointValueX, pointValueY, pointValidX, pointValidY])
 
     if (inputMode === 'range') {
         return (
@@ -170,8 +170,12 @@ const ResultViewer: React.FC<ResultViewerProps> = (props) => {
             return;
         }
 
+        if (result === '' || props.session_id === 0) {
+            return;
+        }
+
         const fetchResult = async () => {
-            const resResult = await axios.post<ResponseDecode>('/session/decode/sequence', {
+            const resResult = await axios.post<ResponseDecode>('/session/decode', {
                 params: {
                     session_id: props.session_id,
                     coords: [{
@@ -209,9 +213,9 @@ const ResultViewer: React.FC<ResultViewerProps> = (props) => {
             }
         </div>
     )
-}
+};
 
-const DecodePanel = () => {
+const DecodePanel: React.FC = () => {
 
     const sessionId = useSelector((state: RootState) => state.selexData.vaeConfig.sessionId);
     const [ point, setPoint ] = useState<Record<number, number>>({0: 0, 1: 0});
@@ -222,6 +226,6 @@ const DecodePanel = () => {
             <ResultViewer session_id={sessionId} point={point}/>
         </div>
     )
-}
+};
 
 export default DecodePanel;
