@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import { NextPage } from 'next'
-import { Button } from 'react-bootstrap'
+import { Button, Form } from 'react-bootstrap'
 import 'bootswatch/dist/cosmo/bootstrap.min.css'
 import { Layout, PlotData } from "plotly.js"
 import dynamic from 'next/dynamic'

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 
 type Props = {
@@ -15,15 +15,13 @@ type MinCountProps = {
     setMinCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const MinCountForm: React.FC<MinCountProps> = React.memo<MinCountProps>((props) => {
+const MinCountForm: React.FC<MinCountProps> = (props) => {
     const [ minCount, setMinCount ] = useState<number>(props.minCount);
     const [ minCountValid, setMinCountValid ] = useState<boolean>(true);
 
     const handleMinCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.currentTarget.value);
-
-        const minCount = value;
-        setMinCount(minCount);
+        setMinCount(value);
 
         const minCountValid = !isNaN(value) && value >= 1;
         setMinCountValid(minCountValid);
@@ -44,10 +42,9 @@ const MinCountForm: React.FC<MinCountProps> = React.memo<MinCountProps>((props) 
             </Col>
         </Form.Group>
     )
-});
+};
 
 const ConfigSelector: React.FC<Props> = (props) => {
-    const [ showGMM, setShowGMM ] = useState<boolean>(true);
     return (
         <div>
             <Form.Group as={Row} className="mb-3">
@@ -56,11 +53,7 @@ const ConfigSelector: React.FC<Props> = (props) => {
                     <Form.Switch
                         id="showGMM"
                         onChange={() => props.setShowGMM(!props.showGMM)}
-                        // onChange={() => {
-                        //     console.log(`checked, ${showGMM}`);
-                        //     setShowGMM(!showGMM);
-                        // }}
-                        checked={showGMM}
+                        checked={props.showGMM}
                     />
                 </Col>
             </Form.Group>

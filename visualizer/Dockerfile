@@ -6,4 +6,4 @@ RUN apt-get update \
 
 WORKDIR /app
 
-CMD ["npm", "run", "build"]
+CMD ["yarn", "run", "build"]

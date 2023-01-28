@@ -231,8 +231,8 @@ import subprocess
 async def get_weblogo(coords_data: CoordsData):
     coords_dict = coords_data.dict()
     coord = np.array([
-        coords_dict["data"][0]["coord_x"],
-        coords_dict["data"][0]["coord_y"]
+        coords_dict["coords"][0]["coord_x"],
+        coords_dict["coords"][0]["coord_y"]
     ])
     session_id = coords_data.session_id
     model = sessions[session_id]
@@ -245,6 +245,7 @@ async def get_weblogo(coords_data: CoordsData):
     )
     bytes_io = BytesIO()
     fig.savefig(bytes_io, format="png")
+    bytes_io.seek(0)
     figdata = bytes_io.read()
     return Response(
         content = figdata,
@@ -252,13 +253,13 @@ async def get_weblogo(coords_data: CoordsData):
     )
     
 @router.get(
-    "/api/tool/second-structure",
+    "/api/tool/secondary-structure",
     responses = {
         200: { "content": {"image/png": {}} }
     },
     response_class=Response
 )
-def get_secondary_structure(sequence: str):
+async def get_secondary_structure(sequence: str):
     with tempfile.NamedTemporaryFile("w+", suffix=".fasta") as tempf_fasta, \
          tempfile.NamedTemporaryFile("w+", suffix=".ps") as tempf_ps, \
          tempfile.NamedTemporaryFile("w+b", suffix=".png") as tempf_png:

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Nav } from 'react-bootstrap';
+import { Form, Nav, Tab, Tabs } from 'react-bootstrap';
 import axios from 'axios';
 
 import DataSelector from './data-selector';
@@ -13,7 +13,7 @@ import {
     ResponseEncode,
 } from '../../../types/api-interface/session';
 import { ResponseGmmModel, ResponseMeasuredData, ResponseSelexData, ResponseVaeModelParameters } from '../../../types/api-interface/data';
-import { SelexConfig, SelexDataElement, setSelexConfig, setSelexData, setVaeConfig, VaeConfig } from '../redux/selex';
+import { SelexConfig, SelexDataElement, setSelexConfig, setSelexData, setVaeConfig, VaeConfig, setMinCount } from '../redux/selex';
 import { GmmConfig, setGmmConfig } from '../redux/gmm';
 import { MeasuredDataConfig, MeasuredDataElement, setMeasuredData, setMeasuredDataConfig } from '../redux/measured';
 import { useDispatch } from 'react-redux';
@@ -22,7 +22,7 @@ const DataControl: React.FC = () => {
     const [ nameVAE, setNameVAE ] = useState<string>("");
     const [ nameGMM, setNameGMM ] = useState<string>("");
     const [ nameMeasured, setNameMeasured ] = useState<string>("");
-    const [ minCount, setMinCount ] = useState<number>(5);
+    const [ minCountInternal, setMinCountInternal ] = useState<number>(5);
     const [ showGMM, setShowGMM ] = useState<boolean>(true);
     const [ showMeasuredData, setShowMeasuredData ] = useState<boolean>(true);
     const [ sessionId, setSessionId ] = useState<number>(0);
@@ -34,10 +34,14 @@ const DataControl: React.FC = () => {
     
     useEffect(() => {
         setNameGMM("");
-        setMinCount(5);
+        setMinCountInternal(5);
         // setShowGMM(true);
         // setShowMeasuredData(true);
     }, [nameVAE]);
+
+    useEffect(() => {
+        dispatch(setMinCount(minCountInternal));
+    }, [minCountInternal])
 
     useEffect(() => {
         if (nameVAE === "") {
@@ -91,7 +95,7 @@ const DataControl: React.FC = () => {
                 const selexConfig: SelexConfig = {
                     forwardAdapter: rawVaeParams.fwd_adapter,
                     reverseAdapter: rawVaeParams.rev_adapter,
-                    minCount: minCount,
+                    minCount: minCountInternal,
                     randomRegionLength: rawVaeParams.filterling_standard_length,
                     tolerance: 0,
                 }
@@ -127,7 +131,7 @@ const DataControl: React.FC = () => {
                     means: means,
                     covariances: covariances,
                 }
-                setGmmConfig(newGmmConfig);
+                dispatch(setGmmConfig(newGmmConfig));
             // } catch (error) {
             //     // console.log(error);
             //     alert("GMM model not found");
@@ -197,59 +201,41 @@ const DataControl: React.FC = () => {
     // choose DataSelector, ConfigSelector, VaeParamsTable, GmmParamsTable with
     // Nav.Item and Nav.Link
     return (
-        <div>
-            <Nav variant="tabs" defaultActiveKey="data-selector">
-                <Nav.Item>
-                    <Nav.Link eventKey="data-selector">Data Selector</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link eventKey="config-selector">Config Selector</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link eventKey="vae-params-table">VAE Params Table</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link eventKey="gmm-params-table">GMM Params Table</Nav.Link>
-                </Nav.Item>
-            </Nav>
-            <Nav.Item>
-                <Nav.Link eventKey="data-selector">
-                    <DataSelector
-                        setNameVAE={setNameVAE}
-                        setNameGMM={setNameGMM}
-                        setNameMeasured={setNameMeasured}
-                    />
-                </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-                <Nav.Link eventKey="config-selector">
-                    <ConfigSelector
-                        minCount={minCount}
-                        showGMM={showGMM}
-                        showMeasuredData={showMeasuredData}
-                        setMinCount={setMinCount}
-                        setShowGMM={setShowGMM}
-                        setShowMeasuredData={setShowMeasuredData}
-                    />
-                </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-                <Nav.Link eventKey="vae-params-table">
-                    <VaeParamsTable
-                        nameVAE={nameVAE}
-                    />
-                </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-                <Nav.Link eventKey="gmm-params-table">
-                    <GmmParamsTable
-                        nameGMM={nameGMM}
-                        nameVAE={nameVAE}
-                    />
-                </Nav.Link>
-            </Nav.Item>
-        </div>
-    )
+        <Tabs
+            defaultActiveKey="dataSelector"
+            id="dataControl"
+            className="mb-3"
+        >
+            <Tab eventKey="dataSelector" title="Select">
+                <DataSelector
+                    setNameVAE={setNameVAE}
+                    setNameGMM={setNameGMM}
+                    setNameMeasured={setNameMeasured}
+                />
+            </Tab>
+            <Tab eventKey="configSelector" title="Config">
+                <ConfigSelector
+                    minCount={minCountInternal}
+                    showGMM={showGMM}
+                    showMeasuredData={showMeasuredData}
+                    setMinCount={setMinCountInternal}
+                    setShowGMM={setShowGMM}
+                    setShowMeasuredData={setShowMeasuredData}
+                />
+            </Tab>
+            <Tab eventKey="vaeParams" title="VAE detail">
+                <VaeParamsTable
+                    nameVAE={nameVAE}
+                />
+            </Tab>
+            <Tab eventKey="gmmParams" title="GMM detail">
+                <GmmParamsTable
+                    nameGMM={nameGMM}
+                    nameVAE={nameVAE}
+                />
+            </Tab>
+        </Tabs>
+    );
 };
 
 export default DataControl;

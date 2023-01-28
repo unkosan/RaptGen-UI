@@ -1,8 +1,9 @@
 import 'bootswatch/dist/cosmo/bootstrap.min.css';
+import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 
 import { NextPage } from "next";
 import Head from "next/head";
-import { Col, Container, Row } from "react-bootstrap";
+import { Col, Container, Form, Row, SSRProvider } from "react-bootstrap";
 import { Provider } from "react-redux";
 import NavRaptGen from "../components/NavRaptGen";
 import DataControl from "../components/viewer/data-control/data-control"
@@ -51,6 +52,11 @@ const VisualizerPage: React.FC = () => {
 
 const Home: NextPage = () => {
     return (
+        // <SSRProvider>
+        //     <Provider store={store}>
+        //         <VisualizerPage />
+        //     </Provider>
+        // </SSRProvider>
         <Provider store={store}>
             <VisualizerPage />
         </Provider>

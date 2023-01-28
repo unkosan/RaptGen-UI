@@ -22,7 +22,7 @@ type SequenceRecordProps = {
     entry: InputDataElement,
 }
 
-const SequenceRecord: React.FC<SequenceRecordProps> = React.memo<SequenceRecordProps>((props) => {
+const SequenceRecord: React.FC<SequenceRecordProps> = React.memo<SequenceRecordProps>(function _SequenceRecord(props) {
 
     const [ isEditing, setIsEditing ] = useState<boolean>(false);
     const [ inputValue, setInputValue ] = useState<string>(props.entry.seq);
@@ -121,7 +121,7 @@ const SequenceRecord: React.FC<SequenceRecordProps> = React.memo<SequenceRecordP
     }
 });
 
-const SequenceTable: React.FC<Props> = React.memo<Props>((props) => {
+const SequenceTable: React.FC<Props> = React.memo<Props>(function _SequenceTable(props) {
     return (
         <table className="table table-striped table-bordered">
             <thead>
@@ -149,7 +149,7 @@ const SequenceTable: React.FC<Props> = React.memo<Props>((props) => {
     )
 });
 
-const SingleSequenceForm: React.FC<Props> = React.memo<Props>((props) => {
+const SingleSequenceForm: React.FC<Props> = React.memo<Props>(function _SingleSeequenceForm (props) {
 
     const [ inputCount, setInputCount ] = useState<number>(0);
     const [ inputValue, setInputValue ] = useState<string>("");
@@ -175,7 +175,7 @@ const SingleSequenceForm: React.FC<Props> = React.memo<Props>((props) => {
             }).then((res) => res.data);
             const { coord_x, coord_y } = resEncode.data[0];
             let newInputSeqList = props.inputSeqList.concat([{
-                key: String(inputCount),
+                key: `manual_${inputCount}`,
                 id: `Sequence ${inputCount}`,
                 seq: inputValue,
                 show: true,
@@ -205,11 +205,17 @@ const SingleSequenceForm: React.FC<Props> = React.memo<Props>((props) => {
     )
 });
 
-const FastaUploader = React.memo((props: Props) => {
+const FastaUploader = React.memo(function _FastaUploader(props: Props) {
 
     const [ fastaSequences, setFastaSequences ] = useState<InputDataElement[]>([]);
     const [ fastaFeedback, setFastaFeedback ] = useState<string>("");
     const [ isFastaValid, setIsFastaValid ] = useState<boolean>(true);
+
+    useEffect(() => {
+        if (fastaSequences.length > 0) {
+            props.setInputSeqList(props.inputSeqList.concat(fastaSequences));
+        }
+    }, [fastaSequences]);
 
     type FastaParserResult = {
         fasta: {
@@ -264,7 +270,7 @@ const FastaUploader = React.memo((props: Props) => {
                     const coords = resEncode.data;
                     const fastaData: InputDataElement[] = coords.map(({ coord_x, coord_y }, index) => {
                         return {
-                            key: String(index),
+                            key: `${file.name}_${index}`,
                             id: fasta.ids[index],
                             seq: fasta.seqs[index],
                             show: true,
