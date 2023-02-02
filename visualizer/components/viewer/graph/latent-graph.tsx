@@ -175,7 +175,7 @@ const LatentGraph: React.FC<Props> = () => {
             name: 'Decode Line X',
             showlegend: false,
             type: "scatter",
-            x: [decodeData[0].coord_x, decodeData[0].coord_x],
+            x: [decodeData[0]?.coord_x, decodeData[0]?.coord_x],
             y: [-4, 4],
             mode: "lines",
             line: {
@@ -189,14 +189,14 @@ const LatentGraph: React.FC<Props> = () => {
             showlegend: false,
             type: "scatter",
             x: [-4, 4],
-            y: [decodeData[0].coord_y, decodeData[0].coord_y],
+            y: [decodeData[0]?.coord_y, decodeData[0]?.coord_y],
             mode: "lines",
             line: {
                 color: "#14c714",
                 width: 1,
             },
         }
-        if (decodeData[0].show) {
+        if (decodeData[0]?.show) {
             return [decodePlotData, decodeLineX, decodeLineY];
         } else {
             return [decodePlotData];

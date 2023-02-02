@@ -114,7 +114,6 @@ const DataSelector: React.FC<Props> = React.memo<Props>((props) => {
                 <Form.Select id="modelNameGMM" value={nameGMM} onChange={(e) => setNameGMM(e.currentTarget.value)}>
                     {nameListGMM.map((name) => <option>{name}</option>)}
                 </Form.Select>
-                {/* <Form.Check type="switch" id="plotSwitchGMM" defaultChecked={false} label="draw GMM circles" /> */}
             </Form.Group>
 
             <Form.Group className="mb-3">

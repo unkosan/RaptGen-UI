@@ -2869,6 +2869,11 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
+nblas@^2.1.9:
+  version "2.1.9"
+  resolved "https://registry.yarnpkg.com/nblas/-/nblas-2.1.9.tgz#5cbdd948b8bef5b0a3ff4cc6c2b081145853b48e"
+  integrity sha512-nMMTKm+ETAT2fYbR54Y3v448iu9akEA2wDRM0mQL8bvjBHBL2zRu3Ww68k0/OLwWb5uQG9ovRNunV1UUjZEREw==
+
 needle@^2.5.2:
   version "2.9.1"
   resolved "https://registry.yarnpkg.com/needle/-/needle-2.9.1.tgz#22d1dffbe3490c2b83e301f7709b6736cd8f2684"
@@ -2907,6 +2912,11 @@ next@13.1.1:
     "@next/swc-win32-arm64-msvc" "13.1.1"
     "@next/swc-win32-ia32-msvc" "13.1.1"
     "@next/swc-win32-x64-msvc" "13.1.1"
+
+nlapack@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/nlapack/-/nlapack-2.0.4.tgz#ab04cdafc32edb98a3d28864f231f5bc78a1515f"
+  integrity sha512-wOSREY+1LoAQCJkOR+d4xNFXYZEPaXH8iLxbAHCFj/+ynMtNGfWOihMzTEo6rL+fzVIWcoU00zFxNB34+8BXSw==
 
 normalize-path@^3.0.0, normalize-path@~3.0.0:
   version "3.0.0"
@@ -4250,6 +4260,14 @@ validate.io-string-primitive@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/validate.io-string-primitive/-/validate.io-string-primitive-1.0.1.tgz#b8135b9fb1372bde02fdd53ad1d0ccd6de798fee"
   integrity sha512-TORbkLMdOFkEbPtfdx76FSVQGSAzyUEMxI+pBq5pfFm1ZzIesP+XiGc6eIK75aKu7RA7a8EcqUv5OrY5wfog5w==
+
+vectorious@^6.1.4:
+  version "6.1.4"
+  resolved "https://registry.yarnpkg.com/vectorious/-/vectorious-6.1.4.tgz#5adab922419e06d21290392f948a3544ba47c412"
+  integrity sha512-3xKPhuG8j6XCdaClpkIh5rnJPM+NjcHlUJJYsI/zMFWZEWHCa4uY1/qxnIh6LXdX9zVTXl0vD00eHJaP49ze5A==
+  optionalDependencies:
+    nblas "^2.1.9"
+    nlapack "^2.0.4"
 
 vt-pbf@^3.1.1:
   version "3.1.3"

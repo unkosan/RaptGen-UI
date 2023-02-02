@@ -455,27 +455,29 @@ const DecodePanel: React.FC = () => {
 
 
     return (
-        <>
-            <Form.Label>Latent Point</Form.Label>
-            <PointSelector point={point} setPoint={setPoint}/>
-            <Form.Label style={{
-                marginTop: '1em',
-            }}>Decoded Sequence</Form.Label>
-            <ResultViewer 
-                sessionId={sessionId} 
-                point={point}
-                decodeSeqList={decodeSeqList}
-                setDecodeSeqList={setDecodeSeqList}
-            />
-            <Form.Label style={{
-                marginTop: '1em',
-            }}>Sequence List</Form.Label>
-            <SequenceTable
-                sessionId={sessionId} 
-                decodeSeqList={decodeSeqList}
-                setDecodeSeqList={setDecodeSeqList}
-            />
-        </>
+        <Form>
+            <Form.Group className='mb-3'>
+                <Form.Label>Latent Point</Form.Label>
+                <PointSelector point={point} setPoint={setPoint}/>
+            </Form.Group>
+            <Form.Group className='mb-3'>
+                <Form.Label>Decoded Sequence</Form.Label>
+                <ResultViewer 
+                    sessionId={sessionId} 
+                    point={point}
+                    decodeSeqList={decodeSeqList}
+                    setDecodeSeqList={setDecodeSeqList}
+                />
+            </Form.Group>
+            <Form.Group className='mb-3'>
+                <Form.Label>Sequence List</Form.Label>
+                <SequenceTable
+                    sessionId={sessionId} 
+                    decodeSeqList={decodeSeqList}
+                    setDecodeSeqList={setDecodeSeqList}
+                />
+            </Form.Group>
+        </Form>
     )
 };
 

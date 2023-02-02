@@ -5,6 +5,7 @@ import { RootState } from '../redux/store';
 
 import EncodePanel from './encode';
 import DecodePanel from './decode';
+import DownloadPanel from './download';
 
 import { VaeConfig } from '../redux/selex';
 import { useSelector } from 'react-redux';
@@ -21,6 +22,9 @@ const OperatorControl: React.FC = () => {
             </Tab>
             <Tab eventKey="decodePanel" title="Decode">
                 <DecodePanel />
+            </Tab>
+            <Tab eventKey="downloadPanel" title="Download">
+                <DownloadPanel />
             </Tab>
         </Tabs>
     );
