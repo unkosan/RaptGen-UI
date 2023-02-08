@@ -29,3 +29,40 @@ services:
       - PYTHONPATH=/app
     command: sh
     # command: sh -c "uvicorn api:app --host 0.0.0.0"
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - 8030:6379
+
+  worker:
+    build:
+      context: ./raptgen
+      dockerfile: Dockerfile
+    container_name: worker
+    tty: true
+    depends_on:
+      - redis
+    volumes:
+      - ./raptgen:/app
+    environment:
+      - PYTHONPATH=/app
+    user: "${UID}:${GID}"
+    command: sh -c "celery --app=tasks.celery worker --loglevel=info"
+
+  flower:
+    build:
+      context: ./raptgen
+      dockerfile: Dockerfile
+    container_name: flower
+    tty: true
+    depends_on:
+      - redis
+    volumes:
+      - ./raptgen:/app
+    environment:
+      - PYTHONPATH=/app
+    command: sh -c "celery --app=tasks.celery flower --port=5555"
+    ports:
+      - 8010:5555

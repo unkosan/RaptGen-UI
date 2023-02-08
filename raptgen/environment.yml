@@ -19,6 +19,9 @@ dependencies:
   - ipython
   - jupyter
   - scipy
+  - celery
+  - redis-py
+  - flower
 
 variables:
   PYTHONPATH: /app

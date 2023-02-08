@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Set
 
-from routers import session, test, data
+from routers import session, test, data, upload
 
 app = FastAPI()
 
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(session.router)
 app.include_router(data.router)
 app.include_router(test.router)
+app.include_router(upload.router)
 
 @app.get("/api/")
 async def root():
