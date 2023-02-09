@@ -7,8 +7,9 @@ import { ResponseSelexData, ResponseVaeModelNames } from '../../../types/api-int
 import { ResponseSessionStart } from '../../../types/api-interface/session';
 import { setGmmInput, setGmmSelexData } from '../redux/gmm';
 import { setMeasuredConfigInput, setMeasuredConfigSelexData, setMeasuredConfigVaeData } from '../redux/measured';
-import { RootState, setPseudoRoute, setUploadType } from '../redux/store';
+import { PseudoRoutes, RootState, setPseudoRoute, setUploadType } from '../redux/store';
 import { SelexDataElement } from '../redux/vae';
+import SidebarVaeHome from './vae/vae-home';
 
 const SidebarHome: React.FC = () => {
     const dispatch = useDispatch();
@@ -59,7 +60,7 @@ const SidebarHome: React.FC = () => {
     }, [uploadType, gmmBoundVaeName, measuredBoundVaeName, vaeNameList])
 
     // dispatch uploadType and vaeName to redux
-    const handelClickVae = () => {
+    const handleClickVae = () => {
         dispatch(setUploadType('vae'));
         dispatch(setPseudoRoute('/vae'));
     }
@@ -177,7 +178,7 @@ const SidebarHome: React.FC = () => {
             </> }
 
             <Button onClick={ 
-                uploadType === 'vae' ? handelClickVae 
+                uploadType === 'vae' ? handleClickVae 
                 : uploadType === 'gmm' ? handleClickGmm
                 : handleClickMeasured }>Next</Button> 
         </>
@@ -350,10 +351,12 @@ const SidebarHome2: React.FC = () => {
 }
 
 const Sidebar: React.FC = () => {
-    const [ pseudoRoute, setPseudoRoute ] = useState<string>('');
+    // const [ pseudoRoute, setPseudoRoute ] = useState<PseudoRoutes>('/');
+    const pseudoRoute = useSelector((state: RootState) => state.pseudoRoutes);
     return (
         <div className='sidebar'>
-            <SidebarHome />
+            { pseudoRoute === '/' ? <SidebarHome /> : <></> }
+            { pseudoRoute === '/vae' ? <SidebarVaeHome /> : <></> }
         </div>
     ) 
 }

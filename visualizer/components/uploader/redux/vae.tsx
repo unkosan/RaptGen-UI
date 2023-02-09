@@ -14,12 +14,9 @@ type VaeConfigInput = {
     targetLength: number;
     forwardAdapter: string;
     reverseAdapter: string;
-    selexFileName: string;
-    selexFileData: string[];
     uniqueSeqs: string[];
-    uniqueSeqsCount: number[];
-    vaeFileName: string;
-    vaeFile: File | null;
+    duplicates: number[];
+    adapterMask: boolean[];
 }
 
 // The number of filtered sequences
@@ -57,12 +54,9 @@ const inputSlice = createSlice({
         targetLength: 0,
         forwardAdapter: '',
         reverseAdapter: '',
-        selexFileName: '',
-        selexFileData: [] as string[],
         uniqueSeqs: [] as string[],
-        uniqueSeqsCount: [] as number[],
-        vaeFileName: '',
-        vaeFile: null as File | null,
+        duplicates: [] as number[],
+        adapterMask: [] as boolean[],
     },
     reducers: {
         setVaeInput: (state: VaeConfigInput, action: PayloadAction<VaeConfigInput>) => {
