@@ -19,14 +19,19 @@ class CPU_Unpickler(pickle.Unpickler):
             return lambda b: torch.load(BytesIO(b), map_location='cpu')
         else: return super().find_class(module, name)
 
+class RequestEstimateLength(BaseModel):
+    sequences: List[str]
+
 @router.post("/api/upload/estimate-target-length")
-async def estimate_target_length(seqs: List[str]):
-    if len(seqs) == 0:
+# async def estimate_target_length(sequences: List[str]):
+async def estimate_target_length(estimate_length_data: RequestEstimateLength):
+    sequences = estimate_length_data.sequences
+    if len(sequences) == 0:
         return {
             "status": "error"
         }
     
-    target_length = calc_target_length(seqs)
+    target_length = calc_target_length(sequences)
     return {
         "status": "success",
         "data": {
@@ -34,11 +39,16 @@ async def estimate_target_length(seqs: List[str]):
         }
     }
 
+class RequestEstimateAdapters(BaseModel):
+    sequences: List[str]
+    target_length: int
+
 @router.post("/api/upload/estimate-adapters")
 async def estimate_forward_reverse_adapters(
-    sequences: List[str],
-    target_length: int,
+    estimate_adapters_data: RequestEstimateAdapters
 ):
+    sequences = estimate_adapters_data.sequences
+    target_length = estimate_adapters_data.target_length
     if len(sequences) == 0:
         return {
             "status": "error"

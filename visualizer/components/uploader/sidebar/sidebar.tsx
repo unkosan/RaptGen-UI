@@ -9,6 +9,7 @@ import { setGmmInput, setGmmSelexData } from '../redux/gmm';
 import { setMeasuredConfigInput, setMeasuredConfigSelexData, setMeasuredConfigVaeData } from '../redux/measured';
 import { PseudoRoutes, RootState, setPseudoRoute, setUploadType } from '../redux/store';
 import { SelexDataElement } from '../redux/vae';
+import SidebarVaeEncode from './vae/vae-encode';
 import SidebarVaeHome from './vae/vae-home';
 
 const SidebarHome: React.FC = () => {
@@ -357,6 +358,7 @@ const Sidebar: React.FC = () => {
         <div className='sidebar'>
             { pseudoRoute === '/' ? <SidebarHome /> : <></> }
             { pseudoRoute === '/vae' ? <SidebarVaeHome /> : <></> }
+            { pseudoRoute === '/vae/encode' ? <SidebarVaeEncode /> : <></> }
         </div>
     ) 
 }

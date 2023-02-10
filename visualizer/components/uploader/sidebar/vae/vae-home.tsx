@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux';
 import { RootState, setPseudoRoute } from '../../redux/store';
 import { useSelector } from 'react-redux';
 import { setVaeInput, setVaeNumbers, setVaeProgress } from '../../redux/vae';
-import { setVaeConfig } from '../../../store-redux/selex-data';
 
 type FileUploaderProps = {
     selexFile: File | null,
@@ -195,6 +194,14 @@ const ParamSelector: React.FC<ParamSelectorProps> = (props) => {
         )
     })
 
+    // when come back from another page, check if valid
+    useEffect(() => {
+        setIsModelNameValid(props.modelName.length > 0)
+        setIsTargetLengthValid(props.targetLength > 0)
+        setIsForwardAdapterValid(validateSeq(props.forwardAdapter))
+        setIsReverseAdapterValid(validateSeq(props.reverseAdapter))
+    })
+
     const handleModelNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         props.setModelName(value)
@@ -232,14 +239,37 @@ const ParamSelector: React.FC<ParamSelectorProps> = (props) => {
         setIsReverseAdapterValid(validateSeq(value));
     }
 
-    // const estimateTargetLength = () => {
-    //     (async () => {
-    //         const res = await axios.post('/api/estimate-target-length', {
-    //             selexSequences: props.selexSequences
-    //         });
-    //         const { status, data } = res.data;
-    //     })();
-    // }
+    const estimateTargetLength = () => {
+        (async () => {
+            const res = await axios.post('/upload/estimate-target-length', {
+                sequences: props.selexSequences
+            });
+            const { status, data } = res.data;
+            if (status === "success") {
+                const targetLength: number = data["target_length"]
+                props.setTargetLength(targetLength);
+                setIsTargetLengthValid(true);
+            }
+        })();
+    }
+
+    const estimateForwardAdapters = () => {
+        (async () => {
+            const res = await axios.post('/upload/estimate-adapters', {
+                target_length: props.targetLength,
+                sequences: props.selexSequences
+            });
+            const { status, data } = res.data;
+            if (status === "success") {
+                const forwardAdapter: string = data["forward_adapter"];
+                const reverseAdapter: string = data["reverse_adapter"]
+                props.setForwardAdapter(forwardAdapter);
+                props.setReverseAdapter(reverseAdapter);
+                setIsForwardAdapterValid(true);
+                setIsReverseAdapterValid(true);
+            }
+        })();
+    }
 
     return (
         <>
@@ -262,7 +292,10 @@ const ParamSelector: React.FC<ParamSelectorProps> = (props) => {
                         value={props.targetLength} 
                         isInvalid={!isTargetLengthValid}
                     />
-                    <Button variant="outline-secondary">Auto</Button>
+                    <Button 
+                        onClick={estimateTargetLength}
+                        variant="outline-secondary"
+                    >Auto</Button>
                     <Form.Control.Feedback type="invalid">Invalid value</Form.Control.Feedback>
                 </InputGroup>
             </Form.Group>
@@ -274,7 +307,10 @@ const ParamSelector: React.FC<ParamSelectorProps> = (props) => {
                         value={props.forwardAdapter} 
                         isInvalid={!isForwardAdapterValid}
                     />
-                    <Button variant="outline-secondary">Auto</Button>
+                    <Button 
+                        onClick={estimateForwardAdapters}
+                        variant="outline-secondary"
+                    >Auto</Button>
                     <Form.Control.Feedback type="invalid">Invalid adapter</Form.Control.Feedback>
                 </InputGroup>
             </Form.Group>
@@ -286,7 +322,10 @@ const ParamSelector: React.FC<ParamSelectorProps> = (props) => {
                         value={props.reverseAdapter} 
                         isInvalid={!isReverseAdapterValid}
                     />
-                    <Button variant="outline-secondary">Auto</Button>
+                    <Button 
+                        onClick={estimateForwardAdapters}
+                        variant="outline-secondary"
+                    >Auto</Button>
                     <Form.Control.Feedback type="invalid">Invalid adapter</Form.Control.Feedback>
                 </InputGroup>
             </Form.Group>
@@ -319,28 +358,30 @@ const SidebarVaeHome: React.FC = () => {
         dispatch(setPseudoRoute('/'));
     }
 
-    const fetchProgressId = (sequences: string[], vae: File) => {
-        (async () => {
-            const formData = new FormData();
-            formData.append('state_dict', vae);
-            formData.append('seqs', sequences.join(','));
-            const res = await axios.post('/upload/batch-encode', formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                }
-            });
-            const { status, data } = res.data;
-            if (status === "success") {
-                const id: string = data.progress_id;
-                dispatch(setVaeProgress({
-                    id: id,
-                    value: 0,
-                }));
+    const setProgressId = async (sequences: string[], vae: File) => {
+        const formData = new FormData();
+        formData.append('state_dict', vae);
+        formData.append('seqs', sequences.join(','));
+        const res = await axios.post('/upload/batch-encode', formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
             }
-        })();
+        });
+        const { status, data } = res.data;
+        if (status === "success") {
+            console.log(sequences)
+            console.log(status)
+            console.log(data)
+            const id: string = data.task_id;
+            dispatch(setVaeProgress({
+                id: id,
+                state: 'IDLE',
+                value: 0,
+            }));
+        }
     }
 
-    const handleEncode: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+    const handleEncode: React.MouseEventHandler<HTMLButtonElement> = async (e) => {
         const isModified = (
             vaeInput.modelName !== modelName
             || vaeInput.targetLength !== targetLength
@@ -373,7 +414,7 @@ const SidebarVaeHome: React.FC = () => {
                     seq.length - reverseAdapter.length
                 );
             });
-            fetchProgressId(randomRegions, vaeFile!);
+            await setProgressId(randomRegions, vaeFile!);
         }
         dispatch(setPseudoRoute('/vae/encode'));
     }

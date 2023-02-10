@@ -29,6 +29,7 @@ type VaeConfigNumbers = {
 // for progress bar
 type VaeConfigProgress = {
     id: string;
+    state: 'IDLE' | 'PENDING' | 'PROGRESS' | 'SUCCESS' | 'FAILURE';
     value: number;
 }
 
@@ -83,6 +84,7 @@ const progressSlice = createSlice({
     name: 'progress',
     initialState: {
         id: '',
+        state: 'IDLE' as 'IDLE' | 'PENDING' | 'PROGRESS' | 'SUCCESS' | 'FAILURE',
         value: 0,
     },
     reducers: {
