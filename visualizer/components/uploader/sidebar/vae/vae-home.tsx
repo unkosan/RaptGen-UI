@@ -4,17 +4,36 @@ import { Button, Form, InputGroup } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import { RootState, setPseudoRoute } from '../../redux/store';
 import { useSelector } from 'react-redux';
-import { setVaeInput, setVaeNumbers, setVaeProgress } from '../../redux/vae';
+import { setVaeInput, setVaeNumbers, setVaeProgress, VaeConfigInput } from '../../redux/vae';
 
 type FileUploaderProps = {
     selexFile: File | null,
     vaeFile: File | null,
+    setSelexHash: React.Dispatch<React.SetStateAction<string>>,
+    setVaeHash: React.Dispatch<React.SetStateAction<string>>,
     setSelexFile: React.Dispatch<React.SetStateAction<File | null>>,
     setVaeFile: React.Dispatch<React.SetStateAction<File | null>>,
     setSelexSequences: React.Dispatch<React.SetStateAction<string[]>>,
     setSelexDuplicates: React.Dispatch<React.SetStateAction<number[]>>,
     setValid: React.Dispatch<React.SetStateAction<boolean>>,
 }
+
+type SidebarVaeHomeProps = {
+    vaeFile: File | null,
+    setVaeFile: React.Dispatch<React.SetStateAction<File | null>>,
+    selexFile: File | null,
+    setSelexFile: React.Dispatch<React.SetStateAction<File | null>>,
+}
+
+const hashFile = async (file: File) => {
+    // return as hex string
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
 
 const FileUploader: React.FC<FileUploaderProps> = (props) => {
     const [ isSelexValid, setIsSelexValid ] = useState<boolean>(false);
@@ -26,6 +45,20 @@ const FileUploader: React.FC<FileUploaderProps> = (props) => {
     useEffect(() => {
         props.setValid( isSelexValid && isVaeValid )
     }, [isSelexValid, isVaeValid]);
+
+    useEffect(() => {
+        if (props.selexFile) {
+            setIsSelexValid(true);
+            setSelexFeedback('session recovered')
+        }
+    }, []) // when mounted
+
+    useEffect(() => {
+        if (props.vaeFile) {
+            setIsVaeValid(true);
+            setVaeFeedback('session recovered')
+        }
+    }, [])
 
     const parse = (text: string, type: 'fasta' | 'fastq') => {
         let regex;
@@ -90,6 +123,8 @@ const FileUploader: React.FC<FileUploaderProps> = (props) => {
         props.setSelexSequences(uniquified.unique);
         props.setSelexDuplicates(uniquified.duplicates);
         setIsSelexValid(true);
+        props.setSelexFile(file);
+        props.setSelexHash(await hashFile(file));
     }
 
     const handleSelexFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,7 +132,6 @@ const FileUploader: React.FC<FileUploaderProps> = (props) => {
             return;
         }
         const file = e.target.files[0];
-        props.setSelexFile(file);
         parseSelex(file);
     }
 
@@ -112,12 +146,12 @@ const FileUploader: React.FC<FileUploaderProps> = (props) => {
         const { status, message } = resValid.data;
         if (status === "success") {
             setIsVaeValid(true);
+            props.setVaeHash(await hashFile(file))
+            props.setVaeFile(file);
         } else {
             setVaeFeedback(message ?? 'Invalid file');
             setIsVaeValid(false);
-            return;
         }
-        props.setVaeFile(file);
         return;
     }
 
@@ -126,7 +160,6 @@ const FileUploader: React.FC<FileUploaderProps> = (props) => {
             return;
         }
         const file = e.target.files[0];
-        props.setVaeFile(file);
         checkVae(file);
     }
 
@@ -157,6 +190,7 @@ const FileUploader: React.FC<FileUploaderProps> = (props) => {
                     isValid={isVaeValid} 
                     isInvalid={!isVaeValid && props.vaeFile !== null}
                 />
+                <Form.Control.Feedback type="valid">{vaeFeedback}</Form.Control.Feedback>
                 <Form.Control.Feedback type="invalid">{vaeFeedback}</Form.Control.Feedback>
             </Form.Group>
         </Form>
@@ -335,11 +369,8 @@ const ParamSelector: React.FC<ParamSelectorProps> = (props) => {
 }
 
 
-const SidebarVaeHome: React.FC = () => {
+const SidebarVaeHome: React.FC<SidebarVaeHomeProps> = (props) => {
     const vaeInput = useSelector((state: RootState) => state.vaeData.input);
-
-    const [ vaeFile, setVaeFile ] = useState<File | null>(null);
-    const [ selexFile, setSelexFile ] = useState<File | null>(null);
 
     const [ uniqueSeqs, setUniqueSeqs ] = useState<string[]>(vaeInput.uniqueSeqs);
     const [ duplicates, setDuplicates ] = useState<number[]>(vaeInput.duplicates);
@@ -352,11 +383,19 @@ const SidebarVaeHome: React.FC = () => {
     const [ isFileValid, setIsFileValid ] = useState(Boolean(vaeInput.uniqueSeqs.length));
     const [ isParamValid, setIsParamValid ] = useState(Boolean(vaeInput.modelName));
 
+    // hash is used to check if the file has changed or not
+    // changed only when the valid file uploaded
+    const [ vaeHash, setVaeHash ] = useState<string>(vaeInput.vaeHash);
+    const [ selexHash, setSelexHash ] = useState<string>(vaeInput.selexHash);
+
     const dispatch = useDispatch();
 
-    const handleBack: React.MouseEventHandler<HTMLButtonElement> = (e) => {
-        dispatch(setPseudoRoute('/'));
-    }
+    useEffect(() => {
+        if (vaeHash && selexHash) {
+            // comes from another page and the file is valid
+            setIsFileValid(true);
+        }
+    })
 
     const setProgressId = async (sequences: string[], vae: File) => {
         const formData = new FormData();
@@ -381,9 +420,16 @@ const SidebarVaeHome: React.FC = () => {
         }
     }
 
+    const handleBack: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+        dispatch(setPseudoRoute('/'));
+    }
+
+    // dispatch used only here
     const handleEncode: React.MouseEventHandler<HTMLButtonElement> = async (e) => {
         const isModified = (
             vaeInput.modelName !== modelName
+            || vaeInput.vaeHash !== vaeHash
+            || vaeInput.selexHash !== selexHash
             || vaeInput.targetLength !== targetLength
             || vaeInput.forwardAdapter !== forwardAdapter
             || vaeInput.reverseAdapter !== reverseAdapter
@@ -395,6 +441,8 @@ const SidebarVaeHome: React.FC = () => {
                     && seq.length > forwardAdapter.length + reverseAdapter.length;
             })
             dispatch(setVaeInput({
+                selexHash: selexHash,
+                vaeHash: vaeHash,
                 modelName: modelName,
                 targetLength: targetLength,
                 forwardAdapter: forwardAdapter,
@@ -414,7 +462,7 @@ const SidebarVaeHome: React.FC = () => {
                     seq.length - reverseAdapter.length
                 );
             });
-            await setProgressId(randomRegions, vaeFile!);
+            await setProgressId(randomRegions, props.vaeFile!);
         }
         dispatch(setPseudoRoute('/vae/encode'));
     }
@@ -422,10 +470,12 @@ const SidebarVaeHome: React.FC = () => {
     return (
         <>
             <FileUploader
-                selexFile={selexFile}
-                vaeFile={vaeFile}
-                setSelexFile={setSelexFile}
-                setVaeFile={setVaeFile}
+                setSelexHash={setSelexHash}
+                setVaeHash={setVaeHash}
+                selexFile={props.selexFile}
+                vaeFile={props.vaeFile}
+                setSelexFile={props.setSelexFile}
+                setVaeFile={props.setVaeFile}
                 setSelexSequences={setUniqueSeqs}
                 setSelexDuplicates={setDuplicates}
                 setValid={setIsFileValid}

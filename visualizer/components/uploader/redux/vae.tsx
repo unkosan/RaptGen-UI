@@ -10,6 +10,8 @@ type SelexDataElement = {
 
 // Input data
 type VaeConfigInput = {
+    vaeHash: string;
+    selexHash: string;
     modelName: string;
     targetLength: number;
     forwardAdapter: string;
@@ -51,6 +53,8 @@ type VaeConfigOther = {
 const inputSlice = createSlice({
     name: 'input',
     initialState: {
+        vaeHash: '',
+        selexHash: '',
         modelName: '',
         targetLength: 0,
         forwardAdapter: '',

@@ -55,7 +55,7 @@ def batch_encode(self: Task, seqs: List[str], state_dict_pkl: bytes):
     )
     coord_list = []
     for i, seq in enumerate(seqs):
-        time.sleep(0.5)
+        time.sleep(0.01)
         arr = embed_sequences([seq], model)
         coord_list.append(arr)
         self.update_state(

@@ -76,11 +76,6 @@ const ThreeGraph: React.FC<Props> = () => {
   );
 };
 
-
-const App = () => {
-  return <Button variant="primary">おちんちんボタン</Button>
-}
-
 const Home: NextPage = () => {
   return (
     <>

@@ -9,6 +9,7 @@ import { setGmmInput, setGmmSelexData } from '../redux/gmm';
 import { setMeasuredConfigInput, setMeasuredConfigSelexData, setMeasuredConfigVaeData } from '../redux/measured';
 import { PseudoRoutes, RootState, setPseudoRoute, setUploadType } from '../redux/store';
 import { SelexDataElement } from '../redux/vae';
+import SidebarVaeSubmit from './vae/vae-submit';
 import SidebarVaeEncode from './vae/vae-encode';
 import SidebarVaeHome from './vae/vae-home';
 
@@ -354,11 +355,28 @@ const SidebarHome2: React.FC = () => {
 const Sidebar: React.FC = () => {
     // const [ pseudoRoute, setPseudoRoute ] = useState<PseudoRoutes>('/');
     const pseudoRoute = useSelector((state: RootState) => state.pseudoRoutes);
+
+    // file is not serializable. so we need to store it here.
+    const [ vaeFile, setVaeFile ] = useState<File | null>(null);
+    const [ selexFile, setSelexFile ] = useState<File | null>(null);
+    const [ gmmFile, setGmmFile ] = useState<File | null>(null);
+    const [ measuredFile, setMeasuredFile ] = useState<File | null>(null);
+
     return (
         <div className='sidebar'>
-            { pseudoRoute === '/' ? <SidebarHome /> : <></> }
-            { pseudoRoute === '/vae' ? <SidebarVaeHome /> : <></> }
-            { pseudoRoute === '/vae/encode' ? <SidebarVaeEncode /> : <></> }
+            { pseudoRoute === '/' 
+                ? <SidebarHome /> : <></> }
+            { pseudoRoute === '/vae' 
+                ? <SidebarVaeHome 
+                    vaeFile={vaeFile} 
+                    setVaeFile={setVaeFile} 
+                    selexFile={selexFile}
+                    setSelexFile={setSelexFile}
+                /> : <></> }
+            { pseudoRoute === '/vae/encode' 
+                ? <SidebarVaeEncode /> : <></> }
+            { pseudoRoute === '/vae/submit'
+                ? <SidebarVaeSubmit /> : <></> }
         </div>
     ) 
 }
