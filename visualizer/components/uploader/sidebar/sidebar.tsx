@@ -376,7 +376,9 @@ const Sidebar: React.FC = () => {
             { pseudoRoute === '/vae/encode' 
                 ? <SidebarVaeEncode /> : <></> }
             { pseudoRoute === '/vae/submit'
-                ? <SidebarVaeSubmit /> : <></> }
+                ? <SidebarVaeSubmit
+                    vaeFile={vaeFile}
+                /> : <></> }
         </div>
     ) 
 }

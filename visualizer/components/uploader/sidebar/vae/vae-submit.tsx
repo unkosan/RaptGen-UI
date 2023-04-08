@@ -2,8 +2,14 @@ import axios from 'axios';
 import { NaN } from 'mathjs';
 import React, { useEffect } from 'react';
 import { Button, Form } from 'react-bootstrap';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/store';
 
-const SidebarVaeSubmit: React.FC = () => {
+type Props = {
+    vaeFile: File | null 
+}
+
+const SidebarVaeSubmit: React.FC<Props> = (props) => {
     const [uploadDate, setUploadDate] = React.useState<string>('');
     const [tolerance, setTolerance] = React.useState<number>(NaN);
     const [minCount, setMinCount] = React.useState<number>(NaN);
@@ -43,6 +49,84 @@ const SidebarVaeSubmit: React.FC = () => {
             && isValidNumberWorkers
         ) 
     })
+
+    const vaeConfig = useSelector((state: RootState) => state.vaeData.input)
+    const selexConfig = useSelector((state: RootState) => state.vaeData.selexData)
+
+    const onClickSubmit = async () => {
+        if (props.vaeFile === null) {
+            return;
+        }
+
+        let coord_x: string[] = [];
+        let coord_y: string[] = [];
+        let duplicates: string[] = [];
+        let sequences: string[] = [];
+
+        selexConfig.forEach((elem) => {
+            console.log(elem)
+            coord_x.push(elem.coord_x.toString());
+            coord_y.push(elem.coord_y.toString());
+            duplicates.push(elem.duplicates.toString());
+            sequences.push(elem.sequence);
+        })
+
+        const appendArray = (formData: FormData, name: string, arr: string[]) => {
+            arr.forEach((value) => {
+                formData.append(`${name}[]`, value)
+            })
+        }
+
+        let formData = new FormData();
+        formData.append('model', props.vaeFile)
+        formData.append('model_name', vaeConfig.modelName)
+        formData.append('forward_adapter', vaeConfig.forwardAdapter)
+        formData.append('reverse_adapter', vaeConfig.reverseAdapter)
+        formData.append('target_length', vaeConfig.targetLength.toString())
+        // formData.append('coord_x', JSON.stringify(coord_x))
+        // formData.append('coord_y', JSON.stringify(coord_y))
+        // formData.append('duplicates', JSON.stringify(duplicates))
+        // formData.append('sequences', JSON.stringify(sequences))
+        appendArray(formData, "coord_x", coord_x)
+        appendArray(formData, "coord_y", coord_y)
+        appendArray(formData, "duplicates", duplicates)
+        appendArray(formData, "sequences", sequences)
+
+        // if (uploadDate) {
+        //     formData.append('date', uploadDate)
+        // }
+        // if (pinned !== null) {
+        //     formData.append('pinned', pinned.toString())
+        // }
+
+        // const otherOptions = {
+        //     "tolerance": tolerance,
+        //     "min_count": minCount,
+        //     "epochs": epochs,
+        //     "beta_duration": betaDuration,
+        //     "match_forcing_duration": matchForcingDuration,
+        //     "match_cost": matchCost,
+        //     "early_stop_duration": earlyStopDuration,
+        //     "seed_value": seedValue,
+        //     "number_workers": numberWorkers,
+        // }
+
+        // for (const [key, value] of Object.entries(otherOptions)) {
+        //     if (!isNaN(value)) {
+        //         formData.append(key, value.toString())
+        //     }
+        // }
+
+        console.log(formData)
+
+        const res = await axios.post('/upload/upload-vae', formData, {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        });
+
+        console.log(res);
+    }
 
     return (
         <>
@@ -306,35 +390,7 @@ const SidebarVaeSubmit: React.FC = () => {
         </Form>
         <Button
             disabled={!isValidSubmit}
-            onClick={() => {
-                if (isValidSubmit) {
-    // const [uploadDate, setUploadDate] = React.useState<string>('');
-    // const [tolerance, setTolerance] = React.useState<number>(NaN);
-    // const [minCount, setMinCount] = React.useState<number>(NaN);
-    // const [epochs, setEpochs] = React.useState<number>(NaN);
-    // const [betaDuration, setBetaDuration] = React.useState<number>(NaN);
-    // const [matchForcingDuration, setMatchForcingDuration] = React.useState<number>(NaN);
-    // const [matchCost, setMatchCost] = React.useState<number>(NaN);
-    // const [earlyStopDuration, setEarlyStopDuration] = React.useState<number>(NaN);
-    // const [seedValue, setSeedValue] = React.useState<number>(NaN);
-    // const [numberWorkers, setNumberWorkers] = React.useState<number>(NaN);
-    // const [pinned, setPinned] = React.useState<boolean | null>(null);
-                    const data = {
-                        "date": uploadDate,
-                        "tolerance": tolerance,
-                        "min_count": minCount,
-                        "epochs": epochs,
-                        "beta_duration": betaDuration,
-                        "match_forcing_duration": matchForcingDuration,
-                        "match_cost": matchCost,
-                        "early_stop_duration": earlyStopDuration,
-                        "seed_value": seedValue,
-                        "number_workers": numberWorkers,
-                        "pinned": pinned,
-                    }
-                    console.log(data);
-                }
-            }}
+            onClick={onClickSubmit}
         >SUBMIT</Button>
         </>
     )
