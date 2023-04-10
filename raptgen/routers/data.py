@@ -5,7 +5,8 @@ import os
 from sklearn.mixture import GaussianMixture
 import pandas as pd
 
-DATA_PATH = "/app/local/down/data/"
+# DATA_PATH = "/app/local/down/data/"
+DATA_PATH = "/app/data/"
 
 @router.get("/api/data/VAE-model-names")
 async def get_VAE_model_names():

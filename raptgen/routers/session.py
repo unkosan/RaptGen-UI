@@ -20,7 +20,7 @@ class CPU_Unpickler(pickle.Unpickler):
         else: return super().find_class(module, name)
 
 sessions: Dict[int, CNN_PHMM_VAE] = dict()
-DATA_PATH = "/app/local/down/data/"
+DATA_PATH = "/app/data/"
 
 class Coords(BaseModel):
     coord_x: float
