@@ -15,7 +15,7 @@ import {
 
 import { useState, useEffect, SetStateAction, Dispatch } from "react";
 
-import NavRaptGen from "../components/NavRaptGen";
+import NavRaptGen from "../components/common/NavRaptGen";
 import DataSelect from "../components/data-select";
 import MinCountForm from "../components/config-select";
 import EncodePanel from "../components/embed-sequences";

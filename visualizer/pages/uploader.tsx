@@ -7,7 +7,7 @@ import { Col, Row, Container } from "react-bootstrap";
 import { Provider } from "react-redux";
 import axios from 'axios';
 
-import NavRaptGen from "../components/NavRaptGen";
+import NavRaptGen from "../components/common/NavRaptGen";
 
 import { store } from "../components/uploader/redux/store";
 

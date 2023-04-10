@@ -5,7 +5,7 @@ import { NextPage } from "next";
 import Head from "next/head";
 import { Col, Container, Form, Row, SSRProvider } from "react-bootstrap";
 import { Provider } from "react-redux";
-import NavRaptGen from "../components/NavRaptGen";
+import NavRaptGen from "../components/common/NavRaptGen";
 import DataControl from "../components/viewer/data-control/data-control"
 import LatentGraph from "../components/viewer/graph/latent-graph";
 import OperatorControl from "../components/viewer/operator-control/operator-control"
