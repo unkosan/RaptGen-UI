@@ -28,7 +28,7 @@ services:
     environment:
       - PYTHONPATH=/app
     command: sh
-    # command: sh -c "uvicorn api:app --host 0.0.0.0"
+    # command: sh -c "uvicorn --reload --host 0.0.0.0 dev:app"
 
   redis:
     image: redis

@@ -1,6 +1,12 @@
 import { Navbar, Nav, Container } from "react-bootstrap";
 
-const Navigator: React.FC = () => {
+type Props = {
+  currentPage:
+    | 'viewer'
+    | 'uploader'
+} 
+
+const Navigator: React.FC<Props> = ({ currentPage }) => {
   return (
     <Navbar bg="primary" variant="dark">
       <Container>

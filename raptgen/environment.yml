@@ -22,7 +22,9 @@ dependencies:
   - celery
   - redis-py
   - flower
-  - python-multipart
+  - pip
+  - pip:
+    - python-multipart
 
 variables:
   PYTHONPATH: /app
