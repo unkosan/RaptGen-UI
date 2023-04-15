@@ -17,40 +17,26 @@ type DecodeDataEntry = {
 
 const decodeDataSlice = createSlice({
   name: "decodeData",
-  initialState: [] as DecodeDataEntry[],
+  initialState: [
+    {
+      key: 0,
+      id: "grid",
+      sequence: "",
+      randomRegion: "",
+      coordX: 0,
+      coordY: 0,
+      isSelected: false,
+      isShown: true,
+      category: "manual",
+      seriesName: "grid",
+    },
+  ] as DecodeDataEntry[],
   reducers: {
-    setAll: (
+    set: (
       state: DecodeDataEntry[],
       action: PayloadAction<DecodeDataEntry[]>
     ) => {
       return action.payload;
-    },
-    add: (
-      state: DecodeDataEntry[],
-      action: PayloadAction<DecodeDataEntry | DecodeDataEntry[]>
-    ) => {
-      const payload = Array.isArray(action.payload)
-        ? action.payload
-        : [action.payload];
-      return updateArray("add", state, payload);
-    },
-    update: (
-      state: DecodeDataEntry[],
-      action: PayloadAction<DecodeDataEntry | DecodeDataEntry[]>
-    ) => {
-      const payload = Array.isArray(action.payload)
-        ? action.payload
-        : [action.payload];
-      return updateArray("update", state, payload);
-    },
-    remove: (
-      state: DecodeDataEntry[],
-      action: PayloadAction<DecodeDataEntry | DecodeDataEntry[]>
-    ) => {
-      const payload = Array.isArray(action.payload)
-        ? action.payload
-        : [action.payload];
-      return updateArray("remove", state, payload);
     },
   },
 });

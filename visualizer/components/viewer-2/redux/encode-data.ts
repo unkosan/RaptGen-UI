@@ -19,38 +19,11 @@ const encodeDataSlice = createSlice({
   name: "encodeData",
   initialState: [] as EncodeDataEntry[],
   reducers: {
-    setAll: (
+    set: (
       state: EncodeDataEntry[],
       action: PayloadAction<EncodeDataEntry[]>
     ) => {
       return action.payload;
-    },
-    add: (
-      state: EncodeDataEntry[],
-      action: PayloadAction<EncodeDataEntry | EncodeDataEntry[]>
-    ) => {
-      const payload = Array.isArray(action.payload)
-        ? action.payload
-        : [action.payload];
-      return updateArray("add", state, payload);
-    },
-    update: (
-      state: EncodeDataEntry[],
-      action: PayloadAction<EncodeDataEntry | EncodeDataEntry[]>
-    ) => {
-      const payload = Array.isArray(action.payload)
-        ? action.payload
-        : [action.payload];
-      return updateArray("update", state, payload);
-    },
-    remove: (
-      state: EncodeDataEntry[],
-      action: PayloadAction<EncodeDataEntry | EncodeDataEntry[]>
-    ) => {
-      const payload = Array.isArray(action.payload)
-        ? action.payload
-        : [action.payload];
-      return updateArray("remove", state, payload);
     },
   },
 });

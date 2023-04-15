@@ -4,6 +4,7 @@ type GmmData = {
   weights: number[];
   means: number[][];
   covariances: number[][][];
+  decodedSequences: string[];
   isShown: boolean[];
 };
 
@@ -13,6 +14,7 @@ const gmmDataSlice = createSlice({
     weights: [] as number[],
     means: [] as number[][],
     covariances: [] as number[][][],
+    decodedSequences: [] as string[],
     isShown: [] as boolean[],
   },
   reducers: {

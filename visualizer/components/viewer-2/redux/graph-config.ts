@@ -9,8 +9,8 @@ type GraphConfig = {
   tolerance: number;
   randomRegionLength: number;
 
-  showMeasured: boolean;
   showGmm: boolean;
+  showMeasured: boolean;
   showDecoded: boolean;
   showEncoded: boolean;
 

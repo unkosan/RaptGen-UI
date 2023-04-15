@@ -18,38 +18,11 @@ const measuredDataSlice = createSlice({
   name: "measuredData",
   initialState: [] as MeasuredDataEntry[],
   reducers: {
-    setAll: (
+    set: (
       state: MeasuredDataEntry[],
       action: PayloadAction<MeasuredDataEntry[]>
     ) => {
       return action.payload;
-    },
-    add: (
-      state: MeasuredDataEntry[],
-      action: PayloadAction<MeasuredDataEntry | MeasuredDataEntry[]>
-    ) => {
-      const payload = Array.isArray(action.payload)
-        ? action.payload
-        : [action.payload];
-      return updateArray("add", state, payload);
-    },
-    update: (
-      state: MeasuredDataEntry[],
-      action: PayloadAction<MeasuredDataEntry | MeasuredDataEntry[]>
-    ) => {
-      const payload = Array.isArray(action.payload)
-        ? action.payload
-        : [action.payload];
-      return updateArray("update", state, payload);
-    },
-    remove: (
-      state: MeasuredDataEntry[],
-      action: PayloadAction<MeasuredDataEntry | MeasuredDataEntry[]>
-    ) => {
-      const payload = Array.isArray(action.payload)
-        ? action.payload
-        : [action.payload];
-      return updateArray("remove", state, payload);
     },
   },
 });
