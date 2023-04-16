@@ -7,7 +7,7 @@ type UploadConfig = {
 const uploadConfigSlice = createSlice({
   name: "uploadConfig",
   initialState: {
-    pseudoRoute: "/vae/home",
+    pseudoRoute: "/",
   },
   reducers: {
     setRoute: (state: UploadConfig, action: PayloadAction<string>) => {
