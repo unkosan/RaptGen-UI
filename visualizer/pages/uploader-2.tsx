@@ -1,4 +1,6 @@
 import "bootswatch/dist/cosmo/bootstrap.min.css";
+import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
+
 import { NextPage } from "next";
 import { Provider } from "react-redux";
 import Head from "next/head";

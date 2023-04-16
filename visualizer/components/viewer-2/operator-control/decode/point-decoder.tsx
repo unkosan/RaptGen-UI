@@ -129,7 +129,6 @@ const PointDecoder: React.FC = () => {
               min={-3.5}
               max={3.5}
               step={0.1}
-              tooltipPlacement="top"
             />
           </InputGroup.Text>
           <Form.Control
@@ -157,7 +156,6 @@ const PointDecoder: React.FC = () => {
               min={-3.5}
               max={3.5}
               step={0.1}
-              tooltipPlacement="top"
             />
           </InputGroup.Text>
           <Form.Control
