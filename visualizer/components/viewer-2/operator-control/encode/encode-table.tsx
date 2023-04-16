@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, ButtonGroup, Form } from "react-bootstrap";
+import { Button, ButtonGroup, Form, Table } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -118,7 +118,7 @@ const Record: React.FC<RecordProps> = React.memo<RecordProps>(function _Record(
         <td>
           <Form.Control type="text" value={idValue} onChange={onIdChange} />
         </td>
-        <td>
+        <td className="font-monospace text-break">
           <Form.Control type="text" value={seqValue} onChange={onSeqChange} />
         </td>
         <td>
@@ -141,7 +141,9 @@ const Record: React.FC<RecordProps> = React.memo<RecordProps>(function _Record(
     return (
       <tr key={props.record.key}>
         <td>{props.record.id}</td>
-        <td>{props.record.randomRegion}</td>
+        <td className="font-monospace text-break">
+          {props.record.randomRegion}
+        </td>
         <td>
           <ButtonGroup>
             {props.record.isShown ? (
@@ -174,24 +176,26 @@ const Record: React.FC<RecordProps> = React.memo<RecordProps>(function _Record(
   }
 });
 
-const Table: React.FC = React.memo(function _Table() {
+const EncodeTable: React.FC = React.memo(function _Table() {
   const encodeData = useSelector((state: RootState) => state.encodeData);
   return (
-    <table className="table table-striped table-hover">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Sequence</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {encodeData.map((record) => (
-          <Record record={record} key={record.key} />
-        ))}
-      </tbody>
-    </table>
+    <div style={{ height: "200px", overflowY: "auto" }}>
+      <Table striped bordered hover size="sm">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Sequence</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {encodeData.map((record) => (
+            <Record record={record} key={record.key} />
+          ))}
+        </tbody>
+      </Table>
+    </div>
   );
 });
 
-export default Table;
+export default EncodeTable;

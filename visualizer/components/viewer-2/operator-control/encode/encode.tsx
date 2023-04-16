@@ -1,7 +1,7 @@
 import { Form } from "react-bootstrap";
 import ManualEncodeForm from "./manual-encode-form";
 import FastaUploader from "./fasta-uploader";
-import Table from "./table";
+import EncodeTable from "./encode-table";
 
 const Encode: React.FC = () => {
   return (
@@ -12,7 +12,7 @@ const Encode: React.FC = () => {
         <Form.Label>Encode FastaFile</Form.Label>
         <FastaUploader />
         <Form.Label>Sequence List</Form.Label>
-        <Table />
+        <EncodeTable />
       </Form.Group>
     </Form>
   );

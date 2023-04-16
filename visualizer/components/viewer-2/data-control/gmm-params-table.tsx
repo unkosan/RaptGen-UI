@@ -40,7 +40,7 @@ const GMMParamsTable: React.FC = () => {
   }, [vaeName, gmmName]);
 
   return (
-    <Table striped bordered hover>
+    <Table striped bordered hover size="sm">
       <thead>
         <tr>
           <th>Parameter</th>
@@ -51,7 +51,7 @@ const GMMParamsTable: React.FC = () => {
         {Object.keys(paramsList).map((key) => (
           <tr key={key}>
             <td>{key}</td>
-            <td>{paramsList[key]}</td>
+            <td className="font-monospace text-break">{paramsList[key]}</td>
           </tr>
         ))}
       </tbody>

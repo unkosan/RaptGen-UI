@@ -1,7 +1,7 @@
 import { Form } from "react-bootstrap";
 import PointDecoder from "./point-decoder";
 import ResultViewer from "./result-viewer";
-import Table from "./table";
+import DecodeTable from "./decode-table";
 
 const Decode: React.FC = () => {
   return (
@@ -12,7 +12,7 @@ const Decode: React.FC = () => {
         <Form.Label>Decoded Sequence</Form.Label>
         <ResultViewer />
         <Form.Label>Sequence List</Form.Label>
-        <Table />
+        <DecodeTable />
       </Form.Group>
     </Form>
   );

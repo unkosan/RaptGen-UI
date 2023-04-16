@@ -8,22 +8,18 @@ const DataTable: React.FC = () => {
   );
   return (
     <div style={{ height: "200px", overflowY: "auto" }}>
-      <Table striped bordered hover>
+      <Table striped bordered hover size="sm">
         <thead>
           <tr>
-            <td>
-              <b>Trimmed Sequences</b>
-            </td>
-            <td>
-              <b>Duplicates</b>
-            </td>
+            <th>Trimmed Sequences</th>
+            <th>Duplicates</th>
           </tr>
         </thead>
         <tbody>
           {sequenceData.randomRegions.map((seq, i) => {
             return seq ? (
               <tr key={i}>
-                <td>{seq}</td>
+                <td className="font-monospace text-break">{seq}</td>
                 <td>{sequenceData.duplicates[i]}</td>
               </tr>
             ) : null;

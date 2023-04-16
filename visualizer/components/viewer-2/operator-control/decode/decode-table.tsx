@@ -12,7 +12,7 @@ import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import axios from "axios";
-import { Button, ButtonGroup, Form } from "react-bootstrap";
+import { Button, ButtonGroup, Form, Table } from "react-bootstrap";
 
 type RecordProps = {
   record: DecodeDataEntry;
@@ -142,7 +142,9 @@ const Record: React.FC<RecordProps> = React.memo<RecordProps>(function _Record(
             step={0.1}
           />
         </td>
-        <td>{props.record.randomRegion}</td>
+        <td className="font-monospace text-break">
+          {props.record.randomRegion}
+        </td>
         <td>
           <ButtonGroup>
             <Button
@@ -168,7 +170,9 @@ const Record: React.FC<RecordProps> = React.memo<RecordProps>(function _Record(
       <tr key={props.record.key}>
         <td>{props.record.coordX}</td>
         <td>{props.record.coordY}</td>
-        <td>{props.record.randomRegion}</td>
+        <td className="font-monospace text-break">
+          {props.record.randomRegion}
+        </td>
         <td>
           <ButtonGroup>
             {props.record.isShown ? (
@@ -201,26 +205,28 @@ const Record: React.FC<RecordProps> = React.memo<RecordProps>(function _Record(
   }
 });
 
-const Table: React.FC = React.memo(function _Table() {
+const DecodeTable: React.FC = React.memo(function _Table() {
   const decodeData = useSelector((state: RootState) => state.decodeData);
 
   return (
-    <table className="table table-striped table-hover">
-      <thead>
-        <tr>
-          <th>X</th>
-          <th>Y</th>
-          <th>Sequence</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {decodeData.slice(1).map((record) => (
-          <Record key={record.key} record={record} />
-        ))}
-      </tbody>
-    </table>
+    <div style={{ height: "200px", overflowY: "auto" }}>
+      <Table striped bordered hover size="sm">
+        <thead>
+          <tr>
+            <th>X</th>
+            <th>Y</th>
+            <th>Sequence</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {decodeData.slice(1).map((record) => (
+            <Record key={record.key} record={record} />
+          ))}
+        </tbody>
+      </Table>
+    </div>
   );
 });
 
-export default Table;
+export default DecodeTable;

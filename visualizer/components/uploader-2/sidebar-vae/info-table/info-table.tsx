@@ -9,15 +9,11 @@ const InfoTable: React.FC = () => {
   );
   return (
     <>
-      <Table striped bordered hover>
+      <Table striped bordered hover size="sm">
         <thead>
           <tr>
-            <td>
-              <b>Item</b>
-            </td>
-            <td>
-              <b>Value</b>
-            </td>
+            <th>Item</th>
+            <th>Value</th>
           </tr>
         </thead>
         <tbody>
