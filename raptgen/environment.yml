@@ -25,6 +25,8 @@ dependencies:
   - pip
   - pip:
     - python-multipart
+  - pytest
+  - pre-commit
 
 variables:
   PYTHONPATH: /app

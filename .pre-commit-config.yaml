@@ -1,0 +1,11 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: test
+        name: test
+        entry: pytest -v -s tests
+        stages:
+            - "push"
+        language: system
+        pass_filenames: false
+        always_run: true
