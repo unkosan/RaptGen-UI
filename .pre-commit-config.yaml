@@ -3,7 +3,7 @@ repos:
     hooks:
     -   id: test
         name: test
-        entry: pytest -v -s tests
+        entry: pytest -v -s raptgen/tests
         stages:
             - "push"
         language: system
