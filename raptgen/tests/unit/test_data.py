@@ -44,7 +44,7 @@ def test_one_hot_encode():
 
     # Test case 4
     seq = "ATGC"
-    padding = 2 # same on left and right
+    padding = 2  # same on left and right
     expected_output = np.array(
         [
             [0.25, 0.25, 0.25, 0.25],
@@ -57,7 +57,12 @@ def test_one_hot_encode():
             [0.25, 0.25, 0.25, 0.25],
         ]
     )
-    assert np.array_equal(one_hot_encode(seq, padding,padding,padding_template=np.array([0.25, 0.25, 0.25, 0.25])), expected_output)
+    assert np.array_equal(
+        one_hot_encode(
+            seq, padding, padding, padding_template=np.array([0.25, 0.25, 0.25, 0.25])
+        ),
+        expected_output,
+    )
 
     # Test case 5
     seq = "AGCT"
@@ -76,7 +81,15 @@ def test_one_hot_encode():
             [0.25, 0.25, 0.25, 0.25],
         ]
     )
-    assert np.array_equal(one_hot_encode(seq, left_padding,right_padding,padding_template=np.array([0.25, 0.25, 0.25, 0.25])), expected_output)
+    assert np.array_equal(
+        one_hot_encode(
+            seq,
+            left_padding,
+            right_padding,
+            padding_template=np.array([0.25, 0.25, 0.25, 0.25]),
+        ),
+        expected_output,
+    )
 
     # Test case 6
     seq = "AGCT"
@@ -95,5 +108,12 @@ def test_one_hot_encode():
             [0.25, 0.25, 0.25, 0.25],
         ]
     )
-    assert np.array_equal(one_hot_encode(seq, left_padding,right_padding,padding_template=np.array([0.25, 0.25, 0.25, 0.25])), expected_output)
-
+    assert np.array_equal(
+        one_hot_encode(
+            seq,
+            left_padding,
+            right_padding,
+            padding_template=np.array([0.25, 0.25, 0.25, 0.25]),
+        ),
+        expected_output,
+    )

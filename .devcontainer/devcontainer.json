@@ -19,7 +19,8 @@
 			"extensions": [
 				"ms-python.python",
 				"usernamehw.errorlens",
-				"eamodio.gitlens"
+				"eamodio.gitlens",
+				"ms-python.black-formatter"
 			]
 		}
 	}
