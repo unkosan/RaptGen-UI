@@ -70,7 +70,6 @@ const SideBarVAE: React.FC = () => {
           setParamsIsValid={setRequiredIsValid}
           setParamsIsDirty={setRequiredIsDirty}
         />
-        <legend>Encode Buttons</legend>
         <EncodeButtons
           encodeDisabled={!encodeValid}
           isDirty={requiredIsDirty || fileIsDirty}
@@ -97,7 +96,6 @@ const SideBarVAE: React.FC = () => {
           setIsFinished={setProcessFinished}
           setIsValid={setProcessIsValid}
         />
-        <legend>Next Buttons</legend>
         <NextButtons nextDisabled={!nextValid} />
       </div>
       <div
@@ -105,7 +103,6 @@ const SideBarVAE: React.FC = () => {
       >
         <legend>Setup Training Params</legend>
         <OptionalParams setParamsIsValid={setSubmitValid} />
-        <legend>Submit Buttons</legend>
         <SubmitButtons submitDisabled={!submitValid} />
       </div>
     </div>
