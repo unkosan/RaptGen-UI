@@ -18,7 +18,8 @@
 		"vscode": {
 			"extensions": [
 				"ms-python.python",
-				"usernamehw.errorlens"
+				"usernamehw.errorlens",
+				"eamodio.gitlens"
 			]
 		}
 	}
