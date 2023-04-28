@@ -7,11 +7,14 @@ import pickle
 import torch
 from io import BytesIO
 
+
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
-        if module == 'torch.storage' and name == '_load_from_bytes':
-            return lambda b: torch.load(BytesIO(b), map_location='cpu')
-        else: return super().find_class(module, name)
+        if module == "torch.storage" and name == "_load_from_bytes":
+            return lambda b: torch.load(BytesIO(b), map_location="cpu")
+        else:
+            return super().find_class(module, name)
+
 
 def _validate_pHMM_model(pickle_state_dict: BytesIO) -> Dict[str, Any]:
     try:
@@ -20,15 +23,19 @@ def _validate_pHMM_model(pickle_state_dict: BytesIO) -> Dict[str, Any]:
         return {"status": "error", "message": "Not a valid pickle file"}
 
     try:
-        motif_len = int(state_dict['decoder.emission.2.weight'].shape[0] / 4)
-        embed_dim = state_dict['decoder.fc1.0.weight'].shape[1]
+        motif_len = int(state_dict["decoder.emission.2.weight"].shape[0] / 4)
+        embed_dim = state_dict["decoder.fc1.0.weight"].shape[1]
         model = CNN_PHMM_VAE(motif_len=motif_len, embed_size=embed_dim)
         model.load_state_dict(state_dict)
         assert embed_dim == 2
     except:
         return {"status": "error", "message": "Invalid state dict file"}
 
-    return {"status": "success", "data": {"model": model, "motif_len": motif_len, "embed_dim": embed_dim}}
+    return {
+        "status": "success",
+        "data": {"model": model, "motif_len": motif_len, "embed_dim": embed_dim},
+    }
+
 
 celery = Celery(
     __name__,
@@ -39,8 +46,9 @@ celery = Celery(
 celery.conf.update(
     task_serializer="pickle",
     result_serializer="pickle",
-    accept_content=["json", "pickle"]
+    accept_content=["json", "pickle"],
 )
+
 
 @celery.task(bind=True)
 def batch_encode(self: Task, seqs: List[str], state_dict_pkl: bytes):
