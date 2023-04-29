@@ -1,353 +1,359 @@
-import axios from "axios";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Button, Form, InputGroup } from "react-bootstrap";
+import React, { isValidElement, useEffect, useState } from "react";
+import { EncodeDataEntry } from "../redux/encode-data";
+import { Button, ButtonGroup, Form, InputGroup } from "react-bootstrap";
 import { useDispatch } from "react-redux";
+import { RootState } from "../redux/store";
 import { useSelector } from "react-redux";
-import { ResponseEncode } from "../../../types/api-interface/session";
-import { RootState } from "../../store";
+import axios from "axios";
 
-import { setInputData } from "../redux/input";
-import { InputDataElement } from "../redux/input";
+type RecordProps = {
+  record: EncodeDataEntry;
+};
 
-type Props = {
-    sessionId: number,
-    inputSeqList: InputDataElement[],
-    setInputSeqList: Dispatch<SetStateAction<InputDataElement[]>>,
-}
+const Record: React.FC<RecordProps> = React.memo<RecordProps>(function _Record(
+  props
+) {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [seqValue, setSeqValue] = useState<string>(props.record.sequence);
+  const [idValue, setIdValue] = useState<string>(props.record.id);
+  const [isDirty, setIsDirty] = useState<boolean>(false);
+  const [isValid, setIsValid] = useState<boolean>(true);
 
-type SequenceRecordProps = {
-    sessionId: number,
-    inputSeqList: InputDataElement[],
-    setInputSeqList: Dispatch<SetStateAction<InputDataElement[]>>,
-    entry: InputDataElement,
-}
+  const dispatch = useDispatch();
 
-const SequenceRecord: React.FC<SequenceRecordProps> = React.memo<SequenceRecordProps>(function _SequenceRecord(props) {
+  const sessionId = useSelector(
+    (state: RootState) => state.sessionConfig.sessionId
+  );
 
-    const [ isEditing, setIsEditing ] = useState<boolean>(false);
-    const [ inputValue, setInputValue ] = useState<string>(props.entry.seq);
-    const [ inputValid, setInputValid ] = useState<boolean>(true);
+  useEffect(() => {
+    const idValid = idValue.length > 0;
+    const seqValid = /^[ACGTUacgtu]+$/.test(seqValue);
+    setIsValid(idValid && seqValid);
+  }, [idValue, seqValue]);
 
-    const handleShowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let newInputSeqList = props.inputSeqList.map((entry) => {
-            if (entry.key === props.entry.key) {
-                entry = {...entry};
-                entry.show = e.currentTarget.checked;
-            }
-            return entry;
-        });
-        props.setInputSeqList(newInputSeqList);
-    };
+  const onChangeShow = () => {
+    // dispatch action to change show status
+    let newRecord: EncodeDataEntry = { ...props.record };
+    newRecord.isShown = !newRecord.isShown;
+    dispatch({
+      type: "encodeData/update",
+      payload: newRecord,
+    });
+  };
 
-    const handleRemove = () => {
-        let newInputSeqList = props.inputSeqList.filter((entry) => entry.key !== props.entry.key);
-        props.setInputSeqList(newInputSeqList);
-    };
+  const onEdit = () => {
+    setIsEditing(true);
+  };
 
-    const handleEdit = () => {
-        setIsEditing(true);
-    };
+  const onRemove = () => {
+    // dispatch action to remove record
+    dispatch({
+      type: "encodeData/remove",
+      payload: props.record,
+    });
+  };
 
-    const handleEditCancel = () => {
-        setInputValue(props.entry.seq);
-        setIsEditing(false);
-    };
+  const onEditCancel = () => {
+    setSeqValue(props.record.sequence);
+    setIdValue(props.record.id);
+    setIsEditing(false);
+  };
 
-    const handleEditSave = async () => {
-        if (inputValid) {
-            const resEncode = await axios.post<ResponseEncode>('/session/encode', {
-                session_id: props.sessionId,
-                sequences: [inputValue],
-            }).then((res) => res.data);
-            const { coord_x, coord_y } = resEncode.data[0];
-            let newInputSeqList = props.inputSeqList.map((entry) => {
-                if (entry.key === props.entry.key) {
-                    entry = {...entry};
-                    entry.seq = inputValue;
-                    entry.coord_x = coord_x;
-                    entry.coord_y = coord_y;
-                }
-                return entry;
-            });
-            props.setInputSeqList(newInputSeqList);
-            setIsEditing(false);
-        }
-    };
+  const onEditSave = async () => {
+    if (isValid && isDirty) {
+      // dispatch action to update record
+      let newRecord: EncodeDataEntry = { ...props.record };
+      newRecord.id = idValue;
+      newRecord.sequence = seqValue;
+      if (seqValue !== props.record.sequence) {
+        const res = await axios
+          .post("/session/encode", {
+            session_id: sessionId,
+            sequences: [seqValue],
+          })
+          .then((res) => res.data);
+        const { coord_x, coord_y } = res.data[0];
+        newRecord.coordX = coord_x;
+        newRecord.coordY = coord_y;
+      }
+      dispatch({
+        type: "encodeData/update",
+        payload: newRecord,
+      });
+      setIsEditing(false);
+    }
+  };
 
-    const validateSeq = (seq: string) => {
-        const regex = /^[ACGTUacgtu]+$/;
-        return regex.test(seq);
-    };
+  const onIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIdValue(e.target.value);
+    setIsDirty(true);
+  };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // uppercase and T to U
-        const value = e.currentTarget.value.toUpperCase().replace(/T/g, "U");
-        setInputValue(value);
-        setInputValid(validateSeq(value));
-    };
+  const onSeqChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSeqValue(e.target.value);
+    setIsDirty(true);
+  };
 
-    if (isEditing) {
-        return (
-            <tr key={props.entry.key} >
-            <td><Form.Check type="checkbox" checked={props.entry.show} onChange={handleShowChange} /></td>
-            <td>{props.entry.id}</td>
-            <td>
-                <Form.Control
-                    type="text"
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    isInvalid={!inputValid}
-                />
-                <Form.Control.Feedback type="invalid">Invalid sequence</Form.Control.Feedback>
-            </td>
-            <td>
-                <Button variant="outline-secondary" onClick={handleEditSave} disabled={!inputValid}>Save</Button>
-                <Button variant="outline-danger" onClick={handleEditCancel}>Cancel</Button>
-            </td>
+  if (isEditing) {
+    return (
+      <tr key={props.record.key}>
+        <td>
+          <Form.Control type="text" value={idValue} onChange={onIdChange} />
+        </td>
+        <td>
+          <Form.Control type="text" value={seqValue} onChange={onSeqChange} />
+        </td>
+        <td>
+          <ButtonGroup>
+            <Button variant="success" onClick={onEditSave}>
+              <i className="bi bi-check2"></i>
+            </Button>
+            <Button variant="danger" onClick={onEditCancel}>
+              <i className="bi bi-x"></i>
+            </Button>
+          </ButtonGroup>
+        </td>
+      </tr>
+    );
+  } else {
+    return (
+      <tr key={props.record.key}>
+        <td>{props.record.id}</td>
+        <td>{props.record.sequence}</td>
+        <td>
+          <ButtonGroup>
+            <Button variant="primary" onClick={onChangeShow}>
+              {props.record.isShown ? (
+                <i className="bi bi-eye-slash"></i>
+              ) : (
+                <i className="bi bi-eye"></i>
+              )}
+            </Button>
+            <Button variant="success" onClick={onEdit}>
+              <i className="bi bi-pencil-square"></i>
+            </Button>
+            <Button variant="danger" onClick={onRemove}>
+              <i className="bi bi-eraser-fill"></i>
+            </Button>
+          </ButtonGroup>
+        </td>
+      </tr>
+    );
+  }
+});
+
+const Table: React.FC = React.memo(function _Table() {
+  const encodeData = useSelector((state: RootState) => state.encodeData);
+  return (
+    <table className="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Sequence</th>
+          <th>Actions</th>
         </tr>
-        )
+      </thead>
+      <tbody>
+        {encodeData.map((record) => (
+          <Record record={record} key={record.key} />
+        ))}
+      </tbody>
+    </table>
+  );
+});
+
+const ManualEncodeForm: React.FC = React.memo(function _ManualEncodeForm() {
+  const dispatch = useDispatch();
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
+  const [seqValue, setSeqValue] = useState<string>("");
+  const [isValid, setIsValid] = useState<boolean>(false);
+
+  useEffect(() => {
+    const seqValid = /^[ACGTUacgtu]+$/.test(seqValue);
+    setIsValid(seqValid);
+  }, [seqValue]);
+
+  const onSeqChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSeqValue(e.target.value.toUpperCase().replace(/T/g, "U"));
+  };
+
+  const onAdd = async () => {
+    if (isValid) {
+      const res = await axios
+        .post("/session/encode", {
+          session_id: sessionConfig.sessionId,
+          sequences: [seqValue],
+        })
+        .then((res) => res.data);
+      const { coord_x, coord_y } = res.data[0];
+      dispatch({
+        type: "encodeData/add",
+        payload: {
+          key: 0,
+          id: `seq ${sessionConfig.manualEncodeCount + 1}`,
+          sequence: seqValue,
+          coordX: coord_x,
+          coordY: coord_y,
+          isShown: true,
+        },
+      });
+      dispatch({
+        type: "sessionConfig/incrementManualEncodeCount",
+        payload: null,
+      });
+    }
+  };
+
+  return (
+    <Form.Group className="mb-3">
+      <InputGroup hasValidation>
+        <Form.Control
+          onChange={onSeqChange}
+          value={seqValue}
+          type="text"
+          placeholder="AUCG+ only"
+        />
+        <Button disabled={!isValid} onClick={onAdd}>
+          <i className="bi bi-plus"></i>
+        </Button>
+      </InputGroup>
+    </Form.Group>
+  );
+});
+
+const FastaUploader = React.memo(function _FastaUploader() {
+  const dispatch = useDispatch();
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
+
+  const [fastaSequences, setFastaSequences] = useState<EncodeDataEntry[]>([]);
+  const [fastaFeedback, setFastaFeedback] = useState<string>("");
+  const [isFastaValid, setIsFastaValid] = useState<boolean>(true);
+
+  type FastaParserResult = {
+    fasta: {
+      ids: string[];
+      seqs: string[];
+    } | null;
+    invalidCount: number;
+  };
+
+  const fastaParser = (text: string): FastaParserResult => {
+    const allCount = text.match(/^>/gm)?.length ?? 0;
+    const fastaRegex = /^>\s*(\S+)[\n\r]+([ACGTUacgtu\n\r]+)$/gm;
+    let match: RegExpExecArray | null;
+    let matchCount = 0;
+    let entriesId = [];
+    let entriesSeq = [];
+    while ((match = fastaRegex.exec(text))) {
+      matchCount += 1;
+      const id = match[1];
+      const seq = match[2]
+        .replace(/[\n\r]/g, "")
+        .toUpperCase()
+        .replace(/T/g, "U");
+      entriesId.push(id);
+      entriesSeq.push(seq);
+    }
+    if (matchCount === 0) {
+      return {
+        fasta: null,
+        invalidCount: 0,
+      };
     } else {
-        return (
-            <tr key={props.entry.key} >
-                <td><Form.Check type="checkbox" checked={props.entry.show} onChange={handleShowChange} /></td>
-                <td>{props.entry.id}</td>
-                <td>{props.entry.seq}</td>
-                <td>
-                    <Button variant="outline-primary" onClick={handleEdit}>Edit</Button>
-                    <Button variant="outline-danger" onClick={handleRemove}>Remove</Button>
-                </td>
-            </tr>
-        )
-    }
-});
-
-const SequenceTable: React.FC<Props> = React.memo<Props>(function _SequenceTable(props) {
-    return (
-        <table className="table table-striped table-bordered">
-            <thead>
-                <tr>
-                    <th>Show</th>
-                    <th>ID</th>
-                    <th>Sequence</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {props.inputSeqList.map((entry) => {
-                    return (
-                        <SequenceRecord
-                            key={entry.key}
-                            inputSeqList={props.inputSeqList}
-                            setInputSeqList={props.setInputSeqList}
-                            entry={entry}
-                            sessionId={props.sessionId}
-                        />
-                    )
-                })}
-            </tbody>
-        </table>
-    )
-});
-
-const SingleSequenceForm: React.FC<Props> = React.memo<Props>(function _SingleSeequenceForm (props) {
-
-    const [ inputCount, setInputCount ] = useState<number>(0);
-    const [ inputValue, setInputValue ] = useState<string>("");
-    const [ inputValid, setInputValid ] = useState<boolean>(true);
-
-    const validateSeq = (seq: string) => {
-        const regex = /^[ACGTUacgtu]+$/;
-        return regex.test(seq);
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // uppercase and T to U
-        const value = e.currentTarget.value.toUpperCase().replace(/T/g, "U");
-        setInputValue(value);
-        setInputValid(validateSeq(value));
-    };
-
-    const handleAdd = async () => {
-        if (inputValid) {
-            const resEncode = await axios.post<ResponseEncode>('/session/encode', {
-                session_id: props.sessionId,
-                sequences: [inputValue],
-            }).then((res) => res.data);
-            const { coord_x, coord_y } = resEncode.data[0];
-            let newInputSeqList = props.inputSeqList.concat([{
-                key: `manual_${inputCount}`,
-                id: `Sequence ${inputCount}`,
-                seq: inputValue,
-                show: true,
-                coord_x: coord_x,
-                coord_y: coord_y,
-                from: "manual",
-                fasta_file: null,
-            }]);
-            props.setInputSeqList(newInputSeqList);
-            setInputCount(inputCount + 1);
-            setInputValue("");
-        }
-    };
-
-    return (
-        <Form.Group className="mb-3">
-            <InputGroup hasValidation>
-                <Form.Control id="newSeqInput" onChange={handleInputChange} value={inputValue} isInvalid={!inputValid}/>
-                <Button
-                    id="addSeqButton"
-                    disabled={(inputValue === "") || !inputValid}
-                    onClick={handleAdd}
-                >＋</Button>
-                <Form.Control.Feedback type="invalid">Please enter a valid sequence.</Form.Control.Feedback>
-            </InputGroup>
-        </Form.Group>
-    )
-});
-
-const FastaUploader = React.memo(function _FastaUploader(props: Props) {
-
-    const [ fastaSequences, setFastaSequences ] = useState<InputDataElement[]>([]);
-    const [ fastaFeedback, setFastaFeedback ] = useState<string>("");
-    const [ isFastaValid, setIsFastaValid ] = useState<boolean>(true);
-
-    useEffect(() => {
-        if (fastaSequences.length > 0) {
-            props.setInputSeqList(props.inputSeqList.concat(fastaSequences));
-        }
-    }, [fastaSequences]);
-
-    type FastaParserResult = {
+      return {
         fasta: {
-            ids: string[],
-            seqs: string[],
-        } | null,
-        invalidCount: number,
+          ids: entriesId,
+          seqs: entriesSeq,
+        },
+        invalidCount: allCount - matchCount,
+      };
     }
+  };
 
-    const fastaParser = (text: string): FastaParserResult => {
-        const allCount = text.match(/^>/gm)?.length ?? 0;
-        const fastaRegex = /^>\s*(\S+)[\n\r]+([ACGTUacgtu\n\r]+)$/gm;
-        let match: RegExpExecArray | null;
-        let matchCount = 0;
-        let entriesId = [];
-        let entriesSeq = [];
-        while (match = fastaRegex.exec(text)) {
-            matchCount += 1;
-            const id = match[1]
-            const seq = match[2].replace(/[\n\r]/g, "").toUpperCase().replace(/T/g, "U");
-            entriesId.push(id);
-            entriesSeq.push(seq);
-        }
-        if (matchCount === 0) {
-            return {
-                fasta: null,
-                invalidCount: 0,
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.currentTarget.files?.item(0);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const text = e.target?.result as string;
+        const { fasta, invalidCount } = fastaParser(text);
+        if (fasta) {
+          const resEncode = await axios
+            .post("/session/encode", {
+              session_id: sessionConfig.sessionId,
+              sequences: fasta.seqs,
+            })
+            .then((res) => res.data);
+          const coords: { coord_x: number; coord_y: number }[] = resEncode.data;
+          const fastaData: EncodeDataEntry[] = coords.map(
+            ({ coord_x, coord_y }, index) => {
+              return {
+                key: 0,
+                id: fasta.ids[index],
+                sequence: fasta.seqs[index],
+                randomRegion: fasta.seqs[index],
+                coordX: coord_x,
+                coordY: coord_y,
+                isSelected: false,
+                isShown: true,
+                category: "fasta",
+                seriesName: file.name,
+              };
             }
+          );
+          if (invalidCount > 0) {
+            setFastaFeedback(
+              `Fasta file is valid. ${invalidCount} invalid sequences were ignored.`
+            );
+          } else {
+            setFastaFeedback("Fasta file is valid.");
+          }
+          setIsFastaValid(true);
+          setFastaSequences(fastaData);
+          dispatch({
+            type: "encodeData/add",
+            payload: fastaData,
+          });
         } else {
-            return {
-                fasta: {
-                    ids: entriesId,
-                    seqs: entriesSeq,
-                },
-                invalidCount: allCount - matchCount,
-            }
+          setFastaFeedback("Please upload a valid fasta file.");
+          setIsFastaValid(false);
+          setFastaSequences([]);
         }
+      };
+      reader.readAsText(file);
     }
+  };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.currentTarget.files?.item(0);
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const text = e.target?.result as string;
-                const { fasta, invalidCount } = fastaParser(text);
-                if (fasta) {
-                    const resEncode = await axios.post<ResponseEncode>('/session/encode', {
-                        session_id: props.sessionId,
-                        sequences: fasta.seqs,
-                    }).then((res) => res.data);
-                    const coords = resEncode.data;
-                    const fastaData: InputDataElement[] = coords.map(({ coord_x, coord_y }, index) => {
-                        return {
-                            key: `${file.name}_${index}`,
-                            id: fasta.ids[index],
-                            seq: fasta.seqs[index],
-                            show: true,
-                            coord_x: coord_x,
-                            coord_y: coord_y,
-                            from: "fasta",
-                            fasta_file: file.name,
-                        }
-                    })
-                    setFastaSequences(fastaData);
-                    if (invalidCount > 0) {
-                        setFastaFeedback(`Fasta file is valid. ${invalidCount} invalid sequences were ignored.`);
-                    } else {
-                        setFastaFeedback("Fasta file is valid.");
-                    }
-                    setIsFastaValid(true);
-                } else {
-                    setFastaSequences([]);
-                    setFastaFeedback("Please upload a valid fasta file.");
-                    setIsFastaValid(false);
-                }
-            };
-            reader.readAsText(file);
-        }
-    };
-
-    return (
-        <Form.Group className="mb-3">
-            <Form.Control id="newSeqFile" type="file" onChange={handleFileChange} isInvalid={!isFastaValid} isValid={(isFastaValid) && fastaSequences.length > 0}/>
-            <Form.Control.Feedback type="invalid">{fastaFeedback}</Form.Control.Feedback>
-            <Form.Control.Feedback type="valid">{fastaFeedback}</Form.Control.Feedback>
-        </Form.Group>
-    )
+  return (
+    <Form.Group className="mb-3">
+      <Form.Control
+        id="newSeqFile"
+        type="file"
+        onChange={onFileChange}
+        isInvalid={!isFastaValid}
+        isValid={isFastaValid && fastaSequences.length > 0}
+      />
+      <Form.Control.Feedback type="invalid">
+        {fastaFeedback}
+      </Form.Control.Feedback>
+      <Form.Control.Feedback type="valid">
+        {fastaFeedback}
+      </Form.Control.Feedback>
+    </Form.Group>
+  );
 });
 
 const EncodePanel: React.FC = () => {
-    const dispatch = useDispatch();
-
-    const sessionId = useSelector((state: RootState) => state.selexData.vaeConfig.sessionId);
-    const [ inputSeqList, setInputSeqList ] = useState<InputDataElement[]>([]);
-
-    useEffect(() => {
-        if (sessionId === 0 || inputSeqList.length === 0) {
-            return;
-        }
-        const fetchData = async () => {
-            const resEncode = await axios.post<ResponseEncode>('/session/encode', {
-                session_id: sessionId,
-                sequences: inputSeqList.map((seq) => seq.seq),
-            }).then((res) => res.data);
-            const coords = resEncode.data;
-            const newInputSeqList = inputSeqList.map((seq, index) => {
-                return {
-                    ...seq,
-                    coord_x: coords[index].coord_x,
-                    coord_y: coords[index].coord_y,
-                }
-            });
-            setInputSeqList(newInputSeqList);
-        };
-        fetchData();
-    }, [sessionId]);
-
-    useEffect(() => {
-        dispatch(setInputData(inputSeqList))
-    }, [inputSeqList]);
-
-    return (
-        <div className="encode-panel">
-            <Form.Label>Encode Sequence</Form.Label>
-            <SingleSequenceForm sessionId={sessionId} inputSeqList={inputSeqList} setInputSeqList={setInputSeqList}/>
-            <Form.Label>Encode Fastafile</Form.Label>
-            <FastaUploader sessionId={sessionId} inputSeqList={inputSeqList} setInputSeqList={setInputSeqList}/>
-            <Form.Label>Sequence List</Form.Label>
-            <SequenceTable sessionId={sessionId} inputSeqList={inputSeqList} setInputSeqList={setInputSeqList}/>
-        </div>
-    )
-}
+  return (
+    <div className="encode-panel">
+      <Form.Label>Encode Sequence</Form.Label>
+      <ManualEncodeForm />
+      <Form.Label>Encode FastaFile</Form.Label>
+      <FastaUploader />
+      <Form.Label>Sequence List</Form.Label>
+      <Table />
+    </div>
+  );
+};
 
 export default EncodePanel;

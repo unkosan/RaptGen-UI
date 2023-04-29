@@ -1,484 +1,513 @@
-import axios from 'axios';
-import React, { useState, useEffect, Dispatch, SetStateAction } from 'react';
-import { Button, Col, Form, FormGroup, Image, InputGroup, Row } from 'react-bootstrap';
-import { useSelector } from 'react-redux';
-import { ResponseDecode } from '../../../types/api-interface/session';
-import { RootState } from '../../store';
-import RangeSlider from 'react-bootstrap-range-slider';
-import { DecodeDataElement, setDecodeData } from '../redux/decoded';
-import { useDispatch } from 'react-redux';
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { DecodeDataEntry } from "../redux/decode-data";
+import { Button, ButtonGroup, Form, Image, InputGroup } from "react-bootstrap";
+
+import RangeSlider from "react-bootstrap-range-slider";
+import { useDispatch } from "react-redux";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
 
 type PointSelectorProps = {
-    point: Record<number, number>;
-    setPoint: React.Dispatch<React.SetStateAction<Record<number, number>>>;
-}
-
-type ResultViewerProps = {
-    sessionId: number;
-    point: Record<number, number>;
-    decodeSeqList: DecodeDataElement[],
-    setDecodeSeqList: Dispatch<SetStateAction<DecodeDataElement[]>>;
-}
-
-type SequenceRecordProps = {
-    sessionId: number,
-    decodeSeqList: DecodeDataElement[],
-    setDecodeSeqList: Dispatch<SetStateAction<DecodeDataElement[]>>,
-    entry: DecodeDataElement,
-}
-
-const PointSelector: React.FC<PointSelectorProps> = (props) => {
-
-    const [ pointValueX, setPointValueX ] = useState<number>(props.point[0]);
-    const [ pointValueY, setPointValueY ] = useState<number>(props.point[1]);
-
-    const [ pointValidX, setPointValidX ] = useState<boolean>(true);
-    const [ pointValidY, setPointValidY ] = useState<boolean>(true);
-
-    const handlePointChangeX = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseFloat(e.currentTarget.value);
-        setPointValueX(value);
-
-        if (isNaN(value)) {
-            setPointValidX(false);
-            return;
-        } else {
-            setPointValidX(true);
-        }
-    };
-
-    const handlePointChangeY = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseFloat(e.currentTarget.value);
-        if (isNaN(value)) {
-            setPointValidY(false);
-            return;
-        } else {
-            setPointValidY(true);
-            setPointValueY(value);
-        }
-    };
-
-    useEffect(() => {
-        if (pointValidX && pointValidY) {
-            props.setPoint({0: pointValueX, 1: pointValueY});
-        }
-    }, [pointValueX, pointValueY, pointValidX, pointValidY])
-
-    return (
-        <>
-            <InputGroup hasValidation>
-                <InputGroup.Text>X :</InputGroup.Text>
-                <InputGroup.Text style={{
-                    backgroundColor: 'white',
-                }}>
-                    <RangeSlider
-                        value={pointValueX}
-                        onChange={handlePointChangeX}
-                        min={-3.5}
-                        max={3.5}
-                        step={0.1}
-                        tooltipPlacement='top'
-                    />
-                </InputGroup.Text>
-                <Form.Control className="w-25" type='number' step={0.1} value={pointValueX} onChange={handlePointChangeX} isInvalid={!pointValidX}/>
-                <Form.Control.Feedback type='invalid'>Please input a valid number</Form.Control.Feedback>
-            </InputGroup>
-            <InputGroup hasValidation>
-                <InputGroup.Text>Y :</InputGroup.Text>
-                <InputGroup.Text style={{
-                    backgroundColor: 'white',
-                }}>
-                    <RangeSlider
-                        value={pointValueY}
-                        onChange={handlePointChangeY}
-                        min={-3.5}
-                        max={3.5}
-                        step={0.1}
-                    />
-                </InputGroup.Text>
-                <Form.Control type='number' step={0.1} value={pointValueY} onChange={handlePointChangeY} isInvalid={!pointValidY}/>
-                <Form.Control.Feedback type='invalid'>Please input a valid number</Form.Control.Feedback>
-            </InputGroup>
-        </>
-    )
-}
-
-
-const ResultViewer: React.FC<ResultViewerProps> = (props) => {
-
-    const [ showWeblogo, setShowWeblogo ] = useState<boolean>(false);
-    const [ showSecondaryStructure, setShowSecondaryStructure ] = useState<boolean>(false);
-
-    const [ weblogoBase64, setWeblogoBase64 ] = useState<string>('');
-    const [ secondaryStructureBase64, setSecondaryStructureBase64 ] = useState<string>('');
-
-    // count 0 reserved for "result" sequence
-    const [ count, setCount ] = useState<number>(1);
-
-    const [ result, setResult ] = useState<string>('');
-    const [ showResult, setShowResult ] = useState<boolean>(false);
-    
-    // set lock with useState to avoid too many requests of decoding
-    const [ lock, setLock ] = useState<boolean>(false);
-
-    useEffect(() => {
-        if (lock) {
-            return;
-        }
-        
-        setLock(true);
-        // 200 ms delay and then unlock
-        setTimeout(() => {
-            setLock(false);
-        }, 200);
-    }, [ props.point, showWeblogo, showSecondaryStructure ])
-
-    useEffect(() => {
-        if (!showWeblogo) {
-            setWeblogoBase64('');
-            return;
-        }
-
-        if (lock) {
-            return;
-        }
-
-        const fetchWeblogo = async () => {
-            const resWeblogo = await axios.post('/session/decode/weblogo', {
-                session_id: props.sessionId,
-                coords: [{
-                    coord_x: props.point[0],
-                    coord_y: props.point[1],
-                }]
-            }, {
-                responseType: "arraybuffer"
-            }).then((res) => res.data);
-
-            const base64 = Buffer.from(resWeblogo, 'binary').toString('base64');
-            setWeblogoBase64(base64);
-        };
-
-        fetchWeblogo();
-    }, [ props.sessionId, props.point, showWeblogo ]);
-
-    useEffect(() => {
-        if (!showSecondaryStructure || result === '') {
-            setSecondaryStructureBase64('');
-            return;
-        }
-
-        if (lock) {
-            return;
-        }
-
-        const fetchSecondaryStructure = async () => {
-            const resSecondaryStructure = await axios.get('/tool/secondary-structure', {
-                params: {
-                    sequence: result,
-                },
-                responseType: 'arraybuffer'
-            }).then((res) => res.data);
-
-            const base64 = Buffer.from(resSecondaryStructure, 'binary').toString('base64');
-            setSecondaryStructureBase64(base64);
-        };
-
-        fetchSecondaryStructure();
-    }, [ result, showSecondaryStructure ]);
-
-    useEffect(() => {
-        if (lock) {
-            return;
-        }
-
-        if (props.sessionId === 0) {
-            return;
-        }
-
-        const fetchResult = async () => {
-            const resResult = await axios.post<ResponseDecode>('/session/decode', {
-                session_id: props.sessionId,
-                coords: [{
-                    coord_x: props.point[0],
-                    coord_y: props.point[1],
-                }]
-            }).then((res) => res.data);
-            setResult(resResult.data[0]);
-        };
-        fetchResult();
-    }, [ props.sessionId, props.point ]);
-
-    useEffect(() => {
-        const newDecodeSeqList = props.decodeSeqList.map((entry) => {
-            if (entry.key === '0') {
-                return {
-                    ...entry,
-                    coord_x: props.point[0],
-                    coord_y: props.point[1],
-                    seq: result,
-                    show: showResult,
-                }
-            }
-            return entry;
-        });
-        props.setDecodeSeqList(newDecodeSeqList);
-    }, [props.point, result, showResult])
-
-    const handleAdd = async () => {
-        const newDecodeSeqList = props.decodeSeqList.concat([{
-            key: String(count),
-            id: String(count),
-            seq: result,
-            coord_x: props.point[0],
-            coord_y: props.point[1],
-            show: true,
-        }])
-        setCount(count + 1)
-        props.setDecodeSeqList(newDecodeSeqList);
-    }
-
-    return (
-        <div>
-            <InputGroup>
-                <InputGroup.Text>
-                    <Form.Check label='Show' checked={showResult} onChange={(e) => setShowResult(e.currentTarget.checked)}/>
-                </InputGroup.Text>
-                <Form.Control value={result} readOnly/>
-                <Button
-                    disabled={result === ""}
-                    onClick={handleAdd}
-                >＋</Button>
-            </InputGroup>
-            <Form.Switch label='Show Weblogo' checked={showWeblogo} onChange={(e) => setShowWeblogo(e.currentTarget.checked)}/>
-            <Form.Switch label='Show Secondary Structure' checked={showSecondaryStructure} onChange={(e) => setShowSecondaryStructure(e.currentTarget.checked)}/>
-            {
-                showWeblogo ? (
-                    <div>
-                        <Form.Label>Weblogo</Form.Label>
-                        <Image src={`data:image/png;charset=utf-8;base64,${weblogoBase64}`} fluid/>
-                    </div>
-                ) : null
-            }
-            {
-                showSecondaryStructure ? (
-                    <div>
-                        <Form.Label>Secondary Structure</Form.Label>
-                        <Image src={`data:image/png;base64,${secondaryStructureBase64}`} fluid/>
-                    </div>
-                ): null
-            }
-        </div>
-    )
+  point: Record<number, number>;
+  setPoint: React.Dispatch<SetStateAction<Record<number, number>>>;
 };
 
-const SequenceRecord: React.FC<SequenceRecordProps> = React.memo<SequenceRecordProps>(function _SequenceRecord(props) {
+type ResultViewerProps = {
+  point: Record<number, number>;
+};
 
-    const [ isEditing, setIsEditing ] = useState<boolean>(false);
+type RecordProps = {
+  record: DecodeDataEntry;
+};
 
-    const [ inputXValue, setInputXValue ] = useState<number>(props.entry.coord_x);
-    const [ inputYValue, setInputYValue ] = useState<number>(props.entry.coord_y);
-    const [ inputXValid, setInputXValid ] = useState<boolean>(true);
-    const [ inputYValid, setInputYValid ] = useState<boolean>(true);
+const PointSelector: React.FC<PointSelectorProps> = (props) => {
+  const [pointValueX, setPointValueX] = useState<number>(0);
+  const [pointValueY, setPointValueY] = useState<number>(0);
 
-    const handleShowChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let newInputSeqList = props.decodeSeqList.map((entry) => {
-            if (entry.key === props.entry.key) {
-                entry = {...entry};
-                entry.show = e.currentTarget.checked;
-            }
-            return entry;
-        });
-        props.setDecodeSeqList(newInputSeqList);
-    };
+  const [pointValidX, setPointValidX] = useState<boolean>(true);
+  const [pointValidY, setPointValidY] = useState<boolean>(true);
 
-    const handleRemove = () => {
-        let newInputSeqList = props.decodeSeqList.filter((entry) => entry.key !== props.entry.key);
-        props.setDecodeSeqList(newInputSeqList);
-    };
+  const onChangePointX = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    setPointValidX(!isNaN(value));
+    setPointValueX(value);
+  };
+  const onChangePointY = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    setPointValidY(!isNaN(value));
+    setPointValueY(value);
+  };
 
-    const handleEdit = () => {
-        setIsEditing(true);
-    };
-
-    const handleEditCancel = () => {
-        setInputXValue(props.entry.coord_x);
-        setInputYValue(props.entry.coord_y);
-        setIsEditing(false);
-    };
-
-    const handleEditSave = async () => {
-        if (inputXValid && inputYValid) {
-            const resDecode = await axios.post<ResponseDecode>('/session/decode', {
-                session_id: props.sessionId,
-                coords: [{
-                    coord_x: inputXValue,
-                    coord_y: inputYValue,
-                }]
-            }).then((res) => res.data);
-            const decodedSeq = resDecode.data[0];
-            let newInputSeqList = props.decodeSeqList.map((entry) => {
-                if (entry.key === props.entry.key) {
-                    entry = {...entry};
-                    entry.seq = decodedSeq;
-                    entry.coord_x = inputXValue;
-                    entry.coord_y = inputYValue;
-                }
-                return entry;
-            });
-            props.setDecodeSeqList(newInputSeqList);
-            setIsEditing(false);
-        }
-    };
-
-    const handleInputXChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseFloat(e.currentTarget.value);
-        setInputXValue(value)
-        if (isNaN(value)) {
-            setInputXValid(false);
-        } else {
-            setInputXValid(true);
-        }
-    };
-
-    const handleInputYChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseFloat(e.currentTarget.value);
-        setInputYValue(value)
-        if (isNaN(value)) {
-            setInputYValid(false);
-        } else {
-            setInputYValid(true);
-        }
-    };
-
-    if (isEditing) {
-        return (
-            <tr key={props.entry.key} >
-            <td><Form.Check type="checkbox" checked={props.entry.show} onChange={handleShowChange} /></td>
-            <td>
-                <Form.Control
-                    type="number"
-                    value={inputXValue}
-                    onChange={handleInputXChange}
-                    isInvalid={!inputXValid}
-                />
-            </td>
-            <td>
-                <Form.Control
-                    type="number"
-                    value={inputYValue}
-                    onChange={handleInputYChange}
-                    isInvalid={!inputYValid}
-                />
-            </td>
-            <td> </td>
-            <td>
-                <Button variant="outline-secondary" onClick={handleEditSave} disabled={!inputXValid}>Save</Button>
-                <Button variant="outline-danger" onClick={handleEditCancel}>Cancel</Button>
-            </td>
-        </tr>
-        )
-    } else {
-        return (
-            <tr key={props.entry.key} >
-                <td><Form.Check type="checkbox" checked={props.entry.show} onChange={handleShowChange} /></td>
-                <td>{props.entry.coord_x}</td>
-                <td>{props.entry.coord_y}</td>
-                <td style={{
-                    // fontFamily: 'monospace',
-                    wordBreak: 'break-all',
-                }}>{props.entry.seq}</td>
-                <td>
-                    <Button variant="outline-primary" onClick={handleEdit}>Edit</Button>
-                    <Button variant="outline-danger" onClick={handleRemove}>Remove</Button>
-                </td>
-            </tr>
-        )
+  useEffect(() => {
+    if (pointValidX && pointValidY) {
+      props.setPoint({ 0: pointValueX, 1: pointValueY });
     }
+  }, [pointValueX, pointValueY, pointValidX, pointValidY]);
+
+  return (
+    <>
+      <InputGroup hasValidation>
+        <InputGroup.Text>X :</InputGroup.Text>
+        <InputGroup.Text
+          style={{
+            backgroundColor: "white",
+          }}
+        >
+          <RangeSlider
+            value={pointValueX}
+            onChange={onChangePointX}
+            min={-3.5}
+            max={3.5}
+            step={0.1}
+            tooltipPlacement="top"
+          />
+        </InputGroup.Text>
+        <Form.Control
+          className="w-25"
+          type="number"
+          step={0.1}
+          value={pointValueX}
+          onChange={onChangePointX}
+          isInvalid={!pointValidX}
+        />
+        <Form.Control.Feedback type="invalid">
+          Please input a valid number
+        </Form.Control.Feedback>
+      </InputGroup>
+      <InputGroup hasValidation>
+        <InputGroup.Text>Y :</InputGroup.Text>
+        <InputGroup.Text
+          style={{
+            backgroundColor: "white",
+          }}
+        >
+          <RangeSlider
+            value={pointValueY}
+            onChange={onChangePointY}
+            min={-3.5}
+            max={3.5}
+            step={0.1}
+          />
+        </InputGroup.Text>
+        <Form.Control
+          type="number"
+          step={0.1}
+          value={pointValueY}
+          onChange={onChangePointY}
+          isInvalid={!pointValidY}
+        />
+        <Form.Control.Feedback type="invalid">
+          Please input a valid number
+        </Form.Control.Feedback>
+      </InputGroup>
+    </>
+  );
+};
+
+const ResultViewer: React.FC<ResultViewerProps> = (props) => {
+  const [showWeblogo, setShowWeblogo] = useState<boolean>(false);
+  const [showSecondaryStructure, setShowSecondaryStructure] =
+    useState<boolean>(false);
+
+  const [weblogoBase64, setWeblogoBase64] = useState<string>("");
+  const [secondaryStructureBase64, setSecondaryStructureBase64] =
+    useState<string>("");
+
+  const dispatch = useDispatch();
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
+  const plotConfig = useSelector((state: RootState) => state.graphConfig);
+
+  // set lock with useState to avoid too many requests of decoding
+  const [lock, setLock] = useState<boolean>(false);
+
+  const [decodedSeq, setDecodedSeq] = useState<string>("");
+
+  // 200 ms delay and then unlock
+  useEffect(() => {
+    if (lock) {
+      return;
+    }
+
+    setLock(true);
+    setTimeout(() => {
+      setLock(false);
+    }, 200);
+  }, [props.point, showWeblogo, showSecondaryStructure]);
+
+  useEffect(() => {
+    if (!showWeblogo) {
+      setWeblogoBase64("");
+      return;
+    }
+
+    if (lock) {
+      return;
+    }
+
+    (async () => {
+      const res = await axios
+        .post(
+          "/session/decode/weblogo",
+          {
+            session_id: sessionConfig.sessionId,
+            coords: [
+              {
+                coord_x: props.point[0],
+                coord_y: props.point[1],
+              },
+            ],
+          },
+          {
+            responseType: "arraybuffer",
+          }
+        )
+        .then((res) => res.data);
+
+      const base64 = Buffer.from(res, "binary").toString("base64");
+      setWeblogoBase64(base64);
+    })();
+  }, [sessionConfig.sessionId, props.point, showWeblogo]);
+
+  useEffect(() => {
+    if (!showSecondaryStructure || decodedSeq === "") {
+      setSecondaryStructureBase64("");
+      return;
+    }
+
+    if (lock) {
+      return;
+    }
+
+    (async () => {
+      const res = await axios
+        .get("/tool/secondary-structure", {
+          params: {
+            sequence: decodedSeq,
+          },
+          responseType: "arraybuffer",
+        })
+        .then((res) => res.data);
+
+      const base64 = Buffer.from(res, "binary").toString("base64");
+      setSecondaryStructureBase64(base64);
+    })();
+  }, [decodedSeq, showSecondaryStructure]);
+
+  useEffect(() => {
+    if (sessionConfig.sessionId === 0) {
+      return;
+    }
+
+    if (lock) {
+      return;
+    }
+
+    (async () => {
+      const res = await axios
+        .post("/session/decode", {
+          session_id: sessionConfig.sessionId,
+          coords: [
+            {
+              coord_x: props.point[0],
+              coord_y: props.point[1],
+            },
+          ],
+        })
+        .then((res) => res.data);
+      setDecodedSeq(res.data[0]);
+    })();
+  }, [sessionConfig.sessionId, props.point]);
+
+  useEffect(() => {
+    dispatch({
+      type: "decodeData/update",
+      payload: {
+        key: 0,
+        id: "grid",
+        sequence: decodedSeq,
+        randomRegion: decodedSeq,
+        coordX: props.point[0],
+        coordY: props.point[1],
+        isSelected: false,
+        isShown: true,
+        category: "manual",
+        seriesName: "grid",
+      },
+    });
+  }, [props.point, decodedSeq]);
+
+  const onAdd = async () => {
+    dispatch({
+      type: "decodeData/add",
+      payload: {
+        key: sessionConfig.manualDecodeCount,
+        id: `seq ${sessionConfig.manualDecodeCount}`,
+        sequence: decodedSeq,
+        randomRegion: decodedSeq,
+        coordX: props.point[0],
+        coordY: props.point[1],
+        isSelected: false,
+        isShown: true,
+        category: "manual",
+        seriesName: "manual",
+      },
+    });
+    dispatch({
+      type: "sessionConfig/incrementManualDecodeCount",
+      payload: null,
+    });
+  };
+
+  const onChangeShow = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch({
+      type: "graphConfig/set",
+      payload: {
+        ...plotConfig,
+        showDecodeGrid: e.currentTarget.checked,
+      },
+    });
+  };
+
+  return (
+    <div>
+      <InputGroup>
+        <InputGroup.Text>
+          <Form.Check
+            label="Show"
+            checked={plotConfig.showDecodeGrid}
+            onChange={onChangeShow}
+          />
+        </InputGroup.Text>
+        <Form.Control value={decodedSeq} readOnly />
+        <Button disabled={decodedSeq === ""} onClick={onAdd}>
+          <i className="bi bi-plus"></i>
+        </Button>
+      </InputGroup>
+      <Form.Switch
+        label="Show Weblogo"
+        checked={showWeblogo}
+        onChange={(e) => setShowWeblogo(e.currentTarget.checked)}
+      />
+      <Form.Switch
+        label="Show Secondary Structure"
+        checked={showSecondaryStructure}
+        onChange={(e) => setShowSecondaryStructure(e.currentTarget.checked)}
+      />
+      {showWeblogo ? (
+        <div>
+          <Form.Label>Weblogo</Form.Label>
+          <Image
+            alt="weblogo"
+            src={`data:image/png;charset=utf-8;base64,${weblogoBase64}`}
+            fluid
+          />
+        </div>
+      ) : null}
+      {showSecondaryStructure ? (
+        <div>
+          <Form.Label>Secondary Structure</Form.Label>
+          <Image
+            alt="secondary structure"
+            src={`data:image/png;base64,${secondaryStructureBase64}`}
+            fluid
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const Record: React.FC<RecordProps> = React.memo<RecordProps>(function _Record(
+  props
+) {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [valueX, setValueX] = useState<number>(props.record.coordX);
+  const [valueY, setValueY] = useState<number>(props.record.coordY);
+  const [idValue, setIdValue] = useState<string>(props.record.id);
+  const [isDirty, setIsDirty] = useState<boolean>(false);
+  const [isValid, setIsValid] = useState<boolean>(true);
+
+  const dispatch = useDispatch();
+
+  const sessionId = useSelector(
+    (state: RootState) => state.sessionConfig.sessionId
+  );
+
+  useEffect(() => {
+    const valueXValid = !isNaN(valueX);
+    const valueYValid = !isNaN(valueY);
+    const idValid = idValue !== "";
+    setIsValid(valueXValid && valueYValid && idValid);
+  }, [valueX, valueY, idValue]);
+
+  const onChangeShow = () => {
+    // dispatch action to change show status
+    let newRecord: DecodeDataEntry = { ...props.record };
+    newRecord.isShown = !newRecord.isShown;
+    dispatch({
+      type: "decodeData/update",
+      payload: newRecord,
+    });
+  };
+
+  const onEdit = () => {
+    setIsEditing(true);
+  };
+
+  const onRemove = () => {
+    // dispatch action to remove record
+    dispatch({
+      type: "decodeData/remove",
+      payload: props.record,
+    });
+  };
+
+  const onEditCancel = () => {
+    setValueX(props.record.coordX);
+    setValueY(props.record.coordY);
+    setIdValue(props.record.id);
+    setIsEditing(false);
+  };
+
+  const onEditSave = async () => {
+    if (isValid && isDirty) {
+      // dispatch action to update record
+      let newRecord: DecodeDataEntry = { ...props.record };
+      newRecord.coordX = valueX;
+      newRecord.coordY = valueY;
+      newRecord.id = idValue;
+      if (valueX !== props.record.coordX || valueY !== props.record.coordY) {
+        const res = await axios
+          .post("/session/decode", {
+            session_id: sessionId,
+            coords: [{ coord_x: valueX, coord_y: valueY }],
+          })
+          .then((res) => res.data);
+        const newSeq = res.data[0];
+        newRecord.sequence = newSeq;
+        newRecord.randomRegion = newSeq;
+      }
+      dispatch({
+        type: "decodeData/update",
+        payload: newRecord,
+      });
+      setIsEditing(false);
+    }
+  };
+
+  const onChangeX = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValueX(parseInt(e.currentTarget.value));
+    setIsDirty(true);
+  };
+
+  const onChangeY = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValueY(parseInt(e.currentTarget.value));
+    setIsDirty(true);
+  };
+
+  if (isEditing) {
+    return (
+      <tr key={props.record.key}>
+        <td>
+          <Form.Control
+            value={idValue}
+            onChange={(e) => setIdValue(e.currentTarget.value)}
+          />
+        </td>
+        <td>
+          <Form.Control value={valueX} onChange={onChangeX} />
+        </td>
+        <td>
+          <Form.Control value={valueY} onChange={onChangeY} />
+        </td>
+        <td>
+          <ButtonGroup>
+            <Button
+              variant="success"
+              onClick={onEditSave}
+              disabled={!isValid || !isDirty}
+            >
+              <i className="bi bi-check"></i>
+            </Button>
+            <Button variant="danger" onClick={onEditCancel}>
+              <i className="bi bi-x"></i>
+            </Button>
+          </ButtonGroup>
+        </td>
+      </tr>
+    );
+  } else {
+    return (
+      <tr key={props.record.key}>
+        <td>{props.record.id}</td>
+        <td>{props.record.coordX}</td>
+        <td>{props.record.coordY}</td>
+        <td>
+          <ButtonGroup>
+            <Button variant="primary" onClick={onChangeShow}>
+              <i className="bi bi-check"></i>
+            </Button>
+            <Button variant="success" onClick={onEdit}>
+              <i className="bi bi-pencil"></i>
+            </Button>
+            <Button>
+              <i className="bi bi-x"></i>
+            </Button>
+          </ButtonGroup>
+        </td>
+      </tr>
+    );
+  }
 });
 
-type TableProps = {
-    sessionId: number,
-    decodeSeqList: DecodeDataElement[],
-    setDecodeSeqList: React.Dispatch<React.SetStateAction<DecodeDataElement[]>>,
-}
+const Table: React.FC = React.memo(function _Table() {
+  const decodeData = useSelector((state: RootState) => state.decodeData);
 
-const SequenceTable: React.FC<TableProps> = React.memo<TableProps>(function _SequenceTable(props) {
-    return (
-        <table className="table table-striped table-bordered">
-            <thead>
-                <tr>
-                    <th>Show</th>
-                    <th>x</th>
-                    <th>y</th>
-                    <th>Sequence</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {props.decodeSeqList.map((entry) => {
-                    if (entry.key === "0") {
-                        return null
-                    } else {
-                        return (
-                            <SequenceRecord
-                                key={entry.key}
-                                decodeSeqList={props.decodeSeqList}
-                                setDecodeSeqList={props.setDecodeSeqList}
-                                entry={entry}
-                                sessionId={props.sessionId}
-                            />
-                        )
-                    }
-                })}
-            </tbody>
+  return (
+    <div>
+      <div className="table-responsive">
+        <table className="table table-hover table-sm">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Coord X</th>
+              <th>Coord Y</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {decodeData.map((record) => (
+              <Record key={record.key} record={record} />
+            ))}
+          </tbody>
         </table>
-    )
+      </div>
+    </div>
+  );
 });
 
 const DecodePanel: React.FC = () => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-    const sessionId = useSelector((state: RootState) => state.selexData.vaeConfig.sessionId);
-    const [ point, setPoint ] = useState<Record<number, number>>({0: 0, 1: 0});
-    const [ decodeSeqList, setDecodeSeqList ] = useState<DecodeDataElement[]>([{
-        key: "0",
-        show: false,
-        id: "",
-        coord_x: 0,
-        coord_y: 0,
-        seq: "",
-    }]);
+  const [point, setPoint] = useState<Record<number, number>>({ 0: 0, 1: 0 });
 
-    useEffect(() => {
-        dispatch(setDecodeData(decodeSeqList));
-    }, [decodeSeqList]);
-
-
-    return (
-        <Form>
-            <Form.Group className='mb-3'>
-                <Form.Label>Latent Point</Form.Label>
-                <PointSelector point={point} setPoint={setPoint}/>
-            </Form.Group>
-            <Form.Group className='mb-3'>
-                <Form.Label>Decoded Sequence</Form.Label>
-                <ResultViewer 
-                    sessionId={sessionId} 
-                    point={point}
-                    decodeSeqList={decodeSeqList}
-                    setDecodeSeqList={setDecodeSeqList}
-                />
-            </Form.Group>
-            <Form.Group className='mb-3'>
-                <Form.Label>Sequence List</Form.Label>
-                <SequenceTable
-                    sessionId={sessionId} 
-                    decodeSeqList={decodeSeqList}
-                    setDecodeSeqList={setDecodeSeqList}
-                />
-            </Form.Group>
-        </Form>
-    )
+  return (
+    <Form>
+      <Form.Group className="mb-3">
+        <Form.Label>Latent Point</Form.Label>
+        <PointSelector point={point} setPoint={setPoint} />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Decoded Sequence</Form.Label>
+        <ResultViewer point={point} />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Sequence List</Form.Label>
+        <Table />
+      </Form.Group>
+    </Form>
+  );
 };
 
 export default DecodePanel;

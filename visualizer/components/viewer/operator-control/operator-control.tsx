@@ -1,33 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Nav, Tab, Tabs } from 'react-bootstrap';
-import axios from 'axios';
-import { RootState } from '../redux/store';
-
-import EncodePanel from './encode';
-import DecodePanel from './decode';
-import DownloadPanel from './download';
-
-import { VaeConfig } from '../redux/selex';
-import { useSelector } from 'react-redux';
+import { Tab, Tabs } from "react-bootstrap";
+import Encode from "./encode/encode";
+import Decode from "./decode/decode";
+import Download from "./download/download";
 
 const OperatorControl: React.FC = () => {
-    return (
-        <Tabs
-            defaultActiveKey="encodePanel"
-            id="operatorControl"
-            className="mb-3"
-        >
-            <Tab eventKey="encodePanel" title="Encode">
-                <EncodePanel />
-            </Tab>
-            <Tab eventKey="decodePanel" title="Decode">
-                <DecodePanel />
-            </Tab>
-            <Tab eventKey="downloadPanel" title="Download">
-                <DownloadPanel />
-            </Tab>
-        </Tabs>
-    );
-}
+  return (
+    <Tabs defaultActiveKey="encode" id="operatorControl" className="mb-3">
+      <Tab eventKey="encode" title="Encode">
+        <Encode />
+      </Tab>
+      <Tab eventKey="decode" title="Decode">
+        <Decode />
+      </Tab>
+      <Tab eventKey="download" title="Download">
+        <Download />
+      </Tab>
+    </Tabs>
+  );
+};
 
 export default OperatorControl;
