@@ -1,82 +1,31 @@
-import Head from 'next/head'
-import { NextPage } from 'next'
-import { Button, Form } from 'react-bootstrap'
-import 'bootswatch/dist/cosmo/bootstrap.min.css'
-import { Layout, PlotData } from "plotly.js"
-import dynamic from 'next/dynamic'
+import "bootswatch/dist/cosmo/bootstrap.min.css";
+import Head from "next/head";
+import { NextPage } from "next";
+import Navigator from "../components/common/navigator";
+import { Container, Row, Col, Card } from "react-bootstrap";
+import Link from "next/link";
 
-const Plot = dynamic(() => import('react-plotly.js'), { ssr: false })
+type CellProps = {
+  title: string;
+  content: string;
+  url: string;
+};
 
-type Props = {}
-
-const ThreeGraph: React.FC<Props> = () => {
-
-  // データの型指定でPartial<PlotData>をつけておくと型サポート使えて便利です
-  // データ群1
-  const data1:Partial<PlotData> = {
-    type: 'scatter3d',
-    x: [1,5,9,7],
-    y: [-9,4,3,0],
-    z: [2,2,2,2],
-    marker:{symbol:'circle', opacity:1, size:3},
-    mode: 'markers',
-    text: ['A', 'B', 'C', 'D'],
-    name: 'Group_1',
-  }
-  
-  // データ群2 ちなみに群1と群2は自動で色分けしてくれる。便利！
-  // 手動で設定したいなら marker:{color:***}
-  const data2:Partial<PlotData> = {
-    type: 'scatter3d',
-    x: [-6,5,3,-2],
-    y: [-4,9,4,6],
-    z: [-2,-2,-2,-2],
-    marker:{symbol:'circle', opacity:1, size:3},
-    mode: 'markers',
-    text: ['E', 'F', 'G', 'H'],
-    name: 'Group_2',
-  }
-  
-  // 以下はXYZの軸が欲しかったので無理矢理作った
-  const lineX:Partial<PlotData> = {
-    type: 'scatter3d',
-    x:[-10,10],
-    y:[0,0],
-    z:[0,0],
-    mode: 'lines',
-    line:{color:'black'}
-  };
-  
-  const lineY:Partial<PlotData> = {
-    type: 'scatter3d',
-    x:[0,0],
-    y:[-10,10],
-    z:[0,0],
-    mode: 'lines',
-    line:{color:'black'}
-  };
-  
-  const lineZ:Partial<PlotData> = {
-    type: 'scatter3d',
-    x:[0,0],
-    y:[0,0],
-    z:[-10,10],
-    mode: 'lines',
-    line:{color:'black'}
-  };
-  
-  const layout1:Partial<Layout> = { title: '３次元グラフ'};
-  
-  // 下にある<Plot data = {}> のdataの型は Partial<PlotData>[]
-  // サンプルとしてわかりやすいように型を書いています
-  const allData:Partial<PlotData>[] = [data1, data2, lineX, lineY, lineZ]
-  
+// link to the page
+const Cell: React.FC<CellProps> = (props) => {
   return (
-    <Plot data={allData} layout={layout1} />
+    <Link href={props.url} style={{ textDecoration: "none" }}>
+      <Card>
+        <Card.Body>
+          <Card.Title>{props.title}</Card.Title>
+          <Card.Text>{props.content}</Card.Text>
+        </Card.Body>
+      </Card>
+    </Link>
   );
 };
 
-const Home: NextPage = () => {
+const Home: React.FC = () => {
   return (
     <>
       <Head>
@@ -86,10 +35,34 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <ThreeGraph />
+        <Navigator currentPage="viewer" />
+        <Container>
+          <h1 style={{ marginTop: "1rem" }}>Home</h1>
+          <hr />
+          <Row>
+            <Col>
+              <Cell
+                title="Viewer"
+                content="Operate on latent space of RaptGen VAE"
+                url="/viewer-2"
+              />
+            </Col>
+            <Col>
+              <Cell
+                title="Upload"
+                content="upload a trained RaptGen model or GMM model"
+                url="/uploader-2"
+              />
+            </Col>
+          </Row>
+        </Container>
       </main>
     </>
-  )
-}
+  );
+};
 
-export default Home
+const PageRoot: NextPage = () => {
+  return <Home />;
+};
+
+export default PageRoot;

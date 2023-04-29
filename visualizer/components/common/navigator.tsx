@@ -1,10 +1,8 @@
 import { Navbar, Nav, Container } from "react-bootstrap";
 
 type Props = {
-  currentPage:
-    | 'viewer'
-    | 'uploader'
-} 
+  currentPage: "viewer" | "uploader";
+};
 
 const Navigator: React.FC<Props> = ({ currentPage }) => {
   return (
@@ -19,3 +17,5 @@ const Navigator: React.FC<Props> = ({ currentPage }) => {
     </Navbar>
   );
 };
+
+export default Navigator;
