@@ -25,3 +25,23 @@ Docker version 20.10.21, build baeda1f
    ```
 3. Please wait before all the containers are ready. This may take minutes.
 4. Access http://localhost:3000 with your favourite internet browser.
+
+## Usage
+
+For now, viewer and uploader have been implemented.
+
+### Viewer
+
+Visualize the latent map of the HT-SELEX data.
+
+You can encode a single nucleotide sequence or batch sequences from fasta file. However decoding from a batch coordinates file is not supported.
+Downloading is also supported. You can select which cluster to download.
+
+![View of Viewer](docs/viewer.png)
+
+### Uploader
+
+Upload a RaptGen model to visualize.
+**Under Construction**
+
+![Uploader View](docs/uploader.png)
