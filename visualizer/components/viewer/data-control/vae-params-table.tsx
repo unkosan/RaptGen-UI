@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { Table } from "react-bootstrap";
+import { useDispatch } from "react-redux";
 
 const VAEParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
@@ -10,6 +11,11 @@ const VAEParamsTable: React.FC = () => {
   );
 
   const vaeName = useSelector((state: RootState) => state.graphConfig.vaeName);
+
+  const [forwardAdapter, setForwardAdapter] = useState<string>("");
+  const [reverseAdapter, setReverseAdapter] = useState<string>("");
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     (async () => {
@@ -28,9 +34,27 @@ const VAEParamsTable: React.FC = () => {
 
       if (res.status === "success") {
         setParamsList(res.data);
+        if (res.data["fwd_adapter"]) {
+          setForwardAdapter(res.data["fwd_adapter"]);
+        }
+        if (res.data["rev_adapter"]) {
+          setReverseAdapter(res.data["rev_adapter"]);
+        }
       }
     })();
   }, [vaeName]);
+
+  useEffect(() => {
+    (async () => {
+      dispatch({
+        type: "sessionConfig/setAdapters",
+        payload: {
+          forwardAdapter: forwardAdapter,
+          reverseAdapter: reverseAdapter,
+        },
+      });
+    })();
+  }, [forwardAdapter, reverseAdapter]);
 
   return (
     <Table striped bordered hover size="sm">
