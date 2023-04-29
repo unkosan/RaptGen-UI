@@ -4,6 +4,8 @@ type SessionConfig = {
   sessionId: number;
   manualEncodeCount: number;
   manualDecodeCount: number;
+  forwardAdapter: string;
+  reverseAdapter: string;
 };
 
 const sessionConfigSlice = createSlice({
@@ -12,6 +14,8 @@ const sessionConfigSlice = createSlice({
     sessionId: 0,
     manualEncodeCount: 0,
     manualDecodeCount: 1,
+    forwardAdapter: "",
+    reverseAdapter: "",
   },
   reducers: {
     setSessionId: (state: SessionConfig, action: PayloadAction<number>) => {
@@ -48,6 +52,16 @@ const sessionConfigSlice = createSlice({
       return {
         ...state,
         manualDecodeCount: state.manualDecodeCount + 1,
+      };
+    },
+    setAdapters: (
+      state: SessionConfig,
+      action: PayloadAction<{ forwardAdapter: string; reverseAdapter: string }>
+    ) => {
+      return {
+        ...state,
+        forwardAdapter: action.payload.forwardAdapter,
+        reverseAdapter: action.payload.reverseAdapter,
       };
     },
   },

@@ -149,6 +149,10 @@ const LatentGraph: React.FC = () => {
           ],
         },
         customdata: data.map((d) => [d.id, d.randomRegion]),
+        hovertemplate:
+          `<b>ID</b>: %{customdata[0]}<br>` +
+          "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
+          `<b>Sequence:</b> %{customdata[1]}<br>`,
       };
     });
   }, [measuredData, graphConfig.showMeasured]);
@@ -308,7 +312,13 @@ const LatentGraph: React.FC = () => {
 
   return (
     <Plot
-      data={[vaeDataPlot, ...gmmDataPlot, encodeDataPlot, ...decodeDataPlot]}
+      data={[
+        vaeDataPlot,
+        ...gmmDataPlot,
+        encodeDataPlot,
+        ...decodeDataPlot,
+        ...measuredDataPlot,
+      ]}
       layout={layout}
       useResizeHandler={true}
       style={{ width: "100%", height: "100%" }}
