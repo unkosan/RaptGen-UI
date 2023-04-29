@@ -1,4 +1,5 @@
 from fastapi import APIRouter, File, Form
+
 router = APIRouter()
 
 from io import BytesIO
@@ -13,59 +14,51 @@ import pandas as pd
 
 DATA_PATH = "/app/local/down/data/"
 
+
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
-        if module == 'torch.storage' and name == '_load_from_bytes':
-            return lambda b: torch.load(BytesIO(b), map_location='cpu')
-        else: return super().find_class(module, name)
+        if module == "torch.storage" and name == "_load_from_bytes":
+            return lambda b: torch.load(BytesIO(b), map_location="cpu")
+        else:
+            return super().find_class(module, name)
+
 
 class RequestEstimateLength(BaseModel):
     sequences: List[str]
+
 
 @router.post("/api/upload/estimate-target-length")
 # async def estimate_target_length(sequences: List[str]):
 async def estimate_target_length(estimate_length_data: RequestEstimateLength):
     sequences = estimate_length_data.sequences
     if len(sequences) == 0:
-        return {
-            "status": "error"
-        }
-    
+        return {"status": "error"}
+
     target_length = calc_target_length(sequences)
-    return {
-        "status": "success",
-        "data": {
-            "target_length": target_length
-        }
-    }
+    return {"status": "success", "data": {"target_length": target_length}}
+
 
 class RequestEstimateAdapters(BaseModel):
     sequences: List[str]
     target_length: int
 
+
 @router.post("/api/upload/estimate-adapters")
 async def estimate_forward_reverse_adapters(
-    estimate_adapters_data: RequestEstimateAdapters
+    estimate_adapters_data: RequestEstimateAdapters,
 ):
     sequences = estimate_adapters_data.sequences
     target_length = estimate_adapters_data.target_length
     if len(sequences) == 0:
-        return {
-            "status": "error"
-        }
-    
-    adapters = estimate_adapters(
-        raw_reads=sequences, 
-        target_length=target_length
-    )
+        return {"status": "error"}
+
+    adapters = estimate_adapters(raw_reads=sequences, target_length=target_length)
 
     return {
         "status": "success",
-        "data": {
-            "forward_adapter": adapters[0],
-            "reverse_adapter": adapters[1]
-        }
+        "data": {"forward_adapter": adapters[0], "reverse_adapter": adapters[1]},
     }
+
 
 # class RequestUploadVAE(BaseModel):
 #     # Required
@@ -79,7 +72,7 @@ async def estimate_forward_reverse_adapters(
 #     coord_y: List[float]
 #     duplicates: List[int]
 #     # Optional
-#     published_time: Optional[str] = None 
+#     published_time: Optional[str] = None
 #     experiment_name: Optional[str] = None
 #     round_name: Optional[str] = None
 #     tolerance: Optional[int] = None
@@ -92,6 +85,7 @@ async def estimate_forward_reverse_adapters(
 #     CUDA_num_threads: Optional[int] = None
 #     CUDA_pin_memory: Optional[bool] = None
 #     seed: Optional[int] = None
+
 
 @router.post("/api/upload/upload-vae")
 # async def upload_vae(upload_data: RequestUploadVAE):
@@ -145,40 +139,25 @@ async def upload_vae(
 ):
     # split list
     if len(sequences) == 1:
-        sequences = [
-            seq.strip()
-            for seq in sequences[0].split(',')
-        ]
+        sequences = [seq.strip() for seq in sequences[0].split(",")]
     if len(coord_x) == 1:
-        coord_x = [
-            float(string)
-            for string in str(coord_x[0]).split(',')
-        ]
+        coord_x = [float(string) for string in str(coord_x[0]).split(",")]
     if len(coord_y) == 1:
-        coord_y = [
-            float(string)
-            for string in str(coord_y[0]).split(',')
-        ]
+        coord_y = [float(string) for string in str(coord_y[0]).split(",")]
     if len(duplicates) == 1:
-        duplicates = [
-            int(string)
-            for string in str(duplicates).split(',')
-
-        ]
+        duplicates = [int(string) for string in str(duplicates).split(",")]
 
     # Check for valid inputs
     if len(sequences) == 0:
-        return {
-            "status": "error"
-        }
+        return {"status": "error"}
     if model_name == "":
-        return {
-            "status": "error"
-        }
-    if len(sequences) != len(coord_x) or len(sequences) != len(coord_y) or len(sequences) != len(duplicates):
-        return {
-            "status": "error"
-        }
+        return {"status": "error"}
+    if (
+        len(sequences) != len(coord_x)
+        or len(sequences) != len(coord_y)
+        or len(sequences) != len(duplicates)
+    ):
+        return {"status": "error"}
 
     # validate pHMM-VAE model
     result = _validate_pHMM_model(BytesIO(model))
@@ -189,20 +168,18 @@ async def upload_vae(
     # Get random region of sequences
     random_regions: List[str] = []
     for seq in sequences:
-        if (reverse_adapter == ""):
-            random_region = seq[len(forward_adapter):]
+        if reverse_adapter == "":
+            random_region = seq[len(forward_adapter) :]
         else:
-            random_region = seq[len(forward_adapter):-len(reverse_adapter)]
+            random_region = seq[len(forward_adapter) : -len(reverse_adapter)]
         if len(random_region) == 0:
-            return {
-                "status": "error"
-            }
+            return {"status": "error"}
         random_regions.append(random_region)
 
     # Timestamp if not provided
     if published_time == None:
         published_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+
     # Upload config data to database
     config_data = {
         "published_time": published_time,
@@ -211,7 +188,9 @@ async def upload_vae(
         "fwd_adapter": forward_adapter,
         "rev_adapter": reverse_adapter,
         "target_length": target_length,
-        "filtering_standard_length": target_length - len(forward_adapter) - len(reverse_adapter),
+        "filtering_standard_length": target_length
+        - len(forward_adapter)
+        - len(reverse_adapter),
         "filtering_tolerance": tolerance,
         "filtering_method": "default",
         "minimum_count": minimum_count,
@@ -233,28 +212,33 @@ async def upload_vae(
     print(config_df)
 
     # Upload sequences to database
-    seq_df = pd.DataFrame({
-        "Sequence": sequences,
-        "Duplicates": duplicates,
-        "Without_Adapters": random_regions,
-        "coord_x": coord_x,
-        "coord_y": coord_y,
-    })
+    seq_df = pd.DataFrame(
+        {
+            "Sequence": sequences,
+            "Duplicates": duplicates,
+            "Without_Adapters": random_regions,
+            "coord_x": coord_x,
+            "coord_y": coord_y,
+        }
+    )
     print(seq_df.head(5))
 
     # Upload model to database
-    data_df = pd.DataFrame({
-        "Sequence": sequences,
-        "Duplicates": duplicates,
-        "Without_Adapters": random_regions,
-        "coord_x": coord_x,
-        "coord_y": coord_y,
-    })
+    data_df = pd.DataFrame(
+        {
+            "Sequence": sequences,
+            "Duplicates": duplicates,
+            "Without_Adapters": random_regions,
+            "coord_x": coord_x,
+            "coord_y": coord_y,
+        }
+    )
     print(data_df.head(5))
 
     return {
         "status": "success",
     }
+
 
 @router.post("/api/upload/validate-pHMM-model")
 async def validate_pHMM_model(state_dict: bytes = File(...)):
@@ -266,6 +250,7 @@ async def validate_pHMM_model(state_dict: bytes = File(...)):
             "status": "success",
         }
 
+
 def _validate_pHMM_model(pickle_state_dict: BytesIO) -> Dict[str, Any]:
     try:
         state_dict = CPU_Unpickler(pickle_state_dict).load()
@@ -273,17 +258,22 @@ def _validate_pHMM_model(pickle_state_dict: BytesIO) -> Dict[str, Any]:
         return {"status": "error", "message": "Not a valid pickle file"}
 
     try:
-        motif_len = int(state_dict['decoder.emission.2.weight'].shape[0] / 4)
-        embed_dim = state_dict['decoder.fc1.0.weight'].shape[1]
+        motif_len = int(state_dict["decoder.emission.2.weight"].shape[0] / 4)
+        embed_dim = state_dict["decoder.fc1.0.weight"].shape[1]
         model = CNN_PHMM_VAE(motif_len=motif_len, embed_size=embed_dim)
         model.load_state_dict(state_dict)
         assert embed_dim == 2
     except:
         return {"status": "error", "message": "Invalid state dict file"}
 
-    return {"status": "success", "data": {"model": model, "motif_len": motif_len, "embed_dim": embed_dim}}
+    return {
+        "status": "success",
+        "data": {"model": model, "motif_len": motif_len, "embed_dim": embed_dim},
+    }
+
 
 from sklearn.mixture import GaussianMixture
+
 
 @router.post("/api/upload/validate-GMM-model")
 async def validate_GMM_model(gmm_data: bytes = File(...)):
@@ -291,31 +281,28 @@ async def validate_GMM_model(gmm_data: bytes = File(...)):
     if result["status"] == "error":
         return result
     else:
-        return {
-            "status": "success"
-        }
+        return {"status": "success"}
+
 
 def _validate_GMM_model(pickle_gmm: BytesIO) -> Dict[str, Any]:
     try:
         gmm = CPU_Unpickler(pickle_gmm).load()
     except:
         return {"status": "error", "message": "Not a valid pickle file"}
-    
+
     if not isinstance(gmm, GaussianMixture):
         return {"status": "error", "message": "Not a sklearn GMM file"}
-    
-    return {
-        "status": "success",
-        "data": { "model": gmm }
-    }
+
+    return {"status": "success", "data": {"model": gmm}}
+
 
 from tasks import batch_encode, celery
 from fastapi import Form
 
+
 @router.post("/api/upload/batch-encode")
 async def launch_batch_encode(
-    state_dict: bytes = File(...),
-    seqs: List[str] = Form(...)
+    state_dict: bytes = File(...), seqs: List[str] = Form(...)
 ):
     # validate seqs and model
     result = _validate_pHMM_model(BytesIO(state_dict))
@@ -324,19 +311,17 @@ async def launch_batch_encode(
     model: CNN_PHMM_VAE = result["data"]["model"]
 
     if len(seqs) == 1:
-        seqs = [
-            seq.strip()
-            for seq in seqs[0].split(',')
-        ]
+        seqs = [seq.strip() for seq in seqs[0].split(",")]
 
     # Launch celery task
-    task = batch_encode.delay(seqs, state_dict) # CNN_PHMM_VAE is not sharable
+    task = batch_encode.delay(seqs, state_dict)  # CNN_PHMM_VAE is not sharable
     return {
         "status": "success",
         "data": {
             "task_id": task.id,
-        }
+        },
     }
+
 
 @router.post("/api/upload/batch-encode/kill")
 async def kill_batch_encode(task_id: str):
@@ -359,7 +344,7 @@ async def get_batch_encode_status(task_id: str):
         info: Dict = task.info
         state = task.state
         status = f"{info['current']}, {info['total']}"
-        result = info['result'].tolist()
+        result = info["result"].tolist()
     elif task.state == "SUCCESS":
         state = task.state
         status = "Finished successfully"
@@ -373,6 +358,7 @@ async def get_batch_encode_status(task_id: str):
         "status": status,
         "result": result,
     }
+
 
 @router.get("/api/upload/upload-gmm")
 async def upload(
@@ -389,18 +375,18 @@ async def upload(
         return result
     gmm: GaussianMixture = result["data"]["model"]
 
-    data_df = pd.DataFrame({
-        "GMM_num_components": num_components,
-        "GMM_seed": seed,
-        "GMM_optimal_model": gmm,
-        "GMM_model_type": model_type,
-    })
+    data_df = pd.DataFrame(
+        {
+            "GMM_num_components": num_components,
+            "GMM_seed": seed,
+            "GMM_optimal_model": gmm,
+            "GMM_model_type": model_type,
+        }
+    )
     data_df.index.name = GMM_model_name
 
     # upload df
     print(data_df.head(5))
     print(VAE_model_name)
 
-    return {
-        "status": "success"
-    }
+    return {"status": "success"}

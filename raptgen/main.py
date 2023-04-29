@@ -21,10 +21,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
     df = pd.read_csv("./local/sampledata.csv")
     return {"message": "Hello World?"}
+
 
 @app.get("/dev/sample/selex")
 async def sampledata():
@@ -32,11 +34,13 @@ async def sampledata():
     return df.to_dict(orient="list")
     # return df.to_dict()
 
+
 @app.get("/dev/sample/seq")
 async def sampleseq():
     return {
         "seq": ["AUG", "GAC", "CCG", "ATT"],
     }
+
 
 @app.get("/dev/sample/VAEmodels")
 async def sampleVAE():
@@ -48,8 +52,10 @@ async def sampleVAE():
         ]
     }
 
+
 class VAEname(BaseModel):
     VAE_name: str
+
 
 @app.get("/dev/sample/GMMmodels")
 async def sampleGMM(VAE_name: str = ""):
@@ -61,6 +67,7 @@ async def sampleGMM(VAE_name: str = ""):
         ],
     }
 
+
 @app.get("/dev/sample/measuredData")
 async def sample_measured():
     return {
@@ -70,35 +77,37 @@ async def sample_measured():
             "measured data 3",
         ]
     }
-    
+
 
 @app.get("/dev/sample/measured")
 async def measured_sample():
     df = pd.read_csv("./local/report_all.csv")
     result = list()
     for hue, subset_df in df.groupby("hue"):
-        subset_df = subset_df[['ID', 'Sequence']]
-        result.append({
-            "hue": hue,
-            "data": subset_df.to_dict(orient="list")
-        })
+        subset_df = subset_df[["ID", "Sequence"]]
+        result.append({"hue": hue, "data": subset_df.to_dict(orient="list")})
     return result
+
 
 class SeqContainer(BaseModel):
     seq: List[str]
     session_ID: int
 
+
 class Sequence(BaseModel):
     seq: str
+
 
 model_dict = dict()
 model_dict.update(
     {
         0: "okok",
         42: "test",
-    })
+    }
+)
 
 import numpy as np
+
 
 @app.post("/dev/sample/encode")
 async def encode_sample(seq_container: SeqContainer):
@@ -114,32 +123,33 @@ async def encode_sample(seq_container: SeqContainer):
 
     return result
 
+
 @app.get("/dev/sample/sessionId/")
 async def make_session_ID():
-    return {
-        "session_ID": 41
-    }
+    return {"session_ID": 41}
+
 
 class SessionID(BaseModel):
     session_ID: int
 
+
 @app.post("/dev/sample/sessionId/kill")
 async def kill_session(session_ID: SessionID):
     print(f"Killed session {session_ID.session_ID}")
-    return {
-        "message": "killed successfully"
-    }
+    return {"message": "killed successfully"}
+
 
 @app.get("/dev/sample/selex-config")
 async def selex_config():
     return {
-       "forward_adapter": "GGGACCGAGTGTTCAGC",
-       "reverse_adapter": "GAGCTTGCACGTCGA", 
-       "tolerance": 0,
-       "min_count": 4,
-       "random_region_length": 10,
+        "forward_adapter": "GGGACCGAGTGTTCAGC",
+        "reverse_adapter": "GAGCTTGCACGTCGA",
+        "tolerance": 0,
+        "min_count": 4,
+        "random_region_length": 10,
     }
-    
+
+
 @app.post("/dev/apitest/post")
 async def post_test(seq: Sequence):
     print(f"Received: {seq.seq}")
