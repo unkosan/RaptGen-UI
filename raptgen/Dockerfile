@@ -13,7 +13,7 @@ RUN mamba env create -f environment.yml
 
 RUN echo "conda activate raptgen" >> ~/.bashrc
 ENV CONDA_DEFAULT_ENV raptgen
-RUN pre-commit install -t pre-push # for testing before push
+# RUN pre-commit install -t pre-push # for testing before push
 ENV PATH /opt/conda/envs/raptgen/bin:$PATH
 ENV PYTHONPATH /app
 
