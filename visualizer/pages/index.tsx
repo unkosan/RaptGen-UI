@@ -44,14 +44,14 @@ const Home: React.FC = () => {
               <Cell
                 title="Viewer"
                 content="Operate on latent space of RaptGen VAE"
-                url="/viewer-2"
+                url="/viewer"
               />
             </Col>
             <Col>
               <Cell
                 title="Upload"
                 content="upload a trained RaptGen model or GMM model"
-                url="/uploader-2"
+                url="/uploader"
               />
             </Col>
           </Row>
