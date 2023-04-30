@@ -103,7 +103,7 @@ const SideBarVAE: React.FC = () => {
       >
         <legend>Setup Training Params</legend>
         <OptionalParams setParamsIsValid={setSubmitValid} />
-        <SubmitButtons submitDisabled={!submitValid} />
+        <SubmitButtons submitDisabled={!submitValid} vaeFile={vaeFile} />
       </div>
     </div>
   );
