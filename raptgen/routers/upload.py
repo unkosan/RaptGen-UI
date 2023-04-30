@@ -12,7 +12,7 @@ from datetime import datetime
 import torch
 import pandas as pd
 
-DATA_PATH = "/app/local/down/data/"
+DATA_PATH = "/app/data/"
 
 
 class CPU_Unpickler(pickle.Unpickler):
@@ -59,59 +59,7 @@ async def estimate_forward_reverse_adapters(
         "data": {"forward_adapter": adapters[0], "reverse_adapter": adapters[1]},
     }
 
-
-# class RequestUploadVAE(BaseModel):
-#     # Required
-#     model: bytes = File(...)
-#     model_name: str
-#     sequences: List[str]
-#     forward_adapter: str
-#     reverse_adapter: str
-#     target_length: int
-#     coord_x: List[float]
-#     coord_y: List[float]
-#     duplicates: List[int]
-#     # Optional
-#     published_time: Optional[str] = None
-#     experiment_name: Optional[str] = None
-#     round_name: Optional[str] = None
-#     tolerance: Optional[int] = None
-#     minimum_count: Optional[int] = None
-#     epochs: Optional[int] = None
-#     beta_weighting_epochs: Optional[int] = None
-#     match_forcing_epochs: Optional[int] = None
-#     match_cost: Optional[float] = None
-#     early_stopping_patience: Optional[int] = None
-#     CUDA_num_threads: Optional[int] = None
-#     CUDA_pin_memory: Optional[bool] = None
-#     seed: Optional[int] = None
-
-
 @router.post("/api/upload/upload-vae")
-# async def upload_vae(upload_data: RequestUploadVAE):
-#     upload_dict = upload_data.dict()
-#     model: bytes = upload_dict["model"]
-#     model_name = upload_dict["model_name"]
-#     seqs = upload_dict["sequences"]
-#     forward_adapter = upload_dict["forward_adapter"]
-#     reverse_adapter = upload_dict["reverse_adapter"]
-#     target_length = upload_dict["target_length"]
-#     coord_x = upload_dict["coord_x"]
-#     coord_y = upload_dict["coord_y"]
-#     duplicates = upload_dict["duplicates"]
-#     published_time = upload_dict["published_time"]
-#     experiment_name = upload_dict["experiment_name"]
-#     round_name = upload_dict["round_name"]
-#     tolerance = upload_dict["tolerance"]
-#     minimum_count = upload_dict["minimum_count"]
-#     epochs = upload_dict["epochs"]
-#     beta_weighting_epochs = upload_dict["beta_weighting_epochs"]
-#     match_forcing_epochs = upload_dict["match_forcing_epochs"]
-#     match_cost = upload_dict["match_cost"]
-#     early_stopping_patience = upload_dict["early_stopping_patience"]
-#     CUDA_num_threads = upload_dict["CUDA_num_threads"]
-#     CUDA_pin_memory = upload_dict["CUDA_pin_memory"]
-#     seed = upload_dict["seed"]
 async def upload_vae(
     model: bytes = File(...),
     model_name: str = Form(...),
@@ -119,9 +67,9 @@ async def upload_vae(
     forward_adapter: str = Form(...),
     reverse_adapter: str = Form(...),
     target_length: int = Form(...),
-    coord_x: List[float] = Form(...),
-    coord_y: List[float] = Form(...),
-    duplicates: List[int] = Form(...),
+    coord_x: List[str] = Form(...),
+    coord_y: List[str] = Form(...),
+    duplicates: List[str] = Form(...),
     # Optional
     published_time: Optional[str] = Form(None),
     experiment_name: Optional[str] = Form(None),
@@ -140,22 +88,31 @@ async def upload_vae(
     # split list
     if len(sequences) == 1:
         sequences = [seq.strip() for seq in sequences[0].split(",")]
+    
+    # List[int] = Form() does not work. receive as List[str] instead.
+    # https://github.com/tiangolo/fastapi/issues/3532
     if len(coord_x) == 1:
-        coord_x = [float(string) for string in str(coord_x[0]).split(",")]
+        coord_x_float = [float(string) for string in str(coord_x[0]).split(',')]
+    else:
+        coord_x_float = [float(coord_x[0])]
     if len(coord_y) == 1:
-        coord_y = [float(string) for string in str(coord_y[0]).split(",")]
+        coord_y_float = [float(string) for string in str(coord_y[0]).split(',')]
+    else:
+        coord_y_float = [float(coord_y[0])]
     if len(duplicates) == 1:
-        duplicates = [int(string) for string in str(duplicates).split(",")]
-
+        duplicates_int = [int(string) for string in str(duplicates[0]).split(',')]
+    else:
+        duplicates_int = [int(duplicates[0])]
+    
     # Check for valid inputs
     if len(sequences) == 0:
         return {"status": "error"}
     if model_name == "":
         return {"status": "error"}
     if (
-        len(sequences) != len(coord_x)
-        or len(sequences) != len(coord_y)
-        or len(sequences) != len(duplicates)
+        len(sequences) != len(coord_x_float)
+        or len(sequences) != len(coord_y_float)
+        or len(sequences) != len(duplicates_int)
     ):
         return {"status": "error"}
 
@@ -163,7 +120,7 @@ async def upload_vae(
     result = _validate_pHMM_model(BytesIO(model))
     if result["status"] == "error":
         return result
-    motif_length = result["motif_len"]
+    motif_length: int = result["data"]["motif_len"]
 
     # Get random region of sequences
     random_regions: List[str] = []
@@ -215,10 +172,10 @@ async def upload_vae(
     seq_df = pd.DataFrame(
         {
             "Sequence": sequences,
-            "Duplicates": duplicates,
+            "Duplicates": duplicates_int,
             "Without_Adapters": random_regions,
-            "coord_x": coord_x,
-            "coord_y": coord_y,
+            "coord_x": coord_x_float,
+            "coord_y": coord_y_float,
         }
     )
     print(seq_df.head(5))
@@ -227,10 +184,10 @@ async def upload_vae(
     data_df = pd.DataFrame(
         {
             "Sequence": sequences,
-            "Duplicates": duplicates,
+            "Duplicates": duplicates_int,
             "Without_Adapters": random_regions,
-            "coord_x": coord_x,
-            "coord_y": coord_y,
+            "coord_x": coord_x_float,
+            "coord_y": coord_y_float,
         }
     )
     print(data_df.head(5))
