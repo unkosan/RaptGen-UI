@@ -62,16 +62,23 @@ def batch_encode(self: Task, seqs: List[str], state_dict_pkl: bytes):
         },
     )
     coord_list = []
-    for i, seq in enumerate(seqs):
-        time.sleep(0.01)
-        arr = embed_sequences([seq], model)[0]
-        coord_list.append(arr)
+
+    count: int = 0
+    chunk_size = len(seqs) // 100
+
+    while count < len(seqs):
+        chunk = seqs[count: count+chunk_size]
+        arr = embed_sequences(chunk, model)
+        coord_list = coord_list + list(arr)
         self.update_state(
             state="PROGRESS",
             meta={
-                "current": i,
+                "current": count+chunk_size,
                 "total": len(seqs),
                 "result": np.array([[]]),
             },
         )
+
+        count = count+chunk_size
+
     return np.array(coord_list)
