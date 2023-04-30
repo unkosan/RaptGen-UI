@@ -15,7 +15,7 @@ const SubmitButtons: React.FC<Props> = (props) => {
   const dispatch = useDispatch();
 
   const vaeConfig = useSelector((state: RootState) => state.vaeConfig);
-  const vaeData = useSelector((staete: RootState) => staete.vaeData);
+  const vaeData = useSelector((state: RootState) => state.vaeData);
 
   const handleBack = () => {
     dispatch({

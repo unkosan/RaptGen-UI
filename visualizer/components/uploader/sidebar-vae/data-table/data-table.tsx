@@ -7,7 +7,7 @@ const DataTable: React.FC = () => {
     (state: RootState) => state.vaeConfig.sequenceData
   );
   return (
-    <div style={{ height: "200px", overflowY: "auto" }}>
+    <div style={{ height: "200px", overflowY: "auto", marginBottom: "1em" }}>
       <Table striped bordered hover size="sm">
         <thead>
           <tr>
