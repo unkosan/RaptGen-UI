@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Form, InputGroup } from "react-bootstrap";
-import { useDispatch } from "react-redux";
+import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
 import { RootState } from "../../redux/store";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -13,6 +12,8 @@ type Props = {
 };
 
 const FormTargetLength: React.FC<Props> = (props) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const sequences = useSelector(
     (state: RootState) => state.vaeConfig.sequenceData.sequences
   );
@@ -23,21 +24,27 @@ const FormTargetLength: React.FC<Props> = (props) => {
     props.setValue(value);
   };
 
-  const handleEstimate = () => {
-    (async () => {
-      const res = await axios
-        .post("/upload/estimate-target-length", {
-          sequences: sequences,
-        })
-        .then((res) => res.data);
+  const handleEstimate = () => setIsLoading(true);
 
-      if (res.status === "success") {
-        const value: number = res.data["target_length"];
-        props.setValue(value);
-        props.setIsValid(true);
-      }
-    })();
-  };
+  useEffect(() => {
+    if (isLoading) {
+      (async () => {
+        const res = await axios
+          .post("/upload/estimate-target-length", {
+            sequences: sequences,
+          })
+          .then((res) => res.data);
+
+        if (res.status === "success") {
+          const value: number = res.data["target_length"];
+          props.setValue(value);
+          props.setIsValid(true);
+        }
+      })().then(() => {
+        setIsLoading(false);
+      });
+    }
+  }, [isLoading]);
 
   return (
     <InputGroup>
@@ -48,8 +55,12 @@ const FormTargetLength: React.FC<Props> = (props) => {
         placeholder="Please enter the target length"
         isInvalid={!props.isValid}
       />
-      <Button variant="outline-primary" onClick={handleEstimate}>
-        Estimate
+      <Button
+        variant="outline-primary"
+        disabled={isLoading}
+        onClick={handleEstimate}
+      >
+        {isLoading ? <Spinner size="sm" /> : "Estimate"}
       </Button>
     </InputGroup>
   );
