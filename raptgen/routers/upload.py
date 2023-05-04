@@ -59,6 +59,7 @@ async def estimate_forward_reverse_adapters(
         "data": {"forward_adapter": adapters[0], "reverse_adapter": adapters[1]},
     }
 
+
 @router.post("/api/upload/upload-vae")
 async def upload_vae(
     model: bytes = File(...),
@@ -88,22 +89,22 @@ async def upload_vae(
     # split list
     if len(sequences) == 1:
         sequences = [seq.strip() for seq in sequences[0].split(",")]
-    
+
     # List[int] = Form() does not work. receive as List[str] instead.
     # https://github.com/tiangolo/fastapi/issues/3532
     if len(coord_x) == 1:
-        coord_x_float = [float(string) for string in str(coord_x[0]).split(',')]
+        coord_x_float = [float(string) for string in str(coord_x[0]).split(",")]
     else:
         coord_x_float = [float(coord_x[0])]
     if len(coord_y) == 1:
-        coord_y_float = [float(string) for string in str(coord_y[0]).split(',')]
+        coord_y_float = [float(string) for string in str(coord_y[0]).split(",")]
     else:
         coord_y_float = [float(coord_y[0])]
     if len(duplicates) == 1:
-        duplicates_int = [int(string) for string in str(duplicates[0]).split(',')]
+        duplicates_int = [int(string) for string in str(duplicates[0]).split(",")]
     else:
         duplicates_int = [int(duplicates[0])]
-    
+
     # Check for valid inputs
     if len(sequences) == 0:
         return {"status": "error"}
