@@ -3,7 +3,7 @@ name: Deploy FastAPI redoc to GitHub Pages
 on:
   push:
     branches:
-      - github-workflow
+      - epic/github-workflow
   workflow_dispatch:
 
 jobs:
