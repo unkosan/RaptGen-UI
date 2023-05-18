@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - epic/github-workflow
+      - dev
   workflow_dispatch:
 
 jobs:
-  micromamba:
+  build-docs:
     name: Create Redoc from FastAPI
     runs-on: ubuntu-latest
 
@@ -47,7 +48,7 @@ jobs:
           path: ./out
 
   deploy:
-    needs: micromamba
+    needs: build-docs
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment:
