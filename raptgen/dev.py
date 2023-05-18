@@ -27,6 +27,10 @@ app.include_router(test.router)
 app.include_router(upload.router)
 
 
+def print_spec() -> None:
+    print(app.openapi())
+
+
 @app.get("/api/")
 async def root():
     return {"message": "OK"}
