@@ -27,8 +27,8 @@ app.include_router(test.router)
 app.include_router(upload.router)
 
 
-def print_spec() -> None:
-    print(app.openapi())
+def print_spec() -> str:
+    return str(app.openapi())
 
 
 @app.get("/api/")
