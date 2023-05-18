@@ -19,9 +19,11 @@ jobs:
       - name: Build docker image
         uses: docker/build-push-action@v4
         with:
-          file: raptgen/Dockerfile
+          file: Dockerfile
           tags: fastapi-image
           push: false
+
+      - run: cd ..
 
       - name: Build OpenAPI spec
         uses: addnab/docker-run-action@v3
@@ -30,8 +32,6 @@ jobs:
           options: -v ${{ github.workspace }}:/app
           run: |
             python -c "from raptgen.dev import print_spec; print_spec()" > openapi_spec.json
-
-      - run: cd ..
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
