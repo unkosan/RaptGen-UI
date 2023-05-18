@@ -42,7 +42,7 @@ jobs:
       - name: Build ReDoc HTML
         run: |
           yarn add redoc-cli
-          npx @redocly/cli build-docs openapi_spec.json
+          npx @redocly/cli build-docs raptgen/openapi_spec.json
           mkdir out
           mv redoc-static.html out/index.html
 
