@@ -1,0 +1,64 @@
+name: Deploy FastAPI redoc to GitHub Pages
+
+on:
+  push:
+    branches:
+      - github-workflow
+  workflow_dispatch:
+
+jobs:
+  micromamba:
+    name: Create Redoc from FastAPI
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          environment-file: environment.yml
+          environment-name: deploy-env
+
+      - name: Test mamba
+        shell: bash -l {0}
+        run: |
+          micromamba env list
+          micromamba list
+
+      - name: Build OpenAPI spec
+        shell: bash -l {0}
+        run: |
+          python -c "from backend.dev import print_spec; print_spec()" > openapi_spec.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Build ReDoc HTML
+        run: |
+          yarn add redoc-cli
+          npx @redocly/cli build-docs openapi_spec.json
+          mkdir out
+          mv redoc-static.html out/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./out
+
+  deploy:
+    needs: micromamba
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
