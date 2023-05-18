@@ -25,9 +25,9 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: fastapi-image
-          options: -v ${{ github.workspace }}:/app
+          options: -v ${{ github.workspace }}/raptgen:/app
           run: |
-            python -c "from raptgen.dev import print_spec; print_spec()" > openapi_spec.json
+            python -c "from dev import print_spec; print_spec()" > openapi_spec.json
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
