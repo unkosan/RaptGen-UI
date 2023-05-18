@@ -17,8 +17,7 @@ jobs:
       - name: Build docker image
         uses: docker/build-push-action@v4
         with:
-          context: raptgen
-          file: Dockerfile
+          context: ./raptgen
           tags: fastapi-image
           push: false
 
