@@ -14,22 +14,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install Conda environment with Micromamba
-        uses: mamba-org/provision-with-micromamba@main
+      - name: Build docker image
+        uses: docker/build-push-action@v4
         with:
-          environment-file: raptgen/environment.yml
-          environment-name: deploy-env
-
-      - name: Test mamba
-        shell: bash -l {0}
-        run: |
-          micromamba env list
-          micromamba list
+          file: raptgen/Dockerfile
+          tags: fastapi-image
+          push: false
 
       - name: Build OpenAPI spec
-        shell: bash -l {0}
-        run: |
-          python -c "from raptgen.dev import print_spec; print_spec()" > openapi_spec.json
+        uses: addnab/docker-run-action@v3
+        with:
+          image: fastapi-image
+          options: -v ${{ github.workspace }}/raptgen:/app
+          run: |
+            python -c "from raptgen.dev import print_spec; print_spec()" > openapi_spec.json
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
