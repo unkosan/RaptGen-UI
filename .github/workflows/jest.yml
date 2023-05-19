@@ -1,0 +1,24 @@
+name: Jest Workflow
+
+on:
+  push:
+    branches: [front/*, dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+      - name: yarn install, build, and test
+        run: |
+          cd ./visualizer
+          yarn install --frozen-lockfile
+          yarn build
+          yarn test

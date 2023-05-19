@@ -1,0 +1,63 @@
+name: Deploy FastAPI redoc to GitHub Pages
+
+on:
+  push:
+    branches:
+      - epic/github-workflow
+      - dev
+  workflow_dispatch:
+
+jobs:
+  build-docs:
+    name: Create Redoc from FastAPI
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./raptgen
+          tags: fastapi-image
+          push: false
+
+      - name: Build OpenAPI spec
+        uses: addnab/docker-run-action@v3
+        with:
+          image: fastapi-image
+          options: -v ${{ github.workspace }}/raptgen:/app
+          run: |
+            python -c "from dev import print_spec; from pathlib import Path; Path('openapi_spec.json').write_text(print_spec())"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Build ReDoc HTML
+        run: |
+          yarn add redoc-cli
+          npx @redocly/cli build-docs raptgen/openapi_spec.json
+          mkdir out
+          mv redoc-static.html out/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./out
+
+  deploy:
+    needs: build-docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
