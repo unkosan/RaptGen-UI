@@ -23,7 +23,7 @@ Docker version 20.10.21, build baeda1f
    ```shell
    $ docker-compose -f docker-compose.prod.yml up -d
    ```
-3. Please wait before all the containers are ready. This may take minutes.
+3. Please wait before all the containers are ready. This may take minutes. Even if Docker says all the containers are ready, it may take some extra time for the `frontend` container to be working.
 4. Access http://localhost:3000 with your favourite internet browser.
 
 ## Usage
