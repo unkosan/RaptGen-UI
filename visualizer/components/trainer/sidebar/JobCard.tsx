@@ -57,11 +57,16 @@ const JobCard: React.FC<Props> = (props) => {
               <Card.Title>Model No.{props.multiple.currentIndex}</Card.Title>
               <div className="text-muted">Running for {props.duration} sec</div>
             </div>
-            <div>
-              epoch {props.currentEpoch} / {props.totalEpoch}
+            <div className="d-flex justify-content-between">
+              <ProgressBar
+                className="flex-grow-1 align-self-center"
+                now={(props.currentEpoch / props.totalEpoch) * 100}
+              />
+              <div>
+                &nbsp; epoch {props.currentEpoch} / {props.totalEpoch}
+              </div>
             </div>
           </Card.Body>
-          <ProgressBar now={(props.currentEpoch / props.totalEpoch) * 100} />
         </Card>
         iteration {props.multiple.currentIndex} / {props.multiple.reiteration}
       </>
