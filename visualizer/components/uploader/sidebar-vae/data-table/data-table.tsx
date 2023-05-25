@@ -47,37 +47,8 @@ const DataTable: React.FC = () => {
         onCopyActiveRowChange={onCopyActiveRowChange}
         rowStyle={{
           fontFamily: "monospace",
-          wrap: "break-word",
         }}
       />
-    </div>
-  );
-};
-
-const DataTable2: React.FC = () => {
-  const sequenceData = useSelector(
-    (state: RootState) => state.vaeConfig.sequenceData
-  );
-  return (
-    <div style={{ height: "200px", overflowY: "auto" }}>
-      <Table striped bordered hover size="sm">
-        <thead>
-          <tr>
-            <th>Trimmed Sequences</th>
-            <th>Duplicates</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sequenceData.randomRegions.map((seq, i) => {
-            return seq ? (
-              <tr key={i}>
-                <td className="font-monospace text-break">{seq}</td>
-                <td>{sequenceData.duplicates[i]}</td>
-              </tr>
-            ) : null;
-          })}
-        </tbody>
-      </Table>
     </div>
   );
 };
