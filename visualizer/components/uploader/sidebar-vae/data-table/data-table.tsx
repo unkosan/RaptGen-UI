@@ -1,4 +1,3 @@
-import { Table } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
