@@ -185,16 +185,6 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
     valid
       ? {}
       : {
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          background: "white",
-          color: "inherit",
-          alignItems: "center",
-          position: "absolute",
-          justifyContent: "space-between",
-          left: 0,
-          top: 0,
           borderColor: "rgba(255, 0, 0, 0.5)",
           boxShadow: "0 0 0 2px rgba(255, 0, 0, 0.2)",
         }
