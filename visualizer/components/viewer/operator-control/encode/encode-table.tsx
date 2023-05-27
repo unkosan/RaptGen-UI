@@ -178,7 +178,9 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
         value={value}
         onChange={onChange}
         style={{
-          flex: 1,
+          width: 0,
+          flexShrink: 1,
+          flexGrow: 1,
           border: "none",
           background: "transparent",
           color: "inherit",
@@ -344,7 +346,7 @@ const columns = [
     name: "action",
     header: "Action",
     width: 100,
-    defaultVisible: true,
+    defaultVisible: false,
     render: (props: ActionsProps) => {
       return <Actions {...props} />;
     },
