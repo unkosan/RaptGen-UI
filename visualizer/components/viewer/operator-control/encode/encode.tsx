@@ -2,6 +2,7 @@ import { Form } from "react-bootstrap";
 import ManualEncodeForm from "./manual-encode-form";
 import FastaUploader from "./fasta-uploader";
 import EncodeTable from "./encode-table";
+import ClientOnly from "../../../common/client-only";
 
 const Encode: React.FC = () => {
   return (

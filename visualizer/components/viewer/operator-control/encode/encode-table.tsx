@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button, ButtonGroup, Form, Table } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
@@ -12,190 +12,269 @@ import {
   Check2,
   X,
   Eraser,
+  PersonCheckFill,
+  Trash,
 } from "react-bootstrap-icons";
+import ClientOnly from "../../../common/client-only";
 
-type RecordProps = {
-  record: EncodeDataEntry;
+import ReactDataGrid from "@inovua/reactdatagrid-community";
+import "@inovua/reactdatagrid-community/index.css";
+
+type SequenceEditorProps = {
+  value: string;
+  onComplete: () => void;
+  onCancel: () => void;
+  onChange: (value: string) => void;
+  onKeyDown: (e: React.KeyboardEvent) => void;
+  cellProps: any;
 };
 
-const Record: React.FC<RecordProps> = React.memo<RecordProps>(function _Record(
-  props
-) {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [seqValue, setSeqValue] = useState<string>(props.record.randomRegion);
-  const [idValue, setIdValue] = useState<string>(props.record.id);
-  const [isDirty, setIsDirty] = useState<boolean>(false);
-  const [isValid, setIsValid] = useState<boolean>(true);
+const SequenceEditor: React.FC<SequenceEditorProps> = (props) => {
+  const [value, setValue] = useState(props.value);
+  const [valid, setValid] = useState(true);
 
-  const dispatch = useDispatch();
   const encodeData = useSelector((state: RootState) => state.encodeData);
-
   const sessionId = useSelector(
     (state: RootState) => state.sessionConfig.sessionId
   );
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    const idValid = idValue.length > 0;
-    const seqValid = /^[ACGTUacgtu]+$/.test(seqValue);
-    setIsValid(idValid && seqValid);
-  }, [idValue, seqValue]);
-
-  const onChangeShow = () => {
-    // dispatch action to change show status
-    const idx = encodeData.findIndex((e) => e.key === props.record.key);
-    let newEncodeData = [...encodeData];
-    let newRecord: EncodeDataEntry = { ...props.record };
-    newRecord.isShown = !newRecord.isShown;
-    newEncodeData[idx] = newRecord;
-    dispatch({
-      type: "encodeData/set",
-      payload: newEncodeData,
-    });
+  const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const value = e.target.value.toUpperCase().replaceAll("T", "U");
+    setValue(value);
+    setValid(/^[ATGCU]+$/.test(value));
   };
 
-  const onEdit = () => {
-    setIsEditing(true);
-  };
+  const style = Object.assign(
+    {
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      background: "white",
+      color: "inherit",
+      alignItems: "center",
+      position: "absolute",
+      justifyContent: "space-between",
+      left: 0,
+      top: 0,
+    },
+    valid
+      ? {}
+      : {
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          background: "white",
+          color: "inherit",
+          alignItems: "center",
+          position: "absolute",
+          justifyContent: "space-between",
+          left: 0,
+          top: 0,
+          borderColor: "rgba(255, 0, 0, 0.5)",
+          boxShadow: "0 0 0 2px rgba(255, 0, 0, 0.2)",
+        }
+  ) as React.CSSProperties;
 
-  const onRemove = () => {
-    // dispatch action to remove record
-    const idx = encodeData.findIndex((e) => e.key === props.record.key);
-    let newEncodeData = [...encodeData];
-    newEncodeData.splice(idx, 1);
-    dispatch({
-      type: "encodeData/set",
-      payload: newEncodeData,
-    });
-  };
-
-  const onEditCancel = () => {
-    setSeqValue(props.record.randomRegion);
-    setIdValue(props.record.id);
-    setIsEditing(false);
-  };
-
-  const onEditSave = async () => {
-    if (isValid && isDirty) {
-      // dispatch action to update record
-      const idx = encodeData.findIndex((e) => e.key === props.record.key);
-      let newEncodeData = [...encodeData];
-      let newRecord: EncodeDataEntry = { ...props.record };
-      newRecord.id = idValue;
-      newRecord.randomRegion = seqValue;
-      if (seqValue !== props.record.randomRegion) {
-        const res = await axios
-          .post("/session/encode", {
-            session_id: sessionId,
-            sequences: [seqValue],
-          })
-          .then((res) => res.data);
-        const { coord_x, coord_y } = res.data[0];
-        newRecord.coordX = coord_x;
-        newRecord.coordY = coord_y;
-      }
-      newEncodeData[idx] = newRecord;
-      dispatch({
-        type: "encodeData/set",
-        payload: newEncodeData,
-      });
-      setIsEditing(false);
-    }
-  };
-
-  const onIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIdValue(e.target.value);
-    setIsDirty(true);
-  };
-
-  const onSeqChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSeqValue(e.target.value);
-    setIsDirty(true);
-  };
-
-  if (isEditing) {
-    return (
-      <tr key={props.record.key}>
-        <td>
-          <Form.Control type="text" value={idValue} onChange={onIdChange} />
-        </td>
-        <td className="font-monospace text-break">
-          <Form.Control type="text" value={seqValue} onChange={onSeqChange} />
-        </td>
-        <td>
-          <ButtonGroup>
-            <Button variant="success" onClick={onEditSave} disabled={!isDirty}>
-              <Check2 />
-            </Button>
-            <Button
-              variant="danger"
-              className="px-2 py-1"
-              onClick={onEditCancel}
-            >
-              <X />
-            </Button>
-          </ButtonGroup>
-        </td>
-      </tr>
-    );
-  } else {
-    return (
-      <tr key={props.record.key}>
-        <td>{props.record.id}</td>
-        <td className="font-monospace text-break">
-          {props.record.randomRegion}
-        </td>
-        <td>
-          <ButtonGroup>
-            {props.record.isShown ? (
-              <Button
-                variant="primary"
-                className="px-1 py-0"
-                onClick={onChangeShow}
-              >
-                <Eye />
-              </Button>
-            ) : (
-              <Button
-                variant="outline-primary"
-                className="px-1 py-0"
-                onClick={onChangeShow}
-              >
-                <EyeSlash />
-              </Button>
-            )}
-            <Button variant="success" className="px-1 py-0" onClick={onEdit}>
-              <PencilSquare />
-            </Button>
-            <Button variant="danger" className="px-1 py-0" onClick={onRemove}>
-              <Eraser />
-            </Button>
-          </ButtonGroup>
-        </td>
-      </tr>
-    );
-  }
-});
-
-const EncodeTable: React.FC = React.memo(function _Table() {
-  const encodeData = useSelector((state: RootState) => state.encodeData);
   return (
-    <div style={{ height: "200px", overflowY: "auto" }}>
-      <Table striped bordered hover size="sm">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Sequence</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {encodeData.map((record) => (
-            <Record record={record} key={record.key} />
-          ))}
-        </tbody>
-      </Table>
+    <div
+      style={style}
+      className="inovua-react-toolkit-text-input InovuaReactDataGrid__cell__editor InovuaReactDataGrid__cell__editor--text  inovua-react-toolkit-text-input--ltr inovua-react-toolkit-text-input--theme-default-light inovua-react-toolkit-text-input--enable-clear-button inovua-react-toolkit-text-input--focused"
+    >
+      <input
+        value={value}
+        onChange={onChange}
+        style={{
+          flex: 1,
+          border: "none",
+          background: "transparent",
+          color: "inherit",
+          outline: "none",
+          padding: "0 0.5rem",
+        }}
+      />
+
+      <Check2
+        size={18}
+        style={{
+          cursor: "pointer",
+          marginInline: "0.2rem",
+          color: valid ? "grey" : "lightgrey",
+        }}
+        onClick={
+          valid
+            ? async () => {
+                const res = await axios
+                  .post("/session/encode", {
+                    session_id: sessionId,
+                    sequences: [value],
+                  })
+                  .then((res) => res.data)
+                  .catch((err) => {
+                    console.log(err);
+                    return [];
+                  });
+
+                const key: number = props.cellProps.data.key;
+                const idx = encodeData.findIndex((e) => e.key === key);
+                const newEncodeData = [...encodeData];
+                newEncodeData[idx] = {
+                  ...newEncodeData[idx],
+                  randomRegion: value,
+                  sequence: "",
+                  coordX: res.data[0].coord_x,
+                  coordY: res.data[0].coord_y,
+                };
+
+                dispatch({
+                  type: "encodeData/set",
+                  payload: newEncodeData,
+                });
+
+                console.log(props, props.onChange, value);
+                // props.onChange(value); # onEditChangeValue does not work. fxxx
+                props.onComplete();
+              }
+            : () => {}
+        }
+      />
+      <X
+        size={20}
+        style={{ cursor: "pointer", marginInline: "0.2rem", color: "grey" }}
+        onClick={() => {
+          props.onCancel();
+        }}
+      />
     </div>
   );
-});
+};
+
+type ActionsProps = {
+  data: {
+    key: number;
+    id: string;
+    randomRegion: string;
+  };
+};
+
+const Actions: React.FC<ActionsProps> = (props) => {
+  const { data } = props;
+  const key = data.key;
+  const dispatch = useDispatch();
+  const encodeData = useSelector((state: RootState) => state.encodeData);
+  const [showValue, setShowValue] = useState(true);
+
+  const onClickShow = async () => {
+    const idx = encodeData.findIndex((e) => e.key === key);
+    const newEncodeData = [...encodeData];
+    newEncodeData[idx] = {
+      ...newEncodeData[idx],
+      isShown: !showValue,
+    };
+    setShowValue(!showValue);
+
+    dispatch({
+      type: "encodeData/set",
+      payload: newEncodeData,
+    });
+  };
+
+  const onClickDelete = async () => {
+    const idx = encodeData.findIndex((e) => e.key === key);
+    const newEncodeData = [...encodeData];
+    newEncodeData.splice(idx, 1);
+
+    dispatch({
+      type: "encodeData/set",
+      payload: newEncodeData,
+    });
+  };
+
+  const showStyle = {
+    cursor: "pointer",
+    borderRadius: 4,
+    height: "24px",
+    width: "24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: showValue ? "#e8e8e8" : "inherit",
+    background: showValue ? "#7986cb" : "#ffffff",
+    border: "2px solid #7986cb",
+    marginInline: "0.2rem",
+  } as React.CSSProperties;
+
+  const deleteStyle = {
+    cursor: "pointer",
+    borderRadius: 4,
+    height: "24px",
+    width: "24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#ffffff",
+    background: "#ff6347",
+    border: "2px solid #ff6347",
+    marginInline: "0.2rem",
+  } as React.CSSProperties;
+
+  return (
+    <div className="d-flex">
+      <span style={showStyle} onClick={onClickShow}>
+        {showValue ? <Eye size={16} /> : <EyeSlash size={16} />}
+      </span>
+      <span style={deleteStyle} onClick={onClickDelete}>
+        <Trash size={16} />
+      </span>
+    </div>
+  );
+};
+
+const columns = [
+  { name: "key", header: "Key", defaultVisible: false, editable: false },
+  { name: "id", header: "ID" },
+  {
+    name: "randomRegion",
+    header: "Random Region",
+    defaultFlex: 1,
+    renderEditor: (props: SequenceEditorProps) => {
+      return <SequenceEditor {...props} />;
+    },
+  },
+  {
+    name: "action",
+    header: "Action",
+    width: 100,
+    defaultVisible: true,
+    render: (props: ActionsProps) => {
+      return <Actions {...props} />;
+    },
+  },
+];
+
+const EncodeTable: React.FC = () => {
+  const encodeData = useSelector((state: RootState) => state.encodeData);
+  const data = encodeData.map((e) => {
+    return {
+      key: e.key,
+      id: e.id,
+      randomRegion: e.randomRegion,
+    };
+  });
+
+  return (
+    <ReactDataGrid
+      idProperty="key"
+      columns={columns}
+      dataSource={data}
+      editable={true}
+      rowStyle={{ minHeight: 550, fontFamily: "monospace" }}
+      pagination
+      defaultLimit={20}
+      rowHeight={35}
+      style={{ zIndex: 1000 }}
+    />
+  );
+};
 
 export default EncodeTable;

@@ -12,6 +12,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@inovua/reactdatagrid-community": "^5.9.3",
     "@koale/useworker": "^4.0.2",
     "@next/font": "13.1.1",
     "@reduxjs/toolkit": "^1.9.1",
