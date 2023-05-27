@@ -1,26 +1,14 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Button, ButtonGroup, Form, Table } from "react-bootstrap";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { EncodeDataEntry } from "../../redux/encode-data";
 import { RootState } from "../../redux/store";
-import {
-  EyeSlash,
-  Eye,
-  PencilSquare,
-  Check2,
-  X,
-  Eraser,
-  PersonCheckFill,
-  Trash,
-} from "react-bootstrap-icons";
-import ClientOnly from "../../../common/client-only";
+import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
 
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import "@inovua/reactdatagrid-community/index.css";
 
-type SequenceEditorProps = {
+type EditorProps = {
   value: string;
   onComplete: () => void;
   onCancel: () => void;
@@ -29,7 +17,112 @@ type SequenceEditorProps = {
   cellProps: any;
 };
 
-const SequenceEditor: React.FC<SequenceEditorProps> = (props) => {
+const IdEditor: React.FC<EditorProps> = (props) => {
+  const [value, setValue] = useState(props.value);
+  const [valid, setValid] = useState(true);
+
+  const encodeData = useSelector((state: RootState) => state.encodeData);
+  const dispatch = useDispatch();
+
+  const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const value = e.target.value;
+    setValue(value);
+    setValid(value.length > 0);
+  };
+
+  const style = Object.assign(
+    {
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      background: "white",
+      color: "inherit",
+      alignItems: "center",
+      position: "absolute",
+      justifyContent: "space-between",
+      left: 0,
+      top: 0,
+    },
+    valid
+      ? {}
+      : {
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          background: "white",
+          color: "inherit",
+          alignItems: "center",
+          position: "absolute",
+          justifyContent: "space-between",
+          left: 0,
+          top: 0,
+          borderColor: "rgba(255, 0, 0, 0.5)",
+          boxShadow: "0 0 0 2px rgba(255, 0, 0, 0.2)",
+        }
+  ) as React.CSSProperties;
+
+  return (
+    <div
+      style={style}
+      className="inovua-react-toolkit-text-input InovuaReactDataGrid__cell__editor InovuaReactDataGrid__cell__editor--text  inovua-react-toolkit-text-input--ltr inovua-react-toolkit-text-input--theme-default-light inovua-react-toolkit-text-input--enable-clear-button inovua-react-toolkit-text-input--focused"
+    >
+      <input
+        value={value}
+        onChange={onChange}
+        style={{
+          width: 0,
+          flexShrink: 1,
+          flexGrow: 1,
+          border: "none",
+          background: "transparent",
+          color: "inherit",
+          outline: "none",
+          padding: "0 0.5rem",
+        }}
+      />
+
+      <Check2
+        size={18}
+        style={{
+          cursor: "pointer",
+          marginInline: "0.2rem",
+          color: valid ? "grey" : "lightgrey",
+        }}
+        onClick={
+          valid
+            ? async () => {
+                const key: number = props.cellProps.data.key;
+                const idx = encodeData.findIndex((e) => e.key === key);
+                const newEncodeData = [...encodeData];
+                newEncodeData[idx] = {
+                  ...newEncodeData[idx],
+                  id: value,
+                };
+
+                dispatch({
+                  type: "encodeData/set",
+                  payload: newEncodeData,
+                });
+
+                console.log(props, props.onChange, value);
+                // props.onChange(value); # onEditChangeValue does not work. fxxx
+                props.onComplete();
+              }
+            : () => {}
+        }
+      />
+      <X
+        size={20}
+        style={{ cursor: "pointer", marginInline: "0.2rem", color: "grey" }}
+        onClick={() => {
+          props.onCancel();
+        }}
+      />
+    </div>
+  );
+};
+
+const SequenceEditor: React.FC<EditorProps> = (props) => {
   const [value, setValue] = useState(props.value);
   const [valid, setValid] = useState(true);
 
@@ -232,12 +325,18 @@ const Actions: React.FC<ActionsProps> = (props) => {
 
 const columns = [
   { name: "key", header: "Key", defaultVisible: false, editable: false },
-  { name: "id", header: "ID" },
+  {
+    name: "id",
+    header: "ID",
+    renderEditor: (props: EditorProps) => {
+      return <IdEditor {...props} />;
+    },
+  },
   {
     name: "randomRegion",
     header: "Random Region",
     defaultFlex: 1,
-    renderEditor: (props: SequenceEditorProps) => {
+    renderEditor: (props: EditorProps) => {
       return <SequenceEditor {...props} />;
     },
   },
