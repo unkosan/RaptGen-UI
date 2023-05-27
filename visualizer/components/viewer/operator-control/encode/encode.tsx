@@ -13,7 +13,9 @@ const Encode: React.FC = () => {
         <Form.Label>Encode FastaFile</Form.Label>
         <FastaUploader />
         <Form.Label>Sequence List</Form.Label>
-        <EncodeTable />
+        <ClientOnly>
+          <EncodeTable />
+        </ClientOnly>
       </Form.Group>
     </Form>
   );

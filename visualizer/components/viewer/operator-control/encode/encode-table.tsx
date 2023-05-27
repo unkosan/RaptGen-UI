@@ -322,31 +322,31 @@ const Actions: React.FC<ActionsProps> = (props) => {
 };
 
 const columns = [
-  { name: "key", header: "Key", defaultVisible: true, editable: false },
-  // {
-  //   name: "id",
-  //   header: "ID",
-  //   renderEditor: (props: EditorProps) => {
-  //     return <IdEditor {...props} />;
-  //   },
-  // },
-  // {
-  //   name: "randomRegion",
-  //   header: "Random Region",
-  //   defaultFlex: 1,
-  //   renderEditor: (props: EditorProps) => {
-  //     return <SequenceEditor {...props} />;
-  //   },
-  // },
-  // {
-  //   name: "action",
-  //   header: "Action",
-  //   width: 100,
-  //   defaultVisible: false,
-  //   render: (props: ActionsProps) => {
-  //     return <Actions {...props} />;
-  //   },
-  // },
+  { name: "key", header: "Key", defaultVisible: false, editable: false },
+  {
+    name: "id",
+    header: "ID",
+    renderEditor: (props: EditorProps) => {
+      return <IdEditor {...props} />;
+    },
+  },
+  {
+    name: "randomRegion",
+    header: "Random Region",
+    defaultFlex: 1,
+    renderEditor: (props: EditorProps) => {
+      return <SequenceEditor {...props} />;
+    },
+  },
+  {
+    name: "action",
+    header: "Action",
+    width: 100,
+    defaultVisible: false,
+    render: (props: ActionsProps) => {
+      return <Actions {...props} />;
+    },
+  },
 ];
 
 const EncodeTable: React.FC = () => {
@@ -360,20 +360,19 @@ const EncodeTable: React.FC = () => {
   });
 
   return (
-    <ReactDataGrid
-      idProperty="key"
-      columns={columns}
-      dataSource={[
-        { key: 1, id: "id1", randomRegion: "randomRegion1" },
-        { key: 2, id: "id2", randomRegion: "randomRegion2" },
-      ]} // dataSource={data}
-      // editable={true}
-      // rowStyle={{ minHeight: 550, fontFamily: "monospace" }}
-      // pagination
-      // defaultLimit={20}
-      // rowHeight={35}
-      // style={{ zIndex: 1000 }}
-    />
+    <div style={{ height: "400px" }}>
+      <ReactDataGrid
+        idProperty="key"
+        columns={columns}
+        dataSource={data}
+        editable={true}
+        rowStyle={{ minHeight: 550, fontFamily: "monospace" }}
+        pagination
+        defaultLimit={20}
+        minRowHeight={35}
+        style={{ zIndex: 1000, height: "100%" }}
+      />
+    </div>
   );
 };
 
