@@ -7,6 +7,7 @@ import axios from "axios";
 import { cloneDeep, groupBy, zip } from "lodash";
 
 import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
+import { useDispatch } from "react-redux";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -84,6 +85,8 @@ const LatentGraph: React.FC = () => {
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
 
   const layout = returnLayout(graphConfig.vaeName);
+
+  const dispatch = useDispatch();
 
   // VAE data //
   const vaeDataPlot: Partial<PlotData> = useMemo(() => {
@@ -310,6 +313,23 @@ const LatentGraph: React.FC = () => {
     return gmmDataPlot;
   }, [graphConfig.showGmm, gmmData]);
 
+  const handleSelected = (eventData: any) => {
+    const points = eventData.points;
+    const selectedData = points.map((point: any) => {
+      return {
+        key: point.pointIndex,
+        uid: point.fullData.uid,
+        hue: point.fullData.name,
+        x: point.x,
+        y: point.y,
+      };
+    });
+    dispatch({
+      type: "graphData/set",
+      payload: selectedData,
+    });
+  };
+
   return (
     <Plot
       data={[
@@ -321,7 +341,8 @@ const LatentGraph: React.FC = () => {
       ]}
       layout={layout}
       useResizeHandler={true}
-      style={{ width: "100%", height: "100%" }}
+      style={{ width: "100%" }}
+      onSelected={handleSelected}
     />
   );
 };
