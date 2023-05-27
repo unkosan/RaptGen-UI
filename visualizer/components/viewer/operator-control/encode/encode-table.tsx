@@ -349,6 +349,8 @@ const columns = [
   },
 ];
 
+const gridStyle = { minHeight: 400, width: "100%", zIndex: 1000 };
+
 const EncodeTable: React.FC = () => {
   const encodeData = useSelector((state: RootState) => state.encodeData);
   const data = encodeData.map((e) => {
@@ -360,19 +362,18 @@ const EncodeTable: React.FC = () => {
   });
 
   return (
-    <div style={{ height: "400px" }}>
-      <ReactDataGrid
-        idProperty="key"
-        columns={columns}
-        dataSource={data}
-        editable={true}
-        rowStyle={{ minHeight: 550, fontFamily: "monospace" }}
-        pagination
-        defaultLimit={20}
-        minRowHeight={35}
-        style={{ zIndex: 1000, height: "100%" }}
-      />
-    </div>
+    <ReactDataGrid
+      idProperty="key"
+      columns={columns}
+      dataSource={data}
+      editable={true}
+      rowStyle={{ fontFamily: "monospace" }}
+      pagination
+      defaultLimit={20}
+      rowHeight={35}
+      // style={{ zIndex: 1000, height: "100%" }}
+      style={gridStyle}
+    />
   );
 };
 
