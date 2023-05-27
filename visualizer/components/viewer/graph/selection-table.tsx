@@ -4,42 +4,15 @@ import NumberFilter from "@inovua/reactdatagrid-community/NumberFilter";
 import SelectFilter from "@inovua/reactdatagrid-community/SelectFilter";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { groupBy } from "lodash";
-
-const columns = [
-  { name: "index", header: "Index", defaultVisible: false },
-  {
-    name: "hue",
-    header: "Hue",
-    filterEditor: SelectFilter,
-    filterEditorProps: {
-      placeholder: "All",
-      dataSource: "SELEX,Encoded Data,Decoded Data,Measured Data".split(","),
-    },
-  },
-  { name: "id", header: "ID", defaultVisible: false },
-  {
-    name: "coordX",
-    header: "Coord X",
-    type: "number",
-    filterEditor: NumberFilter,
-  },
-  {
-    name: "coordY",
-    header: "Coord Y",
-    type: "number",
-    filterEditor: NumberFilter,
-  },
-  { name: "randomRegion", header: "Random Region", defaultFlex: 1 },
-  { name: "duplicates", header: "Duplicates" },
-];
+import { groupBy, uniq } from "lodash";
 
 const filterValue = [
   { name: "hue", operator: "startsWith", type: "string", value: "" },
   { name: "id", operator: "startsWith", type: "string", value: "" },
-  { name: "coordX", operator: "ne", type: "number", value: "" },
-  { name: "coordY", operator: "ne", type: "number", value: "" },
+  { name: "coordX", operator: "ne", type: "number", value: 0 },
+  { name: "coordY", operator: "ne", type: "number", value: 0 },
   { name: "randomRegion", operator: "startsWith", type: "string", value: "" },
+  { name: "duplicates", operator: "gte", type: "number", value: 0 },
 ];
 
 const gridStyle = { minHeight: 550, width: "100%" };
@@ -114,6 +87,36 @@ const SelectionTable: React.FC = () => {
     }
   });
 
+  const columns = [
+    { name: "index", header: "Index", defaultVisible: false },
+    {
+      name: "hue",
+      header: "Hue",
+      filterEditor: SelectFilter,
+      filterEditorProps: {
+        placeholder: "All",
+        dataSource: uniq(data.map((value) => value.hue)).map((value) => {
+          return { id: value, label: value };
+        }),
+      },
+    },
+    { name: "id", header: "ID", defaultVisible: false },
+    {
+      name: "coordX",
+      header: "Coord X",
+      type: "number",
+      filterEditor: NumberFilter,
+    },
+    {
+      name: "coordY",
+      header: "Coord Y",
+      type: "number",
+      filterEditor: NumberFilter,
+    },
+    { name: "randomRegion", header: "Random Region", defaultFlex: 1 },
+    { name: "duplicates", header: "Duplicates" },
+  ];
+
   return (
     <>
       <legend>Selected sequences</legend>
@@ -124,8 +127,9 @@ const SelectionTable: React.FC = () => {
           dataSource={data}
           style={gridStyle}
           filterable
-          filterValue={filterValue}
+          defaultFilterValue={filterValue}
           pagination
+          rowStyle={{ fontFamily: "monospace" }}
         />
       </div>
     </>
