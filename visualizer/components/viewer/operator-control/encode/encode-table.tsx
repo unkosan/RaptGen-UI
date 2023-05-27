@@ -30,112 +30,23 @@ const IdEditor: React.FC<EditorProps> = (props) => {
     setValid(value.length > 0);
   };
 
-  const style = Object.assign(
-    {
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      background: "white",
-      color: "inherit",
-      alignItems: "center",
-      position: "absolute",
-      justifyContent: "space-between",
-      left: 0,
-      top: 0,
-    },
-    valid
-      ? {}
-      : {
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          background: "white",
-          color: "inherit",
-          alignItems: "center",
-          position: "absolute",
-          justifyContent: "space-between",
-          left: 0,
-          top: 0,
-          borderColor: "rgba(255, 0, 0, 0.5)",
-          boxShadow: "0 0 0 2px rgba(255, 0, 0, 0.2)",
-        }
-  ) as React.CSSProperties;
+  const onConfirmClick = async () => {
+    const key: number = props.cellProps.data.key;
+    const idx = encodeData.findIndex((e) => e.key === key);
+    const newEncodeData = [...encodeData];
+    newEncodeData[idx] = {
+      ...newEncodeData[idx],
+      id: value,
+    };
 
-  return (
-    <div
-      style={style}
-      className="inovua-react-toolkit-text-input InovuaReactDataGrid__cell__editor InovuaReactDataGrid__cell__editor--text  inovua-react-toolkit-text-input--ltr inovua-react-toolkit-text-input--theme-default-light inovua-react-toolkit-text-input--enable-clear-button inovua-react-toolkit-text-input--focused"
-    >
-      <input
-        value={value}
-        onChange={onChange}
-        style={{
-          width: 0,
-          flexShrink: 1,
-          flexGrow: 1,
-          border: "none",
-          background: "transparent",
-          color: "inherit",
-          outline: "none",
-          padding: "0 0.5rem",
-        }}
-      />
+    dispatch({
+      type: "encodeData/set",
+      payload: newEncodeData,
+    });
 
-      <Check2
-        size={18}
-        style={{
-          cursor: "pointer",
-          marginInline: "0.2rem",
-          color: valid ? "grey" : "lightgrey",
-        }}
-        onClick={
-          valid
-            ? async () => {
-                const key: number = props.cellProps.data.key;
-                const idx = encodeData.findIndex((e) => e.key === key);
-                const newEncodeData = [...encodeData];
-                newEncodeData[idx] = {
-                  ...newEncodeData[idx],
-                  id: value,
-                };
-
-                dispatch({
-                  type: "encodeData/set",
-                  payload: newEncodeData,
-                });
-
-                console.log(props, props.onChange, value);
-                // props.onChange(value); # onEditChangeValue does not work. fxxx
-                props.onComplete();
-              }
-            : () => {}
-        }
-      />
-      <X
-        size={20}
-        style={{ cursor: "pointer", marginInline: "0.2rem", color: "grey" }}
-        onClick={() => {
-          props.onCancel();
-        }}
-      />
-    </div>
-  );
-};
-
-const SequenceEditor: React.FC<EditorProps> = (props) => {
-  const [value, setValue] = useState(props.value);
-  const [valid, setValid] = useState(true);
-
-  const encodeData = useSelector((state: RootState) => state.encodeData);
-  const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig.sessionId
-  );
-  const dispatch = useDispatch();
-
-  const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    const value = e.target.value.toUpperCase().replaceAll("T", "U");
-    setValue(value);
-    setValid(/^[ATGCU]+$/.test(value));
+    console.log(props, props.onChange, value);
+    // props.onChange(value); # onEditChangeValue does not work. fxxx
+    props.onComplete();
   };
 
   const style = Object.assign(
@@ -196,42 +107,127 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
           marginInline: "0.2rem",
           color: valid ? "grey" : "lightgrey",
         }}
-        onClick={
-          valid
-            ? async () => {
-                const res = await axios
-                  .post("/session/encode", {
-                    session_id: sessionId,
-                    sequences: [value],
-                  })
-                  .then((res) => res.data)
-                  .catch((err) => {
-                    console.log(err);
-                    return [];
-                  });
+        onClick={valid ? onConfirmClick : () => {}}
+      />
+      <X
+        size={20}
+        style={{ cursor: "pointer", marginInline: "0.2rem", color: "grey" }}
+        onClick={() => {
+          props.onCancel();
+        }}
+      />
+    </div>
+  );
+};
 
-                const key: number = props.cellProps.data.key;
-                const idx = encodeData.findIndex((e) => e.key === key);
-                const newEncodeData = [...encodeData];
-                newEncodeData[idx] = {
-                  ...newEncodeData[idx],
-                  randomRegion: value,
-                  sequence: "",
-                  coordX: res.data[0].coord_x,
-                  coordY: res.data[0].coord_y,
-                };
+const SequenceEditor: React.FC<EditorProps> = (props) => {
+  const [value, setValue] = useState(props.value);
+  const [valid, setValid] = useState(true);
 
-                dispatch({
-                  type: "encodeData/set",
-                  payload: newEncodeData,
-                });
+  const encodeData = useSelector((state: RootState) => state.encodeData);
+  const sessionId = useSelector(
+    (state: RootState) => state.sessionConfig.sessionId
+  );
+  const dispatch = useDispatch();
 
-                console.log(props, props.onChange, value);
-                // props.onChange(value); # onEditChangeValue does not work. fxxx
-                props.onComplete();
-              }
-            : () => {}
+  const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const value = e.target.value.toUpperCase().replaceAll("T", "U");
+    setValue(value);
+    setValid(/^[ATGCU]+$/.test(value));
+  };
+
+  const onConfirmClick = async () => {
+    const res = await axios
+      .post("/session/encode", {
+        session_id: sessionId,
+        sequences: [value],
+      })
+      .then((res) => res.data)
+      .catch((err) => {
+        console.log(err);
+        return [];
+      });
+
+    const key: number = props.cellProps.data.key;
+    const idx = encodeData.findIndex((e) => e.key === key);
+    const newEncodeData = [...encodeData];
+    newEncodeData[idx] = {
+      ...newEncodeData[idx],
+      randomRegion: value,
+      sequence: "",
+      coordX: res.data[0].coord_x,
+      coordY: res.data[0].coord_y,
+    };
+
+    dispatch({
+      type: "encodeData/set",
+      payload: newEncodeData,
+    });
+
+    console.log(props, props.onChange, value);
+    // props.onChange(value); # onEditChangeValue does not work. fxxx
+    props.onComplete();
+  };
+
+  const style = Object.assign(
+    {
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      background: "white",
+      color: "inherit",
+      alignItems: "center",
+      position: "absolute",
+      justifyContent: "space-between",
+      left: 0,
+      top: 0,
+    },
+    valid
+      ? {}
+      : {
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          background: "white",
+          color: "inherit",
+          alignItems: "center",
+          position: "absolute",
+          justifyContent: "space-between",
+          left: 0,
+          top: 0,
+          borderColor: "rgba(255, 0, 0, 0.5)",
+          boxShadow: "0 0 0 2px rgba(255, 0, 0, 0.2)",
         }
+  ) as React.CSSProperties;
+
+  return (
+    <div
+      style={style}
+      className="inovua-react-toolkit-text-input InovuaReactDataGrid__cell__editor InovuaReactDataGrid__cell__editor--text  inovua-react-toolkit-text-input--ltr inovua-react-toolkit-text-input--theme-default-light inovua-react-toolkit-text-input--enable-clear-button inovua-react-toolkit-text-input--focused"
+    >
+      <input
+        value={value}
+        onChange={onChange}
+        style={{
+          width: 0,
+          flexShrink: 1,
+          flexGrow: 1,
+          border: "none",
+          background: "transparent",
+          color: "inherit",
+          outline: "none",
+          padding: "0 0.5rem",
+        }}
+      />
+
+      <Check2
+        size={18}
+        style={{
+          cursor: "pointer",
+          marginInline: "0.2rem",
+          color: valid ? "grey" : "lightgrey",
+        }}
+        onClick={valid ? onConfirmClick : () => {}}
       />
       <X
         size={20}
@@ -326,31 +322,31 @@ const Actions: React.FC<ActionsProps> = (props) => {
 };
 
 const columns = [
-  { name: "key", header: "Key", defaultVisible: false, editable: false },
-  {
-    name: "id",
-    header: "ID",
-    renderEditor: (props: EditorProps) => {
-      return <IdEditor {...props} />;
-    },
-  },
-  {
-    name: "randomRegion",
-    header: "Random Region",
-    defaultFlex: 1,
-    renderEditor: (props: EditorProps) => {
-      return <SequenceEditor {...props} />;
-    },
-  },
-  {
-    name: "action",
-    header: "Action",
-    width: 100,
-    defaultVisible: false,
-    render: (props: ActionsProps) => {
-      return <Actions {...props} />;
-    },
-  },
+  { name: "key", header: "Key", defaultVisible: true, editable: false },
+  // {
+  //   name: "id",
+  //   header: "ID",
+  //   renderEditor: (props: EditorProps) => {
+  //     return <IdEditor {...props} />;
+  //   },
+  // },
+  // {
+  //   name: "randomRegion",
+  //   header: "Random Region",
+  //   defaultFlex: 1,
+  //   renderEditor: (props: EditorProps) => {
+  //     return <SequenceEditor {...props} />;
+  //   },
+  // },
+  // {
+  //   name: "action",
+  //   header: "Action",
+  //   width: 100,
+  //   defaultVisible: false,
+  //   render: (props: ActionsProps) => {
+  //     return <Actions {...props} />;
+  //   },
+  // },
 ];
 
 const EncodeTable: React.FC = () => {
@@ -367,13 +363,16 @@ const EncodeTable: React.FC = () => {
     <ReactDataGrid
       idProperty="key"
       columns={columns}
-      dataSource={data}
-      editable={true}
-      rowStyle={{ minHeight: 550, fontFamily: "monospace" }}
-      pagination
-      defaultLimit={20}
-      rowHeight={35}
-      style={{ zIndex: 1000 }}
+      dataSource={[
+        { key: 1, id: "id1", randomRegion: "randomRegion1" },
+        { key: 2, id: "id2", randomRegion: "randomRegion2" },
+      ]} // dataSource={data}
+      // editable={true}
+      // rowStyle={{ minHeight: 550, fontFamily: "monospace" }}
+      // pagination
+      // defaultLimit={20}
+      // rowHeight={35}
+      // style={{ zIndex: 1000 }}
     />
   );
 };

@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import { store } from "../components/viewer/redux/store";
 import Head from "next/head";
 import Navigator from "../components/common/navigator";
-import { Col, Container, Row } from "react-bootstrap";
+import { Col, Container, Row, SSRProvider } from "react-bootstrap";
 import LatentGraph from "../components/viewer/graph/latent-graph";
 import axios from "axios";
 import DataControl from "../components/viewer/data-control/data-control";
@@ -53,9 +53,11 @@ const Home: React.FC = () => {
 
 const PageRoot: NextPage = () => {
   return (
-    <Provider store={store}>
-      <Home />
-    </Provider>
+    <SSRProvider>
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    </SSRProvider>
   );
 };
 
