@@ -245,6 +245,7 @@ type ActionsProps = {
     key: number;
     id: string;
     randomRegion: string;
+    isShown: boolean;
   };
 };
 
@@ -253,16 +254,16 @@ const Actions: React.FC<ActionsProps> = (props) => {
   const key = data.key;
   const dispatch = useDispatch();
   const encodeData = useSelector((state: RootState) => state.encodeData);
-  const [showValue, setShowValue] = useState(true);
+
+  console.log("Actions", props, data, encodeData);
 
   const onClickShow = async () => {
     const idx = encodeData.findIndex((e) => e.key === key);
     const newEncodeData = [...encodeData];
     newEncodeData[idx] = {
       ...newEncodeData[idx],
-      isShown: !showValue,
+      isShown: !data.isShown,
     };
-    setShowValue(!showValue);
 
     dispatch({
       type: "encodeData/set",
@@ -289,8 +290,8 @@ const Actions: React.FC<ActionsProps> = (props) => {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: showValue ? "#e8e8e8" : "inherit",
-    background: showValue ? "#7986cb" : "#ffffff",
+    color: data.isShown ? "#e8e8e8" : "inherit",
+    background: data.isShown ? "#7986cb" : "#ffffff",
     border: "2px solid #7986cb",
     marginInline: "0.2rem",
   } as React.CSSProperties;
@@ -312,7 +313,7 @@ const Actions: React.FC<ActionsProps> = (props) => {
   return (
     <div className="d-flex">
       <span style={showStyle} onClick={onClickShow}>
-        {showValue ? <Eye size={16} /> : <EyeSlash size={16} />}
+        {data.isShown ? <Eye size={16} /> : <EyeSlash size={16} />}
       </span>
       <span style={deleteStyle} onClick={onClickDelete}>
         <Trash size={16} />
@@ -343,6 +344,7 @@ const columns = [
     header: "Action",
     width: 100,
     defaultVisible: false,
+    editable: false,
     render: (props: ActionsProps) => {
       return <Actions {...props} />;
     },
@@ -358,6 +360,7 @@ const EncodeTable: React.FC = () => {
       key: e.key,
       id: e.id,
       randomRegion: e.randomRegion,
+      isShown: e.isShown,
     };
   });
 
