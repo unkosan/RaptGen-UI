@@ -4,6 +4,7 @@ import NumberFilter from "@inovua/reactdatagrid-community/NumberFilter";
 import SelectFilter from "@inovua/reactdatagrid-community/SelectFilter";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
+import { groupBy } from "lodash";
 
 const columns = [
   { name: "index", header: "Index", defaultVisible: false },
@@ -45,7 +46,9 @@ const gridStyle = { minHeight: 550, width: "100%" };
 
 const SelectionTable: React.FC = () => {
   const vaeData = useSelector((state: RootState) => state.vaeData);
+  const gmmData = useSelector((state: RootState) => state.gmmData);
   const measuredData = useSelector((state: RootState) => state.measuredData);
+  const pivotMeasured = groupBy(measuredData, (value) => value.seriesName);
   const decodeData = useSelector((state: RootState) => state.decodeData);
   const encodeData = useSelector((state: RootState) => state.encodeData);
 
@@ -85,14 +88,27 @@ const SelectionTable: React.FC = () => {
         randomRegion: decodeEntry.randomRegion,
         duplicates: 1,
       };
+    } else if (/^MoG No.\d+$/.test(value.hue)) {
+      const res = /MoG No.(\d+)/.exec(value.hue);
+      const num = parseInt(res![1]);
+      return {
+        index: index,
+        hue: "MoG centers",
+        id: num,
+        coordX: value.x,
+        coordY: value.y,
+        randomRegion: gmmData.decodedSequences[num],
+        duplicates: 1,
+      };
     } else {
+      const measuredEntry = pivotMeasured[value.hue][value.key];
       return {
         index: index,
         hue: value.hue,
-        id: "measuredData",
+        id: measuredEntry.id,
         coordX: value.x,
         coordY: value.y,
-        randomRegion: "RANDOM",
+        randomRegion: measuredEntry.randomRegion,
         duplicates: 1,
       };
     }
