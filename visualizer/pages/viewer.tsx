@@ -9,6 +9,8 @@ import LatentGraph from "../components/viewer/graph/latent-graph";
 import axios from "axios";
 import DataControl from "../components/viewer/data-control/data-control";
 import OperatorControl from "../components/viewer/operator-control/operator-control";
+import SelectionTable from "../components/viewer/graph/selection-table";
+import ClientOnly from "../components/common/client-only";
 
 axios.defaults.baseURL = "http://localhost:8000/api";
 
@@ -43,6 +45,9 @@ const Home: React.FC = () => {
             </Col>
             <Col>
               <LatentGraph />
+              <ClientOnly>
+                <SelectionTable />
+              </ClientOnly>
             </Col>
           </Row>
         </Container>
