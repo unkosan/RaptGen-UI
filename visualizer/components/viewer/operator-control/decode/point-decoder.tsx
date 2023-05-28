@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { Form, InputGroup } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
+import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 
 const PointDecoder: React.FC = () => {
   const [pointX, setPointX] = useState<number>(0);
@@ -132,7 +133,6 @@ const PointDecoder: React.FC = () => {
             />
           </InputGroup.Text>
           <Form.Control
-            className="w-25"
             type="number"
             step={0.1}
             value={pointX}
