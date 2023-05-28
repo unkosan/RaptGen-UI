@@ -5,6 +5,10 @@ import { RootState } from "../redux/store";
 import { Table } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 
+import ReactDataGrid from "@inovua/reactdatagrid-community";
+import "@inovua/reactdatagrid-community/index.css";
+import ClientOnly from "../../common/client-only";
+
 const VAEParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
     {} as { [keys: string]: string }
@@ -56,23 +60,54 @@ const VAEParamsTable: React.FC = () => {
     })();
   }, [forwardAdapter, reverseAdapter]);
 
+  const gridStyle = {
+    minHeight: 250,
+    width: "100%",
+    zIndex: 1000,
+  };
+
   return (
-    <Table striped bordered hover size="sm">
-      <thead>
-        <tr>
-          <th>Parameter</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        {Object.keys(paramsList).map((key) => (
-          <tr key={key}>
-            <td>{key}</td>
-            <td className="font-monospace text-break">{paramsList[key]}</td>
-          </tr>
-        ))}
-      </tbody>
-    </Table>
+    <ClientOnly>
+      <ReactDataGrid
+        idProperty="id"
+        columns={[
+          {
+            name: "parameter",
+            header: "Parameter",
+            defaultFlex: 1,
+          },
+          {
+            name: "value",
+            header: "Value",
+            defaultFlex: 1,
+          },
+        ]}
+        dataSource={Object.keys(paramsList).map((key) => ({
+          id: key,
+          parameter: key,
+          value: paramsList[key],
+        }))}
+        rowStyle={{ fontFamily: "monospace" }}
+        rowHeight={35}
+        style={gridStyle}
+      />
+    </ClientOnly>
+    // <Table striped bordered hover size="sm">
+    //   <thead>
+    //     <tr>
+    //       <th>Parameter</th>
+    //       <th>Value</th>
+    //     </tr>
+    //   </thead>
+    //   <tbody>
+    //     {Object.keys(paramsList).map((key) => (
+    //       <tr key={key}>
+    //         <td>{key}</td>
+    //         <td className="font-monospace text-break">{paramsList[key]}</td>
+    //       </tr>
+    //     ))}
+    //   </tbody>
+    // </Table>
   );
 };
 
