@@ -13,14 +13,18 @@ type Props = {
 };
 
 const FormTargetLength: React.FC<Props> = (props) => {
+  // raw input value, this may be string or number
+  const [value, setValue] = useState<string>("");
+
   const sequences = useSelector(
     (state: RootState) => state.vaeConfig.sequenceData.sequences
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    props.setIsValid(!isNaN(value) && value > 0);
-    props.setValue(value);
+    setValue(e.target.value);
+    const numValue = parseInt(e.target.value);
+    props.setValue(numValue);
+    props.setIsValid(!isNaN(numValue) && numValue > 0);
   };
 
   const handleEstimate = () => {
@@ -33,6 +37,7 @@ const FormTargetLength: React.FC<Props> = (props) => {
 
       if (res.status === "success") {
         const value: number = res.data["target_length"];
+        setValue(value.toString());
         props.setValue(value);
         props.setIsValid(true);
       }
@@ -42,11 +47,11 @@ const FormTargetLength: React.FC<Props> = (props) => {
   return (
     <InputGroup>
       <Form.Control
-        value={props.value}
+        value={value}
         onChange={handleChange}
         type="number"
         placeholder="Please enter the target length"
-        isInvalid={!props.isValid}
+        isInvalid={!props.isValid && value !== ""}
       />
       <Button variant="outline-primary" onClick={handleEstimate}>
         Estimate
