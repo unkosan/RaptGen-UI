@@ -1,20 +1,11 @@
-import {
-  EyeSlash,
-  Eye,
-  PencilSquare,
-  Eraser,
-  Check2,
-  X,
-  Trash,
-} from "react-bootstrap-icons";
-import { DecodeDataEntry } from "../../redux/decode-data";
+import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import axios from "axios";
-import { Button, ButtonGroup, Form, Table } from "react-bootstrap";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
+import ClientOnly from "../../../common/client-only";
 
 type CoordEditorProps = {
   value: number;
@@ -291,17 +282,19 @@ const DecodeTable: React.FC = () => {
   }));
 
   return (
-    <ReactDataGrid
-      idProperty="key"
-      columns={columns}
-      dataSource={data}
-      editable={true}
-      rowStyle={{ fontFamily: "monospace" }}
-      pagination
-      defaultLimit={20}
-      rowHeight={35}
-      style={gridStyle}
-    />
+    <ClientOnly>
+      <ReactDataGrid
+        idProperty="key"
+        columns={columns}
+        dataSource={data}
+        editable={true}
+        rowStyle={{ fontFamily: "monospace" }}
+        pagination
+        defaultLimit={20}
+        rowHeight={35}
+        style={gridStyle}
+      />
+    </ClientOnly>
   );
 };
 

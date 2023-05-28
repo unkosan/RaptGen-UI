@@ -1,10 +1,10 @@
-import "@inovua/reactdatagrid-community/index.css";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import NumberFilter from "@inovua/reactdatagrid-community/NumberFilter";
 import SelectFilter from "@inovua/reactdatagrid-community/SelectFilter";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { groupBy, uniq } from "lodash";
+import ClientOnly from "../../common/client-only";
 
 const filterValue = [
   { name: "hue", operator: "startsWith", type: "string", value: "" },
@@ -15,7 +15,7 @@ const filterValue = [
   { name: "duplicates", operator: "gte", type: "number", value: 0 },
 ];
 
-const gridStyle = { minHeight: 550, width: "100%" };
+const gridStyle = { minHeight: 550, width: "100%", zIndex: 950 };
 
 const SelectionTable: React.FC = () => {
   const vaeData = useSelector((state: RootState) => state.vaeData);
@@ -120,7 +120,7 @@ const SelectionTable: React.FC = () => {
   return (
     <>
       <legend>Selected sequences</legend>
-      <div style={{ zIndex: 1000 }}>
+      <ClientOnly>
         <ReactDataGrid
           idProperty="index"
           columns={columns}
@@ -131,7 +131,7 @@ const SelectionTable: React.FC = () => {
           pagination
           rowStyle={{ fontFamily: "monospace" }}
         />
-      </div>
+      </ClientOnly>
     </>
   );
 };

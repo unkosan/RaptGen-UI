@@ -2,7 +2,6 @@ import { Form } from "react-bootstrap";
 import PointDecoder from "./point-decoder";
 import ResultViewer from "./result-viewer";
 import DecodeTable from "./decode-table";
-import ClientOnly from "../../../common/client-only";
 
 const Decode: React.FC = () => {
   return (
@@ -13,9 +12,7 @@ const Decode: React.FC = () => {
         <Form.Label>Decoded Sequence</Form.Label>
         <ResultViewer />
         <Form.Label>Sequence List</Form.Label>
-        <ClientOnly>
-          <DecodeTable />
-        </ClientOnly>
+        <DecodeTable />
       </Form.Group>
     </Form>
   );

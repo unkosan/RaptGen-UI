@@ -6,7 +6,7 @@ import { RootState } from "../../redux/store";
 import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
 
 import ReactDataGrid from "@inovua/reactdatagrid-community";
-import "@inovua/reactdatagrid-community/index.css";
+import ClientOnly from "../../../common/client-only";
 
 type EditorProps = {
   value: string;
@@ -355,18 +355,19 @@ const EncodeTable: React.FC = () => {
   });
 
   return (
-    <ReactDataGrid
-      idProperty="key"
-      columns={columns}
-      dataSource={data}
-      editable={true}
-      rowStyle={{ fontFamily: "monospace" }}
-      pagination
-      defaultLimit={20}
-      rowHeight={35}
-      // style={{ zIndex: 1000, height: "100%" }}
-      style={gridStyle}
-    />
+    <ClientOnly>
+      <ReactDataGrid
+        idProperty="key"
+        columns={columns}
+        dataSource={data}
+        editable={true}
+        rowStyle={{ fontFamily: "monospace" }}
+        pagination
+        defaultLimit={20}
+        rowHeight={35}
+        style={gridStyle}
+      />
+    </ClientOnly>
   );
 };
 
