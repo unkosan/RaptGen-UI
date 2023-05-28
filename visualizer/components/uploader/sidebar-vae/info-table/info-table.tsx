@@ -4,7 +4,7 @@ import React from "react";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import ClientOnly from "../../../common/client-only";
 
-const gridStyle = { width: "100%" };
+const gridStyle = { minHeight: 163, width: "100%", zIndex: 1000 };
 
 const columns = [
   { name: "id", type: "number", header: "ID", defaultVisible: false },
@@ -33,7 +33,11 @@ const InfoTable: React.FC = () => {
         idProperty="id"
         columns={columns}
         dataSource={data}
-        rowStyle={gridStyle}
+        style={gridStyle}
+        rowHeight={30}
+        rowStyle={{
+          fontFamily: "monospace",
+        }}
       />
     </ClientOnly>
   );

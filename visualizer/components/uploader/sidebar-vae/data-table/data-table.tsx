@@ -2,7 +2,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import "@inovua/reactdatagrid-community/index.css";
-import { useCallback } from "react";
 import ClientOnly from "../../../common/client-only";
 
 const columns = [
@@ -11,7 +10,7 @@ const columns = [
   { name: "duplicates", header: "Duplicates" },
 ];
 
-const gridStyle = { minHeight: 550, width: "100%" };
+const gridStyle = { minHeight: 450, width: "100%", zIndex: 1000 };
 
 const DataTable: React.FC = () => {
   const sequenceData = useSelector(
@@ -28,30 +27,23 @@ const DataTable: React.FC = () => {
         : null;
     })
     .filter((obj) => obj !== null);
-  const onCopyActiveRowChange = useCallback((row: unknown) => {
-    console.log(row);
-  }, []);
   return (
-    <div style={{ zIndex: 1000 }}>
-      <ClientOnly>
-        <ReactDataGrid
-          idProperty="id"
-          style={gridStyle}
-          columns={columns}
-          dataSource={data}
-          rowHeight={25}
-          pagination
-          defaultLimit={20}
-          enableSelection
-          multiSelect
-          enableClipboard
-          onCopyActiveRowChange={onCopyActiveRowChange}
-          rowStyle={{
-            fontFamily: "monospace",
-          }}
-        />
-      </ClientOnly>
-    </div>
+    <ClientOnly>
+      <ReactDataGrid
+        idProperty="id"
+        style={gridStyle}
+        columns={columns}
+        dataSource={data}
+        rowHeight={25}
+        pagination
+        defaultLimit={20}
+        enableSelection
+        multiSelect
+        rowStyle={{
+          fontFamily: "monospace",
+        }}
+      />
+    </ClientOnly>
   );
 };
 
