@@ -92,22 +92,6 @@ const VAEParamsTable: React.FC = () => {
         style={gridStyle}
       />
     </ClientOnly>
-    // <Table striped bordered hover size="sm">
-    //   <thead>
-    //     <tr>
-    //       <th>Parameter</th>
-    //       <th>Value</th>
-    //     </tr>
-    //   </thead>
-    //   <tbody>
-    //     {Object.keys(paramsList).map((key) => (
-    //       <tr key={key}>
-    //         <td>{key}</td>
-    //         <td className="font-monospace text-break">{paramsList[key]}</td>
-    //       </tr>
-    //     ))}
-    //   </tbody>
-    // </Table>
   );
 };
 
