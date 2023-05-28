@@ -2,6 +2,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import React from "react";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
+import ClientOnly from "../../../common/client-only";
 
 const gridStyle = { width: "100%" };
 
@@ -27,12 +28,14 @@ const InfoTable: React.FC = () => {
   ];
 
   return (
-    <ReactDataGrid
-      idProperty="id"
-      columns={columns}
-      dataSource={data}
-      rowStyle={gridStyle}
-    />
+    <ClientOnly>
+      <ReactDataGrid
+        idProperty="id"
+        columns={columns}
+        dataSource={data}
+        rowStyle={gridStyle}
+      />
+    </ClientOnly>
   );
 };
 

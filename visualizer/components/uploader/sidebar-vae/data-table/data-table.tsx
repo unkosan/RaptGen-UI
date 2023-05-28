@@ -3,6 +3,7 @@ import { RootState } from "../../redux/store";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import "@inovua/reactdatagrid-community/index.css";
 import { useCallback } from "react";
+import ClientOnly from "../../../common/client-only";
 
 const columns = [
   { name: "id", type: "number", header: "ID", defaultVisible: false },
@@ -32,22 +33,24 @@ const DataTable: React.FC = () => {
   }, []);
   return (
     <div style={{ zIndex: 1000 }}>
-      <ReactDataGrid
-        idProperty="id"
-        style={gridStyle}
-        columns={columns}
-        dataSource={data}
-        rowHeight={25}
-        pagination
-        defaultLimit={20}
-        enableSelection
-        multiSelect
-        enableClipboard
-        onCopyActiveRowChange={onCopyActiveRowChange}
-        rowStyle={{
-          fontFamily: "monospace",
-        }}
-      />
+      <ClientOnly>
+        <ReactDataGrid
+          idProperty="id"
+          style={gridStyle}
+          columns={columns}
+          dataSource={data}
+          rowHeight={25}
+          pagination
+          defaultLimit={20}
+          enableSelection
+          multiSelect
+          enableClipboard
+          onCopyActiveRowChange={onCopyActiveRowChange}
+          rowStyle={{
+            fontFamily: "monospace",
+          }}
+        />
+      </ClientOnly>
     </div>
   );
 };
