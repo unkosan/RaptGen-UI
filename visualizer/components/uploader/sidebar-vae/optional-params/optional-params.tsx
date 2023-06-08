@@ -108,8 +108,8 @@ const OptionalParams: React.FC<Props> = (props) => {
     <>
       <TextForm
         label="Date of Upload"
-        placeholder="YYYY-MM-DD"
-        predicate={(value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value)}
+        placeholder="YYYY/MM/DD"
+        predicate={(value: string) => /^\d{4}\/\d{2}\/\d{2}$/.test(value)}
         value={uploadDate}
         setValue={setUploadDate}
         isValid={isValidDate}

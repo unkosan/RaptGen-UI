@@ -61,7 +61,7 @@ const ProcessInfo: React.FC<Props> = (props) => {
             payload: sequences.map((seq, i) => {
               return {
                 key: i,
-                sequences: seq,
+                sequence: seq,
                 randomRegion: randomRegions[i],
                 duplicates: duplicates[i],
                 coordX: coords[i][0],
@@ -99,10 +99,10 @@ const ProcessInfo: React.FC<Props> = (props) => {
       ) : props.finished && !props.isValid ? (
         <Alert variant="danger">Failed to process sequences</Alert>
       ) : (
-        <>
-          <Form.Label>Processing... {progress} %</Form.Label>
+        <Form.Group className="mb-3">
+          <Form.Label>Processing... {progress.toFixed(2)} %</Form.Label>
           <ProgressBar animated now={progress} />
-        </>
+        </Form.Group>
       )}
     </div>
   );
