@@ -19,7 +19,7 @@ const FormModelName: React.FC<Props> = (props) => {
         type="text"
         placeholder="Please enter the model name"
         onChange={handleChange}
-        isInvalid={!props.isValid}
+        isInvalid={!props.isValid && props.value !== ""}
       />
     </Form.Group>
   );

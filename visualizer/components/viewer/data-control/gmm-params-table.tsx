@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { Table } from "react-bootstrap";
+import ClientOnly from "../../common/client-only";
+import ReactDataGrid from "@inovua/reactdatagrid-community";
 
 const GMMParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
@@ -39,23 +41,38 @@ const GMMParamsTable: React.FC = () => {
     })();
   }, [vaeName, gmmName]);
 
+  const gridStyle = {
+    minHeight: 250,
+    width: "100%",
+    zIndex: 1000,
+  };
+
   return (
-    <Table striped bordered hover size="sm">
-      <thead>
-        <tr>
-          <th>Parameter</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        {Object.keys(paramsList).map((key) => (
-          <tr key={key}>
-            <td>{key}</td>
-            <td className="font-monospace text-break">{paramsList[key]}</td>
-          </tr>
-        ))}
-      </tbody>
-    </Table>
+    <ClientOnly>
+      <ReactDataGrid
+        idProperty="id"
+        columns={[
+          {
+            name: "parameter",
+            header: "Parameter",
+            defaultFlex: 1,
+          },
+          {
+            name: "value",
+            header: "Value",
+            defaultFlex: 1,
+          },
+        ]}
+        dataSource={Object.keys(paramsList).map((key) => ({
+          id: key,
+          parameter: key,
+          value: paramsList[key],
+        }))}
+        rowStyle={{ fontFamily: "monospace" }}
+        rowHeight={35}
+        style={gridStyle}
+      />
+    </ClientOnly>
   );
 };
 

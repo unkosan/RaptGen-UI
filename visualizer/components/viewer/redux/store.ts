@@ -7,6 +7,7 @@ import gmmDataReducer from "./gmm-data";
 import measuredDataReducer from "./measured-data";
 import encodeDataReducer from "./encode-data";
 import decodeDataReducer from "./decode-data";
+import graphDataReducer from "./graph-data";
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +18,7 @@ export const store = configureStore({
     measuredData: measuredDataReducer,
     encodeData: encodeDataReducer,
     decodeData: decodeDataReducer,
+    graphData: graphDataReducer,
   },
 });
 

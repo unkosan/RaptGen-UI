@@ -9,10 +9,11 @@ import { ResponseDecode } from "../../../../types/api-interface/session";
 
 const SelectGMM: React.FC = () => {
   const [value, setValue] = useState<string>("");
-  const [nameList, setNameList] = useState<string[]>([""]);
+  // const [nameList, setNameList] = useState<string[]>([""]);
+  const [nameList, setNameList] = useState<string[]>([]);
 
   const dispatch = useDispatch();
-  const nameVAE = useSelector((state: RootState) => state.graphConfig.vaeName);
+  // const nameVAE = useSelector((state: RootState) => state.graphConfig.vaeName);
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const sessionId = useSelector(
     (state: RootState) => state.sessionConfig.sessionId
@@ -24,21 +25,24 @@ const SelectGMM: React.FC = () => {
       const res = await axios
         .get("/data/GMM-model-names", {
           params: {
-            VAE_model_name: nameVAE,
+            VAE_model_name: graphConfig.vaeName,
           },
         })
         .then((res) => res.data);
       const nameList: string[] = res.data;
       if (res.status === "success") {
+        setValue("");
         setNameList(nameList);
-        if (nameList.length > 0) {
-          setValue(nameList[0]);
-        } else {
-          setValue("");
-        }
       }
     })();
-  }, [nameVAE]);
+  }, [graphConfig.vaeName]);
+
+  // when name list is updated, set the first element as default
+  useEffect(() => {
+    if (nameList.length > 0) {
+      setValue(nameList[0]);
+    }
+  }, [nameList]);
 
   // dispatch model names to redux store
   useEffect(() => {
@@ -49,7 +53,7 @@ const SelectGMM: React.FC = () => {
         gmmName: value,
       },
     });
-  }, [nameVAE, value]);
+  }, [value, dispatch]);
 
   // retrieve GMM data and dispatch to redux store
   useEffect(() => {
@@ -60,7 +64,7 @@ const SelectGMM: React.FC = () => {
       const res = await axios
         .get<ResponseGmmModel>("/data/GMM-model", {
           params: {
-            VAE_model_name: nameVAE,
+            VAE_model_name: graphConfig.vaeName,
             GMM_model_name: value,
           },
         })
@@ -99,7 +103,8 @@ const SelectGMM: React.FC = () => {
         },
       });
     })();
-  }, [value, sessionId]);
+  }, [value, sessionId, dispatch]);
+  // use sessionId instead of graphConfig.vaeName to access the VAE name changed by the user
 
   return (
     <Form.Select value={value} onChange={(e) => setValue(e.target.value)}>
