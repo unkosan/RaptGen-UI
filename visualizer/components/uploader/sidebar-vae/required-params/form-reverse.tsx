@@ -1,7 +1,8 @@
 import axios from "axios";
-import { Button, Form, InputGroup } from "react-bootstrap";
+import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import { useEffect, useState } from "react";
 
 type Props = {
   value: string;
@@ -13,6 +14,8 @@ type Props = {
 };
 
 const FormReverse: React.FC<Props> = (props) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const sequences = useSelector(
     (state: RootState) => state.vaeConfig.sequenceData.sequences
   );
@@ -22,22 +25,28 @@ const FormReverse: React.FC<Props> = (props) => {
     props.setValue(value);
   };
 
-  const handleEstimate = () => {
-    (async () => {
-      const res = await axios
-        .post("/upload/estimate-adapters", {
-          target_length: props.targetLength,
-          sequences: sequences,
-        })
-        .then((res) => res.data);
+  const handleEstimate = () => setIsLoading(true);
 
-      if (res.status === "success") {
-        const value: string = res.data["reverse_adapter"];
-        props.setValue(value);
-        props.setIsValid(true);
-      }
-    })();
-  };
+  useEffect(() => {
+    if (isLoading) {
+      (async () => {
+        const res = await axios
+          .post("/upload/estimate-adapters", {
+            target_length: props.targetLength,
+            sequences: sequences,
+          })
+          .then((res) => res.data);
+
+        if (res.status === "success") {
+          const value: string = res.data["reverse_adapter"];
+          props.setValue(value);
+          props.setIsValid(true);
+        }
+      })().then(() => {
+        setIsLoading(false);
+      });
+    }
+  }, [isLoading]);
 
   return (
     <Form.Group className="mb-3">
@@ -51,9 +60,9 @@ const FormReverse: React.FC<Props> = (props) => {
         <Button
           variant="outline-primary"
           onClick={handleEstimate}
-          disabled={!props.targetLengthIsValid}
+          disabled={!props.targetLengthIsValid || isLoading}
         >
-          Estimate
+          {isLoading ? <Spinner size="sm" /> : "Estimate"}
         </Button>
       </InputGroup>
     </Form.Group>

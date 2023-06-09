@@ -33,6 +33,9 @@ const SelectVAE: React.FC = () => {
 
   // dispatch model names to redux store
   useEffect(() => {
+    if (value === "") {
+      return;
+    }
     dispatch({
       type: "graphConfig/set",
       payload: {
@@ -41,7 +44,7 @@ const SelectVAE: React.FC = () => {
         gmmName: "",
       },
     });
-  }, [value]);
+  }, [value, dispatch]);
 
   // start session
   useEffect(() => {
@@ -66,7 +69,7 @@ const SelectVAE: React.FC = () => {
         });
       }
     })();
-  }, [value]);
+  }, [value, dispatch]);
 
   // retrieve VAE data
   useEffect(() => {
@@ -104,7 +107,7 @@ const SelectVAE: React.FC = () => {
         });
       }
     })();
-  }, [value]);
+  }, [value, dispatch]);
 
   return (
     <Form.Select value={value} onChange={(e) => setValue(e.target.value)}>

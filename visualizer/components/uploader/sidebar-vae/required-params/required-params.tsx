@@ -19,10 +19,10 @@ const RequiredParams: React.FC<Props> = (props) => {
     useState<boolean>(false);
   const [forwardAdapter, setForwardAdapter] = useState<string>("");
   const [isForwardAdapterValid, setIsForwardAdapterValid] =
-    useState<boolean>(false);
+    useState<boolean>(true);
   const [reverseAdapter, setReverseAdapter] = useState<string>("");
   const [isReverseAdapterValid, setIsReverseAdapterValid] =
-    useState<boolean>(false);
+    useState<boolean>(true);
 
   const dispatch = useDispatch();
 

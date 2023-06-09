@@ -18,6 +18,9 @@ const SelectMeasured: React.FC = () => {
 
   useEffect(() => {
     (async () => {
+      if (graphConfig.vaeName === "") {
+        return;
+      }
       const res = await axios
         .get("/data/measured-data-names")
         .then((res) => res.data);
@@ -31,7 +34,7 @@ const SelectMeasured: React.FC = () => {
         }
       }
     })();
-  }, []);
+  }, [graphConfig.vaeName]);
 
   useEffect(() => {
     (async () => {
@@ -121,7 +124,7 @@ const SelectMeasured: React.FC = () => {
         payload: measuredData,
       });
     })();
-  }, [value, sessionConfig]);
+  }, [value, sessionConfig, dispatch]);
 
   useEffect(() => {
     dispatch({
@@ -131,7 +134,7 @@ const SelectMeasured: React.FC = () => {
         measuredName: value,
       },
     });
-  }, [value]);
+  }, [value, dispatch]);
 
   return (
     <Form.Select value={value} onChange={(e) => setValue(e.target.value)}>

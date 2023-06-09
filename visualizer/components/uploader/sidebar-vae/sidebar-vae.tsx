@@ -65,11 +65,23 @@ const SideBarVAE: React.FC = () => {
           setVaeFile={setVaeFile}
           setSelexFile={setSelexFile}
         />
+        <p>
+          Please upload a checkpoint file and HT-SELEX data. The checkpoint file
+          is located where you assigned on the script{" "}
+          <code>raptgen/real.py</code>. Either FASTA or FASTQ file is allowed
+          for the SELEX file.
+        </p>
         <legend>Setup SELEX Params</legend>
         <RequiredParams
           setParamsIsValid={setRequiredIsValid}
           setParamsIsDirty={setRequiredIsDirty}
         />
+        <p>
+          You need to fill in the forms for the model name and target length.
+          Target length is the total length of adapters and the random region.
+          Click on <code>Estimate</code> button and target length and adapters
+          are automatically detected
+        </p>
         <EncodeButtons
           encodeDisabled={!encodeValid}
           isDirty={requiredIsDirty || fileIsDirty}
@@ -85,11 +97,15 @@ const SideBarVAE: React.FC = () => {
       <div
         style={{ display: pseudoRoute === "/vae/encode" ? "block" : "none" }}
       >
-        <legend>Upload Data Info</legend>
+        <legend>Uploaded Sequence Counts</legend>
         <InfoTable />
+        <p>
+          Adapters Matched means the number of entries of uniquifed sequences,
+          which has specified adapters.
+        </p>
         <legend>Sequence Data</legend>
         <DataTable />
-        <legend>Process Info</legend>
+        <legend>Processing Information</legend>
         <ProcessInfo
           finished={processFinished}
           isValid={processIsValid}
@@ -102,8 +118,9 @@ const SideBarVAE: React.FC = () => {
         style={{ display: pseudoRoute === "/vae/submit" ? "block" : "none" }}
       >
         <legend>Setup Training Params</legend>
+        <p>All of the params below is not required for uploading.</p>
         <OptionalParams setParamsIsValid={setSubmitValid} />
-        <SubmitButtons submitDisabled={!submitValid} />
+        <SubmitButtons submitDisabled={!submitValid} vaeFile={vaeFile} />
       </div>
     </div>
   );
