@@ -3,6 +3,7 @@ import { NextPage } from "next";
 import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
 import Navigator from "../../components/common/navigator";
+import SideBar from "../../components/trainer/sidebar/sidebar";
 
 const Home: React.FC = () => {
   return (
@@ -20,7 +21,7 @@ const Home: React.FC = () => {
           <hr />
           <Row>
             <Col md={4}>
-              <legend>header</legend>
+              <SideBar />
             </Col>
             <Col>Please click the entry on the left</Col>
           </Row>
