@@ -1,6 +1,5 @@
 import AddJobButton from "./AddJobButton";
 import JobCard from "./JobCard";
-import ChildJobCard from "./job-card/child-job-card";
 import JobCardAlt from "./job-card/job-card";
 
 const SideBar: React.FC = () => {
@@ -23,21 +22,21 @@ const SideBar: React.FC = () => {
       />
       <JobCardAlt
         name={"aloha"}
-        status="success"
+        status="progress"
         isSelected={true}
         duration={1500}
         series={[
           {
             id: 0,
             duration: 1000,
-            status: "failure",
+            status: "success",
             epochsCurrent: 492,
             epochsTotal: 1000,
           },
           {
             id: 1,
             duration: 400,
-            status: "success",
+            status: "progress",
             epochsCurrent: 192,
             epochsTotal: 1000,
           },

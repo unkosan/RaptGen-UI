@@ -94,6 +94,7 @@ const ChildJobCard: React.FC<Props> = (props) => {
         cursor: "pointer",
       }}
       onClick={props.onClick}
+      data-testid="child-job-card"
     >
       {title}
       {progress}
