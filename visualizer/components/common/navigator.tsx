@@ -12,6 +12,7 @@ const Navigator: React.FC<Props> = ({ currentPage }) => {
         <Nav className="me-auto">
           <Nav.Link href="/viewer">Viewer</Nav.Link>
           <Nav.Link href="/uploader">Uploader</Nav.Link>
+          <Nav.Link href="/trainer">Trainer</Nav.Link>
         </Nav>
       </Container>
     </Navbar>
