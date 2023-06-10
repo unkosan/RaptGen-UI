@@ -6,12 +6,12 @@ type Props =
   | {
       name: string;
       status: "success" | "failure" | "pending";
-      onClick: () => void;
+      onClick?: () => void;
     }
   | {
       name: string;
       status: "suspend" | "progress";
-      onClick: () => void;
+      onClick?: () => void;
       totalEpoch: number;
       currentEpoch: number;
       duration: number;

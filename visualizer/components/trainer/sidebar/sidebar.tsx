@@ -22,6 +22,7 @@ const SideBar: React.FC = () => {
         }}
       />
       <JobCardAlt />
+      <JobCardAlt />
     </>
   );
 };
