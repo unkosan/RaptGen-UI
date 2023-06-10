@@ -17,6 +17,7 @@
     "bootstrap": "^5.2.3",
     "bootstrap-icons": "^1.10.4",
     "bootswatch": "^5.2.3",
+    "date-fns": "^2.30.0",
     "eslint": "8.31.0",
     "eslint-config-next": "13.1.1",
     "lodash": "^4.17.21",

@@ -37,10 +37,26 @@ const JobCard: React.FC<Props> = (props) => {
       <div className="d-flex justify-content-between">
         {contentHead}
         <div>
-          {status === "success" && <Badge bg="success">{status}</Badge>}
-          {status === "failure" && <Badge bg="danger">{status}</Badge>}
-          {status === "pending" && <Badge bg="warning">{status}</Badge>}
-          {status === "suspended" && <Badge bg="warning">{status}</Badge>}
+          {status === "success" && (
+            <Badge pill bg="success">
+              {status}
+            </Badge>
+          )}
+          {status === "failure" && (
+            <Badge pill bg="danger">
+              {status}
+            </Badge>
+          )}
+          {status === "pending" && (
+            <Badge pill bg="warning">
+              {status}
+            </Badge>
+          )}
+          {status === "suspended" && (
+            <Badge pill bg="warning">
+              {status}
+            </Badge>
+          )}
         </div>
       </div>
     );
@@ -94,91 +110,5 @@ const JobCard: React.FC<Props> = (props) => {
     </Card>
   );
 };
-
-// const JobCard: React.FC<Props> = (props) => {
-//   const { name, status } = props;
-//   let card: JSX.Element;
-//   if (status === "success" || status === "failure" || status === "pending") {
-//     card = (
-//       <Card>
-//         <Card.Body className={"mh-1"}>
-//           <div className="d-flex justify-content-between">
-//             <div>
-//               <Card.Title>{name}</Card.Title>
-//             </div>
-//             <div>
-//               {status === "success" && <Badge bg="success">{status}</Badge>}
-//               {status === "failure" && <Badge bg="danger">{status}</Badge>}
-//               {status === "pending" && <Badge bg="warning">{status}</Badge>}
-//             </div>
-//           </div>
-//         </Card.Body>
-//       </Card>
-//     );
-//   } else if (status === "suspended" || status === "progress") {
-//     const { totalEpoch, currentEpoch, duration } = props;
-//     const { multiple } = props;
-//     if (multiple) {
-//       const { currentIndex, totalDuration } = multiple;
-//       card = (
-//         <Card>
-//           <Card.Body>
-//             <div className="d-flex justify-content-between">
-//               <div>
-//                 <Card.Title>{name}</Card.Title>
-//               </div>
-//               <div className="text-muted">
-//                 Total Duration {totalDuration} seconds
-//               </div>
-//             </div>
-//             <Card>
-//               <Card.Body>
-//                 <div className="d-flex justify-content-between">
-//                   <Card.Title>Model No.{currentIndex}</Card.Title>
-//                   <div className="text-muted">
-//                     Running for {duration} seconds
-//                   </div>
-//                 </div>
-//                 <div className="d-flex justify-content-between">
-//                   <div>
-//                     {currentEpoch} / {totalEpoch} epochs
-//                   </div>
-//                 </div>
-//               </Card.Body>
-//               <div>
-//                 <ProgressBar now={currentEpoch} max={totalEpoch} />
-//               </div>
-//             </Card>
-//           </Card.Body>
-//         </Card>
-//       );
-//     } else {
-//       card = (
-//         <Card>
-//           <Card.Body>
-//             <div className="d-flex justify-content-between">
-//               <div>
-//                 <Card.Title>{name}</Card.Title>
-//               </div>
-//               <div className="text-muted">Running for {duration} seconds</div>
-//             </div>
-//             <div className="d-flex justify-content-between">
-//               <div>
-//                 {currentEpoch} / {totalEpoch} epochs
-//               </div>
-//             </div>
-//           </Card.Body>
-//           <div>
-//             <ProgressBar now={currentEpoch} max={totalEpoch} />
-//           </div>
-//         </Card>
-//       );
-//     }
-//   } else {
-//     console.log("Invalid status: ", status);
-//     card = <></>;
-//   }
-//   return <div>{card}</div>;
-// };
 
 export default JobCard;
