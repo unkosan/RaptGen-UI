@@ -15,8 +15,11 @@ type Props = {
   name: string;
   isSelected?: boolean;
   status: "success" | "failure" | "pending" | "progress" | "suspend";
-  onClick?: () => void;
-  onChildClick?: (mixture: number) => void;
+  onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  onChildClick?: (
+    mixture: number,
+    event: React.MouseEvent<HTMLElement, MouseEvent>
+  ) => void;
   duration: number;
   series: TypeChild[];
 };
@@ -101,10 +104,11 @@ const JobCardAlt: React.FC<Props> = (props) => {
             key={child.id}
             name={"Mixture " + child.id}
             status={child.status}
-            onClick={() => {
+            onClick={(event) => {
               if (props.onChildClick) {
-                props.onChildClick(child.id);
+                props.onChildClick(child.id, event);
               }
+              event.stopPropagation();
             }}
             totalEpoch={child.epochsTotal}
             currentEpoch={child.epochsCurrent}
@@ -127,6 +131,7 @@ const JobCardAlt: React.FC<Props> = (props) => {
         cursor: "pointer",
         marginBlock: "1rem",
       }}
+      onClick={props.onClick}
     >
       {title}
       {content}

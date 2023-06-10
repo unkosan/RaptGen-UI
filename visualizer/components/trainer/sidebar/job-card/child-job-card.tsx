@@ -6,12 +6,12 @@ type Props =
   | {
       name: string;
       status: "success" | "failure" | "pending";
-      onClick?: () => void;
+      onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     }
   | {
       name: string;
       status: "suspend" | "progress";
-      onClick?: () => void;
+      onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
       totalEpoch: number;
       currentEpoch: number;
       duration: number;
@@ -93,7 +93,13 @@ const ChildJobCard: React.FC<Props> = (props) => {
         marginTop: "0.4rem",
         cursor: "pointer",
       }}
-      onClick={props.onClick}
+      onClick={(event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        if (event !== undefined && props.onClick !== undefined) {
+          props.onClick(event);
+        } else {
+          console.log("event or onClick is undefined");
+        }
+      }}
       data-testid="child-job-card"
     >
       {title}

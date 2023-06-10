@@ -25,6 +25,12 @@ const SideBar: React.FC = () => {
         status="progress"
         isSelected={true}
         duration={1500}
+        onClick={() => {
+          console.log("clicked job card");
+        }}
+        onChildClick={(id) => {
+          console.log(`clicked child job card ${id}`);
+        }}
         series={[
           {
             id: 0,
