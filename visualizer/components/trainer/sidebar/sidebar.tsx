@@ -21,8 +21,28 @@ const SideBar: React.FC = () => {
           totalDuration: 100,
         }}
       />
-      <JobCardAlt />
-      <JobCardAlt />
+      <JobCardAlt
+        name={"aloha"}
+        status="success"
+        isSelected={true}
+        duration={1500}
+        series={[
+          {
+            id: 0,
+            duration: 1000,
+            status: "failure",
+            epochsCurrent: 492,
+            epochsTotal: 1000,
+          },
+          {
+            id: 1,
+            duration: 400,
+            status: "success",
+            epochsCurrent: 192,
+            epochsTotal: 1000,
+          },
+        ]}
+      />
     </>
   );
 };
