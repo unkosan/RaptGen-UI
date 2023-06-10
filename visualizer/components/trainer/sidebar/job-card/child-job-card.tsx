@@ -6,10 +6,12 @@ type Props =
   | {
       name: string;
       status: "success" | "failure" | "pending";
+      onClick: () => void;
     }
   | {
       name: string;
       status: "suspend" | "progress";
+      onClick: () => void;
       totalEpoch: number;
       currentEpoch: number;
       duration: number;
@@ -88,7 +90,10 @@ const ChildJobCard: React.FC<Props> = (props) => {
         border: "1px solid lightgray",
         paddingBlock: "0.5rem",
         paddingInline: "1rem",
+        marginTop: "0.4rem",
+        cursor: "pointer",
       }}
+      onClick={props.onClick}
     >
       {title}
       {progress}

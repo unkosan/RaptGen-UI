@@ -1,6 +1,7 @@
 import AddJobButton from "./AddJobButton";
 import JobCard from "./JobCard";
 import ChildJobCard from "./job-card/child-job-card";
+import JobCardAlt from "./job-card/job-card";
 
 const SideBar: React.FC = () => {
   return (
@@ -20,13 +21,7 @@ const SideBar: React.FC = () => {
           totalDuration: 100,
         }}
       />
-      <ChildJobCard
-        name={"aloha"}
-        status="progress"
-        currentEpoch={341}
-        totalEpoch={1000}
-        duration={400}
-      />
+      <JobCardAlt />
     </>
   );
 };
