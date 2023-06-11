@@ -10,7 +10,7 @@ type Props = {
   placeholder: string;
 };
 
-// if empty, value equals undefined
+// if empty, value equals undefined, isValid is true
 const TextForm: React.FC<Props> = (props) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value;

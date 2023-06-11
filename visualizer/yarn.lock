@@ -1736,6 +1736,11 @@ binary-search-bounds@^2.0.4:
   resolved "https://registry.yarnpkg.com/binary-search-bounds/-/binary-search-bounds-2.0.5.tgz#125e5bd399882f71e6660d4bf1186384e989fba7"
   integrity sha512-H0ea4Fd3lS1+sTEB2TgcLoK21lLhwEJzlQv3IN47pJS976Gx4zoWe0ak3q+uYh60ppQxg9F16Ri4tS1sfD4+jA==
 
+bioinformatics-parser@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/bioinformatics-parser/-/bioinformatics-parser-1.1.2.tgz#297fdf472772b3d1fdaf9ae6bd67e3464402e99b"
+  integrity sha512-9jQlWHsVuXD1afY1fYyDagwhNJrAB+zCGlzgZmZ9cv1bQQp/3j5BOhE9zEWBtU7kGDwZ13lkpgauRyNKUrSI9Q==
+
 bit-twiddle@^1.0.0, bit-twiddle@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/bit-twiddle/-/bit-twiddle-1.0.2.tgz#0c6c1fabe2b23d17173d9a61b7b7093eb9e1769e"

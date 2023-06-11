@@ -28,7 +28,7 @@ const SideBar: React.FC = () => {
   const [isValidReverseAdapter, setIsValidReverseAdapter] =
     React.useState<boolean>(true);
   const [isValidTargetLength, setIsValidTargetLength] =
-    React.useState<boolean>(false);
+    React.useState<boolean>(true);
   const [isValidTolerance, setIsValidTolerance] = React.useState<boolean>(true);
   const [isValidMinCount, setIsValidMinCount] = React.useState<boolean>(true);
 
