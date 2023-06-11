@@ -1,4 +1,4 @@
-import AddJobButton from "./AddJobButton";
+import AddJobButton from "./add-job-button";
 import JobCard from "./job-card/job-card";
 
 const SideBar: React.FC = () => {
