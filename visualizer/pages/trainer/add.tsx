@@ -26,13 +26,12 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>Trainer</h1>
           <hr />
-          {route === "/selex" ? (
+          <div style={{ display: route === "/selex" ? "block" : "none" }}>
             <SelexPage />
-          ) : route === "/train" ? (
+          </div>
+          <div style={{ display: route === "/train" ? "block" : "none" }}>
             <TrainPage />
-          ) : (
-            <div>page not found</div>
-          )}
+          </div>
         </Container>
       </main>
     </>

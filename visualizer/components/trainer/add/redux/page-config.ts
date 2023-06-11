@@ -12,7 +12,7 @@ const pageConfigSlice = createSlice({
     modelType: "RaptGen",
   },
   reducers: {
-    setRoute: (state: PageConfig, action: PayloadAction<string>) => {
+    setPseudoRoute: (state: PageConfig, action: PayloadAction<string>) => {
       return {
         ...state,
         pseudoRoute: action.payload,
