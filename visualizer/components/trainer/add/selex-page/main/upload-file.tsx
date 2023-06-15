@@ -12,7 +12,7 @@ type Props = {};
 
 const columns = [
   { name: "id", type: "number", header: "ID", defaultVisible: false },
-  { name: "sequence", header: "Seqeunce", defaultFlex: 1 },
+  { name: "sequence", header: "Sequence", defaultFlex: 1 },
   { name: "duplicate", header: "Duplicate", type: "number" },
 ];
 

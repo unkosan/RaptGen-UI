@@ -50,27 +50,27 @@ const Pagination: React.FC = () => {
         });
 
         dispatch({
-          type: "selexData",
+          type: "selexData/set",
           payload: {
             ...selexData,
             sequences: seqs,
             duplicates: dups,
             randomRegions: randomRegions,
             adapterMatched: masks,
-            totolLength: sum(dups),
+            totalLength: sum(dups),
             uniqueLength: seqs.length,
             matchedLength: sum(masks),
             uniqueRatio: seqs.length / sum(dups),
           },
         });
+        dispatch({
+          type: "preprocessingConfig/set",
+          payload: {
+            ...preprocessingConfig,
+            isDirty: false,
+          },
+        });
       }
-      dispatch({
-        type: "preprocessingConfig/set",
-        payload: {
-          ...preprocessingConfig,
-          isDirty: false,
-        },
-      });
       dispatch({
         type: "pageConfig/setPseudoRoute",
         payload: "/train",
