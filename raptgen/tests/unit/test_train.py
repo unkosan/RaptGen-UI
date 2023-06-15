@@ -10,6 +10,7 @@ app.include_router(training.router)
 
 client = TestClient(app)
 
+
 def test_get_available_devices():
     response = client.get("/train/device/process")
 
