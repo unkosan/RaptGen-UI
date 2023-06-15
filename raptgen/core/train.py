@@ -12,7 +12,7 @@ import torch
 from sklearn.model_selection import train_test_split
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.dataset import TensorDataset
-from raptgen.core.algorithms import VAE, profile_hmm_vae_loss
+from core.algorithms import VAE, profile_hmm_vae_loss
 from tqdm.auto import tqdm
 
 # seed 値の固定は https://qiita.com/north_redwing/items/1e153139125d37829d2d を参照した。
