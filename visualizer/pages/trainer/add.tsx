@@ -1,14 +1,17 @@
 import "bootswatch/dist/cosmo/bootstrap.min.css";
 import { NextPage } from "next";
 import Head from "next/head";
-import { Col, Container, Row } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import Navigator from "../../components/common/navigator";
 import { Provider } from "react-redux";
 import { RootState, store } from "../../components/trainer/add/redux/store";
 import { useSelector } from "react-redux";
 import SelexPage from "../../components/trainer/add/selex-page/selex-page";
 import TrainPage from "../../components/trainer/add/train-page/train-page";
+import axios from "axios";
 import "@inovua/reactdatagrid-community/index.css";
+
+axios.defaults.baseURL = "http://localhost:8000/api";
 
 const Home: React.FC = () => {
   const route = useSelector((state: RootState) => state.pageConfig.pseudoRoute);
