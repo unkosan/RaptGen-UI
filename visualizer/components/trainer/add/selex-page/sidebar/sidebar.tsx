@@ -1,21 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ModelTypeSelect from "./model-type-select";
 import TextForm from "../../../../uploader/sidebar-vae/optional-params/text-form";
 import IntegerForm from "../../../../uploader/sidebar-vae/optional-params/integer-form";
+import FormForward from "./form-forward";
+import FormReverse from "./form-reverse";
+import FormTargetLength from "./form-target-length";
+import { useDispatch } from "react-redux";
+import { RootState } from "../../redux/store";
+import { useSelector } from "react-redux";
 
 const SideBar: React.FC = () => {
   const [experimentName, setExperimentName] = React.useState<
     string | undefined
   >(undefined);
-  const [forwardAdapter, setForwardAdapter] = React.useState<
-    string | undefined
-  >(undefined);
-  const [reverseAdapter, setReverseAdapter] = React.useState<
-    string | undefined
-  >(undefined);
-  const [targetLength, setTargetLength] = React.useState<number | undefined>(
-    undefined
-  );
+  const [forwardAdapter, setForwardAdapter] = React.useState<string>("");
+  const [reverseAdapter, setReverseAdapter] = React.useState<string>("");
+  const [targetLength, setTargetLength] = React.useState<number>(NaN);
   const [tolerance, setTolerance] = React.useState<number | undefined>(
     undefined
   );
@@ -28,9 +28,73 @@ const SideBar: React.FC = () => {
   const [isValidReverseAdapter, setIsValidReverseAdapter] =
     React.useState<boolean>(true);
   const [isValidTargetLength, setIsValidTargetLength] =
-    React.useState<boolean>(true);
+    React.useState<boolean>(false);
   const [isValidTolerance, setIsValidTolerance] = React.useState<boolean>(true);
   const [isValidMinCount, setIsValidMinCount] = React.useState<boolean>(true);
+
+  const dispatch = useDispatch();
+  const preprocessingConfig = useSelector(
+    (state: RootState) => state.preprocessingConfig
+  );
+
+  useEffect(() => {
+    const isAllValid = [
+      isValidExperimentName,
+      isValidForwardAdapter,
+      isValidReverseAdapter,
+      isValidTargetLength,
+      isValidTolerance,
+      isValidMinCount,
+      experimentName !== undefined,
+      tolerance !== undefined,
+      minCount !== undefined,
+    ].every((isValid) => isValid);
+
+    if (isValidExperimentName) {
+      dispatch({
+        type: "pageConfig/setExperimentName",
+        payload: experimentName,
+      });
+    }
+
+    if (isAllValid) {
+      dispatch({
+        type: "preprocessingConfig/set",
+        payload: {
+          ...preprocessingConfig,
+          isValidParams: true,
+          isDirty: true,
+          forwardAdapter: forwardAdapter,
+          reverseAdapter: reverseAdapter,
+          targetLength: targetLength,
+          tolerance: tolerance,
+          minCount: minCount,
+        },
+      });
+    } else {
+      dispatch({
+        type: "preprocessingConfig/set",
+        payload: {
+          ...preprocessingConfig,
+          isValidParams: false,
+          isDirty: true,
+        },
+      });
+    }
+  }, [
+    experimentName,
+    forwardAdapter,
+    reverseAdapter,
+    targetLength,
+    tolerance,
+    minCount,
+    isValidExperimentName,
+    isValidForwardAdapter,
+    isValidReverseAdapter,
+    isValidTargetLength,
+    isValidTolerance,
+    isValidMinCount,
+  ]);
 
   return (
     <>
@@ -48,42 +112,27 @@ const SideBar: React.FC = () => {
       />
 
       <legend>Preprocessing Parameters</legend>
-      <TextForm
-        label="Forward Adapter"
-        placeholder="Allows a string of A, U, G, C"
+      <FormForward
         value={forwardAdapter}
-        setValue={(str) => {
-          if (str !== undefined) {
-            str = String(str).toUpperCase().replace(/T/g, "U");
-          }
-          setForwardAdapter(str);
-        }}
         isValid={isValidForwardAdapter}
+        setValue={setForwardAdapter}
         setIsValid={setIsValidForwardAdapter}
-        predicate={(value) => /^[ATUGCatcgu]*$/.test(value)}
+        targetLength={targetLength}
+        targetLengthIsValid={isValidTargetLength}
       />
-      <TextForm
-        label="Reverse Adapter"
-        placeholder="Allows a string of A, U, G, C"
+      <FormReverse
         value={reverseAdapter}
-        setValue={(str) => {
-          if (str !== undefined) {
-            str = String(str).toUpperCase().replace(/T/g, "U");
-          }
-          setReverseAdapter(str);
-        }}
         isValid={isValidReverseAdapter}
+        setValue={setReverseAdapter}
         setIsValid={setIsValidReverseAdapter}
-        predicate={(value) => /^[ATUGCatcgu]*$/.test(value)}
+        targetLength={targetLength}
+        targetLengthIsValid={isValidTargetLength}
       />
-      <IntegerForm
-        label="Target Length"
-        placeholder="Allows a positive integer"
+      <FormTargetLength
         value={targetLength}
-        setValue={setTargetLength}
         isValid={isValidTargetLength}
+        setValue={setTargetLength}
         setIsValid={setIsValidTargetLength}
-        predicate={(value) => value > 0}
       />
       <IntegerForm
         label="Filtering Tolerance"
