@@ -55,6 +55,8 @@
     "@types/react-dom": "18.0.10",
     "@types/react-plotly.js": "^2.5.2",
     "@types/react-redux": "^7.1.25",
+    "csv-parser": "^3.0.0",
+    "fs": "^0.0.1-security",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
     "msw": "^1.2.2",
