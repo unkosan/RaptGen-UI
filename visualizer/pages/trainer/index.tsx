@@ -4,6 +4,8 @@ import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
 import Navigator from "../../components/common/navigator";
 import SideBar from "../../components/trainer/home/sidebar/sidebar";
+import { Provider } from "react-redux";
+import { store } from "../../components/trainer/home/redux/store";
 
 const Home: React.FC = () => {
   return (
@@ -32,7 +34,11 @@ const Home: React.FC = () => {
 };
 
 const PageRoot: NextPage = () => {
-  return <Home />;
+  return (
+    <Provider store={store}>
+      <Home />
+    </Provider>
+  );
 };
 
 export default PageRoot;
