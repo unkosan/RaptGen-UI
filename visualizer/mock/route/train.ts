@@ -367,7 +367,6 @@ export const trainHandlers = [
                 item_start: 1620024000,
                 item_duraion: 12000,
                 item_status: "progress",
-                item_reiteration: 3,
                 latent: latent,
                 losses: losses,
                 summary: summary1,
@@ -382,7 +381,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 12000,
                 item_status: "failure",
-                item_reiteration: 3,
                 error_msg: "error message",
                 summary: summary1,
               })
@@ -397,7 +395,6 @@ export const trainHandlers = [
                 item_start: 1620012000,
                 item_duraion: 12000,
                 item_status: "success",
-                item_reiteration: 3,
                 latent: latent,
                 losses: losses,
                 summary: summary1,
@@ -413,7 +410,6 @@ export const trainHandlers = [
                 item_start: 1620024000,
                 item_duraion: 12000,
                 item_status: "progress",
-                item_reiteration: 3,
                 latent: latent,
                 losses: losses,
                 summary: summary1,
@@ -453,7 +449,6 @@ export const trainHandlers = [
                 item_start: 1620000500,
                 item_duraion: 12000,
                 item_status: "progress",
-                item_reiteration: 1,
                 latent: latent,
                 losses: losses,
                 summary: summary2,
@@ -468,7 +463,6 @@ export const trainHandlers = [
                 item_start: 1620000500,
                 item_duraion: 12000,
                 item_status: "progress",
-                item_reiteration: 1,
                 latent: latent,
                 losses: losses,
                 summary: summary2,
@@ -507,7 +501,6 @@ export const trainHandlers = [
                 item_start: 1620024000,
                 item_duraion: 12000,
                 item_status: "pending",
-                item_reiteration: 3,
                 summary: summary3,
               })
             );
@@ -520,7 +513,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 12000,
                 item_status: "pending",
-                item_reiteration: 3,
                 summary: summary3,
               })
             );
@@ -533,7 +525,6 @@ export const trainHandlers = [
                 item_start: 1620012000,
                 item_duraion: 12000,
                 item_status: "pending",
-                item_reiteration: 3,
                 summary: summary3,
               })
             );
@@ -546,7 +537,6 @@ export const trainHandlers = [
                 item_start: 1620024000,
                 item_duraion: 12000,
                 item_status: "pending",
-                item_reiteration: 3,
                 summary: summary3,
               })
             );
@@ -583,7 +573,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 1000,
                 item_status: "pending",
-                item_reiteration: 1,
                 summary: summary4,
               })
             );
@@ -596,7 +585,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 1000,
                 item_status: "pending",
-                item_reiteration: 1,
                 summary: summary4,
               })
             );
@@ -633,7 +621,6 @@ export const trainHandlers = [
                 item_start: 1620012000,
                 item_duraion: 12000,
                 item_status: "success",
-                item_reiteration: 3,
                 latent: latent,
                 losses: losses,
                 summary: summary5,
@@ -648,7 +635,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 12000,
                 item_status: "failure",
-                item_reiteration: 3,
                 error_msg: "error message",
                 summary: summary5,
               })
@@ -662,7 +648,6 @@ export const trainHandlers = [
                 item_start: 1620012000,
                 item_duraion: 12000,
                 item_status: "success",
-                item_reiteration: 3,
                 latent: latent,
                 losses: losses,
                 summary: summary5,
@@ -677,7 +662,6 @@ export const trainHandlers = [
                 item_start: 1620024000,
                 item_duraion: 12000,
                 item_status: "failure",
-                item_reiteration: 3,
                 error_msg: "error message",
                 summary: summary5,
               })
@@ -715,7 +699,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 1000,
                 item_status: "success",
-                item_reiteration: 1,
                 latent: latent,
                 losses: losses,
                 summary: summary6,
@@ -730,7 +713,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 1000,
                 item_status: "success",
-                item_reiteration: 1,
                 latent: latent,
                 losses: losses,
                 summary: summary6,
@@ -769,7 +751,6 @@ export const trainHandlers = [
                 item_start: 1620024000,
                 item_duraion: 12000,
                 item_status: "failure",
-                item_reiteration: 3,
                 error_msg: "error message",
                 summary: summary7,
               })
@@ -783,7 +764,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 12000,
                 item_status: "failure",
-                item_reiteration: 3,
                 error_msg: "error message",
                 summary: summary7,
               })
@@ -797,7 +777,6 @@ export const trainHandlers = [
                 item_start: 1620012000,
                 item_duraion: 12000,
                 item_status: "failure",
-                item_reiteration: 3,
                 error_msg: "error message",
                 summary: summary7,
               })
@@ -811,7 +790,6 @@ export const trainHandlers = [
                 item_start: 1620024000,
                 item_duraion: 12000,
                 item_status: "failure",
-                item_reiteration: 3,
                 error_msg: "error message",
                 summary: summary7,
               })
@@ -849,7 +827,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 1000,
                 item_status: "failure",
-                item_reiteration: 1,
                 error_msg: "error message",
                 summary: summary8,
               })
@@ -863,7 +840,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 1000,
                 item_status: "failure",
-                item_reiteration: 1,
                 error_msg: "error message",
                 summary: summary8,
               })
@@ -901,7 +877,6 @@ export const trainHandlers = [
                 item_start: 1620024000,
                 item_duraion: 12000,
                 item_status: "suspend",
-                item_reiteration: 3,
                 summary: summary9,
               })
             );
@@ -914,7 +889,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 12000,
                 item_status: "success",
-                item_reiteration: 3,
                 latent: latent,
                 losses: losses,
                 summary: summary9,
@@ -929,7 +903,6 @@ export const trainHandlers = [
                 item_start: 1620012000,
                 item_duraion: 12000,
                 item_status: "failure",
-                item_reiteration: 3,
                 error_msg: "error message",
                 summary: summary9,
               })
@@ -943,7 +916,6 @@ export const trainHandlers = [
                 item_start: 1620024000,
                 item_duraion: 12000,
                 item_status: "suspend",
-                item_reiteration: 3,
                 summary: summary9,
               })
             );
@@ -980,7 +952,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 1000,
                 item_status: "suspend",
-                item_reiteration: 1,
                 summary: summary10,
               })
             );
@@ -993,7 +964,6 @@ export const trainHandlers = [
                 item_start: 1620000000,
                 item_duraion: 1000,
                 item_status: "suspend",
-                item_reiteration: 1,
                 summary: summary10,
               })
             );
