@@ -148,7 +148,7 @@ async function getSearch(
 // API GET /train/jobs/items/{uuid}?number={}
 type ParamGetItem = {
   uuid: string;
-  number: number;
+  number: number | null;
 };
 type RequestGetItem = void;
 type ResponseGetItem = {
@@ -195,9 +195,19 @@ async function getItem(
 ): Promise<ResponseCall<ResponseGetItem>> {
   let response: ResponseCall<ResponseGetItem> =
     {} as ResponseCall<ResponseGetItem>;
+  if (query.uuid === "") {
+    response = {
+      success: false,
+      data: null,
+      errMsg: "uuid is not specified",
+    };
+    return response;
+  }
   await axios
     .get<ResponseGetItem>(
-      `/train/jobs/items/${query.uuid}?number=${query.number}`
+      query.number === null
+        ? `/train/jobs/items/${query.uuid}`
+        : `/train/jobs/items/${query.uuid}?number=${query.number}`
     )
     .then((res) => {
       response = {

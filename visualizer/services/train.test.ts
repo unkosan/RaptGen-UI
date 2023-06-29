@@ -55,6 +55,14 @@ describe("train service", () => {
     expect(result.success).toBeTruthy();
   });
 
+  it("getItem: should return success when number is not specified (as null)", async () => {
+    const result = await train.getItem({
+      uuid: "18b1e0e0-5b1e-4b1e-8b1e-0e5b1e4b1e8b",
+      number: null,
+    });
+    expect(result.success).toBeTruthy();
+  });
+
   it("patchItem: should return success", async () => {
     const result = await train.patchItem(
       {
