@@ -52,7 +52,7 @@ export const trainHandlers = [
     console.log(req.body);
     return res(ctx.status(200), ctx.json(null));
   }),
-  rest.get(mockURL("train/jobs/search"), (req, res, ctx) => {
+  rest.get(mockURL("/train/jobs/search"), (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json([
@@ -332,9 +332,9 @@ export const trainHandlers = [
 
   rest.get(mockURL("/train/jobs/items/:uuid"), (req, res, ctx) => {
     // if uuid path param is uuids.test1
-    const itemId = req.url.searchParams.get("uuid");
+    const itemId = req.params.uuid;
     const iterId = req.url.searchParams.get("number");
-    if (itemId === null) {
+    if (!itemId) {
       return res(
         ctx.status(400),
         ctx.json({ message: "uuid is not specified" })
@@ -980,13 +980,25 @@ export const trainHandlers = [
   }),
 
   rest.patch(mockURL("/train/jobs/items/:uuid"), (req, res, ctx) => {
-    const itemId = req.url.searchParams.get("uuid");
+    const itemId = req.params.uuid;
+    if (!itemId) {
+      return res(
+        ctx.status(400),
+        ctx.json({ message: "uuid is not specified" })
+      );
+    }
     console.log(req.body);
     return res(ctx.status(200), ctx.json(null));
   }),
 
   rest.delete(mockURL("/train/jobs/items/:uuid"), (req, res, ctx) => {
-    const itemId = req.url.searchParams.get("uuid");
+    const itemId = req.params.uuid;
+    if (!itemId) {
+      return res(
+        ctx.status(400),
+        ctx.json({ message: "uuid is not specified" })
+      );
+    }
     console.log(req.body);
     return res(ctx.status(200), ctx.json(null));
   }),
@@ -1004,10 +1016,23 @@ export const trainHandlers = [
     return res(ctx.status(200), ctx.json(null));
   }),
 
+  rest.post(mockURL("/train/jobs/suspend"), (req, res, ctx) => {
+    // get payload "uuid" from request body
+    const body = req.body as { uuid: string };
+    if (!body?.uuid) {
+      return res(
+        ctx.status(400),
+        ctx.json({ message: "uuid is not specified" })
+      );
+    }
+
+    return res(ctx.status(200), ctx.json(null));
+  }),
+
   rest.post(mockURL("/train/jobs/resume"), (req, res, ctx) => {
     // get payload "uuid" from request body
     const body = req.body as { uuid: string };
-    if (body?.uuid === null) {
+    if (!body?.uuid) {
       return res(
         ctx.status(400),
         ctx.json({ message: "uuid is not specified" })
@@ -1020,7 +1045,7 @@ export const trainHandlers = [
   rest.post(mockURL("/train/jobs/publish"), (req, res, ctx) => {
     // get payload "uuid" from request body
     const body = req.body as { uuid: string; multi?: number };
-    if (body?.uuid === null) {
+    if (!body?.uuid) {
       return res(
         ctx.status(400),
         ctx.json({ message: "uuid is not specified" })
