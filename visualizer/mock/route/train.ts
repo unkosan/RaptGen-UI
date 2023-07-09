@@ -2,7 +2,7 @@ import { rest } from "msw";
 import { selex } from "./selex";
 import { loss } from "./loss";
 import { z } from "zod";
-import * as trainZod from "../../services/train-api";
+import * as trainZod from "../../services/api-client";
 
 export const mockURL = (path: string) => {
   return `http://localhost:3000/api${path}`;

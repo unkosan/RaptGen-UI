@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { getItem } from "../../../../services/train";
 import { useDispatch } from "react-redux";
 
 const Main: React.FC = () => {
@@ -44,16 +43,6 @@ const Main: React.FC = () => {
       },
     });
   });
-
-  useEffect(() => {
-    (async () => {
-      const res = await getItem({
-        uuid: parentId,
-        number: childId,
-      });
-      console.log(res);
-    })();
-  }, [parentId, childId]);
 
   if (!parentId) return <div>Please click the entry on the left</div>;
 

@@ -2,12 +2,10 @@ import { Zodios } from "@zodios/core";
 import { z } from "zod";
 
 // API POST /train/device/process
-// export const paramGetDevices = z.void();
 export const requestGetDevices = z.void();
 export const responseGetDevices = z.array(z.string());
 
 // API POST /train/jobs/submit
-// export const paramPostSubmitJob = z.void();
 export const requestPostSubmitJob = z.object({
   type: z.enum(["RaptGen", "RaptGen-freq", "RaptGen-logfreq"]),
   name: z.string().nonempty(),
@@ -26,7 +24,6 @@ export const requestPostSubmitJob = z.object({
 export const responsePostSubmitJob = z.null();
 
 // API POST /train/jobs/search
-// export const paramPostSearchJobs = z.void();
 export const requestPostSearchJobs = z.object({
   status: z.optional(
     z.array(z.enum(["success", "failure", "progress", "pending", "suspend"]))
@@ -66,9 +63,6 @@ export const responsePostSearchJobs = z.array(
 );
 
 // API GET train/jobs/items/{parent_uuid}
-// export const paramGetItem = z.object({
-//   parent_uuid: z.string().uuid(),
-// });
 export const requestGetItem = z.void();
 export const responseGetItem = z.object({
   uuid: z.string().uuid(),
@@ -90,7 +84,6 @@ export const responseGetItem = z.object({
 });
 
 // API GET train/jobs/items/{parent_uuid}/{child_id}
-// export const paramGetItemChild = z.void();
 export const requestGetItemChild = z.object({
   parent_uuid: z.string().uuid(),
   child_id: z.number().int().min(0),
@@ -133,40 +126,34 @@ export const responseGetItemChild = z.union([
 ]);
 
 // API DELETE train/jobs/items/{parent_uuid}
-// export const paramDeleteItem = z.object({
-//   parent_uuid: z.string().uuid(),
-// });
 export const requestDeleteItem = z.void();
 export const responseDeleteItem = z.null();
 
 // API POST train/jobs/kill
-// export const paramPostKill = z.void();
 export const requestPostKill = z.object({
   uuid: z.string().uuid(),
 });
 export const responsePostKill = z.null();
 
 // API POST train/jobs/suspend
-// export const paramPostSuspend = z.void();
 export const requestPostSuspend = z.object({
   uuid: z.string().uuid(),
 });
 export const responsePostSuspend = z.null();
 
 // API POST train/jobs/resume
-// export const paramPostResume = z.void();
 export const requestPostResume = z.object({
   uuid: z.string().uuid(),
 });
 export const responsePostResume = z.null();
 
 // API POST train/jobs/publish
-// export const paramPostPublish = z.void();
 export const requestPostPublish = z.object({
   uuid: z.string().uuid(),
 });
 export const responsePostPublish = z.null();
 
+// API
 export const apiClient = new Zodios("http://localhost:3000/api", [
   {
     alias: "hello",

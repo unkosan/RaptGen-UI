@@ -1,4 +1,4 @@
-import { apiClient } from "./train-api";
+import { apiClient } from "./api-client";
 import _ from "lodash";
 import { setupServer } from "msw/node";
 import { handlers } from "../mock/handlers";
