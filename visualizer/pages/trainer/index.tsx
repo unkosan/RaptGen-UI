@@ -6,6 +6,7 @@ import Navigator from "../../components/common/navigator";
 import SideBar from "../../components/trainer/home/sidebar/sidebar";
 import { Provider } from "react-redux";
 import { store } from "../../components/trainer/home/redux/store";
+import Main from "../../components/trainer/home/main/main";
 
 const Home: React.FC = () => {
   return (
@@ -25,7 +26,9 @@ const Home: React.FC = () => {
             <Col md={4}>
               <SideBar />
             </Col>
-            <Col>Please click the entry on the left</Col>
+            <Col>
+              <Main />
+            </Col>
           </Row>
         </Container>
       </main>

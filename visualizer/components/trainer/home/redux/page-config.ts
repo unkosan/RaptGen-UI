@@ -1,15 +1,15 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type PageConfig = {
-  uuid: string; // uuid of the parent model. when not specifed, represented as ""
-  childIndex: number | null; // null is for the parent model
+  parentId: string; // uuid of the parent model. when not specifed, represented as ""
+  childId: number | null; // null is for the parent model
 };
 
 const pageConfigSlice = createSlice({
   name: "pageConfig",
   initialState: {
-    uuid: "",
-    childIndex: null as number | null,
+    parentId: "",
+    childId: null as number | null,
   },
   reducers: {
     set: (state: PageConfig, action: PayloadAction<PageConfig>) => {
