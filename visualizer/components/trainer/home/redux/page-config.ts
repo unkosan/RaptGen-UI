@@ -23,4 +23,5 @@ const pageConfigSlice = createSlice({
 const pageConfigReducer = pageConfigSlice.reducer;
 
 export default pageConfigReducer;
+export const { set: setPageConfig } = pageConfigSlice.actions;
 export type { PageConfig };

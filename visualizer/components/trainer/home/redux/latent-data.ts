@@ -31,4 +31,5 @@ const selexDataSlice = createSlice({
 const selexDataReducer = selexDataSlice.reducer;
 
 export default selexDataReducer;
+export const { set: setSelexData } = selexDataSlice.actions;
 export type { SelexData };

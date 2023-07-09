@@ -33,20 +33,15 @@ const Main: React.FC = () => {
 
   const dispatch = useDispatch();
 
-  // temporary code
-  useEffect(() => {
-    dispatch({
-      type: "pageConfig/set",
-      payload: {
-        parentId: "18b1e0e0-5b1e-4b1e-8b1e-0e5b1e4b1e8b",
-        childId: 1,
-      },
-    });
-  });
-
-  if (!parentId) return <div>Please click the entry on the left</div>;
-
-  return <div>Please click the entry on the left</div>;
+  if (!parentId) {
+    return <div>Please click the entry on the left</div>;
+  } else {
+    return (
+      <div>
+        ParentId is {parentId}. childId is {childId}
+      </div>
+    );
+  }
 };
 
 export default Main;

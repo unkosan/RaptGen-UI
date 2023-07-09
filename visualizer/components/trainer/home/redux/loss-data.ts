@@ -31,4 +31,5 @@ const lossDataSlice = createSlice({
 const lossDataReducer = lossDataSlice.reducer;
 
 export default lossDataReducer;
+export const { set: setLossData } = lossDataSlice.actions;
 export type { LossData };
