@@ -1,9 +1,11 @@
 import { rest } from "msw";
 import { selex } from "./selex";
 import { loss } from "./loss";
+import { z } from "zod";
+import * as trainZod from "../../services/train-api";
 
 export const mockURL = (path: string) => {
-  return `http://localhost:8000/api${path}`;
+  return `http://localhost:3000/api${path}`;
 };
 
 const uuids = {
@@ -20,18 +22,10 @@ const uuids = {
 };
 
 const latent = {
-  // 20 points
   random_regions: selex.map((d) => d.sequence),
   coords_x: selex.map((d) => d.x),
   coords_y: selex.map((d) => d.y),
   duplicates: selex.map((d) => d.duplicate),
-};
-
-const losses = {
-  train_loss: loss.map((d) => d.train_loss),
-  test_loss: loss.map((d) => d.test_loss),
-  test_recon: loss.map((d) => d.test_recon),
-  test_kld: loss.map((d) => d.test_kld),
 };
 
 const params = {
@@ -41,1017 +35,768 @@ const params = {
   force_matching_epochs: 100,
 };
 
+const errorMsg = {
+  loc: [],
+  msg: "field not valid",
+  type: "value_error.invalid_type",
+};
+
 export const trainHandlers = [
+  rest.get(mockURL(""), (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ message: "hello" }));
+  }),
+
   rest.get(mockURL("/train/device/process"), (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json(["cpu", "cuda:0", "cuda:1", "cuda:2", "cuda:3"])
     );
   }),
-  rest.post(mockURL("/train/jobs/submit"), (req, res, ctx) => {
-    console.log(req.body);
-    return res(ctx.status(200), ctx.json(null));
-  }),
-  rest.get(mockURL("/train/jobs/search"), (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json([
-        {
-          uuid: uuids.test1,
-          name: "test",
-          status: "progress",
-          // start and duration are in unix timestamp
-          start: 1620000000,
-          duration: 36000,
-          reiteration: 3,
-          series: [
-            {
-              item_id: 0,
-              item_start: 1620000000,
-              item_duraion: 12000,
-              item_status: "failure",
-              item_epochs_total: 1000,
-              item_epochs_current: 100,
-            },
-            {
-              item_id: 1,
-              item_start: 1620012000,
-              item_duraion: 12000,
-              item_status: "success",
-              item_epochs_total: 1000,
-              item_epochs_current: 526,
-            },
-            {
-              item_id: 2,
-              item_start: 1620024000,
-              item_duraion: 12000,
-              item_status: "progress",
-              item_epochs_total: 1000,
-              item_epochs_current: 400,
-            },
-          ],
-        },
-        {
-          uuid: uuids.test2,
-          name: "test2",
-          status: "progress",
-          // start and duration are in unix timestamp
-          start: 1620000500,
-          duration: 36000,
-          reiteration: 1,
-          series: [
-            {
-              item_id: 0,
-              item_start: 1620000500,
-              item_duraion: 12000,
-              item_status: "progress",
-              item_epochs_total: 1000,
-              item_epochs_current: 700,
-            },
-          ],
-        },
-        {
-          uuid: uuids.test3,
-          name: "test3",
-          status: "pending",
-          // start and duration are in unix timestamp
-          start: 1620000000,
-          duration: 36000,
-          reiteration: 3,
-          series: [
-            {
-              item_id: 0,
-              item_start: 1620000000,
-              item_duraion: 12000,
-              item_status: "pending",
-              item_epochs_total: 1000,
-              item_epochs_current: 100,
-            },
-            {
-              item_id: 1,
-              item_start: 1620012000,
-              item_duraion: 12000,
-              item_status: "pending",
-              item_epochs_total: 1000,
-              item_epochs_current: 526,
-            },
-            {
-              item_id: 2,
-              item_start: 1620024000,
-              item_duraion: 12000,
-              item_status: "pending",
-              item_epochs_total: 1000,
-              item_epochs_current: 400,
-            },
-          ],
-        },
-        {
-          uuid: uuids.test4,
-          name: "test4",
-          status: "pending",
-          // start and duration are in unix timestamp
-          start: 1620000000,
-          duration: 1000,
-          reiteration: 1,
-          series: [
-            {
-              item_id: 0,
-              item_start: 1620000000,
-              item_duraion: 1000,
-              item_status: "pending",
-              item_epochs_total: 1000,
-              item_epochs_current: 100,
-            },
-          ],
-        },
-        {
-          uuid: uuids.test5,
-          name: "test5",
-          status: "success",
-          // start and duration are in unix timestamp
-          start: 1620000000,
-          duration: 36000,
-          reiteration: 3,
-          series: [
-            {
-              item_id: 0,
-              item_start: 1620000000,
-              item_duraion: 12000,
-              item_status: "failure",
-              item_epochs_total: 1000,
-              item_epochs_current: 100,
-            },
-            {
-              item_id: 1,
-              item_start: 1620012000,
-              item_duraion: 12000,
-              item_status: "success",
-              item_epochs_total: 1000,
-              item_epochs_current: 526,
-            },
-            {
-              item_id: 2,
-              item_start: 1620024000,
-              item_duraion: 12000,
-              item_status: "failure",
-              item_epochs_total: 1000,
-              item_epochs_current: 400,
-            },
-          ],
-        },
-        {
-          uuid: uuids.test6,
-          name: "test6",
-          status: "success",
-          // start and duration are in unix timestamp
-          start: 1620000000,
-          duration: 1000,
-          reiteration: 1,
-          series: [
-            {
-              item_id: 0,
-              item_start: 1620000000,
-              item_duraion: 1000,
-              item_status: "success",
-              item_epochs_total: 1000,
-              item_epochs_current: 100,
-            },
-          ],
-        },
-        {
-          uuid: uuids.test7,
-          name: "test7",
-          status: "failure",
-          // start and duration are in unix timestamp
-          start: 1620000000,
-          duration: 36000,
-          reiteration: 3,
-          series: [
-            {
-              item_id: 0,
-              item_start: 1620000000,
-              item_duraion: 12000,
-              item_status: "failure",
-              item_epochs_total: 1000,
-              item_epochs_current: 100,
-            },
-            {
-              item_id: 1,
-              item_start: 1620012000,
-              item_duraion: 12000,
-              item_status: "failure",
-              item_epochs_total: 1000,
-              item_epochs_current: 526,
-            },
-            {
-              item_id: 2,
-              item_start: 1620024000,
-              item_duraion: 12000,
-              item_status: "failure",
-              item_epochs_total: 1000,
-              item_epochs_current: 400,
-            },
-          ],
-        },
-        {
-          uuid: uuids.test8,
-          name: "test8",
-          status: "failure",
-          // start and duration are in unix timestamp
-          start: 1620000000,
-          duration: 1000,
-          reiteration: 1,
-          series: [
-            {
-              item_id: 0,
-              item_start: 1620000000,
-              item_duraion: 1000,
-              item_status: "failure",
-              item_epochs_total: 1000,
-              item_epochs_current: 100,
-            },
-          ],
-        },
-        {
-          uuid: uuids.test9,
-          name: "test9",
-          status: "suspend",
-          // start and duration are in unix timestamp
-          start: 1620000000,
-          duration: 36000,
-          reiteration: 3,
-          series: [
-            {
-              item_id: 0,
-              item_start: 1620000000,
-              item_duraion: 12000,
-              item_status: "success",
-              item_epochs_total: 1000,
-              item_epochs_current: 100,
-            },
-            {
-              item_id: 1,
-              item_start: 1620012000,
-              item_duraion: 12000,
-              item_status: "failure",
-              item_epochs_total: 1000,
-              item_epochs_current: 526,
-            },
-            {
-              item_id: 2,
-              item_start: 1620024000,
-              item_duraion: 12000,
-              item_status: "suspend",
-              item_epochs_total: 1000,
-              item_epochs_current: 400,
-            },
-          ],
-        },
-        {
-          uuid: uuids.test10,
-          name: "test10",
-          status: "suspend",
-          // start and duration are in unix timestamp
-          start: 1620000000,
-          duration: 1000,
-          reiteration: 1,
-          series: [
-            {
-              item_id: 0,
-              item_start: 1620000000,
-              item_duraion: 1000,
-              item_status: "suspend",
-              item_epochs_total: 1000,
-              item_epochs_current: 100,
-            },
-          ],
-        },
-      ])
-    );
+
+  rest.post(mockURL("/train/jobs/submit"), async (req, res, ctx) => {
+    if (trainZod.requestPostSubmitJob.safeParse(await req.json())) {
+      return res(ctx.status(200), ctx.json(null));
+    } else {
+      return res(ctx.status(422), ctx.json(errorMsg));
+    }
   }),
 
-  rest.get(mockURL("/train/jobs/items/:uuid"), (req, res, ctx) => {
-    // if uuid path param is uuids.test1
-    const itemId = req.params.uuid;
-    const iterId = req.url.searchParams.get("number");
-    if (!itemId) {
-      return res(
-        ctx.status(400),
-        ctx.json({ message: "uuid is not specified" })
-      );
+  rest.post(mockURL("/train/jobs/search"), async (req, res, ctx) => {
+    const q = await req.json();
+    if (!trainZod.requestPostSearchJobs.safeParse(q)) {
+      return await res(ctx.status(422), ctx.json(errorMsg));
     }
-    switch (itemId) {
-      case uuids.test1:
-        const parent1 = {
-          uuid: uuids.test1,
-          parent_name: "test",
-          parent_status: "progress",
-          parent_start: 1620000000,
-          parent_duration: 36000,
-          parent_reiteration: 3,
-          params_training: params,
-        };
-        const summary1 = {
-          indeces: [0, 1, 2],
+
+    let data = [
+      {
+        uuid: uuids.test1,
+        name: "test1",
+        type: "RaptGen",
+        status: "progress",
+        // start and duration are in unix timestamp
+        start: 1620000000,
+        duration: 36000,
+        reiteration: 3,
+        series: [
+          {
+            item_id: 0,
+            item_start: 1620000000,
+            item_duration: 12000,
+            item_status: "failure",
+            item_epochs_total: 1000,
+            item_epochs_current: 100,
+          },
+          {
+            item_id: 1,
+            item_start: 1620012000,
+            item_duration: 12000,
+            item_status: "success",
+            item_epochs_total: 1000,
+            item_epochs_current: 526,
+          },
+          {
+            item_id: 2,
+            item_start: 1620024000,
+            item_duration: 12000,
+            item_status: "progress",
+            item_epochs_total: 1000,
+            item_epochs_current: 400,
+          },
+        ],
+      },
+      {
+        uuid: uuids.test2,
+        name: "test2",
+        type: "RaptGen",
+        status: "progress",
+        // start and duration are in unix timestamp
+        start: 1620000500,
+        duration: 36000,
+        reiteration: 1,
+        series: [
+          {
+            item_id: 0,
+            item_start: 1620000500,
+            item_duration: 12000,
+            item_status: "progress",
+            item_epochs_total: 1000,
+            item_epochs_current: 700,
+          },
+        ],
+      },
+      {
+        uuid: uuids.test3,
+        name: "test3",
+        type: "RaptGen",
+        status: "pending",
+        // start and duration are in unix timestamp
+        start: 1620000000,
+        duration: 36000,
+        reiteration: 3,
+        series: [
+          {
+            item_id: 0,
+            item_start: 1620000000,
+            item_duration: 12000,
+            item_status: "pending",
+            item_epochs_total: 1000,
+            item_epochs_current: 100,
+          },
+          {
+            item_id: 1,
+            item_start: 1620012000,
+            item_duration: 12000,
+            item_status: "pending",
+            item_epochs_total: 1000,
+            item_epochs_current: 526,
+          },
+          {
+            item_id: 2,
+            item_start: 1620024000,
+            item_duration: 12000,
+            item_status: "pending",
+            item_epochs_total: 1000,
+            item_epochs_current: 400,
+          },
+        ],
+      },
+      {
+        uuid: uuids.test4,
+        name: "test4",
+        type: "RaptGen",
+        status: "pending",
+        // start and duration are in unix timestamp
+        start: 1620000000,
+        duration: 1000,
+        reiteration: 1,
+        series: [
+          {
+            item_id: 0,
+            item_start: 1620000000,
+            item_duration: 1000,
+            item_status: "pending",
+            item_epochs_total: 1000,
+            item_epochs_current: 100,
+          },
+        ],
+      },
+      {
+        uuid: uuids.test5,
+        name: "test5",
+        type: "RaptGen",
+        status: "success",
+        // start and duration are in unix timestamp
+        start: 1620000000,
+        duration: 36000,
+        reiteration: 3,
+        series: [
+          {
+            item_id: 0,
+            item_start: 1620000000,
+            item_duration: 12000,
+            item_status: "failure",
+            item_epochs_total: 1000,
+            item_epochs_current: 100,
+          },
+          {
+            item_id: 1,
+            item_start: 1620012000,
+            item_duration: 12000,
+            item_status: "success",
+            item_epochs_total: 1000,
+            item_epochs_current: 526,
+          },
+          {
+            item_id: 2,
+            item_start: 1620024000,
+            item_duration: 12000,
+            item_status: "failure",
+            item_epochs_total: 1000,
+            item_epochs_current: 400,
+          },
+        ],
+      },
+      {
+        uuid: uuids.test6,
+        name: "test6",
+        type: "RaptGen",
+        status: "success",
+        // start and duration are in unix timestamp
+        start: 1620000000,
+        duration: 1000,
+        reiteration: 1,
+        series: [
+          {
+            item_id: 0,
+            item_start: 1620000000,
+            item_duration: 1000,
+            item_status: "success",
+            item_epochs_total: 1000,
+            item_epochs_current: 100,
+          },
+        ],
+      },
+      {
+        uuid: uuids.test7,
+        name: "test7",
+        type: "RaptGen",
+        status: "failure",
+        // start and duration are in unix timestamp
+        start: 1620000000,
+        duration: 36000,
+        reiteration: 3,
+        series: [
+          {
+            item_id: 0,
+            item_start: 1620000000,
+            item_duration: 12000,
+            item_status: "failure",
+            item_epochs_total: 1000,
+            item_epochs_current: 100,
+          },
+          {
+            item_id: 1,
+            item_start: 1620012000,
+            item_duration: 12000,
+            item_status: "failure",
+            item_epochs_total: 1000,
+            item_epochs_current: 526,
+          },
+          {
+            item_id: 2,
+            item_start: 1620024000,
+            item_duration: 12000,
+            item_status: "failure",
+            item_epochs_total: 1000,
+            item_epochs_current: 400,
+          },
+        ],
+      },
+      {
+        uuid: uuids.test8,
+        name: "test8",
+        type: "RaptGen",
+        status: "failure",
+        // start and duration are in unix timestamp
+        start: 1620000000,
+        duration: 1000,
+        reiteration: 1,
+        series: [
+          {
+            item_id: 0,
+            item_start: 1620000000,
+            item_duration: 1000,
+            item_status: "failure",
+            item_epochs_total: 1000,
+            item_epochs_current: 100,
+          },
+        ],
+      },
+      {
+        uuid: uuids.test9,
+        name: "test9",
+        type: "RaptGen",
+        status: "suspend",
+        // start and duration are in unix timestamp
+        start: 1620000000,
+        duration: 36000,
+        reiteration: 3,
+        series: [
+          {
+            item_id: 0,
+            item_start: 1620000000,
+            item_duration: 12000,
+            item_status: "success",
+            item_epochs_total: 1000,
+            item_epochs_current: 100,
+          },
+          {
+            item_id: 1,
+            item_start: 1620012000,
+            item_duration: 12000,
+            item_status: "failure",
+            item_epochs_total: 1000,
+            item_epochs_current: 526,
+          },
+          {
+            item_id: 2,
+            item_start: 1620024000,
+            item_duration: 12000,
+            item_status: "suspend",
+            item_epochs_total: 1000,
+            item_epochs_current: 400,
+          },
+        ],
+      },
+      {
+        uuid: uuids.test10,
+        name: "test10",
+        type: "RaptGen",
+        status: "suspend",
+        // start and duration are in unix timestamp
+        start: 1620000000,
+        duration: 1000,
+        reiteration: 1,
+        series: [
+          {
+            item_id: 0,
+            item_start: 1620000000,
+            item_duration: 1000,
+            item_status: "suspend",
+            item_epochs_total: 1000,
+            item_epochs_current: 100,
+          },
+        ],
+      },
+    ] as z.infer<typeof trainZod.responsePostSearchJobs>;
+
+    const { status, search_regex, is_multiple, type } = q as z.infer<
+      typeof trainZod.requestPostSearchJobs
+    >;
+
+    if (status) {
+      data = data.filter((d) => status.includes(d.status));
+    }
+    if (search_regex) {
+      data = data.filter((d) => RegExp(search_regex).test(d.name));
+    }
+    if (is_multiple) {
+      data = data.filter((d) => d.reiteration > 1);
+    }
+    if (type) {
+      data = data.filter((d) => type.includes(d.type));
+    }
+
+    return await res(ctx.status(200), ctx.json(data));
+  }),
+
+  rest.get(mockURL("/train/jobs/items/:parent_uuid"), (req, res, ctx) => {
+    const { parent_uuid } = req.params;
+    const params = {
+      parent_uuid: parent_uuid,
+    };
+    const zod = z.object({
+      parent_uuid: z.string().uuid(),
+    });
+    if (!zod.safeParse(params)) {
+      return res(ctx.status(422), ctx.json(errorMsg));
+    }
+
+    let data = [
+      {
+        uuid: uuids.test1,
+        name: "test1",
+        type: "RaptGen",
+        status: "progress",
+        start: 1620000000,
+        duration: 36000,
+        reiteration: 3,
+        params_training: params,
+        summary: {
+          indices: [0, 1, 2],
           statuses: ["success", "failure", "progress"],
           epochs_finished: [100, 526, 400],
-          minimum_neglog_ELBOs: [0.3, 0.2, 0.1],
-        };
-        switch (iterId) {
-          case null:
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent1,
-                item_id: 2,
-                item_start: 1620024000,
-                item_duraion: 12000,
-                item_status: "progress",
-                latent: latent,
-                losses: losses,
-                summary: summary1,
-              })
-            );
-          case "0":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent1,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 12000,
-                item_status: "failure",
-                error_msg: "error message",
-                summary: summary1,
-              })
-            );
-
-          case "1":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent1,
-                item_id: 1,
-                item_start: 1620012000,
-                item_duraion: 12000,
-                item_status: "success",
-                latent: latent,
-                losses: losses,
-                summary: summary1,
-              })
-            );
-
-          case "2":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent1,
-                item_id: 2,
-                item_start: 1620024000,
-                item_duraion: 12000,
-                item_status: "progress",
-                latent: latent,
-                losses: losses,
-                summary: summary1,
-              })
-            );
-
-          default:
-            return res(
-              ctx.status(400),
-              ctx.json({ message: "number is not valid" })
-            );
-        }
-
-      case uuids.test2:
-        const parent2 = {
-          uuid: uuids.test2,
-          parent_name: "test2",
-          parent_status: "progress",
-          parent_start: 1620000500,
-          parent_duration: 36000,
-          parent_reiteration: 1,
-          params_training: params,
-        };
-        const summary2 = {
-          indeces: [0],
+          minimum_NLLs: [0.3, 0.2, 0.1],
+        },
+      },
+      {
+        uuid: uuids.test2,
+        name: "test2",
+        type: "RaptGen",
+        status: "progress",
+        start: 1620000500,
+        duration: 36000,
+        reiteration: 1,
+        params_training: params,
+        summary: {
+          indices: [0],
           statuses: ["progress"],
           epochs_finished: [700],
-          minimum_neglog_ELBOs: [0.3],
-        };
-        switch (iterId) {
-          case null:
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent2,
-                item_id: 0,
-                item_start: 1620000500,
-                item_duraion: 12000,
-                item_status: "progress",
-                latent: latent,
-                losses: losses,
-                summary: summary2,
-              })
-            );
-          case "0":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent2,
-                item_id: 0,
-                item_start: 1620000500,
-                item_duraion: 12000,
-                item_status: "progress",
-                latent: latent,
-                losses: losses,
-                summary: summary2,
-              })
-            );
-          default:
-            return res(
-              ctx.status(400),
-              ctx.json({ message: "number is not valid" })
-            );
-        }
-
-      case uuids.test3:
-        const parent3 = {
-          uuid: uuids.test3,
-          parent_name: "test3",
-          parent_status: "pending",
-          parent_start: 1620000000,
-          parent_duration: 36000,
-          parent_reiteration: 3,
-          params_training: params,
-        };
-        const summary3 = {
-          indeces: [0, 1, 2],
+          minimum_NLLs: [0.3],
+        },
+      },
+      {
+        uuid: uuids.test3,
+        name: "test3",
+        type: "RaptGen",
+        status: "pending",
+        start: 1620000000,
+        duration: 36000,
+        reiteration: 3,
+        params_training: params,
+        summary: {
+          indices: [0, 1, 2],
           statuses: ["pending", "pending", "pending"],
-          epoochs_finished: [100, 526, 400],
-          minimum_neglog_ELBOs: [NaN, NaN, NaN],
-        };
-        switch (iterId) {
-          case null:
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent3,
-                item_id: 2,
-                item_start: 1620024000,
-                item_duraion: 12000,
-                item_status: "pending",
-                summary: summary3,
-              })
-            );
-          case "0":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent3,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 12000,
-                item_status: "pending",
-                summary: summary3,
-              })
-            );
-          case "1":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent3,
-                item_id: 1,
-                item_start: 1620012000,
-                item_duraion: 12000,
-                item_status: "pending",
-                summary: summary3,
-              })
-            );
-          case "2":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent3,
-                item_id: 2,
-                item_start: 1620024000,
-                item_duraion: 12000,
-                item_status: "pending",
-                summary: summary3,
-              })
-            );
-          default:
-            return res(
-              ctx.status(400),
-              ctx.json({ message: "number is not valid" })
-            );
-        }
-
-      case uuids.test4:
-        const parent4 = {
-          uuid: uuids.test4,
-          parent_name: "test4",
-          parent_status: "pending",
-          parent_start: 1620000000,
-          parent_duration: 1000,
-          parent_reiteration: 1,
-          params_training: params,
-        };
-        const summary4 = {
-          indeces: [0],
+          epochs_finished: [100, 526, 400],
+          minimum_NLLs: [NaN, NaN, NaN],
+        },
+      },
+      {
+        uuid: uuids.test4,
+        name: "test4",
+        type: "RaptGen",
+        status: "pending",
+        start: 1620000000,
+        duration: 1000,
+        reiteration: 1,
+        params_training: params,
+        summary: {
+          indices: [0],
           statuses: ["pending"],
-          epoochs_finished: [100],
-          minimum_neglog_ELBOs: [NaN],
-        };
-        switch (iterId) {
-          case null:
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent4,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 1000,
-                item_status: "pending",
-                summary: summary4,
-              })
-            );
-          case "0":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent4,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 1000,
-                item_status: "pending",
-                summary: summary4,
-              })
-            );
-          default:
-            return res(
-              ctx.status(400),
-              ctx.json({ message: "number is not valid" })
-            );
-        }
-
-      case uuids.test5:
-        const parent5 = {
-          uuid: uuids.test5,
-          parent_name: "test5",
-          parent_status: "success",
-          parent_start: 1620000000,
-          parent_duration: 36000,
-          parent_reiteration: 3,
-          params_training: params,
-        };
-        const summary5 = {
-          indeces: [0, 1, 2],
+          epochs_finished: [100],
+          minimum_NLLs: [NaN],
+        },
+      },
+      {
+        uuid: uuids.test5,
+        name: "test5",
+        type: "RaptGen",
+        status: "success",
+        start: 1620000000,
+        duration: 36000,
+        reiteration: 3,
+        params_training: params,
+        summary: {
+          indices: [0, 1, 2],
           statuses: ["failure", "success", "failure"],
-          epoochs_finished: [100, 526, 400],
-          minimum_neglog_ELBOs: [0.3, 0.2, 0.1],
-        };
-        switch (iterId) {
-          case null:
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent5,
-                item_id: 1,
-                item_start: 1620012000,
-                item_duraion: 12000,
-                item_status: "success",
-                latent: latent,
-                losses: losses,
-                summary: summary5,
-              })
-            );
-          case "0":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent5,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 12000,
-                item_status: "failure",
-                error_msg: "error message",
-                summary: summary5,
-              })
-            );
-          case "1":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent5,
-                item_id: 1,
-                item_start: 1620012000,
-                item_duraion: 12000,
-                item_status: "success",
-                latent: latent,
-                losses: losses,
-                summary: summary5,
-              })
-            );
-          case "2":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent5,
-                item_id: 2,
-                item_start: 1620024000,
-                item_duraion: 12000,
-                item_status: "failure",
-                error_msg: "error message",
-                summary: summary5,
-              })
-            );
-          default:
-            return res(
-              ctx.status(400),
-              ctx.json({ message: "number is not valid" })
-            );
-        }
-
-      case uuids.test6:
-        const parent6 = {
-          uuid: uuids.test6,
-          parent_name: "test6",
-          parent_status: "success",
-          parent_start: 1620000000,
-          parent_duration: 1000,
-          parent_reiteration: 1,
-          params_training: params,
-        };
-        const summary6 = {
-          indeces: [0],
+          epochs_finished: [100, 526, 400],
+          minimum_NLLs: [0.3, 0.2, 0.1],
+        },
+      },
+      {
+        uuid: uuids.test6,
+        name: "test6",
+        type: "RaptGen",
+        status: "success",
+        start: 1620000000,
+        duration: 1000,
+        reiteration: 1,
+        params_training: params,
+        summary: {
+          indices: [0],
           statuses: ["success"],
-          epoochs_finished: [100],
-          minimum_neglog_ELBOs: [0.3],
-        };
-        switch (iterId) {
-          case null:
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent6,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 1000,
-                item_status: "success",
-                latent: latent,
-                losses: losses,
-                summary: summary6,
-              })
-            );
-          case "0":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent6,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 1000,
-                item_status: "success",
-                latent: latent,
-                losses: losses,
-                summary: summary6,
-              })
-            );
-          default:
-            return res(
-              ctx.status(400),
-              ctx.json({ message: "number is not valid" })
-            );
-        }
-
-      case uuids.test7:
-        const parent7 = {
-          uuid: uuids.test7,
-          parent_name: "test7",
-          parent_status: "failure",
-          parent_start: 1620000000,
-          parent_duration: 36000,
-          parent_reiteration: 3,
-          params_training: params,
-        };
-        const summary7 = {
-          indeces: [0, 1, 2],
+          epochs_finished: [100],
+          minimum_NLLs: [0.3],
+        },
+      },
+      {
+        uuid: uuids.test7,
+        name: "test7",
+        type: "RaptGen",
+        status: "failure",
+        start: 1620000000,
+        duration: 36000,
+        reiteration: 3,
+        params_training: params,
+        summary: {
+          indices: [0, 1, 2],
           statuses: ["failure", "failure", "failure"],
-          epoochs_finished: [100, 526, 400],
-          minimum_neglog_ELBOs: [0.3, 0.2, 0.1],
-        };
-        switch (iterId) {
-          case null:
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent7,
-                item_id: 2,
-                item_start: 1620024000,
-                item_duraion: 12000,
-                item_status: "failure",
-                error_msg: "error message",
-                summary: summary7,
-              })
-            );
-          case "0":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent7,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 12000,
-                item_status: "failure",
-                error_msg: "error message",
-                summary: summary7,
-              })
-            );
-          case "1":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent7,
-                item_id: 1,
-                item_start: 1620012000,
-                item_duraion: 12000,
-                item_status: "failure",
-                error_msg: "error message",
-                summary: summary7,
-              })
-            );
-          case "2":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent7,
-                item_id: 2,
-                item_start: 1620024000,
-                item_duraion: 12000,
-                item_status: "failure",
-                error_msg: "error message",
-                summary: summary7,
-              })
-            );
-          default:
-            return res(
-              ctx.status(400),
-              ctx.json({ message: "number is not valid" })
-            );
-        }
-
-      case uuids.test8:
-        const parent8 = {
-          uuid: uuids.test8,
-          parent_name: "test8",
-          parent_status: "failure",
-          parent_start: 1620000000,
-          parent_duration: 1000,
-          parent_reiteration: 1,
-          params_training: params,
-        };
-        const summary8 = {
-          indeces: [0],
+          epochs_finished: [100, 526, 400],
+          minimum_NLLs: [0.3, 0.2, 0.1],
+        },
+      },
+      {
+        uuid: uuids.test8,
+        name: "test8",
+        type: "RaptGen",
+        status: "failure",
+        start: 1620000000,
+        duration: 1000,
+        reiteration: 1,
+        params_training: params,
+        summary: {
+          indices: [0],
           statuses: ["failure"],
-          epoochs_finished: [100],
-          minimum_neglog_ELBOs: [0.3],
-        };
-        switch (iterId) {
-          case null:
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent8,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 1000,
-                item_status: "failure",
-                error_msg: "error message",
-                summary: summary8,
-              })
-            );
-          case "0":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent8,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 1000,
-                item_status: "failure",
-                error_msg: "error message",
-                summary: summary8,
-              })
-            );
-          default:
-            return res(
-              ctx.status(400),
-              ctx.json({ message: "number is not valid" })
-            );
-        }
-
-      case uuids.test9:
-        const parent9 = {
-          uuid: uuids.test9,
-          parent_name: "test9",
-          parent_status: "suspend",
-          parent_start: 1620000000,
-          parent_duration: 36000,
-          parent_reiteration: 3,
-          params_training: params,
-        };
-        const summary9 = {
-          indeces: [0, 1, 2],
+          epochs_finished: [100],
+          minimum_NLLs: [0.3],
+        },
+      },
+      {
+        uuid: uuids.test9,
+        name: "test9",
+        type: "RaptGen",
+        status: "suspend",
+        start: 1620000000,
+        duration: 36000,
+        reiteration: 3,
+        params_training: params,
+        summary: {
+          indices: [0, 1, 2],
           statuses: ["success", "failure", "suspend"],
-          epoochs_finished: [100, 526, 400],
-          minimum_neglog_ELBOs: [0.3, 0.2, 0.1],
-        };
-        switch (iterId) {
-          case null:
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent9,
-                item_id: 2,
-                item_start: 1620024000,
-                item_duraion: 12000,
-                item_status: "suspend",
-                summary: summary9,
-              })
-            );
-          case "0":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent9,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 12000,
-                item_status: "success",
-                latent: latent,
-                losses: losses,
-                summary: summary9,
-              })
-            );
-          case "1":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent9,
-                item_id: 1,
-                item_start: 1620012000,
-                item_duraion: 12000,
-                item_status: "failure",
-                error_msg: "error message",
-                summary: summary9,
-              })
-            );
-          case "2":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent9,
-                item_id: 2,
-                item_start: 1620024000,
-                item_duraion: 12000,
-                item_status: "suspend",
-                summary: summary9,
-              })
-            );
-          default:
-            return res(
-              ctx.status(400),
-              ctx.json({ message: "number is not valid" })
-            );
-        }
-
-      case uuids.test10:
-        const parent10 = {
-          uuid: uuids.test10,
-          parent_name: "test10",
-          parent_status: "suspend",
-          parent_start: 1620000000,
-          parent_duration: 1000,
-          parent_reiteration: 1,
-          params_training: params,
-        };
-        const summary10 = {
-          indeces: [0],
+          epochs_finished: [100, 526, 400],
+          minimum_NLLs: [0.3, 0.2, 0.1],
+        },
+      },
+      {
+        uuid: uuids.test10,
+        name: "test10",
+        type: "RaptGen",
+        status: "suspend",
+        start: 1620000000,
+        duration: 1000,
+        reiteration: 1,
+        params_training: params,
+        summary: {
+          indices: [0],
           statuses: ["suspend"],
-          epoochs_finished: [100],
-          minimum_neglog_ELBOs: [0.3],
-        };
-        switch (iterId) {
-          case null:
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent10,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 1000,
-                item_status: "suspend",
-                summary: summary10,
-              })
-            );
-          case "0":
-            return res(
-              ctx.status(200),
-              ctx.json({
-                ...parent10,
-                item_id: 0,
-                item_start: 1620000000,
-                item_duraion: 1000,
-                item_status: "suspend",
-                summary: summary10,
-              })
-            );
-          default:
-            return res(
-              ctx.status(400),
-              ctx.json({ message: "number is not valid" })
-            );
-        }
+          epochs_finished: [100],
+          minimum_NLLs: [0.3],
+        },
+      },
+    ] as z.infer<typeof trainZod.responseGetItem>[];
 
-      default:
-        return res(ctx.status(400), ctx.json({ message: "uuid is not valid" }));
+    data = data.filter((d) => d.uuid === parent_uuid);
+    if (data.length === 0) {
+      return res(ctx.status(404), ctx.json(errorMsg));
+    } else {
+      return res(ctx.status(200), ctx.json(data[0]));
     }
   }),
 
-  rest.patch(mockURL("/train/jobs/items/:uuid"), (req, res, ctx) => {
-    const itemId = req.params.uuid;
-    if (!itemId) {
-      return res(
-        ctx.status(400),
-        ctx.json({ message: "uuid is not specified" })
+  rest.get(
+    mockURL("/train/jobs/items/:parent_uuid/:child_id"),
+    (req, res, ctx) => {
+      const { parent_uuid, child_id } = req.params;
+      const params = {
+        parent_uuid: parent_uuid,
+        child_id: child_id,
+      };
+      const zod = z.object({
+        parent_uuid: z.string().uuid(),
+        child_id: z.number().int().min(0),
+      });
+      if (!zod.safeParse(params)) {
+        return res(ctx.status(422), ctx.json(errorMsg));
+      }
+
+      let data = [
+        {
+          uuid: uuids.test1,
+          id: 0,
+          status: "failure",
+          start: 1620000000,
+          duration: 12000,
+          error_msg: "error message",
+        },
+        {
+          uuid: uuids.test1,
+          id: 1,
+          status: "success",
+          start: 1620012000,
+          duration: 12000,
+          latent: latent,
+          losses: loss,
+        },
+        {
+          uuid: uuids.test1,
+          id: 2,
+          status: "progress",
+          start: 1620024000,
+          duration: 12000,
+          latent: latent,
+          losses: loss,
+        },
+        {
+          uuid: uuids.test2,
+          id: 0,
+          status: "progress",
+          start: 1620000500,
+          duration: 12000,
+          latent: latent,
+          losses: loss,
+        },
+        {
+          uuid: uuids.test3,
+          id: 0,
+          status: "pending",
+          start: 1620000000,
+          duration: 12000,
+        },
+        {
+          uuid: uuids.test3,
+          id: 1,
+          status: "pending",
+          start: 1620012000,
+          duration: 12000,
+        },
+        {
+          uuid: uuids.test3,
+          id: 2,
+          status: "pending",
+          start: 1620024000,
+          duration: 12000,
+        },
+        {
+          uuid: uuids.test4,
+          id: 0,
+          status: "pending",
+          start: 1620000000,
+          duration: 1000,
+        },
+        {
+          uuid: uuids.test5,
+          id: 0,
+          status: "failure",
+          start: 1620000000,
+          duration: 12000,
+          error_msg: "error message",
+        },
+        {
+          uuid: uuids.test5,
+          id: 1,
+          status: "success",
+          start: 1620012000,
+          duration: 12000,
+          latent: latent,
+          losses: loss,
+        },
+        {
+          uuid: uuids.test5,
+          id: 2,
+          status: "failure",
+          start: 1620024000,
+          duration: 12000,
+          latent: latent,
+          losses: loss,
+        },
+        {
+          uuid: uuids.test6,
+          id: 0,
+          status: "success",
+          start: 1620000000,
+          duration: 1000,
+          latent: latent,
+          losses: loss,
+        },
+        {
+          uuid: uuids.test7,
+          id: 0,
+          status: "failure",
+          start: 1620000000,
+          duration: 12000,
+          error_msg: "error message",
+        },
+        {
+          uuid: uuids.test7,
+          id: 1,
+          status: "failure",
+          start: 1620012000,
+          duration: 12000,
+          error_msg: "error message",
+        },
+        {
+          uuid: uuids.test7,
+          id: 2,
+          status: "failure",
+          start: 1620024000,
+          duration: 12000,
+          error_msg: "error message",
+        },
+        {
+          uuid: uuids.test8,
+          id: 0,
+          status: "failure",
+          start: 1620000000,
+          duration: 1000,
+          error_msg: "error message",
+        },
+        {
+          uuid: uuids.test9,
+          id: 0,
+          status: "success",
+          start: 1620000000,
+          duration: 12000,
+          latent: latent,
+          losses: loss,
+        },
+        {
+          uuid: uuids.test9,
+          id: 1,
+          status: "failure",
+          start: 1620012000,
+          duration: 12000,
+          latent: latent,
+          losses: loss,
+        },
+        {
+          uuid: uuids.test9,
+          id: 2,
+          status: "suspend",
+          start: 1620024000,
+          duration: 12000,
+          latent: latent,
+          losses: loss,
+        },
+        {
+          uuid: uuids.test10,
+          id: 0,
+          status: "suspend",
+          start: 1620000000,
+          duration: 1000,
+          latent: latent,
+          losses: loss,
+        },
+      ] as z.infer<typeof trainZod.responseGetItemChild>[];
+
+      data = data.filter(
+        (d) => d.uuid === parent_uuid && d.id === parseInt(child_id as string)
       );
+
+      if (data.length === 0) {
+        return res(ctx.status(404), ctx.json(errorMsg));
+      } else {
+        return res(ctx.status(200), ctx.json(data[0]));
+      }
     }
-    console.log(req.body);
-    return res(ctx.status(200), ctx.json(null));
+  ),
+
+  rest.delete(
+    mockURL("/train/jobs/items/:parent_uuid"),
+    async (req, res, ctx) => {
+      const { parent_uuid } = req.params;
+      const params = {
+        parent_uuid: parent_uuid,
+      };
+      const zod = z.object({
+        parent_uuid: z.string().uuid(),
+      });
+      if (!zod.safeParse(params)) {
+        return res(ctx.status(422), ctx.json(errorMsg));
+      }
+
+      return res(ctx.status(200), ctx.json(null));
+    }
+  ),
+
+  rest.post(mockURL("/train/jobs/kill"), async (req, res, ctx) => {
+    if (trainZod.requestPostKill.safeParse(await req.json())) {
+      return res(ctx.status(200), ctx.json(null));
+    } else {
+      return res(ctx.status(422), ctx.json(errorMsg));
+    }
   }),
 
-  rest.delete(mockURL("/train/jobs/items/:uuid"), (req, res, ctx) => {
-    const itemId = req.params.uuid;
-    if (!itemId) {
-      return res(
-        ctx.status(400),
-        ctx.json({ message: "uuid is not specified" })
-      );
+  rest.post(mockURL("/train/jobs/suspend"), async (req, res, ctx) => {
+    if (trainZod.requestPostSuspend.safeParse(await req.json())) {
+      return res(ctx.status(200), ctx.json(null));
+    } else {
+      return res(ctx.status(422), ctx.json(errorMsg));
     }
-    console.log(req.body);
-    return res(ctx.status(200), ctx.json(null));
   }),
 
-  rest.post(mockURL("/train/jobs/kill"), (req, res, ctx) => {
-    // get payload "uuid" from request body
-    const body = req.body as { uuid: string };
-    if (body?.uuid === null) {
-      return res(
-        ctx.status(400),
-        ctx.json({ message: "uuid is not specified" })
-      );
+  rest.post(mockURL("/train/jobs/resume"), async (req, res, ctx) => {
+    if (trainZod.requestPostResume.safeParse(await req.json())) {
+      return res(ctx.status(200), ctx.json(null));
+    } else {
+      return res(ctx.status(422), ctx.json(errorMsg));
     }
-
-    return res(ctx.status(200), ctx.json(null));
   }),
 
-  rest.post(mockURL("/train/jobs/suspend"), (req, res, ctx) => {
-    // get payload "uuid" from request body
-    const body = req.body as { uuid: string };
-    if (!body?.uuid) {
-      return res(
-        ctx.status(400),
-        ctx.json({ message: "uuid is not specified" })
-      );
+  rest.post(mockURL("/train/jobs/publish"), async (req, res, ctx) => {
+    if (trainZod.requestPostPublish.safeParse(await req.json())) {
+      return res(ctx.status(200), ctx.json(null));
+    } else {
+      return res(ctx.status(422), ctx.json(errorMsg));
     }
-
-    return res(ctx.status(200), ctx.json(null));
-  }),
-
-  rest.post(mockURL("/train/jobs/resume"), (req, res, ctx) => {
-    // get payload "uuid" from request body
-    const body = req.body as { uuid: string };
-    if (!body?.uuid) {
-      return res(
-        ctx.status(400),
-        ctx.json({ message: "uuid is not specified" })
-      );
-    }
-
-    return res(ctx.status(200), ctx.json(null));
-  }),
-
-  rest.post(mockURL("/train/jobs/publish"), (req, res, ctx) => {
-    // get payload "uuid" from request body
-    const body = req.body as { uuid: string; multi?: number };
-    if (!body?.uuid) {
-      return res(
-        ctx.status(400),
-        ctx.json({ message: "uuid is not specified" })
-      );
-    }
-
-    return res(ctx.status(200), ctx.json(null));
   }),
 ];

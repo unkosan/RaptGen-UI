@@ -13,6 +13,7 @@
     "@inovua/reactdatagrid-community": "^5.9.3",
     "@next/font": "13.1.1",
     "@reduxjs/toolkit": "^1.9.1",
+    "@zodios/core": "^10.9.2",
     "axios": "^1.2.3",
     "bioinformatics-parser": "^1.1.2",
     "bootstrap": "^5.2.3",
