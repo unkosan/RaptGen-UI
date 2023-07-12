@@ -79,7 +79,7 @@ export const responseGetItem = z.object({
       z.enum(["success", "failure", "progress", "pending", "suspend"])
     ),
     epochs_finished: z.array(z.number().int().min(0)),
-    minimum_NLLs: z.array(z.number().min(0)),
+    minimum_NLLs: z.array(z.union([z.null(), z.number().min(0)])),
   }),
 });
 
@@ -103,7 +103,7 @@ export const responseGetItemChild = z.union([
     }),
     losses: z.object({
       train_loss: z.array(z.number()),
-      test_los: z.array(z.number()),
+      test_loss: z.array(z.number()),
       test_recon: z.array(z.number()),
       test_kld: z.array(z.number()),
     }),

@@ -1,6 +1,7 @@
 import { Layout, PlotData } from "plotly.js";
 import { useMemo } from "react";
-import Plot from "react-plotly.js";
+import dynamic from "next/dynamic";
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const returnLayout = (title: string): Partial<Layout> => {
   return {
@@ -43,7 +44,7 @@ type Props = {
   vaeData: {
     coordsX: number[];
     coordsY: number[];
-    randomRegions: number[];
+    randomRegions: string[];
     duplicates: number[];
     minCount: number;
   };
@@ -59,11 +60,18 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
       type: "scattergl",
       mode: "markers",
       marker: {
-        color: randomRegions.filter((_, index) => mask[index]),
-        size: 5,
+        size: duplicates.map((d) => Math.max(2, Math.sqrt(d))),
+        color: "black",
+        line: {
+          color: "black",
+        },
       },
+      customdata: randomRegions.filter((_, index) => mask[index]),
       hovertemplate:
-        "X: %{x}<br>Y: %{y}<br>Random Region: %{marker.color}<extra></extra>",
+        "X: %{x}<br>" +
+        "Y: %{y}<br>" +
+        "Random Region: %{customdata}" +
+        "<extra></extra>",
     };
     return trace;
   }, [vaeData]);
@@ -71,8 +79,10 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
   return (
     <Plot
       data={[vaeDataPlot]}
+      useResizeHandler={true}
       layout={returnLayout(title)}
       config={{ responsive: true }}
+      style={{ width: "100%" }}
     />
   );
 };

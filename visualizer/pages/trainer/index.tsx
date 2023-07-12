@@ -7,6 +7,7 @@ import SideBar from "../../components/trainer/home/sidebar/sidebar";
 import { Provider } from "react-redux";
 import { store } from "../../components/trainer/home/redux/store";
 import Main from "../../components/trainer/home/main/main";
+import "@inovua/reactdatagrid-community/index.css";
 
 const Home: React.FC = () => {
   return (

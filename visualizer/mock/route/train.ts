@@ -28,7 +28,14 @@ const latent = {
   duplicates: selex.map((d) => d.duplicate),
 };
 
-const params = {
+const losses = {
+  train_loss: loss.map((d) => d.train_loss),
+  test_loss: loss.map((d) => d.test_loss),
+  test_recon: loss.map((d) => d.test_recon),
+  test_kld: loss.map((d) => d.test_kld),
+};
+
+const trainParams = {
   epochs: 1000,
   beta_epochs: 100,
   early_stopping: 100,
@@ -391,7 +398,7 @@ export const trainHandlers = [
         start: 1620000000,
         duration: 36000,
         reiteration: 3,
-        params_training: params,
+        params_training: trainParams,
         summary: {
           indices: [0, 1, 2],
           statuses: ["success", "failure", "progress"],
@@ -407,7 +414,7 @@ export const trainHandlers = [
         start: 1620000500,
         duration: 36000,
         reiteration: 1,
-        params_training: params,
+        params_training: trainParams,
         summary: {
           indices: [0],
           statuses: ["progress"],
@@ -423,7 +430,7 @@ export const trainHandlers = [
         start: 1620000000,
         duration: 36000,
         reiteration: 3,
-        params_training: params,
+        params_training: trainParams,
         summary: {
           indices: [0, 1, 2],
           statuses: ["pending", "pending", "pending"],
@@ -439,7 +446,7 @@ export const trainHandlers = [
         start: 1620000000,
         duration: 1000,
         reiteration: 1,
-        params_training: params,
+        params_training: trainParams,
         summary: {
           indices: [0],
           statuses: ["pending"],
@@ -455,7 +462,7 @@ export const trainHandlers = [
         start: 1620000000,
         duration: 36000,
         reiteration: 3,
-        params_training: params,
+        params_training: trainParams,
         summary: {
           indices: [0, 1, 2],
           statuses: ["failure", "success", "failure"],
@@ -471,7 +478,7 @@ export const trainHandlers = [
         start: 1620000000,
         duration: 1000,
         reiteration: 1,
-        params_training: params,
+        params_training: trainParams,
         summary: {
           indices: [0],
           statuses: ["success"],
@@ -487,7 +494,7 @@ export const trainHandlers = [
         start: 1620000000,
         duration: 36000,
         reiteration: 3,
-        params_training: params,
+        params_training: trainParams,
         summary: {
           indices: [0, 1, 2],
           statuses: ["failure", "failure", "failure"],
@@ -503,7 +510,7 @@ export const trainHandlers = [
         start: 1620000000,
         duration: 1000,
         reiteration: 1,
-        params_training: params,
+        params_training: trainParams,
         summary: {
           indices: [0],
           statuses: ["failure"],
@@ -519,7 +526,7 @@ export const trainHandlers = [
         start: 1620000000,
         duration: 36000,
         reiteration: 3,
-        params_training: params,
+        params_training: trainParams,
         summary: {
           indices: [0, 1, 2],
           statuses: ["success", "failure", "suspend"],
@@ -535,7 +542,7 @@ export const trainHandlers = [
         start: 1620000000,
         duration: 1000,
         reiteration: 1,
-        params_training: params,
+        params_training: trainParams,
         summary: {
           indices: [0],
           statuses: ["suspend"],
@@ -585,7 +592,7 @@ export const trainHandlers = [
           start: 1620012000,
           duration: 12000,
           latent: latent,
-          losses: loss,
+          losses: losses,
         },
         {
           uuid: uuids.test1,
@@ -594,7 +601,7 @@ export const trainHandlers = [
           start: 1620024000,
           duration: 12000,
           latent: latent,
-          losses: loss,
+          losses: losses,
         },
         {
           uuid: uuids.test2,
@@ -603,7 +610,7 @@ export const trainHandlers = [
           start: 1620000500,
           duration: 12000,
           latent: latent,
-          losses: loss,
+          losses: losses,
         },
         {
           uuid: uuids.test3,
@@ -648,7 +655,7 @@ export const trainHandlers = [
           start: 1620012000,
           duration: 12000,
           latent: latent,
-          losses: loss,
+          losses: losses,
         },
         {
           uuid: uuids.test5,
@@ -656,8 +663,7 @@ export const trainHandlers = [
           status: "failure",
           start: 1620024000,
           duration: 12000,
-          latent: latent,
-          losses: loss,
+          error_msg: "error message",
         },
         {
           uuid: uuids.test6,
@@ -666,7 +672,7 @@ export const trainHandlers = [
           start: 1620000000,
           duration: 1000,
           latent: latent,
-          losses: loss,
+          losses: losses,
         },
         {
           uuid: uuids.test7,
@@ -707,7 +713,7 @@ export const trainHandlers = [
           start: 1620000000,
           duration: 12000,
           latent: latent,
-          losses: loss,
+          losses: losses,
         },
         {
           uuid: uuids.test9,
@@ -715,8 +721,7 @@ export const trainHandlers = [
           status: "failure",
           start: 1620012000,
           duration: 12000,
-          latent: latent,
-          losses: loss,
+          error_msg: "error message",
         },
         {
           uuid: uuids.test9,
@@ -725,7 +730,7 @@ export const trainHandlers = [
           start: 1620024000,
           duration: 12000,
           latent: latent,
-          losses: loss,
+          losses: losses,
         },
         {
           uuid: uuids.test10,
@@ -734,7 +739,7 @@ export const trainHandlers = [
           start: 1620000000,
           duration: 1000,
           latent: latent,
-          losses: loss,
+          losses: losses,
         },
       ] as z.infer<typeof trainZod.responseGetItemChild>[];
 

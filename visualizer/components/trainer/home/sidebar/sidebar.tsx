@@ -72,7 +72,6 @@ const SideBar: React.FC = () => {
             isSelected={job.uuid === selectedJobId}
             duration={job.duration}
             onClick={() => {
-              console.log("clicked job card");
               dispatch({
                 type: "pageConfig/set",
                 payload: {
@@ -82,7 +81,6 @@ const SideBar: React.FC = () => {
               });
             }}
             onChildClick={(id) => {
-              console.log("chicked child job card");
               dispatch({
                 type: "pageConfig/set",
                 payload: {
@@ -115,10 +113,22 @@ const SideBar: React.FC = () => {
             isSelected={job.uuid === selectedJobId}
             duration={job.duration}
             onClick={() => {
-              console.log("clicked job card");
+              dispatch({
+                type: "pageConfig/set",
+                payload: {
+                  parentId: job.uuid,
+                  childId: null,
+                },
+              });
             }}
             onChildClick={(id) => {
-              console.log(`clicked child job card ${id}`);
+              dispatch({
+                type: "pageConfig/set",
+                payload: {
+                  parentId: job.uuid,
+                  childId: id,
+                },
+              });
             }}
             series={job.series.map((childJob) => {
               return {
