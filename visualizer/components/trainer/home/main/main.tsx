@@ -12,6 +12,14 @@ import { Summary } from "./summary";
 import { LatentGraph } from "./latent-graph";
 import { LossesGraph } from "./losses-graph";
 import { TrainingParams } from "./training-params";
+import {
+  DeleteButton,
+  DownloadCurrentCodesButton,
+  DownloadLossesButton,
+  KillButton,
+  ResumeButton,
+  StopButton,
+} from "./action-buttons";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type Item = z.infer<typeof responseGetItem>;
@@ -34,12 +42,17 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
       </p>
       <p className="align-center">
         <b className="mr-2">Actions:</b>
-        <Badge pill bg="warning" className="mx-1">
-          Stop
-        </Badge>
-        <Badge pill bg="danger" className="mx-1">
-          Delete
-        </Badge>
+        {item.status === "progress" ? (
+          <StopButton uuid={item.uuid} />
+        ) : item.status === "suspend" ? (
+          <ResumeButton uuid={item.uuid} />
+        ) : null}
+
+        {item.status === "progress" || item.status === "suspend" ? (
+          <KillButton uuid={item.uuid} />
+        ) : null}
+
+        <DeleteButton uuid={item.uuid} />
         <Badge pill bg="success" className="mx-1">
           Rename
         </Badge>
@@ -115,12 +128,18 @@ const ChildPane: React.FC<{
         childItem.status === "pending" ? null : (
           <>
             <b className="mr-2">Actions: </b>
-            <Badge pill bg="success" className="mx-1">
-              Download Latent Codes
-            </Badge>
-            <Badge pill bg="success" className="mx-1">
-              Download Loss Transition
-            </Badge>
+            <DownloadCurrentCodesButton
+              randomRegions={childItem.latent.random_regions}
+              duplicates={childItem.latent.duplicates}
+              coordsX={childItem.latent.coords_x}
+              coordsY={childItem.latent.coords_y}
+            />
+            <DownloadLossesButton
+              trainLoss={childItem.losses.train_loss}
+              testLoss={childItem.losses.test_loss}
+              testReconLoss={childItem.losses.test_recon}
+              testKldLoss={childItem.losses.test_kld}
+            />
           </>
         )}
       </p>
