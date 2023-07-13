@@ -168,8 +168,9 @@ export const DownloadLossesButton: React.FC<LossesDataType> = (props) => {
 export const ApplyViewerButton: React.FC<{
   uuid: string;
   childId?: number;
-}> = ({ uuid, childId }) => {
-  const [pushed, setPushed] = useState(false);
+  disabled: boolean;
+  setDisabled: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ uuid, childId, disabled, setDisabled }) => {
   return (
     <div className="d-grid gap-2">
       <Button
@@ -177,11 +178,11 @@ export const ApplyViewerButton: React.FC<{
         className="mx-1"
         onClick={() => {
           apiClient.postPublish({ uuid, multi: childId });
-          setPushed(true);
+          setDisabled(!disabled);
         }}
-        disabled={pushed}
+        disabled={disabled}
       >
-        {pushed ? "Added" : "Add to Viewer Dataset"}
+        {disabled ? "Added" : "Add to Viewer Dataset"}
       </Button>
     </div>
   );

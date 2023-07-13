@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { apiClient } from "../../../../services/api-client";
@@ -22,6 +22,7 @@ import {
   StopButton,
 } from "./action-buttons";
 import _ from "lodash";
+import ClientOnly from "../../../common/client-only";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type Item = z.infer<typeof responseGetItem>;
@@ -92,6 +93,14 @@ const ChildPane: React.FC<{
   parentStatus: "progress" | "suspend" | "success" | "failure" | "pending";
   parentUUID: string;
 }> = ({ childItem, childId, isMultiple, parentStatus, parentUUID }) => {
+  const [appliedDataset, setAppliedDataset] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (childItem !== null) {
+      setAppliedDataset(false);
+    }
+  }, [childItem]);
+
   if (childItem === null) {
     return <div>Please select an model on the left</div>;
   }
@@ -147,7 +156,12 @@ const ChildPane: React.FC<{
         )}
       </p>
       {childItem.status === "success" ? (
-        <ApplyViewerButton uuid={parentUUID} childId={childItem.id} />
+        <ApplyViewerButton
+          uuid={parentUUID}
+          childId={childItem.id}
+          disabled={appliedDataset}
+          setDisabled={setAppliedDataset}
+        />
       ) : null}
     </>
   );
