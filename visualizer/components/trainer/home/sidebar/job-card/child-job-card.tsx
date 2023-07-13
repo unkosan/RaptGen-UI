@@ -6,11 +6,13 @@ type Props =
   | {
       name: string;
       status: "success" | "failure" | "pending";
+      isSelected?: boolean;
       onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     }
   | {
       name: string;
       status: "suspend" | "progress";
+      isSelected?: boolean;
       onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
       totalEpoch: number;
       currentEpoch: number;
@@ -18,7 +20,7 @@ type Props =
     };
 
 const ChildJobCard: React.FC<Props> = (props) => {
-  const { name, status } = props;
+  const { name, status, isSelected } = props;
 
   let title;
   if (status === "progress") {
@@ -85,9 +87,10 @@ const ChildJobCard: React.FC<Props> = (props) => {
     <div
       style={{
         width: "100%",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: isSelected ? "#f0f0f0" : "#f5f5f5",
         borderRadius: "0.3rem",
-        border: "1px solid lightgray",
+        border: isSelected ? "1px solid gray" : "1px solid lightgray",
+        boxShadow: "0 0 0.5rem 0.1rem rgba(0, 0, 0, 0.1)",
         paddingBlock: "0.5rem",
         paddingInline: "1rem",
         marginTop: "0.4rem",

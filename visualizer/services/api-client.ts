@@ -150,6 +150,7 @@ export const responsePostResume = z.null();
 // API POST train/jobs/publish
 export const requestPostPublish = z.object({
   uuid: z.string().uuid(),
+  multi: z.optional(z.number().int().min(0)),
 });
 export const responsePostPublish = z.null();
 

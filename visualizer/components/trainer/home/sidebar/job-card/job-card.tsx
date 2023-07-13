@@ -2,6 +2,8 @@ import React from "react";
 import ChildJobCard from "./child-job-card";
 import { Badge, ProgressBar } from "react-bootstrap";
 import { formatDuration, intervalToDuration } from "date-fns";
+import { set } from "lodash";
+import { c } from "msw/lib/glossary-de6278a9";
 
 type TypeChild = {
   id: number;
@@ -26,6 +28,7 @@ type Props = {
 
 const JobCard: React.FC<Props> = (props) => {
   const { name, status, series } = props;
+  const [clickedModel, setClickedModel] = React.useState<number | null>(null);
 
   let title;
   if (status === "progress") {
@@ -108,11 +111,13 @@ const JobCard: React.FC<Props> = (props) => {
               if (props.onChildClick) {
                 props.onChildClick(child.id, event);
               }
+              setClickedModel(child.id);
               event.stopPropagation();
             }}
             totalEpoch={child.epochsTotal}
             currentEpoch={child.epochsCurrent}
             duration={child.duration}
+            isSelected={props.isSelected && clickedModel === child.id}
           />
         );
       }
@@ -123,15 +128,30 @@ const JobCard: React.FC<Props> = (props) => {
     <div
       style={{
         width: "100%",
-        backgroundColor: "lightgray",
+        backgroundColor: props.isSelected ? "lightgray" : "#E5E5E5",
         borderRadius: "0.3rem",
-        border: "1px solid gray",
+        border:
+          props.isSelected && clickedModel === null
+            ? "1px solid gray"
+            : "1px solid #E5E5E5",
         paddingBlock: "0.7rem",
         paddingInline: "1rem",
         cursor: "pointer",
         marginBlock: "1rem",
+        boxShadow: "0 0 0.5rem 0.1rem rgba(0, 0, 0, 0.1)",
       }}
-      onClick={props.onClick}
+      onClick={
+        props.onClick !== undefined
+          ? (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+              setClickedModel(null);
+              (
+                props.onClick as (
+                  event: React.MouseEvent<HTMLElement, MouseEvent>
+                ) => void
+              )(event);
+            }
+          : undefined
+      }
     >
       {title}
       {content}

@@ -120,6 +120,7 @@ describe("train service", () => {
   it("postPublish", async () => {
     const result = await apiClient.postPublish({
       uuid: uuids.test1,
+      multi: 0,
     });
     expect(result).toBe(null);
   });

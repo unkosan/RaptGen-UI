@@ -7,12 +7,13 @@ import { formatDuration, intervalToDuration } from "date-fns";
 import { responseGetItemChild } from "../../../../services/api-client";
 import { responseGetItem } from "../../../../services/api-client";
 import { z } from "zod";
-import { Badge } from "react-bootstrap";
+import { Alert, Badge } from "react-bootstrap";
 import { Summary } from "./summary";
 import { LatentGraph } from "./latent-graph";
 import { LossesGraph } from "./losses-graph";
 import { TrainingParams } from "./training-params";
 import {
+  ApplyViewerButton,
   DeleteButton,
   DownloadCurrentCodesButton,
   DownloadLossesButton,
@@ -20,6 +21,7 @@ import {
   ResumeButton,
   StopButton,
 } from "./action-buttons";
+import _ from "lodash";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type Item = z.infer<typeof responseGetItem>;
@@ -88,7 +90,8 @@ const ChildPane: React.FC<{
   childId: number | null;
   isMultiple: boolean;
   parentStatus: "progress" | "suspend" | "success" | "failure" | "pending";
-}> = ({ childItem, childId, isMultiple, parentStatus }) => {
+  parentUUID: string;
+}> = ({ childItem, childId, isMultiple, parentStatus, parentUUID }) => {
   if (childItem === null) {
     return <div>Please select an model on the left</div>;
   }
@@ -143,14 +146,19 @@ const ChildPane: React.FC<{
           </>
         )}
       </p>
+      {childItem.status === "success" ? (
+        <ApplyViewerButton uuid={parentUUID} childId={childItem.id} />
+      ) : null}
     </>
   );
 
   const body =
     childItem.status === "failure" ? (
       <div>
-        <legend>Error message</legend>
-        <p>{childItem.error_msg}</p>
+        <Alert variant="danger">
+          <Alert.Heading>Runtime Error</Alert.Heading>
+          <div style={{ fontFamily: "monospace" }}>{childItem.error_msg}</div>
+        </Alert>
       </div>
     ) : childItem.status === "pending" ? null : (
       <>
@@ -255,11 +263,29 @@ const Main: React.FC = () => {
             },
           });
         } else if (status === "success") {
-          const argmin = summary.minimum_NLLs
-            .map((value, index) =>
-              value !== null ? [value, index] : [Infinity, index]
+          // find the model with the minimum NLL but in the range that the model is "success"
+          const argmin = _.zip(summary.minimum_NLLs, summary.statuses)
+            .map(([nll, status]) =>
+              nll === null ? [Infinity, status] : [nll, status]
             )
-            .reduce((a, b) => (a[0] < b[0] ? a : b))[1];
+            .reduce(
+              (acc, [nll, status], index) => {
+                if (
+                  nll === undefined ||
+                  status === undefined ||
+                  acc[0] === undefined
+                ) {
+                  return acc;
+                }
+                if (status === "success" && nll < acc[0]) {
+                  return [nll, index];
+                } else {
+                  return acc;
+                }
+              },
+              [Infinity, -1]
+            )[1] as number;
+
           const childItem = await apiClient.getChildItem({
             params: {
               parent_uuid: parentId,
@@ -302,6 +328,7 @@ const Main: React.FC = () => {
         childId={childId}
         isMultiple={item.reiteration !== 1}
         parentStatus={item.status}
+        parentUUID={item.uuid}
       />
     </div>
   );

@@ -1,8 +1,9 @@
-import { Badge } from "react-bootstrap";
+import { Badge, Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 
 import { apiClient } from "../../../../services/api-client";
+import { useState } from "react";
 
 export const StopButton: React.FC<{ uuid: string }> = ({ uuid }) => {
   return (
@@ -76,8 +77,6 @@ type LatentDataType = {
   duplicates: number[];
 };
 export const DownloadCurrentCodesButton: React.FC<LatentDataType> = (props) => {
-  //   const latentData = useSelector((state: RootState) => state.latentData);
-
   return (
     <Badge
       pill
@@ -125,8 +124,6 @@ type LossesDataType = {
   testKldLoss: number[];
 };
 export const DownloadLossesButton: React.FC<LossesDataType> = (props) => {
-  //   const lossesData = useSelector((state: RootState) => state.lossData);
-
   return (
     <Badge
       pill
@@ -165,5 +162,27 @@ export const DownloadLossesButton: React.FC<LossesDataType> = (props) => {
     >
       Download Loss Transtions
     </Badge>
+  );
+};
+
+export const ApplyViewerButton: React.FC<{
+  uuid: string;
+  childId?: number;
+}> = ({ uuid, childId }) => {
+  const [pushed, setPushed] = useState(false);
+  return (
+    <div className="d-grid gap-2">
+      <Button
+        variant="primary"
+        className="mx-1"
+        onClick={() => {
+          apiClient.postPublish({ uuid, multi: childId });
+          setPushed(true);
+        }}
+        disabled={pushed}
+      >
+        {pushed ? "Added" : "Add to Viewer Dataset"}
+      </Button>
+    </div>
   );
 };

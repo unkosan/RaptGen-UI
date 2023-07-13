@@ -401,7 +401,7 @@ export const trainHandlers = [
         params_training: trainParams,
         summary: {
           indices: [0, 1, 2],
-          statuses: ["success", "failure", "progress"],
+          statuses: ["failure", "success", "progress"],
           epochs_finished: [100, 526, 400],
           minimum_NLLs: [0.3, 0.2, 0.1],
         },
