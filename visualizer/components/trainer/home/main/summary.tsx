@@ -6,6 +6,7 @@ import ClientOnly from "../../../common/client-only";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
+import { CustomDataGrid } from "../../../common/custom-datagrid";
 
 type SummaryType = z.infer<typeof responseGetItem>["summary"];
 
@@ -68,17 +69,29 @@ export const Summary: React.FC<{
   }));
 
   return (
-    <ClientOnly>
-      <ReactDataGrid
-        idProperty="id"
-        columns={columns}
-        dataSource={data}
-        rowStyle={{ fontFamily: "monospace" }}
-        pagination
-        defaultLimit={20}
-        rowHeight={35}
-        style={{ minHeight: 250, width: "100%", zIndex: 1000 }}
-      />
-    </ClientOnly>
+    // <ClientOnly>
+    //   <ReactDataGrid
+    //     idProperty="id"
+    //     columns={columns}
+    //     dataSource={data}
+    //     rowStyle={{ fontFamily: "monospace" }}
+    //     pagination
+    //     defaultLimit={20}
+    //     rowHeight={35}
+    //     style={{ minHeight: 250, width: "100%", zIndex: 1000 }}
+    //   />
+    // </ClientOnly>
+    <CustomDataGrid
+      idProperty="id"
+      columns={columns}
+      dataSource={data}
+      rowStyle={{ fontFamily: "monospace" }}
+      pagination
+      defaultLimit={20}
+      rowHeight={35}
+      style={{ minHeight: 250, width: "100%", zIndex: 1000 }}
+      downloadable
+      copiable
+    />
   );
 };
