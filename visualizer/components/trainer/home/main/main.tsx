@@ -7,7 +7,7 @@ import { formatDuration, intervalToDuration } from "date-fns";
 import { responseGetItemChild } from "../../../../services/api-client";
 import { responseGetItem } from "../../../../services/api-client";
 import { z } from "zod";
-import { Alert, Badge } from "react-bootstrap";
+import { Alert, Badge, Button } from "react-bootstrap";
 import { Summary } from "./summary";
 import { LatentGraph } from "./latent-graph";
 import { LossesGraph } from "./losses-graph";
@@ -22,6 +22,8 @@ import {
   StopButton,
 } from "./action-buttons";
 import _ from "lodash";
+import { ArrowLeft } from "react-bootstrap-icons";
+import { useDispatch } from "react-redux";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type Item = z.infer<typeof responseGetItem>;
@@ -30,10 +32,34 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
   item,
   childId,
 }) => {
+  const dispatch = useDispatch();
+
   const parentHead = (
     <>
-      <h2>{item.name}</h2>
+      <h2>
+        <div
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "blue";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "black";
+          }}
+          onClick={() => {
+            dispatch({
+              type: "pageConfig/set",
+              payload: {
+                parentId: item.uuid,
+                childId: null,
+              },
+            });
+          }}
+          style={{ cursor: "pointer", transition: "color 0.2s ease-in-out" }}
+        >
+          {item.name}
+        </div>
+      </h2>
       <p>
+        <div>Start time: {new Date(item.start * 1000).toLocaleString()}</div>
         <div>
           Total duration:{" "}
           {formatDuration(
@@ -194,7 +220,7 @@ const ChildPane: React.FC<{
     ) : childItem.status === "pending" ? null : (
       <>
         <LatentGraph
-          title="Latent Space"
+          title={`Latent Space`}
           vaeData={{
             coordsX: childItem.latent.coords_x,
             coordsY: childItem.latent.coords_y,
