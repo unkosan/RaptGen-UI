@@ -6,6 +6,8 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useRouter } from "next/router";
+import { apiClient } from "../../../../../services/api-client";
+import { requestPostSubmitJob } from "../../../../../services/api-client";
 
 const Pagenation: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -31,7 +33,7 @@ const Pagenation: React.FC = () => {
         const dupsMask = selexData.duplicates.map((dup) => {
           return dup >= (preprocessingConfig.minCount as number);
         });
-        const response = await axios.post("/train/jobs/submit", {
+        const parsed = requestPostSubmitJob.safeParse({
           type: modelType,
           name: experimentName,
           params_preprocessing: {
@@ -50,7 +52,7 @@ const Pagenation: React.FC = () => {
           duplicates: selexData.duplicates.filter((dup, index) => {
             return dupsMask[index] && selexData.adapterMatched[index];
           }),
-          reiteration: trainConfig.reiterations,
+          reiteration: trainConfig.reiteration,
           params_training: {
             model_length: trainConfig.modelLength,
             epochs: trainConfig.epochs,
@@ -62,13 +64,14 @@ const Pagenation: React.FC = () => {
             device: trainConfig.device,
           },
         });
-        if (response.status === 200) {
+        if (parsed.success) {
+          const res = await apiClient.postSubmitJob(parsed.data);
           router.push("/trainer");
         } else {
-          alert("Failed to submit a job.");
+          alert(`Failed to submit a job: ${parsed.error.message};`);
           setIsLoading(false);
         }
-        return selexData;
+        return;
       })();
     }
   }, [isLoading]);

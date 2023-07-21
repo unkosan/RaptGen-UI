@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import IntegerForm from "../../../uploader/sidebar-vae/optional-params/integer-form";
 import { useDispatch } from "react-redux";
 import { Button, Form } from "react-bootstrap";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
+import { apiClient } from "../../../../services/api-client";
 
 const SideBar: React.FC = () => {
   const [reiteration, setReiteration] = React.useState<number | undefined>(
@@ -53,9 +53,7 @@ const SideBar: React.FC = () => {
   useEffect(() => {
     // const response = ["cpu", "cuda:0", "cuda:1"];
     (async () => {
-      const data = await axios
-        .get("/train/device/process")
-        .then((res) => res.data);
+      const data = await apiClient.getDevices();
       const devices = data ?? "cpu";
       setDeviceList(devices);
     })();

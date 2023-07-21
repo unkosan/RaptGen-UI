@@ -2,7 +2,7 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type TrainConfig = {
   isValidParams: boolean;
-  reiterations?: number;
+  reiteration?: number;
   modelLength?: number;
   epochs?: number;
   forceMatchEpochs?: number;
@@ -18,7 +18,7 @@ const pageConfigSlice = createSlice({
   name: "trainConfig",
   initialState: {
     isValidParams: false,
-    reiterations: undefined as number | undefined,
+    reiteration: undefined as number | undefined,
     modelLength: undefined as number | undefined,
     epochs: undefined as number | undefined,
     forceMatchEpochs: undefined as number | undefined,
@@ -34,7 +34,7 @@ const pageConfigSlice = createSlice({
       return {
         ...state,
         isValidParams: action.payload.isValidParams,
-        reiterations: action.payload.reiterations,
+        reiteration: action.payload.reiteration,
         modelLength: action.payload.modelLength,
         epochs: action.payload.epochs,
         forceMatchEpochs: action.payload.forceMatchEpochs,
