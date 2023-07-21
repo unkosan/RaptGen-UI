@@ -2,6 +2,7 @@ import { z } from "zod";
 import { responseGetItem } from "../../../../services/api-client";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import ClientOnly from "../../../common/client-only";
+import CustomDataGrid from "../../../common/custom-datagrid";
 
 type ParamsType = z.infer<typeof responseGetItem>["params_training"];
 
@@ -11,21 +12,26 @@ const columns = [
   { name: "value", header: "Value" },
 ];
 
+const gridStyle = {
+  height: 300,
+};
+
 export const TrainingParams: React.FC<{
   value: ParamsType;
 }> = (props) => {
   return (
-    <ClientOnly>
-      <ReactDataGrid
-        idProperty="id"
-        columns={columns}
-        dataSource={Object.entries(props.value).map(([k, v], index) => ({
-          id: index,
-          item: k,
-          value: String(v),
-        }))}
-        rowStyle={{ fontFamily: "monospace" }}
-      />
-    </ClientOnly>
+    <CustomDataGrid
+      idProperty="id"
+      columns={columns}
+      dataSource={Object.entries(props.value).map(([k, v], index) => ({
+        id: index,
+        item: k,
+        value: String(v),
+      }))}
+      rowStyle={{ fontFamily: "monospace" }}
+      style={gridStyle}
+      downloadable
+      copiable
+    />
   );
 };

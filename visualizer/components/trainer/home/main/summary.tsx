@@ -69,18 +69,6 @@ export const Summary: React.FC<{
   }));
 
   return (
-    // <ClientOnly>
-    //   <ReactDataGrid
-    //     idProperty="id"
-    //     columns={columns}
-    //     dataSource={data}
-    //     rowStyle={{ fontFamily: "monospace" }}
-    //     pagination
-    //     defaultLimit={20}
-    //     rowHeight={35}
-    //     style={{ minHeight: 250, width: "100%", zIndex: 1000 }}
-    //   />
-    // </ClientOnly>
     <CustomDataGrid
       idProperty="id"
       columns={columns}

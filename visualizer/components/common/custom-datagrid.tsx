@@ -14,6 +14,7 @@ import {
 } from "@inovua/reactdatagrid-community/types";
 import Button from "@inovua/reactdatagrid-community/packages/Button";
 import _ from "lodash";
+import { Clipboard, Download } from "react-bootstrap-icons";
 
 type CustomDataGridProps = Partial<TypeDataGridProps> & {
   columns: TypeColumn[]; // required
@@ -104,7 +105,10 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
           {props.copiable && (
             <>
               <Button disabled={props.copyButtonDisabled} onClick={onCopy}>
-                Copy selected cells
+                <span className="align-middle">
+                  <Clipboard className="mr-2" />
+                </span>
+                &nbsp; Copy selected cells
               </Button>
               <span style={{ marginInline: 4 }} />
             </>
@@ -114,7 +118,10 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
               disabled={props.downloadButtonDisabled}
               onClick={onDownload}
             >
-              Download All
+              <span className="align-middle">
+                <Download className="mr-2" />
+              </span>
+              &nbsp; Download All
             </Button>
           )}
         </>
