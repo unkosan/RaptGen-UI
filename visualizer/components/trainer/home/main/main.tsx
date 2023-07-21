@@ -22,7 +22,6 @@ import {
   StopButton,
 } from "./action-buttons";
 import _ from "lodash";
-import ClientOnly from "../../../common/client-only";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type Item = z.infer<typeof responseGetItem>;
@@ -88,47 +87,65 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
 
 const ChildPane: React.FC<{
   childItem: ChildItem | null;
-  childId: number | null;
-  isMultiple: boolean;
-  parentStatus: "progress" | "suspend" | "success" | "failure" | "pending";
-  parentUUID: string;
-}> = ({ childItem, childId, isMultiple, parentStatus, parentUUID }) => {
-  const [appliedDataset, setAppliedDataset] = useState<boolean>(false);
+  parentItem: Item | null;
+  // building the title partially dependent on the parentItem
+  isRepresenter?: boolean;
+  // whether the child is a representer of the parent model
+}> = ({ childItem, parentItem, isRepresenter }) => {
+  const [isInViewerData, setIsInViewerData] = useState<boolean>(false);
+  // will be changed to false -> childItem.inViewerData
 
   useEffect(() => {
     if (childItem !== null) {
-      setAppliedDataset(false);
+      setIsInViewerData(false);
     }
   }, [childItem]);
 
-  if (childItem === null) {
-    return <div>Please select an model on the left</div>;
+  if (parentItem === null) {
+    // do not show anything, instructions are shown in the parent pane
+    return <div></div>;
   }
-  let title = "";
-  if (childId === null) {
-    if (parentStatus === "progress" || parentStatus === "suspend") {
-      title = `Current running model No. ${childItem.id}`;
-    } else if (parentStatus === "success") {
-      title = `Best model No. ${childItem.id}`;
-    } else if (parentStatus === "failure") {
-      title = `Model No. ${childItem.id} (Failed)`;
-    } else {
-      title = `Now pending model No. ${childItem.id}`;
+
+  if (childItem === null) {
+    // this should not happen (cause childId is null, Representer will be filled as childItem)
+    return <div>Please select a model on the left</div>;
+  }
+
+  let title: string = "";
+  if (isRepresenter) {
+    switch (parentItem.status) {
+      case "progress":
+      case "suspend":
+        title = `Current training model`;
+        break;
+      case "success":
+        title = `Most optimal model`;
+        break;
+      case "failure":
+        title = `Training failed`;
+        break;
+      case "pending":
+        title = `Now pending...`;
+        break;
     }
   } else {
-    title = `Model No. ${childId}`;
+    title = `Model No. ${childItem.id}`;
   }
 
   const head = (
     <>
       <h3>{title}</h3>
       <p>
-        <div>
-          Duration:{" "}
-          {formatDuration(
-            intervalToDuration({ start: 0, end: childItem.duration * 1000 })
-          )}
-        </div>
+        {isRepresenter ? (
+          <>
+            Model: No. {childItem.id}
+            <br />
+          </>
+        ) : null}
+        Duration:{" "}
+        {formatDuration(
+          intervalToDuration({ start: 0, end: childItem.duration * 1000 })
+        )}
       </p>
     </>
   );
@@ -157,10 +174,10 @@ const ChildPane: React.FC<{
       </p>
       {childItem.status === "success" ? (
         <ApplyViewerButton
-          uuid={parentUUID}
+          uuid={parentItem.uuid}
           childId={childItem.id}
-          disabled={appliedDataset}
-          setDisabled={setAppliedDataset}
+          disabled={isInViewerData}
+          setDisabled={setIsInViewerData}
         />
       ) : null}
     </>
@@ -201,12 +218,13 @@ const ChildPane: React.FC<{
 
   return (
     <>
-      {isMultiple ? head : null}
+      {parentItem.reiteration === 1 ? null : head}
       {actions}
       {body}
     </>
   );
 };
+
 const Main: React.FC = () => {
   // retrieved from page config in redux. not always available
   const parentId = useSelector((state: RootState) => state.pageConfig.parentId);
@@ -241,76 +259,85 @@ const Main: React.FC = () => {
       (async () => {
         const summary = item.summary;
         const status = item.status;
-        if (status === "progress" || status === "suspend") {
-          const progIndex = summary.statuses.findLastIndex(
-            (value) => value === "progress" || value === "suspend"
-          );
-          if (progIndex === -1) {
-            setChildItem(null);
-          }
-          const childItem = await apiClient.getChildItem({
-            params: {
-              parent_uuid: parentId,
-              child_id: summary.indices[progIndex],
-            },
-          });
-          setChildItem(childItem);
-        } else if (status === "failure") {
-          const childItem = await apiClient.getChildItem({
-            params: {
-              parent_uuid: parentId,
-              child_id: summary.indices[0],
-            },
-          });
-          setChildItem(childItem);
-        } else if (status === "pending") {
-          const pendIndex = summary.statuses.findIndex(
-            (value) => value === "pending"
-          );
-          if (pendIndex === -1) {
-            setChildItem(null);
-          }
-          const childItem = await apiClient.getChildItem({
-            params: {
-              parent_uuid: parentId,
-              child_id: summary.indices[pendIndex],
-            },
-          });
-        } else if (status === "success") {
-          // find the model with the minimum NLL but in the range that the model is "success"
-          const argmin = _.zip(summary.minimum_NLLs, summary.statuses)
-            .map(([nll, status]) =>
-              nll === null ? [Infinity, status] : [nll, status]
-            )
-            .reduce(
-              (acc, [nll, status], index) => {
-                if (
-                  nll === undefined ||
-                  status === undefined ||
-                  acc[0] === undefined
-                ) {
-                  return acc;
-                }
-                if (status === "success" && nll < acc[0]) {
-                  return [nll, index];
-                } else {
-                  return acc;
-                }
-              },
-              [Infinity, -1]
-            )[1] as number;
+        switch (status) {
+          case "progress":
+          case "suspend":
+            const progIndex = summary.statuses.findLastIndex(
+              (value) => value === "progress" || value === "suspend"
+            );
+            setChildItem(
+              progIndex === -1
+                ? null
+                : await apiClient.getChildItem({
+                    params: {
+                      parent_uuid: parentId,
+                      child_id: summary.indices[progIndex],
+                    },
+                  })
+            );
+            break;
+          case "failure":
+            setChildItem(
+              await apiClient.getChildItem({
+                params: {
+                  parent_uuid: parentId,
+                  child_id: summary.indices[0],
+                },
+              })
+            );
+            break;
+          case "pending":
+            const pendIndex = summary.statuses.findIndex(
+              (value) => value === "pending"
+            );
+            setChildItem(
+              pendIndex === -1
+                ? null
+                : await apiClient.getChildItem({
+                    params: {
+                      parent_uuid: parentId,
+                      child_id: summary.indices[pendIndex],
+                    },
+                  })
+            );
+            break;
+          case "success":
+            // find the model with the minimum NLL but in the range that the model is "success"
+            const argmin = _.zip(summary.minimum_NLLs, summary.statuses)
+              .map(([nll, status]) =>
+                nll === null ? [Infinity, status] : [nll, status]
+              )
+              .reduce(
+                (acc, [nll, status], index) => {
+                  if (
+                    nll === undefined ||
+                    status === undefined ||
+                    acc[0] === undefined
+                  ) {
+                    return acc;
+                  }
+                  if (status === "success" && nll < acc[0]) {
+                    return [nll, index];
+                  } else {
+                    return acc;
+                  }
+                },
+                [Infinity, -1]
+              )[1] as number;
 
-          const childItem = await apiClient.getChildItem({
-            params: {
-              parent_uuid: parentId,
-              child_id: summary.indices[summary.indices[argmin]],
-            },
-          });
-          setChildItem(childItem);
-        } else {
-          setChildItem(null);
+            setChildItem(
+              await apiClient.getChildItem({
+                params: {
+                  parent_uuid: parentId,
+                  child_id: summary.indices[summary.indices[argmin]],
+                },
+              })
+            );
+            break;
+
+          default:
+            setChildItem(null);
         }
-        console.log(item.params_training);
       })();
     } else if (item !== null && childId !== null) {
       apiClient
@@ -339,10 +366,8 @@ const Main: React.FC = () => {
       <ParentPane item={item} childId={childId} />
       <ChildPane
         childItem={childItem}
-        childId={childId}
-        isMultiple={item.reiteration !== 1}
-        parentStatus={item.status}
-        parentUUID={item.uuid}
+        parentItem={item}
+        isRepresenter={childId === null}
       />
     </div>
   );
