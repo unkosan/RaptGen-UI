@@ -36,10 +36,14 @@ const losses = {
 };
 
 const trainParams = {
+  model_length: 20,
   epochs: 1000,
-  beta_epochs: 100,
-  early_stopping: 100,
-  force_matching_epochs: 100,
+  match_forcing_duration: 50,
+  beta_duration: 50,
+  early_stopping: 50,
+  seed_value: 0,
+  match_cost: 4,
+  device: "cuda:0",
 };
 
 const errorMsg = {
