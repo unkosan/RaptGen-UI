@@ -118,7 +118,27 @@ export const responseGetItemChild = z.union([
   z.object({
     uuid: z.string().uuid(),
     id: z.number().int().min(0),
-    status: z.enum(["success", "progress", "suspend"]),
+    status: z.enum(["success"]),
+    start: z.number().int().min(0),
+    duration: z.number().int().min(0),
+    latent: z.object({
+      random_regions: z.array(z.string().nonempty()),
+      coords_x: z.array(z.number()),
+      coords_y: z.array(z.number()),
+      duplicates: z.array(z.number().int().min(1)),
+    }),
+    losses: z.object({
+      train_loss: z.array(z.number()),
+      test_loss: z.array(z.number()),
+      test_recon: z.array(z.number()),
+      test_kld: z.array(z.number()),
+    }),
+    is_added_viewer_dataset: z.boolean(),
+  }),
+  z.object({
+    uuid: z.string().uuid(),
+    id: z.number().int().min(0),
+    status: z.enum(["progress", "suspend"]),
     start: z.number().int().min(0),
     duration: z.number().int().min(0),
     latent: z.object({

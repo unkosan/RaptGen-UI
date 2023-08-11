@@ -118,12 +118,11 @@ const ChildPane: React.FC<{
   isRepresenter?: boolean;
   // whether the child is a representer of the parent model
 }> = ({ childItem, parentItem, isRepresenter }) => {
-  const [isInViewerData, setIsInViewerData] = useState<boolean>(false);
-  // will be changed to false -> childItem.inViewerData
+  const [published, setPublished] = useState<boolean>(false);
 
   useEffect(() => {
     if (childItem !== null) {
-      setIsInViewerData(false);
+      setPublished(false);
     }
   }, [childItem]);
 
@@ -202,8 +201,8 @@ const ChildPane: React.FC<{
         <ApplyViewerButton
           uuid={parentItem.uuid}
           childId={childItem.id}
-          disabled={isInViewerData}
-          setDisabled={setIsInViewerData}
+          disabled={childItem.is_added_viewer_dataset || published}
+          setDisabled={setPublished}
         />
       ) : null}
     </>

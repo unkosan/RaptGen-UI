@@ -597,6 +597,7 @@ export const trainHandlers = [
           duration: 12000,
           latent: latent,
           losses: losses,
+          is_added_viewer_dataset: true,
         },
         {
           uuid: uuids.test1,
@@ -660,6 +661,7 @@ export const trainHandlers = [
           duration: 12000,
           latent: latent,
           losses: losses,
+          is_added_viewer_dataset: false,
         },
         {
           uuid: uuids.test5,
@@ -677,6 +679,7 @@ export const trainHandlers = [
           duration: 1000,
           latent: latent,
           losses: losses,
+          is_added_viewer_dataset: false,
         },
         {
           uuid: uuids.test7,
@@ -718,6 +721,7 @@ export const trainHandlers = [
           duration: 12000,
           latent: latent,
           losses: losses,
+          is_added_viewer_dataset: false,
         },
         {
           uuid: uuids.test9,
