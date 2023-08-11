@@ -6,21 +6,47 @@ export const requestGetDevices = z.void();
 export const responseGetDevices = z.array(z.string());
 
 // API POST /train/jobs/submit
-export const requestPostSubmitJob = z.object({
-  type: z.enum(["RaptGen", "RaptGen-freq", "RaptGen-logfreq"]),
-  name: z.string().nonempty(),
-  params_preprocessing: z.object({
-    forward: z.string(),
-    reverse: z.string(),
-    random_region_length: z.number().int().min(1),
-    tolerance: z.number().int().min(0),
-    minimum_count: z.number().int().min(1),
+export const requestPostSubmitJob = z.union([
+  z.object({
+    type: z.enum(["RaptGen"]),
+    name: z.string().nonempty(),
+    params_preprocessing: z.object({
+      forward: z.string(),
+      reverse: z.string(),
+      random_region_length: z.number().int().min(1),
+      tolerance: z.number().int().min(0),
+      minimum_count: z.number().int().min(1),
+    }),
+    random_regions: z.array(z.string().nonempty()),
+    duplicates: z.array(z.number().int().min(1)),
+    reiteration: z.number().int().min(1),
+    params_training: z.object({
+      model_length: z.number().int().min(1),
+      epochs: z.number().int().min(1),
+      match_forcing_duration: z.number().int().min(1),
+      beta_duration: z.number().int().min(1),
+      early_stopping: z.number().int().min(1),
+      seed_value: z.number().int(),
+      match_cost: z.number().min(0),
+      device: z.string(),
+    }),
   }),
-  random_regions: z.array(z.string().nonempty()),
-  duplicates: z.array(z.number().int().min(1)),
-  reiteration: z.number().int().min(1),
-  params_training: z.record(z.string(), z.any()),
-});
+  z.object({
+    type: z.enum(["RaptGen-freq", "RaptGen-logfreq"]),
+    name: z.string().nonempty(),
+    params_preprocessing: z.object({
+      forward: z.string(),
+      reverse: z.string(),
+      random_region_length: z.number().int().min(1),
+      tolerance: z.number().int().min(0),
+      minimum_count: z.number().int().min(1),
+    }),
+    random_regions: z.array(z.string().nonempty()),
+    duplicates: z.array(z.number().int().min(1)),
+    reiteration: z.number().int().min(1),
+    params_training: z.record(z.string(), z.any()),
+  }),
+]);
 export const responsePostSubmitJob = z.null();
 
 // API POST /train/jobs/search

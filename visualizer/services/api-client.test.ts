@@ -49,8 +49,14 @@ describe("train service", () => {
       duplicates: [1, 2, 3],
       reiteration: 1,
       params_training: {
-        batch_size: 32,
-        epochs: 10,
+        model_length: 20,
+        epochs: 1000,
+        match_forcing_duration: 50,
+        beta_duration: 50,
+        early_stopping: 50,
+        seed_value: 0,
+        match_cost: 4,
+        device: "cpu",
       },
     });
     expect(result).toBe(null);
