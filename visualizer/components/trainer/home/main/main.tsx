@@ -68,8 +68,8 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
         </div>
         <div>The number of models to train: {item.reiteration}</div>
       </p>
-      <p className="align-center">
-        <b className="mr-2">Actions:</b>
+      <p className="d-flex align-items-center">
+        <b className="me-2">Actions:</b>
         {item.status === "progress" ? (
           <StopButton uuid={item.uuid} />
         ) : item.status === "suspend" ? (
@@ -181,8 +181,8 @@ const ChildPane: React.FC<{
       <p className="align-center">
         {childItem.status === "failure" ||
         childItem.status === "pending" ? null : (
-          <>
-            <b className="mr-2">Actions: </b>
+          <div className="d-flex align-items-center">
+            <b className="me-2">Actions: </b>
             <DownloadCurrentCodesButton
               randomRegions={childItem.latent.random_regions}
               duplicates={childItem.latent.duplicates}
@@ -195,7 +195,7 @@ const ChildPane: React.FC<{
               testReconLoss={childItem.losses.test_recon}
               testKldLoss={childItem.losses.test_kld}
             />
-          </>
+          </div>
         )}
       </p>
       {childItem.status === "success" ? (
