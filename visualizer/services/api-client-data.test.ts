@@ -1,7 +1,6 @@
 import { altApiClient } from "./alt-api-client";
 import { setupServer } from "msw/node";
 import { handlers } from "../mock/handlers";
-import axios from "axios";
 
 const server = setupServer(...handlers);
 
@@ -23,7 +22,9 @@ describe("data service", () => {
   it("should return VAE model names", async () => {
     const res = await altApiClient.getVAEModelNames();
     expect(res.status).toBe("success");
-    expect(res.data).toEqual(["RAPT1", "RAPT3"]);
+    if (res.status === "success") {
+      expect(res.data).toEqual(["RAPT1", "RAPT3"]);
+    }
   });
 
   it("should return GMM model names", async () => {
@@ -33,7 +34,9 @@ describe("data service", () => {
       },
     });
     expect(res.status).toBe("success");
-    expect(res.data).toEqual(["num_comp_15_A"]);
+    if (res.status === "success") {
+      expect(res.data).toEqual(["num_comp_15_A"]);
+    }
 
     const res2 = await altApiClient.getGMMModelNames({
       queries: {
@@ -41,13 +44,17 @@ describe("data service", () => {
       },
     });
     expect(res2.status).toBe("success");
-    expect(res2.data).toEqual(["num_comp_15_B"]);
+    if (res2.status === "success") {
+      expect(res2.data).toEqual(["num_comp_15_B"]);
+    }
   });
 
   it("should return measured data names", async () => {
     const res = await altApiClient.getMeasuredDataNames();
     expect(res.status).toBe("success");
-    expect(res.data).toEqual(["report1.csv", "report3.csv"]);
+    if (res.status === "success") {
+      expect(res.data).toEqual(["report1.csv", "report3.csv"]);
+    }
   });
 
   it("should return VAE model parameters", async () => {
@@ -57,7 +64,9 @@ describe("data service", () => {
       },
     });
     expect(res.status).toBe("success");
-    expect(res.data.experiment).toBe("RAPT1");
+    if (res.status === "success") {
+      expect(res.data.experiment).toBe("RAPT1");
+    }
 
     const res2 = await altApiClient.getVAEModelParameters({
       queries: {
@@ -65,7 +74,9 @@ describe("data service", () => {
       },
     });
     expect(res2.status).toBe("success");
-    expect(res2.data.experiment).toBe("RAPT3");
+    if (res2.status === "success") {
+      expect(res2.data.experiment).toBe("RAPT3");
+    }
   });
 
   it("should return GMM model parameters", async () => {
@@ -76,8 +87,10 @@ describe("data service", () => {
       },
     });
     expect(res.status).toBe("success");
-    expect(res.data.GMM_num_components).toBe(15);
-    expect(res.data.GMM_seed).toBe(42);
+    if (res.status === "success") {
+      expect(res.data.GMM_num_components).toBe(15);
+      expect(res.data.GMM_seed).toBe(42);
+    }
 
     const res2 = await altApiClient.getGMMModelParameters({
       queries: {
@@ -86,7 +99,9 @@ describe("data service", () => {
       },
     });
     expect(res2.status).toBe("success");
-    expect(res2.data.GMM_num_components).toBe(15);
-    expect(res2.data.GMM_seed).toBe(23);
+    if (res2.status === "success") {
+      expect(res2.data.GMM_num_components).toBe(15);
+      expect(res2.data.GMM_seed).toBe(23);
+    }
   });
 });

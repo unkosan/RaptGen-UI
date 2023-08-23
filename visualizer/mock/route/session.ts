@@ -55,7 +55,6 @@ export const sessionHandlers = [
         ctx.status(200),
         ctx.json({
           status: "error",
-          data: errorMsg,
         })
       );
     }
@@ -76,7 +75,6 @@ export const sessionHandlers = [
         ctx.status(200),
         ctx.json({
           status: "error",
-          data: errorMsg,
         })
       );
     }
@@ -96,7 +94,6 @@ export const sessionHandlers = [
         ctx.status(200),
         ctx.json({
           status: "error",
-          data: errorMsg,
         })
       );
     }
@@ -111,7 +108,6 @@ export const sessionHandlers = [
         ctx.status(200),
         ctx.json({
           status: "error",
-          data: errorMsg,
         })
       );
     }
@@ -137,6 +133,15 @@ export const sessionHandlers = [
   rest.post(mockURL("/session/decode"), (req, res, ctx) => {
     const resBody = req.body as z.infer<typeof requestPostDecode>;
     const length = resBody.coords.length;
+
+    if (length === 0) {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status: "error",
+        })
+      );
+    }
 
     // generate random sequences
     let sequences = [];
@@ -171,7 +176,6 @@ export const sessionHandlers = [
         ctx.status(200),
         ctx.json({
           status: "error",
-          data: errorMsg,
         })
       );
     }

@@ -4,82 +4,127 @@ import { z } from "zod";
 
 // API GET /data/VAE-model-names
 export const requestGetVAEModelNames = z.void();
-export const responseGetVAEModelNames = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.array(z.string()),
-});
+export const responseGetVAEModelNames = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.array(z.string()),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API GET /data/GMM-model-names
 export const requestGetGMMModelNames = z.void();
-export const responseGetGMMModelNames = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.array(z.string()),
-});
+export const responseGetGMMModelNames = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.array(z.string()),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API GET /data/measured-data-names
 export const requestGetMeasuredDataNames = z.void();
-export const responseGetMeasuredDataNames = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.array(z.string()),
-});
+export const responseGetMeasuredDataNames = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.array(z.string()),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API GET /data/VAE-model-parameters
 export const requestGetVAEModelParameters = z.void();
-export const responseGetVAEModelParameters = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.record(z.string(), z.any()),
-});
+export const responseGetVAEModelParameters = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.record(z.string(), z.any()),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API GET /data/GMM-model-parameters
 export const requestGetGMMModelParameters = z.void();
-export const responseGetGMMModelParameters = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.record(z.string(), z.any()),
-});
+export const responseGetGMMModelParameters = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.record(z.string(), z.any()),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API GET /data/selex-data
 export const requestGetSelexData = z.void();
-export const responseGetSelexData = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.object({
-    Sequence: z.array(z.string()),
-    Duplicates: z.array(z.number()),
-    Without_Adapters: z.array(z.string()),
-    coord_x: z.array(z.number()),
-    coord_y: z.array(z.number()),
+export const responseGetSelexData = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.object({
+      Sequence: z.array(z.string()),
+      Duplicates: z.array(z.number()),
+      Without_Adapters: z.array(z.string()),
+      coord_x: z.array(z.number()),
+      coord_y: z.array(z.number()),
+    }),
   }),
-});
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API GET /data/GMM-model
 export const requestGetGMMModel = z.void();
-export const responseGetGMMModel = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.object({
-    weights: z.array(z.number()),
-    means: z.array(z.array(z.number())),
-    covariances: z.array(z.array(z.array(z.number()))),
+export const responseGetGMMModel = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.object({
+      weights: z.array(z.number()),
+      means: z.array(z.array(z.number())),
+      covariances: z.array(z.array(z.array(z.number()))),
+    }),
   }),
-});
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API GET /data/measured-data
 export const requestGetMeasuredData = z.void();
-export const responseGetMeasuredData = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.object({
-    hue: z.array(z.string()),
-    ID: z.array(z.number()),
-    Sequence: z.array(z.string()),
+export const responseGetMeasuredData = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.object({
+      hue: z.array(z.string()),
+      ID: z.array(z.number()),
+      Sequence: z.array(z.string()),
+    }),
   }),
-});
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // SESSION API
 
 // API GET /session/start
 export const requestGetStartSession = z.void();
-export const responseGetStartSession = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.number(),
-});
+export const responseGetStartSession = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.number(),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API GET /session/end
 export const requestGetEndSession = z.void();
@@ -89,25 +134,35 @@ export const responseGetEndSession = z.object({
 
 // API GET /session/status
 export const requestGetSessionStatus = z.void();
-export const responseGetSessionStatus = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.array(z.number()),
-});
+export const responseGetSessionStatus = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.array(z.number()),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API POST /session/encode
 export const requestPostEncode = z.object({
   session_id: z.number(),
   sequences: z.array(z.string()),
 });
-export const responsePostEncode = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.array(
-    z.object({
-      coord_x: z.number(),
-      coord_y: z.number(),
-    })
-  ),
-});
+export const responsePostEncode = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.array(
+      z.object({
+        coord_x: z.number(),
+        coord_y: z.number(),
+      })
+    ),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API POST /session/decode
 export const requestPostDecode = z.object({
@@ -119,10 +174,15 @@ export const requestPostDecode = z.object({
     })
   ),
 });
-export const responsePostDecode = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.array(z.string()),
-});
+export const responsePostDecode = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.array(z.string()),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API POST /session/decode/weblogo (return image)
 export const requestPostWeblogo = z.object({
@@ -141,25 +201,35 @@ export const responsePostWeblogo = z.string().nonempty();
 export const requestPostEstimateTargetLength = z.object({
   sequences: z.array(z.string()),
 });
-export const responsePostEstimateTargetLength = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.number(),
-});
+export const responsePostEstimateTargetLength = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.number(),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API POST /upload/estimate-adapters
 export const requestPostEstimateAdapters = z.object({
   sequences: z.array(z.string()),
   target_length: z.number(),
 });
-export const responsePostEstimateAdapters = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.array(
-    z.object({
-      forward_adapter: z.string(),
-      reverse_adapter: z.string(),
-    })
-  ),
-});
+export const responsePostEstimateAdapters = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.array(
+      z.object({
+        forward_adapter: z.string(),
+        reverse_adapter: z.string(),
+      })
+    ),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API POST /upload/validate-pHMM-model
 export const requestPostValidatepHMMModel = z.object({
@@ -234,10 +304,15 @@ export const requestPostBatchEncode = z.object({
   state_dict: z.instanceof(File),
   seqs: z.array(z.string()),
 });
-export const responsePostBatchEncode = z.object({
-  status: z.enum(["success", "error"]),
-  data: z.array(z.string()),
-});
+export const responsePostBatchEncode = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.array(z.string()),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+  }),
+]);
 
 // API POST /api/upload/batch-encode/kill
 export const requestPostBatchEncodeKill = z.void();
