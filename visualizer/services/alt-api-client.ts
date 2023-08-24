@@ -1,5 +1,4 @@
 import { Zodios } from "@zodios/core";
-import { nuclearMagnetonDependencies } from "mathjs";
 import { z } from "zod";
 
 // API GET /data/VAE-model-names
@@ -7,7 +6,7 @@ export const requestGetVAEModelNames = z.void();
 export const responseGetVAEModelNames = z.union([
   z.object({
     status: z.enum(["success"]),
-    data: z.array(z.string()),
+    data: z.array(z.string().nonempty()),
   }),
   z.object({
     status: z.enum(["error"]),
@@ -19,7 +18,7 @@ export const requestGetGMMModelNames = z.void();
 export const responseGetGMMModelNames = z.union([
   z.object({
     status: z.enum(["success"]),
-    data: z.array(z.string()),
+    data: z.array(z.string().nonempty()),
   }),
   z.object({
     status: z.enum(["error"]),
@@ -31,7 +30,7 @@ export const requestGetMeasuredDataNames = z.void();
 export const responseGetMeasuredDataNames = z.union([
   z.object({
     status: z.enum(["success"]),
-    data: z.array(z.string()),
+    data: z.array(z.string().nonempty()),
   }),
   z.object({
     status: z.enum(["error"]),
@@ -68,9 +67,9 @@ export const responseGetSelexData = z.union([
   z.object({
     status: z.enum(["success"]),
     data: z.object({
-      Sequence: z.array(z.string()),
+      Sequence: z.array(z.string().nonempty()),
       Duplicates: z.array(z.number()),
-      Without_Adapters: z.array(z.string()),
+      Without_Adapters: z.array(z.string().nonempty()),
       coord_x: z.array(z.number()),
       coord_y: z.array(z.number()),
     }),
@@ -86,9 +85,9 @@ export const responseGetGMMModel = z.union([
   z.object({
     status: z.enum(["success"]),
     data: z.object({
-      weights: z.array(z.number()),
-      means: z.array(z.array(z.number())),
-      covariances: z.array(z.array(z.array(z.number()))),
+      weights: z.array(z.number()).nonempty(),
+      means: z.array(z.array(z.number()).length(2)).nonempty(),
+      covariances: z.array(z.array(z.array(z.number()).length(2)).length(2)),
     }),
   }),
   z.object({
@@ -146,8 +145,8 @@ export const responseGetSessionStatus = z.union([
 
 // API POST /session/encode
 export const requestPostEncode = z.object({
-  session_id: z.number(),
-  sequences: z.array(z.string()),
+  session_id: z.number().int(),
+  sequences: z.array(z.string().regex(/^[AUTCG]+$/i)).nonempty(),
 });
 export const responsePostEncode = z.union([
   z.object({
@@ -166,13 +165,15 @@ export const responsePostEncode = z.union([
 
 // API POST /session/decode
 export const requestPostDecode = z.object({
-  session_id: z.number(),
-  coords: z.array(
-    z.object({
-      coord_x: z.number(),
-      coord_y: z.number(),
-    })
-  ),
+  session_id: z.number().int(),
+  coords: z
+    .array(
+      z.object({
+        coord_x: z.number(),
+        coord_y: z.number(),
+      })
+    )
+    .nonempty(),
 });
 export const responsePostDecode = z.union([
   z.object({
@@ -186,20 +187,21 @@ export const responsePostDecode = z.union([
 
 // API POST /session/decode/weblogo (return image)
 export const requestPostWeblogo = z.object({
-  session_id: z.number(),
-  coords: z.array(
-    z.object({
-      coord_x: z.number(),
-      coord_y: z.number(),
-    })
-  ),
+  session_id: z.number().int(),
+  coords: z
+    .array(
+      z.object({
+        coord_x: z.number(),
+        coord_y: z.number(),
+      })
+    )
+    .nonempty(),
 });
-// export const responsePostWeblogo = z.instanceof();
 export const responsePostWeblogo = z.string().nonempty();
 
 // API POST /upload/estimate-target-length
 export const requestPostEstimateTargetLength = z.object({
-  sequences: z.array(z.string()),
+  sequences: z.array(z.string().regex(/^[AUTCG]+$/i)).nonempty(),
 });
 export const responsePostEstimateTargetLength = z.union([
   z.object({
@@ -213,8 +215,8 @@ export const responsePostEstimateTargetLength = z.union([
 
 // API POST /upload/estimate-adapters
 export const requestPostEstimateAdapters = z.object({
-  sequences: z.array(z.string()),
-  target_length: z.number(),
+  sequences: z.array(z.string().regex(/^[AUTCG]+$/i)).nonempty(),
+  target_length: z.number().int().min(1),
 });
 export const responsePostEstimateAdapters = z.union([
   z.object({
@@ -296,11 +298,6 @@ export const responsePostUploadGMM = z.object({
 
 // API GET /upload/batch-encode
 export const requestGetBatchEncode = z.void();
-// export const responseGetBatchEncode = z.object({
-//   state: z.enum(["PENDING", "PROGRESS", "SUCCESS", "FAILURE"]),
-//   status: z.string(),
-//   result: z.string(),
-// });
 export const responseGetBatchEncode = z.union([
   z.object({
     state: z.enum(["PENDING"]),
@@ -327,7 +324,9 @@ export const responseGetBatchEncode = z.union([
 // API POST /upload/batch-encode
 export const requestPostBatchEncode = z.object({
   state_dict: z.instanceof(File),
-  seqs: z.array(z.string()).transform((strArray) => strArray.join(",")),
+  seqs: z
+    .array(z.string().regex(/^[AUTCG]+$/i))
+    .transform((strArray) => strArray.join(",")),
 });
 export const responsePostBatchEncode = z.union([
   z.object({
@@ -381,7 +380,7 @@ export const altApiClient = new Zodios("http://localhost:8000/api", [
         name: "VAE_model_name",
         description: "VAE model name",
         type: "Query",
-        schema: z.string(),
+        schema: z.string().nonempty(),
       },
     ],
     response: responseGetGMMModelNames,
@@ -490,7 +489,7 @@ export const altApiClient = new Zodios("http://localhost:8000/api", [
         name: "VAE_name",
         description: "VAE model name",
         type: "Query",
-        schema: z.string(),
+        schema: z.string().nonempty(),
       },
     ],
     response: responseGetStartSession,
@@ -505,7 +504,7 @@ export const altApiClient = new Zodios("http://localhost:8000/api", [
         name: "session_id",
         description: "Session ID",
         type: "Query",
-        schema: z.number(),
+        schema: z.number().int(),
       },
     ],
     response: responseGetEndSession,

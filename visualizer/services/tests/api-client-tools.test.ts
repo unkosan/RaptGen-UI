@@ -1,9 +1,8 @@
 import { altApiClient } from "../alt-api-client";
-// import { setupServer } from "msw/node";
-// import { handlers } from "../mock/handlers";
-// import axios from "axios";
+import { setupServer } from "msw/node";
+import { handlers } from "../../mock/handlers";
 
-// const server = setupServer(...handlers);
+const server = setupServer(...handlers);
 
 function isBinaryData(input: string): boolean {
   // Set a threshold for the maximum number of "control characters" allowed
@@ -31,9 +30,10 @@ function isBinaryData(input: string): boolean {
 }
 
 describe("upload service", () => {
-  // MSW does not work with axios. causes "Error: Write after end"
-  // instead, use the backend server directly
-  // this test needs jsdom environment to work successfully
+  // setup and teardown the mock server
+  beforeAll(() => server.listen());
+  beforeEach(() => server.resetHandlers());
+  afterAll(() => server.close());
 
   it("hello", async () => {
     const res = await altApiClient.hello();

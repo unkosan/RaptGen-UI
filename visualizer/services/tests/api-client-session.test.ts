@@ -157,8 +157,8 @@ describe("session service", () => {
     }
 
     const resEncode = await altApiClient.encode({
-      session_id: resStart.data,
-      sequences: [],
+      session_id: resStart.data + 1,
+      sequences: ["ATCG", "AAGG", "GGGC"],
     });
     expect(resEncode.status).toBe("error");
   });
@@ -215,8 +215,21 @@ describe("session service", () => {
     }
 
     const resDecode = await altApiClient.decode({
-      session_id: resStart.data,
-      coords: [],
+      session_id: resStart.data + 1,
+      coords: [
+        {
+          coord_x: 0.1,
+          coord_y: 0.2,
+        },
+        {
+          coord_x: 0.3,
+          coord_y: 0.4,
+        },
+        {
+          coord_x: 0.5,
+          coord_y: 0.6,
+        },
+      ],
     });
     expect(resDecode.status).toBe("error");
   });

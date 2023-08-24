@@ -11,7 +11,7 @@ describe("upload service", () => {
   // instead, use the backend server directly
   // this test needs jsdom environment to work successfully
 
-  it("hello", async () => {
+  xit("hello", async () => {
     const res = await altApiClient.hello();
     expect(res.message).toBe("OK");
   });

@@ -121,13 +121,22 @@ export const sessionHandlers = [
       });
     }
 
-    return res(
-      ctx.status(200),
-      ctx.json({
-        status: "success",
-        data: codes,
-      })
-    );
+    if (sessions.has(resBody.session_id)) {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status: "success",
+          data: codes,
+        })
+      );
+    } else {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status: "error",
+        })
+      );
+    }
   }),
 
   rest.post(mockURL("/session/decode"), (req, res, ctx) => {
@@ -154,13 +163,22 @@ export const sessionHandlers = [
       sequences.push(seq);
     }
 
-    return res(
-      ctx.status(200),
-      ctx.json({
-        status: "success",
-        data: sequences,
-      })
-    );
+    if (sessions.has(resBody.session_id)) {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status: "success",
+          data: sequences,
+        })
+      );
+    } else {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status: "error",
+        })
+      );
+    }
   }),
 
   rest.post(mockURL("/session/decode/weblogo"), (req, res, ctx) => {
