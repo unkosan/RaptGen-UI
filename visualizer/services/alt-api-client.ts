@@ -347,6 +347,11 @@ export const responsePostBatchEncodeKill = z.object({
   state: z.enum(["success", "error"]),
 });
 
+// TOOLS API
+
+export const requestGetSecondaryStructureImage = z.void();
+export const responseGetSecondaryStructureImage = z.string();
+
 // API
 export const altApiClient = new Zodios("http://localhost:8000/api", [
   {
@@ -691,5 +696,20 @@ export const altApiClient = new Zodios("http://localhost:8000/api", [
       },
     ],
     response: responsePostBatchEncodeKill,
+  },
+  {
+    alias: "getSecondaryStructureImage",
+    method: "get",
+    path: "/tool/secondary-structure",
+    description: "Get secondary structure image",
+    parameters: [
+      {
+        name: "sequence",
+        description: "Sequence",
+        type: "Query",
+        schema: z.string().nonempty(),
+      },
+    ],
+    response: responseGetSecondaryStructureImage,
   },
 ]);
