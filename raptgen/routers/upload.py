@@ -318,7 +318,7 @@ async def get_batch_encode_status(task_id: str):
     }
 
 
-@router.get("/api/upload/upload-gmm")
+@router.post("/api/upload/upload-gmm")
 async def upload(
     model: bytes = File(...),
     VAE_model_name: str = Form(...),
@@ -335,10 +335,10 @@ async def upload(
 
     data_df = pd.DataFrame(
         {
-            "GMM_num_components": num_components,
-            "GMM_seed": seed,
-            "GMM_optimal_model": gmm,
-            "GMM_model_type": model_type,
+            "GMM_num_components": [num_components],
+            "GMM_seed": [seed],
+            "GMM_optimal_model": [gmm],
+            "GMM_model_type": [model_type],
         }
     )
     data_df.index.name = GMM_model_name

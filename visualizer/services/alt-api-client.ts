@@ -1,5 +1,5 @@
 import { Zodios } from "@zodios/core";
-import { request } from "http";
+import { nuclearMagnetonDependencies } from "mathjs";
 import { z } from "zod";
 
 // API GET /data/VAE-model-names
@@ -241,7 +241,7 @@ export const responsePostValidatepHMMModel = z.object({
 
 // API POST /upload/validate-GMM-model
 export const requestPostValidateGMMModel = z.object({
-  state_dict: z.instanceof(File),
+  gmm_data: z.instanceof(File),
 });
 export const responsePostValidateGMMModel = z.object({
   status: z.enum(["success", "error"]),
@@ -252,25 +252,28 @@ export const requestPostUploadVAE = z.object({
   // required
   model: z.instanceof(File),
   model_name: z.string(),
-  sequences: z.string(),
+  target_length: z.number().transform(String),
   forward_adapter: z.string(),
   reverse_adapter: z.string(),
-  coord_x: z.array(z.number()),
-  coord_y: z.array(z.number()),
-  duplicates: z.array(z.number()),
+  sequences: z.array(z.string()).transform((strArray) => strArray.join(",")),
+  coord_x: z.array(z.number()).transform((numArray) => numArray.join(",")),
+  coord_y: z.array(z.number()).transform((numArray) => numArray.join(",")),
+  duplicates: z
+    .array(z.number().int().min(1))
+    .transform((numArray) => numArray.join(",")),
   // optional
-  published_time: z.string().optional(),
-  experiment_name: z.string().optional(),
-  round_name: z.string().optional(),
-  tolerance: z.number().optional(),
-  minimum_count: z.number().optional(),
-  epochs: z.number().optional(),
-  match_forcing_epochs: z.number().optional(),
-  match_cost: z.number().optional(),
-  early_stopping_patience: z.number().optional(),
-  CUDA_num_threads: z.number().optional(),
+  published_time: z.string().datetime().optional(),
+  experiment_name: z.string().nonempty().optional(),
+  round_name: z.string().nonempty().optional(),
+  tolerance: z.number().int().min(0).transform(String).optional(),
+  minimum_count: z.number().int().min(1).transform(String).optional(),
+  epochs: z.number().int().min(1).transform(String).optional(),
+  match_forcing_epochs: z.number().int().min(0).transform(String).optional(),
+  match_cost: z.number().transform(String).optional(),
+  early_stopping_patience: z.number().transform(String).optional(),
+  CUDA_num_threads: z.number().int().min(0).transform(String).optional(),
   CUDA_pin_memory: z.boolean().optional(),
-  seed: z.number().optional(),
+  seed: z.number().transform(String).optional(),
 });
 export const responsePostUploadVAE = z.object({
   status: z.enum(["success", "error"]),
@@ -280,12 +283,12 @@ export const responsePostUploadVAE = z.object({
 export const requestPostUploadGMM = z.object({
   // required
   model: z.instanceof(File),
-  VAE_model_name: z.string(),
-  GMM_model_name: z.string(),
+  VAE_model_name: z.string().nonempty(),
+  GMM_model_name: z.string().nonempty(),
   // optional
-  seed: z.number().optional(),
+  seed: z.number().transform(String).optional(),
   model_type: z.string().optional(),
-  num_components: z.number().optional(),
+  num_components: z.number().int().min(0).transform(String).optional(),
 });
 export const responsePostUploadGMM = z.object({
   status: z.enum(["success", "error"]),
@@ -293,21 +296,45 @@ export const responsePostUploadGMM = z.object({
 
 // API GET /upload/batch-encode
 export const requestGetBatchEncode = z.void();
-export const responseGetBatchEncode = z.object({
-  state: z.enum(["PENDING", "PROGRESS", "SUCCESS", "FAILURE"]),
-  status: z.string(),
-  result: z.string(),
-});
+// export const responseGetBatchEncode = z.object({
+//   state: z.enum(["PENDING", "PROGRESS", "SUCCESS", "FAILURE"]),
+//   status: z.string(),
+//   result: z.string(),
+// });
+export const responseGetBatchEncode = z.union([
+  z.object({
+    state: z.enum(["PENDING"]),
+    status: z.string(),
+    result: z.array(z.array(z.any())),
+  }),
+  z.object({
+    state: z.enum(["PROGRESS"]),
+    status: z.string(),
+    result: z.array(z.array(z.any())),
+  }),
+  z.object({
+    state: z.enum(["SUCCESS"]),
+    status: z.string(),
+    result: z.array(z.array(z.any())),
+  }),
+  z.object({
+    state: z.enum(["FAILURE"]),
+    status: z.string(),
+    result: z.array(z.array(z.any())),
+  }),
+]);
 
 // API POST /upload/batch-encode
 export const requestPostBatchEncode = z.object({
   state_dict: z.instanceof(File),
-  seqs: z.array(z.string()),
+  seqs: z.array(z.string()).transform((strArray) => strArray.join(",")),
 });
 export const responsePostBatchEncode = z.union([
   z.object({
     status: z.enum(["success"]),
-    data: z.array(z.string()),
+    data: z.object({
+      task_id: z.string().uuid(),
+    }),
   }),
   z.object({
     status: z.enum(["error"]),
@@ -317,7 +344,7 @@ export const responsePostBatchEncode = z.union([
 // API POST /api/upload/batch-encode/kill
 export const requestPostBatchEncodeKill = z.void();
 export const responsePostBatchEncodeKill = z.object({
-  status: z.enum(["success", "error"]),
+  state: z.enum(["success", "error"]),
 });
 
 // API
@@ -563,36 +590,18 @@ export const altApiClient = new Zodios("http://localhost:8000/api", [
   {
     alias: "validatepHMMModel",
     method: "post",
-    path: "/upa/validate-pHMM-model",
+    path: "/upload/validate-pHMM-model",
     description: "Validate pHMM model",
     requestFormat: "form-data",
     parameters: [
       {
-        name: "state_dict",
-        description: "State dict",
+        name: "body",
         type: "Body",
         schema: requestPostValidatepHMMModel,
       },
     ],
     response: responsePostValidatepHMMModel,
   },
-  // {
-  //   alias: "validatepHMMModel",
-  //   method: "post",
-  //   path: "/upload/validate-pHMM-model",
-  //   description: "Validate pHMM model",
-  //   requestFormat: "form-data",
-  //   parameters: [
-  //     {
-  //       name: "state_dict",
-  //       type: "Body",
-  //       schema: z.object({
-  //         file: z.instanceof(File),
-  //       })
-  //     }
-  //   ],
-  //   response: responsePostValidatepHMMModel,
-  // },
   {
     alias: "validateGMMModel",
     method: "post",
@@ -601,8 +610,7 @@ export const altApiClient = new Zodios("http://localhost:8000/api", [
     requestFormat: "form-data",
     parameters: [
       {
-        name: "state_dict",
-        description: "State dict",
+        name: "body",
         type: "Body",
         schema: requestPostValidateGMMModel,
       },
@@ -617,8 +625,7 @@ export const altApiClient = new Zodios("http://localhost:8000/api", [
     requestFormat: "form-data",
     parameters: [
       {
-        name: "request",
-        description: "Request body",
+        name: "body",
         type: "Body",
         schema: requestPostUploadVAE,
       },
@@ -633,8 +640,7 @@ export const altApiClient = new Zodios("http://localhost:8000/api", [
     requestFormat: "form-data",
     parameters: [
       {
-        name: "request",
-        description: "Request body",
+        name: "body",
         type: "Body",
         schema: requestPostUploadGMM,
       },
@@ -664,13 +670,12 @@ export const altApiClient = new Zodios("http://localhost:8000/api", [
     requestFormat: "form-data",
     parameters: [
       {
-        name: "request",
-        description: "Request body",
+        name: "body",
         type: "Body",
         schema: requestPostBatchEncode,
       },
     ],
-    response: responseGetBatchEncode,
+    response: responsePostBatchEncode,
   },
   {
     alias: "batchEncodeKill",

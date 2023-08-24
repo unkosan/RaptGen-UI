@@ -1,6 +1,6 @@
-import { altApiClient } from "./alt-api-client";
+import { altApiClient } from "../alt-api-client";
 import { setupServer } from "msw/node";
-import { handlers } from "../mock/handlers";
+import { handlers } from "../../mock/handlers";
 
 const server = setupServer(...handlers);
 
