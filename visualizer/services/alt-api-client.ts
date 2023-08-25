@@ -235,7 +235,7 @@ export const responsePostEstimateAdapters = z.union([
 
 // API POST /upload/validate-pHMM-model
 export const requestPostValidatepHMMModel = z.object({
-  state_dict: z.instanceof(File),
+  state_dict: z.instanceof(Blob),
 });
 export const responsePostValidatepHMMModel = z.object({
   status: z.enum(["success", "error"]),
@@ -243,7 +243,7 @@ export const responsePostValidatepHMMModel = z.object({
 
 // API POST /upload/validate-GMM-model
 export const requestPostValidateGMMModel = z.object({
-  gmm_data: z.instanceof(File),
+  gmm_data: z.instanceof(Blob),
 });
 export const responsePostValidateGMMModel = z.object({
   status: z.enum(["success", "error"]),
@@ -252,7 +252,7 @@ export const responsePostValidateGMMModel = z.object({
 // API POST /upload/upload-vae
 export const requestPostUploadVAE = z.object({
   // required
-  model: z.instanceof(File),
+  model: z.instanceof(Blob),
   model_name: z.string(),
   target_length: z.number().transform(String),
   forward_adapter: z.string(),
@@ -284,7 +284,7 @@ export const responsePostUploadVAE = z.object({
 // API POST /upload/upload-gmm
 export const requestPostUploadGMM = z.object({
   // required
-  model: z.instanceof(File),
+  model: z.instanceof(Blob),
   VAE_model_name: z.string().nonempty(),
   GMM_model_name: z.string().nonempty(),
   // optional
@@ -323,7 +323,7 @@ export const responseGetBatchEncode = z.union([
 
 // API POST /upload/batch-encode
 export const requestPostBatchEncode = z.object({
-  state_dict: z.instanceof(File),
+  state_dict: z.instanceof(Blob),
   seqs: z
     .array(z.string().regex(/^[AUTCG]+$/i))
     .transform((strArray) => strArray.join(",")),
