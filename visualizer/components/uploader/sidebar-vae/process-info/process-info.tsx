@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { Alert, Form, ProgressBar } from "react-bootstrap";
 import axios from "axios";
+import { altApiClient } from "../../../../services/alt-api-client";
 
 type Props = {
   finished: boolean;
@@ -32,13 +33,12 @@ const ProcessInfo: React.FC<Props> = (props) => {
       }
 
       (async () => {
-        const res = await axios
-          .get("/upload/batch-encode", {
-            params: {
-              task_id: uuid,
-            },
-          })
-          .then((res) => res.data);
+        const res = await altApiClient.getBatchEncodeStatus({
+          queries: {
+            task_id: uuid,
+          },
+        });
+
         console.log(
           "interval called, state: " + res.state + "\n progid: " + uuid
         );

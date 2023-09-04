@@ -3,7 +3,7 @@ import { Button, ButtonToolbar } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import axios from "axios";
+import { altApiClient } from "../../../../services/alt-api-client";
 
 type Props = {
   encodeDisabled: boolean;
@@ -50,21 +50,15 @@ const EncodeButtons: React.FC<Props> = (props) => {
         });
 
         // get uuid
-        const formData = new FormData();
         if (!props.vaeFile) {
           return;
         }
-        formData.append("state_dict", props.vaeFile);
-        formData.append("seqs", randomRegions.filter((e) => e).join(","));
-        console.log(randomRegions.join(","));
 
-        const res = await axios
-          .post("/upload/batch-encode", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          })
-          .then((res) => res.data);
+        const res = await altApiClient.batchEncode({
+          state_dict: props.vaeFile,
+          seqs: randomRegions.filter((e) => e),
+        });
+
         if (res.status === "success") {
           const uuid: string = res.data.task_id;
 

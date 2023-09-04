@@ -1,10 +1,9 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { Table } from "react-bootstrap";
 import ClientOnly from "../../common/client-only";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
+import { altApiClient } from "../../../services/alt-api-client";
 
 const GMMParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
@@ -26,14 +25,12 @@ const GMMParamsTable: React.FC = () => {
         return;
       }
 
-      const res = await axios
-        .get("/data/GMM-model-parameters", {
-          params: {
-            VAE_model_name: vaeName,
-            GMM_model_name: gmmName,
-          },
-        })
-        .then((res) => res.data);
+      const res = await altApiClient.getGMMModelParameters({
+        queries: {
+          VAE_model_name: vaeName,
+          GMM_model_name: gmmName,
+        },
+      });
 
       if (res.status === "success") {
         setParamsList(res.data);

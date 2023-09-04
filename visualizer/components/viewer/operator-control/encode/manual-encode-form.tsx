@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
+import { altApiClient } from "../../../../services/alt-api-client";
 
 const ManualEncodeForm: React.FC = () => {
   const [value, setValue] = useState<string>("");
@@ -36,37 +37,38 @@ const ManualEncodeForm: React.FC = () => {
       return;
     }
 
-    const res = await axios
-      .post("/session/encode", {
-        session_id: sessionId,
-        sequences: [value],
-      })
-      .then((res) => res.data);
-    if (res.status === "success") {
-      const { coord_x, coord_y } = res.data[0];
-      let newEncodeData = [...encodeData];
-      newEncodeData.push({
-        key: manualEncodeCount,
-        id: `manual-${manualEncodeCount}`,
-        sequence: "",
-        randomRegion: value,
-        coordX: coord_x,
-        coordY: coord_y,
-        isSelected: false,
-        isShown: true,
-        category: "manual",
-        seriesName: "manual",
-      });
-      dispatch({
-        type: "encodeData/set",
-        payload: newEncodeData,
-      });
-      dispatch({
-        type: "sessionConfig/incrementEncodeCount",
-        payload: null,
-      });
-      setValue("");
+    const res = await altApiClient.encode({
+      session_id: sessionId,
+      sequences: [value],
+    });
+
+    if (res.status === "error") {
+      return;
     }
+
+    const { coord_x, coord_y } = res.data[0];
+    let newEncodeData = [...encodeData];
+    newEncodeData.push({
+      key: manualEncodeCount,
+      id: `manual-${manualEncodeCount}`,
+      sequence: "",
+      randomRegion: value,
+      coordX: coord_x,
+      coordY: coord_y,
+      isSelected: false,
+      isShown: true,
+      category: "manual",
+      seriesName: "manual",
+    });
+    dispatch({
+      type: "encodeData/set",
+      payload: newEncodeData,
+    });
+    dispatch({
+      type: "sessionConfig/incrementEncodeCount",
+      payload: null,
+    });
+    setValue("");
   };
 
   return (
