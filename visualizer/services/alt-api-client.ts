@@ -701,6 +701,7 @@ export const altApiClient = new Zodios("http://localhost:8000/api", [
     alias: "getSecondaryStructureImage",
     method: "get",
     path: "/tool/secondary-structure",
+    responseType: "arraybuffer",
     description: "Get secondary structure image",
     parameters: [
       {

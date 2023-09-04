@@ -5,7 +5,6 @@ import { Button, Form, Image } from "react-bootstrap";
 import { InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { altApiClient } from "../../../../services/alt-api-client";
 
 const ResultViewer: React.FC = () => {
@@ -47,15 +46,20 @@ const ResultViewer: React.FC = () => {
     }
 
     (async () => {
-      const res = await altApiClient.getWeblogo({
-        session_id: sessionConfig.sessionId,
-        coords: [
-          {
-            coord_x: gridPoint.coordX,
-            coord_y: gridPoint.coordY,
-          },
-        ],
-      });
+      const res = await altApiClient.getWeblogo(
+        {
+          session_id: sessionConfig.sessionId,
+          coords: [
+            {
+              coord_x: gridPoint.coordX,
+              coord_y: gridPoint.coordY,
+            },
+          ],
+        },
+        {
+          responseType: "arraybuffer",
+        }
+      );
       const base64 = Buffer.from(res, "binary").toString("base64");
       setWeblogoBase64(base64);
     })();
@@ -76,6 +80,7 @@ const ResultViewer: React.FC = () => {
         queries: {
           sequence: gridPoint.randomRegion.replace(/\_/g, ""),
         },
+        responseType: "arraybuffer",
       });
 
       const base64 = Buffer.from(res, "binary").toString("base64");
@@ -122,7 +127,7 @@ const ResultViewer: React.FC = () => {
       {showWeblogo ? (
         <div>
           <Form.Label>Weblogo</Form.Label>
-          <Image src={`data:image/png;base64,${weblogoBase64}`} fluid />
+          <Image src={`data:image/png;base64, ${weblogoBase64}`} fluid />
         </div>
       ) : null}
       {showSecondaryStructure ? (
