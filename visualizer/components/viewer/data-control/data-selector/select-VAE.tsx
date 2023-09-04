@@ -72,8 +72,6 @@ const SelectVAE: React.FC = () => {
         return;
       }
 
-      console.log("getSelexData", value);
-
       const res = await altApiClient.getSelexData({
         queries: {
           VAE_model_name: value,
