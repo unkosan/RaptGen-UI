@@ -39,7 +39,7 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>Home</h1>
           <hr />
-          <Row>
+          <Row className="my-3">
             <Col>
               <Cell
                 title="Viewer"
@@ -54,6 +54,16 @@ const Home: React.FC = () => {
                 url="/uploader"
               />
             </Col>
+          </Row>
+          <Row className="my-3">
+            <Col>
+              <Cell
+                title="Trainer"
+                content="Train a RaptGen model"
+                url="/trainer"
+              />
+            </Col>
+            <Col></Col>
           </Row>
         </Container>
       </main>
