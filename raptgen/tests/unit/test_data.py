@@ -1,10 +1,11 @@
-from context import raptgen
-from raptgen.core.preprocessing import one_hot_encode, ID_encode
 import torch
 import numpy as np
 from Bio.SeqRecord import SeqRecord
 import pytest
 import os
+
+# internal package
+from core.preprocessing import one_hot_encode, ID_encode
 
 
 def test_one_hot_index():

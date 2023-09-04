@@ -23,6 +23,8 @@ dependencies:
   - redis-py
   - flower
   - pip
+  - tqdm
+  - httpx
   - pip:
     - python-multipart
   - pytest
