@@ -5,7 +5,7 @@ import { z } from "zod";
 import * as trainZod from "../../services/api-client";
 
 export const mockURL = (path: string) => {
-  return `http://localhost:3000/api${path}`;
+  return `http://localhost:8000/api${path}`;
 };
 
 const uuids = {
@@ -57,12 +57,12 @@ export const trainHandlers = [
     return res(ctx.status(200), ctx.json({ message: "hello" }));
   }),
 
-  rest.get(mockURL("/train/device/process"), (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json(["cpu", "cuda:0", "cuda:1", "cuda:2", "cuda:3"])
-    );
-  }),
+  // rest.get(mockURL("/train/device/process"), (req, res, ctx) => {
+  //   return res(
+  //     ctx.status(200),
+  //     ctx.json(["cpu", "cuda:0", "cuda:1", "cuda:2", "cuda:3"])
+  //   );
+  // }),
 
   rest.post(mockURL("/train/jobs/submit"), async (req, res, ctx) => {
     if (trainZod.requestPostSubmitJob.safeParse(await req.json())) {

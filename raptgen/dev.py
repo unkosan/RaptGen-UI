@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Set
 
-from routers import session, test, data, upload
+from routers import session, test, data, upload, training
 
 app = FastAPI()
 
@@ -25,7 +25,7 @@ app.include_router(session.router)
 app.include_router(data.router)
 app.include_router(test.router)
 app.include_router(upload.router)
-
+app.include_router(training.router)
 
 def print_spec() -> str:
     return str(app.openapi())
