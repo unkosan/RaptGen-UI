@@ -37,7 +37,7 @@ const FormReverse: React.FC<Props> = (props) => {
         });
 
         if (res.status === "success") {
-          const value: string = res.data[0].reverse_adapter;
+          const value: string = res.data.reverse_adapter;
           props.setValue(value);
           props.setIsValid(true);
         }

@@ -34,12 +34,13 @@ const FormTargetLength: React.FC<Props> = (props) => {
   useEffect(() => {
     if (isLoading) {
       (async () => {
+        console.log(sequences);
         const res = await altApiClient.estimateTargetLength({
           sequences: sequences,
         });
 
         if (res.status === "success") {
-          const value: number = res.data;
+          const value: number = res.data.target_length;
           setValue(value.toString());
           props.setValue(value);
           props.setIsValid(true);

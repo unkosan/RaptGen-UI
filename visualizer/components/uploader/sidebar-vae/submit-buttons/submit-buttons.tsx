@@ -30,7 +30,7 @@ const SubmitButtons: React.FC<Props> = (props) => {
         return;
       }
 
-      const res = await altApiClient.uploadVAE({
+      const required = {
         model: props.vaeFile,
         model_name: vaeConfig.requiredParams.modelName,
         forward_adapter: vaeConfig.requiredParams.forwardAdapter,
@@ -40,6 +40,9 @@ const SubmitButtons: React.FC<Props> = (props) => {
         coord_x: vaeData.map((value) => value.coordX),
         coord_y: vaeData.map((value) => value.coordY),
         duplicates: vaeData.map((value) => value.duplicates),
+      };
+
+      const optional = {
         published_time: vaeConfig.optionalParams.uploadDate,
         tolerance: Number(vaeConfig.optionalParams.tolerance),
         minimum_count: Number(vaeConfig.optionalParams.minCount),
@@ -55,6 +58,23 @@ const SubmitButtons: React.FC<Props> = (props) => {
         CUDA_num_threads: Number(vaeConfig.optionalParams.numberWorkers),
         CUDA_pin_memory: Boolean(vaeConfig.optionalParams.pinned),
         seed: Number(vaeConfig.optionalParams.seedValue),
+      };
+
+      // remove empty optional params
+      type Optional = keyof typeof optional;
+      Object.keys(optional).forEach((key) => {
+        const keyGuarded = key as Optional;
+        if (
+          optional[keyGuarded] === undefined ||
+          isNaN(Number(optional[keyGuarded]))
+        ) {
+          delete optional[keyGuarded];
+        }
+      });
+
+      const res = await altApiClient.uploadVAE({
+        ...required,
+        ...optional,
       });
 
       console.log(res);

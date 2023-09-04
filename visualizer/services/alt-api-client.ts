@@ -206,7 +206,9 @@ export const requestPostEstimateTargetLength = z.object({
 export const responsePostEstimateTargetLength = z.union([
   z.object({
     status: z.enum(["success"]),
-    data: z.number(),
+    data: z.object({
+      target_length: z.number(),
+    }),
   }),
   z.object({
     status: z.enum(["error"]),
@@ -221,12 +223,10 @@ export const requestPostEstimateAdapters = z.object({
 export const responsePostEstimateAdapters = z.union([
   z.object({
     status: z.enum(["success"]),
-    data: z.array(
-      z.object({
-        forward_adapter: z.string(),
-        reverse_adapter: z.string(),
-      })
-    ),
+    data: z.object({
+      forward_adapter: z.string(),
+      reverse_adapter: z.string(),
+    }),
   }),
   z.object({
     status: z.enum(["error"]),

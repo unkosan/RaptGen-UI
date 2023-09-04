@@ -35,9 +35,10 @@ const FormForward: React.FC<Props> = (props) => {
           target_length: props.targetLength,
           sequences: sequences,
         });
+        console.log(res);
 
         if (res.status === "success") {
-          const value: string = res.data[0].forward_adapter;
+          const value: string = res.data.forward_adapter;
           props.setValue(value);
           props.setIsValid(true);
         }
