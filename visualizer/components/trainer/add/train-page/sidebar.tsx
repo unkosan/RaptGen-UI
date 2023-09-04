@@ -54,6 +54,7 @@ const SideBar: React.FC = () => {
     // const response = ["cpu", "cuda:0", "cuda:1"];
     (async () => {
       const data = await apiClient.getDevices();
+      console.log("getDevices", data);
       const devices = data ?? "cpu";
       setDeviceList(devices);
     })();

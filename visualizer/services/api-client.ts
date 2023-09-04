@@ -201,7 +201,7 @@ export const requestPostPublish = z.object({
 export const responsePostPublish = z.null();
 
 // API
-export const apiClient = new Zodios("http://localhost:3000/api", [
+export const apiClient = new Zodios("http://localhost:8000/api", [
   {
     alias: "hello",
     method: "get",
