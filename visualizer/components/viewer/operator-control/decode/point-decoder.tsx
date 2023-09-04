@@ -6,6 +6,7 @@ import { RootState } from "../../redux/store";
 import { Form, InputGroup } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
+import { altApiClient } from "../../../../services/alt-api-client";
 
 const PointDecoder: React.FC = () => {
   const [pointX, setPointX] = useState<number>(0);
@@ -60,17 +61,15 @@ const PointDecoder: React.FC = () => {
 
     // dispatch decoded point value to redux
     (async () => {
-      const res = await axios
-        .post("/session/decode", {
-          session_id: sessionId,
-          coords: [
-            {
-              coord_x: pointX,
-              coord_y: pointY,
-            },
-          ],
-        })
-        .then((res) => res.data);
+      const res = await altApiClient.decode({
+        session_id: sessionId,
+        coords: [
+          {
+            coord_x: pointX,
+            coord_y: pointY,
+          },
+        ],
+      });
 
       if (res.status === "success") {
         const sequence: string = res.data[0];

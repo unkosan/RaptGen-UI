@@ -1,13 +1,12 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { Table } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import "@inovua/reactdatagrid-community/index.css";
 import ClientOnly from "../../common/client-only";
+import { altApiClient } from "../../../services/alt-api-client";
 
 const VAEParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
@@ -28,13 +27,11 @@ const VAEParamsTable: React.FC = () => {
         return;
       }
 
-      const res = await axios
-        .get("/data/VAE-model-parameters", {
-          params: {
-            VAE_model_name: vaeName,
-          },
-        })
-        .then((res) => res.data);
+      const res = await altApiClient.getVAEModelParameters({
+        queries: {
+          VAE_model_name: vaeName,
+        },
+      });
 
       if (res.status === "success") {
         setParamsList(res.data);

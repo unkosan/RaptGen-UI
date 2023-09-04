@@ -1,10 +1,9 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import { ResponseSelexData } from "../../../../types/api-interface/data";
+import { altApiClient } from "../../../../services/alt-api-client";
 
 const SelectVAE: React.FC = () => {
   const [value, setValue] = useState<string>("");
@@ -16,14 +15,11 @@ const SelectVAE: React.FC = () => {
   // retrieve VAE model names
   useEffect(() => {
     (async () => {
-      const res = await axios
-        .get("/data/VAE-model-names")
-        .then((res) => res.data);
-      const nameList: string[] = res.data;
+      const res = await altApiClient.getVAEModelNames();
       if (res.status === "success") {
-        setNameList(nameList);
-        if (nameList.length > 0) {
-          setValue(nameList[0]);
+        setNameList(res.data);
+        if (res.data.length > 0) {
+          setValue(res.data[0]);
         } else {
           setValue("");
         }
@@ -53,13 +49,11 @@ const SelectVAE: React.FC = () => {
         return;
       }
 
-      const res = await axios
-        .get("/session/start", {
-          params: {
-            VAE_name: value,
-          },
-        })
-        .then((res) => res.data);
+      const res = await altApiClient.startSession({
+        queries: {
+          VAE_name: value,
+        },
+      });
 
       if (res.status === "success") {
         const sessionId: number = res.data;
@@ -78,13 +72,13 @@ const SelectVAE: React.FC = () => {
         return;
       }
 
-      const res = await axios
-        .get<ResponseSelexData>("/data/selex-data", {
-          params: {
-            VAE_model_name: value,
-          },
-        })
-        .then((res) => res.data);
+      console.log("getSelexData", value);
+
+      const res = await altApiClient.getSelexData({
+        queries: {
+          VAE_model_name: value,
+        },
+      });
 
       if (res.status === "success") {
         const rawData = res.data;

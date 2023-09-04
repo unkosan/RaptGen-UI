@@ -6,6 +6,7 @@ import { InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { altApiClient } from "../../../../services/alt-api-client";
 
 const ResultViewer: React.FC = () => {
   const dispatch = useDispatch();
@@ -46,21 +47,15 @@ const ResultViewer: React.FC = () => {
     }
 
     (async () => {
-      const res = await axios
-        .post(
-          "/session/decode/weblogo",
+      const res = await altApiClient.getWeblogo({
+        session_id: sessionConfig.sessionId,
+        coords: [
           {
-            session_id: sessionConfig.sessionId,
-            coords: [
-              {
-                coord_x: gridPoint.coordX,
-                coord_y: gridPoint.coordY,
-              },
-            ],
+            coord_x: gridPoint.coordX,
+            coord_y: gridPoint.coordY,
           },
-          { responseType: "arraybuffer" }
-        )
-        .then((res) => res.data);
+        ],
+      });
       const base64 = Buffer.from(res, "binary").toString("base64");
       setWeblogoBase64(base64);
     })();
@@ -77,14 +72,11 @@ const ResultViewer: React.FC = () => {
     }
 
     (async () => {
-      const res = await axios
-        .get("/tool/secondary-structure", {
-          params: {
-            sequence: gridPoint.randomRegion.replace(/\_/g, ""),
-          },
-          responseType: "arraybuffer",
-        })
-        .then((res) => res.data);
+      const res = await altApiClient.getSecondaryStructureImage({
+        queries: {
+          sequence: gridPoint.randomRegion.replace(/\_/g, ""),
+        },
+      });
 
       const base64 = Buffer.from(res, "binary").toString("base64");
       setSecondaryStructureBase64(base64);

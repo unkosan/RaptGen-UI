@@ -102,7 +102,7 @@ export const responseGetMeasuredData = z.union([
     status: z.enum(["success"]),
     data: z.object({
       hue: z.array(z.string()),
-      ID: z.array(z.number()),
+      ID: z.array(z.union([z.string(), z.number()]).transform(String)),
       Sequence: z.array(z.string()),
     }),
   }),
@@ -270,6 +270,7 @@ export const requestPostUploadVAE = z.object({
   tolerance: z.number().int().min(0).transform(String).optional(),
   minimum_count: z.number().int().min(1).transform(String).optional(),
   epochs: z.number().int().min(1).transform(String).optional(),
+  beta_weighting_epochs: z.number().int().min(0).transform(String).optional(),
   match_forcing_epochs: z.number().int().min(0).transform(String).optional(),
   match_cost: z.number().transform(String).optional(),
   early_stopping_patience: z.number().transform(String).optional(),

@@ -7,6 +7,7 @@ import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
 
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import ClientOnly from "../../../common/client-only";
+import { altApiClient } from "../../../../services/alt-api-client";
 
 type EditorProps = {
   value: string;
@@ -137,16 +138,14 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
   };
 
   const onConfirmClick = async () => {
-    const res = await axios
-      .post("/session/encode", {
-        session_id: sessionId,
-        sequences: [value],
-      })
-      .then((res) => res.data)
-      .catch((err) => {
-        console.log(err);
-        return [];
-      });
+    const res = await altApiClient.encode({
+      session_id: sessionId,
+      sequences: [value],
+    });
+
+    if (res.status === "error") {
+      return;
+    }
 
     const key: number = props.cellProps.data.key;
     const idx = encodeData.findIndex((e) => e.key === key);

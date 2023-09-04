@@ -6,6 +6,7 @@ import { RootState } from "../../redux/store";
 import axios from "axios";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import ClientOnly from "../../../common/client-only";
+import { altApiClient } from "../../../../services/alt-api-client";
 
 type CoordEditorProps = {
   value: number;
@@ -47,21 +48,20 @@ const CoordEditor: React.FC<CoordEditorProps> = (props) => {
     const idx = decodeData.findIndex((e) => e.key === key);
     const newDecodeData = [...decodeData];
 
-    const res = await axios
-      .post("/session/decode", {
-        session_id: sessionId,
-        coords: [
-          {
-            coord_x: parseFloat(valueX),
-            coord_y: parseFloat(valueY),
-          },
-        ],
-      })
-      .then((res) => res.data)
-      .catch((err) => {
-        console.log(err);
-        return [];
-      });
+    const res = await altApiClient.decode({
+      session_id: sessionId,
+      coords: [
+        {
+          coord_x: parseFloat(valueX),
+          coord_y: parseFloat(valueY),
+        },
+      ],
+    });
+
+    if (res.status === "error") {
+      return;
+    }
+
     console.log("res", res);
     newDecodeData[idx] = {
       ...newDecodeData[idx],

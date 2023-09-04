@@ -5,6 +5,7 @@ import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
+import { altApiClient } from "../../../../services/alt-api-client";
 
 type ParseResult =
   | {
@@ -78,11 +79,9 @@ const UploadFile: React.FC<Props> = (props) => {
       let formData = new FormData();
       formData.append("state_dict", file);
       (async () => {
-        const res = await axios
-          .post("/upload/validate-pHMM-model", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          })
-          .then((res) => res.data);
+        const res = await altApiClient.validatepHMMModel({
+          state_dict: file,
+        });
         if (res.status === "success") {
           setIsVaeValid(true);
           props.setVaeFile(file);
