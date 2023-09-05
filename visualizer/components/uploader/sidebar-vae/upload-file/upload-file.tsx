@@ -1,4 +1,3 @@
-import axios from "axios";
 import { countBy, uniq } from "lodash";
 import { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";

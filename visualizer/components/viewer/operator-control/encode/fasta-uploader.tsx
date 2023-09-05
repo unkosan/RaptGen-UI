@@ -2,7 +2,6 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useState } from "react";
-import axios from "axios";
 import { ResponseEncode } from "../../../../types/api-interface/session";
 import { Form } from "react-bootstrap";
 import { apiClient } from "../../../../services/api-client";

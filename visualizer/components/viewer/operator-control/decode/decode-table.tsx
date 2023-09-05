@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import axios from "axios";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import ClientOnly from "../../../common/client-only";
 import { apiClient } from "../../../../services/api-client";

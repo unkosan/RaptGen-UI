@@ -8,10 +8,7 @@ import { RootState, store } from "../../components/trainer/add/redux/store";
 import { useSelector } from "react-redux";
 import SelexPage from "../../components/trainer/add/selex-page/selex-page";
 import TrainPage from "../../components/trainer/add/train-page/train-page";
-import axios from "axios";
 import "@inovua/reactdatagrid-community/index.css";
-
-axios.defaults.baseURL = "http://localhost:8000/api";
 
 const Home: React.FC = () => {
   const route = useSelector((state: RootState) => state.pageConfig.pseudoRoute);

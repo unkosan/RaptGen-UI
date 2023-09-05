@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import { RootState } from "../../redux/store";
 import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
 
