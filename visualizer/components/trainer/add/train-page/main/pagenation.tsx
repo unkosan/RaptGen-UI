@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useRouter } from "next/router";
 import { apiClient } from "../../../../../services/api-client";
-import { requestPostSubmitJob } from "../../../../../services/api-client";
+import { requestPostSubmitJob } from "../../../../../services/route/train";
 
 const Pagenation: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
