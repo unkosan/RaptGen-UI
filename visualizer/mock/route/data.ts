@@ -2,6 +2,7 @@ import { rest } from "msw";
 import * as encodeZod from "../../services/api-client";
 import { vaeParams, gmmParams } from "./asset/params";
 import { selex } from "./asset/rapt-selex";
+import { selex as randSelex } from "./asset/random-selex";
 import { gmm } from "./asset/gmm-values";
 import { measuredData } from "./asset/measured-values";
 
@@ -131,34 +132,34 @@ export const dataHandlers = [
     }
   }),
 
-  // rest.get(mockURL("/data/selex-data"), (req, res, ctx) => {
-  //   const VAE_model_name = req.url.searchParams.get("VAE_model_name");
-  //   if (VAE_model_name === "RAPT1") {
-  //     return res(
-  //       ctx.status(200),
-  //       ctx.json({
-  //         status: "success",
-  //         data: selex.RAPT1,
-  //       })
-  //     );
-  //   } else if (VAE_model_name === "RAPT3") {
-  //     return res(
-  //       ctx.status(200),
-  //       ctx.json({
-  //         status: "success",
-  //         data: selex.RAPT3,
-  //       })
-  //     );
-  //   } else {
-  //     return res(
-  //       ctx.status(200),
-  //       ctx.json({
-  //         status: "error",
-  //         data: ["none"],
-  //       })
-  //     );
-  //   }
-  // }),
+  rest.get(mockURL("/data/selex-data"), (req, res, ctx) => {
+    const VAE_model_name = req.url.searchParams.get("VAE_model_name");
+    if (VAE_model_name === "RAPT1") {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status: "success",
+          data: selex.RAPT1,
+        })
+      );
+    } else if (VAE_model_name === "RAPT3") {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status: "success",
+          data: selex.RAPT3,
+        })
+      );
+    } else {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status: "error",
+          data: ["none"],
+        })
+      );
+    }
+  }),
 
   rest.get(mockURL("/data/GMM-model"), (req, res, ctx) => {
     const VAE_model_name = req.url.searchParams.get("VAE_model_name");
