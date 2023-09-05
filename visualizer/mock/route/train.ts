@@ -1,11 +1,11 @@
 import { rest } from "msw";
-import { selex } from "./selex";
+import { selex } from "./rand-selex";
 import { loss } from "./loss";
 import { z } from "zod";
 import * as trainZod from "../../services/api-client";
 
 export const mockURL = (path: string) => {
-  return `http://localhost:3000/api${path}`;
+  return `http://localhost:8000/api${path}`;
 };
 
 const uuids = {
