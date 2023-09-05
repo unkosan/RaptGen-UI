@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import updateArray from "../../common/update-array";
 
 type MeasuredDataEntry = {
   key: number;

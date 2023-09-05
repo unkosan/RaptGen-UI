@@ -1,4 +1,4 @@
-import { countBy, uniq } from "lodash";
+import { countBy } from "lodash";
 import { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";

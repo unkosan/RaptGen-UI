@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Layout, PlotData } from "plotly.js";
 import dynamic from "next/dynamic";
 import { useSelector } from "react-redux";
