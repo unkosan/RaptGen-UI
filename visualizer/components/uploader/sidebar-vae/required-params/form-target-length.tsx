@@ -3,7 +3,7 @@ import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
 import { RootState } from "../../redux/store";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { altApiClient } from "../../../../services/api-client";
 
 type Props = {
   value: number;

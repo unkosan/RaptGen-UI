@@ -1,4 +1,4 @@
-import { altApiClient } from "../alt-api-client";
+import { apiClient } from "../api-client";
 import { setupServer } from "msw/node";
 import { handlers } from "../../mock/handlers";
 
@@ -36,12 +36,12 @@ describe("upload service", () => {
   afterAll(() => server.close());
 
   it("hello", async () => {
-    const res = await altApiClient.hello();
+    const res = await apiClient.hello();
     expect(res.message).toBe("OK");
   });
 
   xit("should get secondary structure image", async () => {
-    const res = await altApiClient.getSecondaryStructureImage({
+    const res = await apiClient.getSecondaryStructureImage({
       queries: {
         sequence: "AAUG",
       },

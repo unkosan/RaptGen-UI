@@ -5,7 +5,7 @@ import { Button, Form, Image } from "react-bootstrap";
 import { InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
 import { useEffect, useState } from "react";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { altApiClient } from "../../../../services/api-client";
 
 const ResultViewer: React.FC = () => {
   const dispatch = useDispatch();

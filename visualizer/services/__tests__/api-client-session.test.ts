@@ -1,4 +1,4 @@
-import { altApiClient } from "../alt-api-client";
+import { apiClient } from "../api-client";
 import { setupServer } from "msw/node";
 import { handlers } from "../../mock/handlers";
 import axios from "axios";
@@ -46,12 +46,12 @@ describe("session service", () => {
   });
 
   it("hello", async () => {
-    const res = await altApiClient.hello();
+    const res = await apiClient.hello();
     expect(res.message).toBe("OK");
   });
 
   it("should return session id", async () => {
-    const res = await altApiClient.startSession({
+    const res = await apiClient.startSession({
       queries: {
         VAE_name: "RAPT1",
       },
@@ -63,7 +63,7 @@ describe("session service", () => {
   });
 
   it("should finish session successfully", async () => {
-    const resStart = await altApiClient.startSession({
+    const resStart = await apiClient.startSession({
       queries: {
         VAE_name: "RAPT1",
       },
@@ -75,7 +75,7 @@ describe("session service", () => {
       throw new Error("Failed to start session");
     }
 
-    const resFinish = await altApiClient.endSession({
+    const resFinish = await apiClient.endSession({
       queries: {
         session_id: resStart.data,
       },
@@ -84,7 +84,7 @@ describe("session service", () => {
   });
 
   it("should finish session with error", async () => {
-    const resStart = await altApiClient.startSession({
+    const resStart = await apiClient.startSession({
       queries: {
         VAE_name: "RAPT1",
       },
@@ -95,7 +95,7 @@ describe("session service", () => {
       throw new Error("Failed to start session");
     }
 
-    const resFinish = await altApiClient.endSession({
+    const resFinish = await apiClient.endSession({
       queries: {
         session_id: resStart.data + 1,
       },
@@ -104,7 +104,7 @@ describe("session service", () => {
   });
 
   // it("should return session status", async () => {
-  //   const resStart = await altApiClient.startSession({
+  //   const resStart = await apiClient.startSession({
   //     queries: {
   //       VAE_name: "RAPT1",
   //     },
@@ -116,7 +116,7 @@ describe("session service", () => {
   //     return false;
   //   }
 
-  //   const resStatus = await altApiClient.getSessionStatus();
+  //   const resStatus = await apiClient.getSessionStatus();
   //   expect(resStatus.status).toBe("success");
   //   if (resStatus.status === "success") {
   //     expect(resStatus.data).toEqual([resStart.data]);
@@ -124,7 +124,7 @@ describe("session service", () => {
   // });
 
   it("should return encoded codes", async () => {
-    const resStart = await altApiClient.startSession({
+    const resStart = await apiClient.startSession({
       queries: {
         VAE_name: "RAPT1",
       },
@@ -136,7 +136,7 @@ describe("session service", () => {
       throw new Error("Failed to start session");
     }
 
-    const resEncode = await altApiClient.encode({
+    const resEncode = await apiClient.encode({
       session_id: resStart.data,
       sequences: ["ATCG", "AAGG", "GGGC"],
     });
@@ -144,7 +144,7 @@ describe("session service", () => {
   });
 
   it("should not return encoded codes", async () => {
-    const resStart = await altApiClient.startSession({
+    const resStart = await apiClient.startSession({
       queries: {
         VAE_name: "RAPT3",
       },
@@ -156,7 +156,7 @@ describe("session service", () => {
       throw new Error("Failed to start session");
     }
 
-    const resEncode = await altApiClient.encode({
+    const resEncode = await apiClient.encode({
       session_id: resStart.data + 1,
       sequences: ["ATCG", "AAGG", "GGGC"],
     });
@@ -164,7 +164,7 @@ describe("session service", () => {
   });
 
   it("should return decoded sequences", async () => {
-    const resStart = await altApiClient.startSession({
+    const resStart = await apiClient.startSession({
       queries: {
         VAE_name: "RAPT1",
       },
@@ -176,7 +176,7 @@ describe("session service", () => {
       throw new Error("Failed to start session");
     }
 
-    const resDecode = await altApiClient.decode({
+    const resDecode = await apiClient.decode({
       session_id: resStart.data,
       coords: [
         {
@@ -202,7 +202,7 @@ describe("session service", () => {
   });
 
   it("should not return decoded sequences", async () => {
-    const resStart = await altApiClient.startSession({
+    const resStart = await apiClient.startSession({
       queries: {
         VAE_name: "RAPT3",
       },
@@ -214,7 +214,7 @@ describe("session service", () => {
       throw new Error("Failed to start session");
     }
 
-    const resDecode = await altApiClient.decode({
+    const resDecode = await apiClient.decode({
       session_id: resStart.data + 1,
       coords: [
         {
@@ -235,7 +235,7 @@ describe("session service", () => {
   });
 
   xit("should return weblogo image", async () => {
-    const resStart = await altApiClient.startSession({
+    const resStart = await apiClient.startSession({
       queries: {
         VAE_name: "RAPT1",
       },
@@ -247,7 +247,7 @@ describe("session service", () => {
       throw new Error("Failed to start session");
     }
 
-    const resWeblogo = await altApiClient.getWeblogo({
+    const resWeblogo = await apiClient.getWeblogo({
       session_id: resStart.data,
       coords: [
         {

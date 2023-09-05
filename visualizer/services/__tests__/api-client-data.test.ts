@@ -1,4 +1,4 @@
-import { altApiClient } from "../alt-api-client";
+import { apiClient } from "../api-client";
 import { setupServer } from "msw/node";
 import { handlers } from "../../mock/handlers";
 
@@ -15,12 +15,12 @@ describe("data service", () => {
   afterAll(() => server.close());
 
   it("hello", async () => {
-    const res = await altApiClient.hello();
+    const res = await apiClient.hello();
     expect(res.message).toBe("OK");
   });
 
   it("should return VAE model names", async () => {
-    const res = await altApiClient.getVAEModelNames();
+    const res = await apiClient.getVAEModelNames();
     expect(res.status).toBe("success");
     if (res.status === "success") {
       expect(res.data).toEqual(["RAPT1", "RAPT3"]);
@@ -28,7 +28,7 @@ describe("data service", () => {
   });
 
   it("should return GMM model names", async () => {
-    const res = await altApiClient.getGMMModelNames({
+    const res = await apiClient.getGMMModelNames({
       queries: {
         VAE_model_name: "RAPT1",
       },
@@ -38,7 +38,7 @@ describe("data service", () => {
       expect(res.data).toEqual(["num_comp_15_A"]);
     }
 
-    const res2 = await altApiClient.getGMMModelNames({
+    const res2 = await apiClient.getGMMModelNames({
       queries: {
         VAE_model_name: "RAPT3",
       },
@@ -50,7 +50,7 @@ describe("data service", () => {
   });
 
   it("should return measured data names", async () => {
-    const res = await altApiClient.getMeasuredDataNames();
+    const res = await apiClient.getMeasuredDataNames();
     expect(res.status).toBe("success");
     if (res.status === "success") {
       expect(res.data).toEqual(["report1.csv", "report3.csv"]);
@@ -58,7 +58,7 @@ describe("data service", () => {
   });
 
   it("should return VAE model parameters", async () => {
-    const res = await altApiClient.getVAEModelParameters({
+    const res = await apiClient.getVAEModelParameters({
       queries: {
         VAE_model_name: "RAPT1",
       },
@@ -68,7 +68,7 @@ describe("data service", () => {
       expect(res.data.experiment).toBe("RAPT1");
     }
 
-    const res2 = await altApiClient.getVAEModelParameters({
+    const res2 = await apiClient.getVAEModelParameters({
       queries: {
         VAE_model_name: "RAPT3",
       },
@@ -80,7 +80,7 @@ describe("data service", () => {
   });
 
   it("should return GMM model parameters", async () => {
-    const res = await altApiClient.getGMMModelParameters({
+    const res = await apiClient.getGMMModelParameters({
       queries: {
         VAE_model_name: "RAPT1",
         GMM_model_name: "num_comp_15_A",
@@ -92,7 +92,7 @@ describe("data service", () => {
       expect(res.data.GMM_seed).toBe(42);
     }
 
-    const res2 = await altApiClient.getGMMModelParameters({
+    const res2 = await apiClient.getGMMModelParameters({
       queries: {
         VAE_model_name: "RAPT3",
         GMM_model_name: "num_comp_15_B",

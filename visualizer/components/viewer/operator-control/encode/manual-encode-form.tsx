@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { altApiClient } from "../../../../services/api-client";
 
 const ManualEncodeForm: React.FC = () => {
   const [value, setValue] = useState<string>("");

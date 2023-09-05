@@ -6,7 +6,7 @@ import { RootState } from "../../redux/store";
 import axios from "axios";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import ClientOnly from "../../../common/client-only";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { altApiClient } from "../../../../services/api-client";
 
 type CoordEditorProps = {
   value: number;

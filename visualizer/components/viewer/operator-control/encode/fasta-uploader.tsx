@@ -5,7 +5,7 @@ import { useState } from "react";
 import axios from "axios";
 import { ResponseEncode } from "../../../../types/api-interface/session";
 import { Form } from "react-bootstrap";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { altApiClient } from "../../../../services/api-client";
 
 const parser = (text: string) => {
   const regex = /^>\s*(\S+)[\n\r]+([ACGTUacgtu\n\r]+)$/gm;

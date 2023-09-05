@@ -3,7 +3,7 @@ import { Button, ButtonToolbar } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { altApiClient } from "../../../../services/api-client";
 
 type Props = {
   encodeDisabled: boolean;

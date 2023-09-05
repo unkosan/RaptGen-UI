@@ -1,4 +1,4 @@
-import { altApiClient } from "../alt-api-client";
+import { apiClient } from "../api-client";
 import fs from "fs";
 // import { setupServer } from "msw/node";
 // import { handlers } from "../mock/handlers";
@@ -12,7 +12,7 @@ describe("upload service", () => {
   // this test needs jsdom environment to work successfully
 
   xit("hello", async () => {
-    const res = await altApiClient.hello();
+    const res = await apiClient.hello();
     expect(res.message).toBe("OK");
   });
 
@@ -20,7 +20,7 @@ describe("upload service", () => {
     const buf = fs.readFileSync("./services/tests/VAE_model.pkl");
     const vaeModel = new File([buf], "VAE_model.pkl");
 
-    const res = await altApiClient.validatepHMMModel({
+    const res = await apiClient.validatepHMMModel({
       state_dict: vaeModel,
     });
 
@@ -31,7 +31,7 @@ describe("upload service", () => {
     const buf = fs.readFileSync("./services/tests/GMM_model.pkl");
     const gmmModel = new File([buf], "GMM_model.pkl");
 
-    const res = await altApiClient.validateGMMModel({
+    const res = await apiClient.validateGMMModel({
       gmm_data: gmmModel,
     });
 
@@ -42,7 +42,7 @@ describe("upload service", () => {
     const buf = fs.readFileSync("./services/tests/VAE_model.pkl");
     const vaeModel = new File([buf], "VAE_model.pkl");
 
-    const res = await altApiClient.uploadVAE({
+    const res = await apiClient.uploadVAE({
       model: vaeModel,
       model_name: "test",
       forward_adapter: "A",
@@ -61,7 +61,7 @@ describe("upload service", () => {
     const buf = fs.readFileSync("./services/tests/GMM_model.pkl");
     const gmmModel = new File([buf], "GMM_model.pkl");
 
-    const res = await altApiClient.uploadGMM({
+    const res = await apiClient.uploadGMM({
       model: gmmModel,
       VAE_model_name: "vae",
       GMM_model_name: "gmm",
@@ -74,7 +74,7 @@ describe("upload service", () => {
     const buf = fs.readFileSync("./services/tests/VAE_model.pkl");
     const vaeModel = new File([buf], "VAE_model.pkl");
 
-    const res = await altApiClient.batchEncode({
+    const res = await apiClient.batchEncode({
       state_dict: vaeModel,
       seqs: ["AAUG", "AGGG"],
     });
@@ -86,7 +86,7 @@ describe("upload service", () => {
     const buf = fs.readFileSync("./services/tests/VAE_model.pkl");
     const vaeModel = new File([buf], "VAE_model.pkl");
 
-    const resPost = await altApiClient.batchEncode({
+    const resPost = await apiClient.batchEncode({
       state_dict: vaeModel,
       seqs: ["AAUG", "AGGG"],
     });
@@ -96,7 +96,7 @@ describe("upload service", () => {
       throw new Error("batch-encoding failed");
     }
 
-    const resGet = await altApiClient.getBatchEncodeStatus({
+    const resGet = await apiClient.getBatchEncodeStatus({
       queries: {
         task_id: resPost.data.task_id,
       },
@@ -106,7 +106,7 @@ describe("upload service", () => {
     // // wait for 30 second
     // await new Promise((resolve) => setTimeout(resolve, 30000));
 
-    // const resGet2 = await altApiClient.getBatchEncodeStatus({
+    // const resGet2 = await apiClient.getBatchEncodeStatus({
     //   queries: {
     //     task_id: resPost.data.task_id,
     //   },
@@ -118,7 +118,7 @@ describe("upload service", () => {
     const buf = fs.readFileSync("./services/tests/VAE_model.pkl");
     const vaeModel = new File([buf], "VAE_model.pkl");
 
-    const resPost = await altApiClient.batchEncode({
+    const resPost = await apiClient.batchEncode({
       state_dict: vaeModel,
       seqs: ["AAUG", "AGGG"],
     });
@@ -128,7 +128,7 @@ describe("upload service", () => {
       throw new Error("batch-encoding failed");
     }
 
-    const resKill = await altApiClient.batchEncodeKill(undefined, {
+    const resKill = await apiClient.batchEncodeKill(undefined, {
       queries: {
         task_id: resPost.data.task_id,
       },

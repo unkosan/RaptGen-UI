@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { Alert, Form, ProgressBar } from "react-bootstrap";
 import axios from "axios";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { altApiClient } from "../../../../services/api-client";
 
 type Props = {
   finished: boolean;

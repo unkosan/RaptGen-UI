@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import ClientOnly from "../../common/client-only";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
-import { altApiClient } from "../../../services/alt-api-client";
+import { altApiClient } from "../../../services/api-client";
 
 const GMMParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(

@@ -1,5 +1,5 @@
 import { rest } from "msw";
-import * as encodeZod from "../../services/alt-api-client";
+import * as encodeZod from "../../services/api-client";
 import { vaeParams, gmmParams } from "./asset/params";
 import { selex } from "./asset/rapt-selex";
 import { gmm } from "./asset/gmm-values";

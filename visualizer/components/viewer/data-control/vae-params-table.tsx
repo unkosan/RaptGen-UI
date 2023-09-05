@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import "@inovua/reactdatagrid-community/index.css";
 import ClientOnly from "../../common/client-only";
-import { altApiClient } from "../../../services/alt-api-client";
+import { altApiClient } from "../../../services/api-client";
 
 const VAEParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
