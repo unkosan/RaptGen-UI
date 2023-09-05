@@ -1,5 +1,4 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import updateArray from "../../common/update-array";
 
 type VaeDataEntry = {
   key: number;
