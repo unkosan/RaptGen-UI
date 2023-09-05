@@ -3,6 +3,7 @@ import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useEffect, useState } from "react";
+import { apiClient } from "../../../../../services/api-client";
 
 type Props = {
   value: string;
@@ -30,12 +31,10 @@ const FormForward: React.FC<Props> = (props) => {
   useEffect(() => {
     if (isLoading) {
       (async () => {
-        const res = await axios
-          .post("/upload/estimate-adapters", {
-            target_length: props.targetLength,
-            sequences: sequences,
-          })
-          .then((res) => res.data);
+        const res = await apiClient.estimateAdapters({
+          target_length: props.targetLength,
+          sequences: sequences,
+        });
 
         if (res.status === "success") {
           const value: string = res.data["forward_adapter"];
