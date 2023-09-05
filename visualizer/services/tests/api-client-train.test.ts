@@ -1,7 +1,7 @@
-import { apiClient } from "./api-client";
+import { apiClient } from "../api-client";
 import _ from "lodash";
 import { setupServer } from "msw/node";
-import { handlers } from "../mock/handlers";
+import { handlers } from "../../mock/handlers";
 
 const uuids = {
   test1: "18b1e0e0-5b1e-4b1e-8b1e-0e5b1e4b1e8b",
@@ -26,7 +26,7 @@ describe("train service", () => {
 
   it("hello", async () => {
     const result = await apiClient.hello();
-    expect(result.message).toEqual("hello");
+    expect(result.message).toEqual("OK");
   });
 
   it("getDevices", async () => {

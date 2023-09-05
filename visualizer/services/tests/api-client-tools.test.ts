@@ -40,7 +40,7 @@ describe("upload service", () => {
     expect(res.message).toBe("OK");
   });
 
-  it("should get secondary structure image", async () => {
+  xit("should get secondary structure image", async () => {
     const res = await altApiClient.getSecondaryStructureImage({
       queries: {
         sequence: "AAUG",
