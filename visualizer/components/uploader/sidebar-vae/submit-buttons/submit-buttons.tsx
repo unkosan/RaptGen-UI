@@ -3,7 +3,7 @@ import { Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import { altApiClient } from "../../../../services/api-client";
+import { apiClient } from "../../../../services/api-client";
 
 type Props = {
   submitDisabled: boolean;
@@ -72,7 +72,7 @@ const SubmitButtons: React.FC<Props> = (props) => {
         }
       });
 
-      const res = await altApiClient.uploadVAE({
+      const res = await apiClient.uploadVAE({
         ...required,
         ...optional,
       });

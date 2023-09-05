@@ -3,8 +3,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { Alert, Form, ProgressBar } from "react-bootstrap";
-import axios from "axios";
-import { altApiClient } from "../../../../services/api-client";
+import { apiClient } from "../../../../services/api-client";
 
 type Props = {
   finished: boolean;
@@ -33,7 +32,7 @@ const ProcessInfo: React.FC<Props> = (props) => {
       }
 
       (async () => {
-        const res = await altApiClient.getBatchEncodeStatus({
+        const res = await apiClient.getBatchEncodeStatus({
           queries: {
             task_id: uuid,
           },

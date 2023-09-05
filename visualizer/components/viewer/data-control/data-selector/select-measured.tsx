@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { MeasuredDataEntry } from "../../redux/measured-data";
-import { altApiClient } from "../../../../services/api-client";
+import { apiClient } from "../../../../services/api-client";
 
 const SelectMeasured: React.FC = () => {
   const [value, setValue] = useState<string>("");
@@ -19,7 +19,7 @@ const SelectMeasured: React.FC = () => {
       if (graphConfig.vaeName === "") {
         return;
       }
-      const res = await altApiClient.getMeasuredDataNames();
+      const res = await apiClient.getMeasuredDataNames();
       if (res.status === "success") {
         setNameList(res.data);
         if (res.data.length > 0) {
@@ -40,7 +40,7 @@ const SelectMeasured: React.FC = () => {
         });
         return;
       }
-      const res = await altApiClient.getMeasuredData({
+      const res = await apiClient.getMeasuredData({
         queries: {
           measured_data_name: value,
         },
@@ -81,7 +81,7 @@ const SelectMeasured: React.FC = () => {
         return;
       }
 
-      const resCoords = await altApiClient.encode({
+      const resCoords = await apiClient.encode({
         session_id: sessionConfig.sessionId,
         sequences: randomRegions,
       });

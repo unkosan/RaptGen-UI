@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import "@inovua/reactdatagrid-community/index.css";
 import ClientOnly from "../../common/client-only";
-import { altApiClient } from "../../../services/api-client";
+import { apiClient } from "../../../services/api-client";
 
 const VAEParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
@@ -27,7 +27,7 @@ const VAEParamsTable: React.FC = () => {
         return;
       }
 
-      const res = await altApiClient.getVAEModelParameters({
+      const res = await apiClient.getVAEModelParameters({
         queries: {
           VAE_model_name: vaeName,
         },

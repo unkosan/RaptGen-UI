@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
-import { altApiClient } from "../../../../services/api-client";
+import { apiClient } from "../../../../services/api-client";
 
 const ManualEncodeForm: React.FC = () => {
   const [value, setValue] = useState<string>("");
@@ -37,7 +37,7 @@ const ManualEncodeForm: React.FC = () => {
       return;
     }
 
-    const res = await altApiClient.encode({
+    const res = await apiClient.encode({
       session_id: sessionId,
       sequences: [value],
     });

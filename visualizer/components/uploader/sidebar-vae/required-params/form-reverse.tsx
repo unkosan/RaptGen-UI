@@ -3,7 +3,7 @@ import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useEffect, useState } from "react";
-import { altApiClient } from "../../../../services/api-client";
+import { apiClient } from "../../../../services/api-client";
 
 type Props = {
   value: string;
@@ -31,7 +31,7 @@ const FormReverse: React.FC<Props> = (props) => {
   useEffect(() => {
     if (isLoading) {
       (async () => {
-        const res = await altApiClient.estimateAdapters({
+        const res = await apiClient.estimateAdapters({
           target_length: props.targetLength,
           sequences: sequences,
         });

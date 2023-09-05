@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { Form } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { altApiClient } from "../../../../services/api-client";
+import { apiClient } from "../../../../services/api-client";
 
 const SelectGMM: React.FC = () => {
   const [value, setValue] = useState<string>("");
@@ -24,7 +24,7 @@ const SelectGMM: React.FC = () => {
         return;
       }
 
-      const res = await altApiClient.getGMMModelNames({
+      const res = await apiClient.getGMMModelNames({
         queries: {
           VAE_model_name: graphConfig.vaeName,
         },
@@ -60,7 +60,7 @@ const SelectGMM: React.FC = () => {
       if (value === "" || sessionId === 0) {
         return;
       }
-      const res = await altApiClient.getGMMModel({
+      const res = await apiClient.getGMMModel({
         queries: {
           VAE_model_name: graphConfig.vaeName,
           GMM_model_name: value,
@@ -74,7 +74,7 @@ const SelectGMM: React.FC = () => {
       const gmm = res.data;
       const { weights, means, covariances } = gmm;
 
-      const resDecode = await altApiClient.decode({
+      const resDecode = await apiClient.decode({
         session_id: sessionId,
         coords: means.map((value) => {
           return { coord_x: value[0], coord_y: value[1] };

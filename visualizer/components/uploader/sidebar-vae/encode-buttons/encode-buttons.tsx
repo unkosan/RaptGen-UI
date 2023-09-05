@@ -3,7 +3,7 @@ import { Button, ButtonToolbar } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import { altApiClient } from "../../../../services/api-client";
+import { apiClient } from "../../../../services/api-client";
 
 type Props = {
   encodeDisabled: boolean;
@@ -54,7 +54,7 @@ const EncodeButtons: React.FC<Props> = (props) => {
           return;
         }
 
-        const res = await altApiClient.batchEncode({
+        const res = await apiClient.batchEncode({
           state_dict: props.vaeFile,
           seqs: randomRegions.filter((e) => e),
         });

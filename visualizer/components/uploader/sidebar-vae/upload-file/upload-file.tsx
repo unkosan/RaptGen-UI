@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import parseSelex from "../../../common/parse-selex";
+import { apiClient } from "../../../../services/api-client";
 
 type Props = {
   setVaeFile: React.Dispatch<React.SetStateAction<File | null>>;
@@ -31,7 +32,7 @@ const UploadFile: React.FC<Props> = (props) => {
       let formData = new FormData();
       formData.append("state_dict", file);
       (async () => {
-        const res = await altApiClient.validatepHMMModel({
+        const res = await apiClient.validatepHMMModel({
           state_dict: file,
         });
         if (res.status === "success") {

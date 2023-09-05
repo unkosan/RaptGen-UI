@@ -6,7 +6,7 @@ import { RootState } from "../../redux/store";
 import axios from "axios";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import ClientOnly from "../../../common/client-only";
-import { altApiClient } from "../../../../services/api-client";
+import { apiClient } from "../../../../services/api-client";
 
 type CoordEditorProps = {
   value: number;
@@ -48,7 +48,7 @@ const CoordEditor: React.FC<CoordEditorProps> = (props) => {
     const idx = decodeData.findIndex((e) => e.key === key);
     const newDecodeData = [...decodeData];
 
-    const res = await altApiClient.decode({
+    const res = await apiClient.decode({
       session_id: sessionId,
       coords: [
         {
