@@ -1,9 +1,9 @@
 import { rest } from "msw";
 import * as encodeZod from "../../services/alt-api-client";
-import { vaeParams, gmmParams } from "./params";
-import { selex } from "./selex";
-import { gmm } from "./gmm";
-import { measuredData } from "./measured";
+import { vaeParams, gmmParams } from "./asset/params";
+import { selex } from "./asset/rapt-selex";
+import { gmm } from "./asset/gmm-values";
+import { measuredData } from "./asset/measured-values";
 
 export const mockURL = (path: string) => {
   return `http://localhost:8000/api${path}`;
@@ -16,9 +16,9 @@ const errorMsg = {
 };
 
 export const dataHandlers = [
-  // rest.get(mockURL(""), (req, res, ctx) => {
-  //   return res(ctx.status(200), ctx.json({ message: "OK" }));
-  // }),
+  rest.get(mockURL(""), (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ message: "OK" }));
+  }),
 
   rest.get(mockURL("/data/VAE-model-names"), (req, res, ctx) => {
     return res(

@@ -1,10 +1,10 @@
 import { rest } from "msw";
 import { randomInt } from "mathjs";
-import fs from "fs";
+// import weblogo from "./asset/weblogo.png";
 import {
   requestPostDecode,
   requestPostEncode,
-  requestPostWeblogo,
+  // requestPostWeblogo,
 } from "../../services/alt-api-client";
 import { z } from "zod";
 
@@ -181,21 +181,22 @@ export const sessionHandlers = [
     }
   }),
 
-  rest.post(mockURL("/session/decode/weblogo"), (req, res, ctx) => {
-    const resBody = req.body as z.infer<typeof requestPostWeblogo>;
-    const length = resBody.coords.length;
+  // cannot mock image data
+  // rest.post(mockURL("/session/decode/weblogo"), (req, res, ctx) => {
+  //   const resBody = req.body as z.infer<typeof requestPostWeblogo>;
+  //   const length = resBody.coords.length;
 
-    // return weblogo image
-    if (length === 1) {
-      const weblogo = fs.readFileSync("./mock/route/weblogo.png");
-      return res(ctx.status(200), ctx.json(String(weblogo)));
-    } else {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status: "error",
-        })
-      );
-    }
-  }),
+  //   // return weblogo image
+  //   if (length === 1) {
+  //     // const weblogo = fs.readFileSync("./mock/route/asset/weblogo.png");
+  //     return res(ctx.status(200), ctx.json(String(weblogo)));
+  //   } else {
+  //     return res(
+  //       ctx.status(200),
+  //       ctx.json({
+  //         status: "error",
+  //       })
+  //     );
+  //   }
+  // }),
 ];

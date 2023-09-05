@@ -234,7 +234,7 @@ describe("session service", () => {
     expect(resDecode.status).toBe("error");
   });
 
-  it("should return weblogo image", async () => {
+  xit("should return weblogo image", async () => {
     const resStart = await altApiClient.startSession({
       queries: {
         VAE_name: "RAPT1",
