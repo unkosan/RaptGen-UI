@@ -6,8 +6,6 @@ import { responsePostSearchJobs } from "../../../../services/api-client";
 import { z } from "zod";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { isEqual } from "lodash";
-import { setPageConfig } from "../redux/page-config";
 import { useDispatch } from "react-redux";
 import { Alert } from "react-bootstrap";
 

@@ -3,7 +3,6 @@ import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useState } from "react";
 import axios from "axios";
-import { ResponseEncode } from "../../../../types/api-interface/session";
 import { Form } from "react-bootstrap";
 import { altApiClient } from "../../../../services/alt-api-client";
 
