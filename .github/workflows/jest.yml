@@ -2,7 +2,6 @@ name: Jest Workflow
 
 on:
   push:
-    branches: [dev, main, bugfix/no-ref/investigate-and-resolve-ci-errors]
   pull_request:
     branches: [dev, main]
 
