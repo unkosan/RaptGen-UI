@@ -10,7 +10,7 @@ app = FastAPI()
 origins = [
     "http://localhost:3000",
     "http://localhost:8000",
-    "*", # for testing
+    "*",  # for testing
 ]
 
 app.add_middleware(
@@ -26,6 +26,7 @@ app.include_router(data.router)
 app.include_router(test.router)
 app.include_router(upload.router)
 app.include_router(training.router)
+
 
 def print_spec() -> str:
     return str(app.openapi())
