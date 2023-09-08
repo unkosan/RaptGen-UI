@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Layout, PlotData } from "plotly.js";
 import dynamic from "next/dynamic";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import axios from "axios";
 import { cloneDeep, groupBy, zip } from "lodash";
 
 import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";

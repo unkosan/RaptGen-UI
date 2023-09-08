@@ -1,6 +1,5 @@
 // redux-thunk を使うと複雑になるので、encode, decode API への問い合わせは呼び出し元で行う。
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import updateArray from "../../common/update-array";
 
 type EncodeDataEntry = {
   key: number;

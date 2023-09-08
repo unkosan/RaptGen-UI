@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "react-bootstrap";
-import { Plus, PlusLg } from "react-bootstrap-icons";
+import { PlusLg } from "react-bootstrap-icons";
 
 const AddJobButton: React.FC = () => {
   return (

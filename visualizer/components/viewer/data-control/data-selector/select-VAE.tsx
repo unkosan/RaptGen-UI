@@ -3,7 +3,7 @@ import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { apiClient } from "../../../../services/api-client";
 
 const SelectVAE: React.FC = () => {
   const [value, setValue] = useState<string>("");
@@ -15,7 +15,7 @@ const SelectVAE: React.FC = () => {
   // retrieve VAE model names
   useEffect(() => {
     (async () => {
-      const res = await altApiClient.getVAEModelNames();
+      const res = await apiClient.getVAEModelNames();
       if (res.status === "success") {
         setNameList(res.data);
         if (res.data.length > 0) {
@@ -49,7 +49,7 @@ const SelectVAE: React.FC = () => {
         return;
       }
 
-      const res = await altApiClient.startSession({
+      const res = await apiClient.startSession({
         queries: {
           VAE_name: value,
         },
@@ -72,7 +72,7 @@ const SelectVAE: React.FC = () => {
         return;
       }
 
-      const res = await altApiClient.getSelexData({
+      const res = await apiClient.getSelexData({
         queries: {
           VAE_model_name: value,
         },

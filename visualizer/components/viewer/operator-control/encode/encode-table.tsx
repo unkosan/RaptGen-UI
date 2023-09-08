@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import { RootState } from "../../redux/store";
 import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
 
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import ClientOnly from "../../../common/client-only";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { apiClient } from "../../../../services/api-client";
 
 type EditorProps = {
   value: string;
@@ -138,7 +137,7 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
   };
 
   const onConfirmClick = async () => {
-    const res = await altApiClient.encode({
+    const res = await apiClient.encode({
       session_id: sessionId,
       sequences: [value],
     });

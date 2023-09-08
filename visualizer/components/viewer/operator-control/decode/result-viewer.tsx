@@ -5,7 +5,7 @@ import { Button, Form, Image } from "react-bootstrap";
 import { InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
 import { useEffect, useState } from "react";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { apiClient } from "../../../../services/api-client";
 
 const ResultViewer: React.FC = () => {
   const dispatch = useDispatch();
@@ -46,7 +46,7 @@ const ResultViewer: React.FC = () => {
     }
 
     (async () => {
-      const res = await altApiClient.getWeblogo(
+      const res = await apiClient.getWeblogo(
         {
           session_id: sessionConfig.sessionId,
           coords: [
@@ -76,7 +76,7 @@ const ResultViewer: React.FC = () => {
     }
 
     (async () => {
-      const res = await altApiClient.getSecondaryStructureImage({
+      const res = await apiClient.getSecondaryStructureImage({
         queries: {
           sequence: gridPoint.randomRegion.replace(/\_/g, ""),
         },

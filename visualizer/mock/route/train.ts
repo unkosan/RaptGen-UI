@@ -1,8 +1,8 @@
 import { rest } from "msw";
-import { selex } from "./rand-selex";
-import { loss } from "./loss";
+import { selex } from "./asset/random-selex";
+import { loss } from "./asset/train-losses";
 import { z } from "zod";
-import * as trainZod from "../../services/api-client";
+import * as trainZod from "../../services/route/train";
 
 export const mockURL = (path: string) => {
   return `http://localhost:8000/api${path}`;
@@ -54,7 +54,7 @@ const errorMsg = {
 
 export const trainHandlers = [
   rest.get(mockURL(""), (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ message: "hello" }));
+    return res(ctx.status(200), ctx.json({ message: "OK" }));
   }),
 
   // rest.get(mockURL("/train/device/process"), (req, res, ctx) => {

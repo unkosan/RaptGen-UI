@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
@@ -6,7 +5,7 @@ import { RootState } from "../../redux/store";
 import { Form, InputGroup } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
-import { altApiClient } from "../../../../services/alt-api-client";
+import { apiClient } from "../../../../services/api-client";
 
 const PointDecoder: React.FC = () => {
   const [pointX, setPointX] = useState<number>(0);
@@ -61,7 +60,7 @@ const PointDecoder: React.FC = () => {
 
     // dispatch decoded point value to redux
     (async () => {
-      const res = await altApiClient.decode({
+      const res = await apiClient.decode({
         session_id: sessionId,
         coords: [
           {

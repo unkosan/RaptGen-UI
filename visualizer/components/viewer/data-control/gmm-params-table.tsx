@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import ClientOnly from "../../common/client-only";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
-import { altApiClient } from "../../../services/alt-api-client";
+import { apiClient } from "../../../services/api-client";
 
 const GMMParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
@@ -25,7 +25,7 @@ const GMMParamsTable: React.FC = () => {
         return;
       }
 
-      const res = await altApiClient.getGMMModelParameters({
+      const res = await apiClient.getGMMModelParameters({
         queries: {
           VAE_model_name: vaeName,
           GMM_model_name: gmmName,

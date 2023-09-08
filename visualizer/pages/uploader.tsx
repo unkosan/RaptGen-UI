@@ -6,12 +6,9 @@ import { Provider } from "react-redux";
 import Head from "next/head";
 import Navigator from "../components/common/navigator";
 import { Col, Container, Row } from "react-bootstrap";
-import axios from "axios";
 import SideBar from "../components/uploader/sidebar";
 import LatentGraph from "../components/uploader/graph/latent-graph";
 import { store } from "../components/uploader/redux/store";
-
-axios.defaults.baseURL = "http://localhost:8000/api";
 
 const Home: React.FC = () => {
   return (
