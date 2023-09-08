@@ -1,7 +1,5 @@
 import { z } from "zod";
-import { responseGetItem } from "../../../../services/api-client";
-import ReactDataGrid from "@inovua/reactdatagrid-community";
-import ClientOnly from "../../../common/client-only";
+import { responseGetItem } from "../../../../services/route/train";
 import CustomDataGrid from "../../../common/custom-datagrid";
 
 type ParamsType = z.infer<typeof responseGetItem>["params_training"];

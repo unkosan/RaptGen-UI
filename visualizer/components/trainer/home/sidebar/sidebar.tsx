@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AddJobButton from "./add-job-button";
 import JobCard from "./job-card/job-card";
 import { apiClient } from "../../../../services/api-client";
-import { responsePostSearchJobs } from "../../../../services/api-client";
+import { responsePostSearchJobs } from "../../../../services/route/train";
 import { z } from "zod";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
