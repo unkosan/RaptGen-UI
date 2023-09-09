@@ -1,5 +1,5 @@
 import { rest } from "msw";
-import * as encodeZod from "../../services/api-client";
+import * as encodeZod from "~/services/api-client";
 import { vaeParams, gmmParams } from "./asset/params";
 import { selex } from "./asset/rapt-selex";
 import { selex as randSelex } from "./asset/random-selex";

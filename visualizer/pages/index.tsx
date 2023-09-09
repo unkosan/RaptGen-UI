@@ -1,7 +1,7 @@
 import "bootswatch/dist/cosmo/bootstrap.min.css";
 import Head from "next/head";
 import { NextPage } from "next";
-import Navigator from "../components/common/navigator";
+import Navigator from "~/components/common/navigator";
 import { Container, Row, Col, Card } from "react-bootstrap";
 import Link from "next/link";
 

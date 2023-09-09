@@ -1,14 +1,14 @@
 import "bootswatch/dist/cosmo/bootstrap.min.css";
 import { NextPage } from "next";
 import { Provider } from "react-redux";
-import { store } from "../components/viewer/redux/store";
+import { store } from "~/components/viewer/redux/store";
 import Head from "next/head";
-import Navigator from "../components/common/navigator";
+import Navigator from "~/components/common/navigator";
 import { Col, Container, Row, SSRProvider } from "react-bootstrap";
-import LatentGraph from "../components/viewer/graph/latent-graph";
-import DataControl from "../components/viewer/data-control/data-control";
-import OperatorControl from "../components/viewer/operator-control/operator-control";
-import SelectionTable from "../components/viewer/graph/selection-table";
+import LatentGraph from "~/components/viewer/graph/latent-graph";
+import DataControl from "~/components/viewer/data-control/data-control";
+import OperatorControl from "~/components/viewer/operator-control/operator-control";
+import SelectionTable from "~/components/viewer/graph/selection-table";
 import "@inovua/reactdatagrid-community/index.css";
 
 const SideBar: React.FC = () => {

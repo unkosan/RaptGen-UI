@@ -2,12 +2,12 @@ import "bootswatch/dist/cosmo/bootstrap.min.css";
 import { NextPage } from "next";
 import Head from "next/head";
 import { Container } from "react-bootstrap";
-import Navigator from "../../components/common/navigator";
+import Navigator from "~/components/common/navigator";
 import { Provider } from "react-redux";
-import { RootState, store } from "../../components/trainer/add/redux/store";
+import { RootState, store } from "~/components/trainer/add/redux/store";
 import { useSelector } from "react-redux";
-import SelexPage from "../../components/trainer/add/selex-page/selex-page";
-import TrainPage from "../../components/trainer/add/train-page/train-page";
+import SelexPage from "~/components/trainer/add/selex-page/selex-page";
+import TrainPage from "~/components/trainer/add/train-page/train-page";
 import "@inovua/reactdatagrid-community/index.css";
 
 const Home: React.FC = () => {
