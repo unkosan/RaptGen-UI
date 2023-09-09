@@ -3,7 +3,7 @@ import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import { apiClient } from "../../../../services/api-client";
+import { apiClient } from "~/services/api-client";
 
 const SelectVAE: React.FC = () => {
   const [value, setValue] = useState<string>("");

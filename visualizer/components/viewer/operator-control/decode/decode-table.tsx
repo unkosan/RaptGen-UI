@@ -4,8 +4,8 @@ import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
-import ClientOnly from "../../../common/client-only";
-import { apiClient } from "../../../../services/api-client";
+import ClientOnly from "~/components/common/client-only";
+import { apiClient } from "~/services/api-client";
 
 type CoordEditorProps = {
   value: number;

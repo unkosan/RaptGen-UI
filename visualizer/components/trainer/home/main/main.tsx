@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { apiClient } from "../../../../services/api-client";
+import { apiClient } from "~/services/api-client";
 import { formatDuration, intervalToDuration } from "date-fns";
 
-import { responseGetItemChild } from "../../../../services/api-client";
-import { responseGetItem } from "../../../../services/api-client";
+import { responseGetItemChild } from "~/services/route/train";
+import { responseGetItem } from "~/services/route/train";
 import { z } from "zod";
 import { Alert, Badge, Button } from "react-bootstrap";
 import { Summary } from "./summary";

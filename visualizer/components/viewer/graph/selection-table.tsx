@@ -4,7 +4,7 @@ import SelectFilter from "@inovua/reactdatagrid-community/SelectFilter";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { groupBy, uniq } from "lodash";
-import ClientOnly from "../../common/client-only";
+import ClientOnly from "~/components/common/client-only";
 
 const filterValue = [
   { name: "hue", operator: "startsWith", type: "string", value: "" },

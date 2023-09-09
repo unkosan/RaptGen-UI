@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useState } from "react";
 import { Form } from "react-bootstrap";
-import { apiClient } from "../../../../services/api-client";
+import { apiClient } from "~/services/api-client";
 
 const parser = (text: string) => {
   const regex = /^>\s*(\S+)[\n\r]+([ACGTUacgtu\n\r]+)$/gm;

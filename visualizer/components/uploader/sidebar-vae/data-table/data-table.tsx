@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import "@inovua/reactdatagrid-community/index.css";
-import ClientOnly from "../../../common/client-only";
+import ClientOnly from "~/components/common/client-only";
 
 const columns = [
   { name: "id", type: "number", header: "ID", defaultVisible: false },

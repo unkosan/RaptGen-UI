@@ -2,7 +2,7 @@ import { Badge, Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 
-import { apiClient } from "../../../../services/api-client";
+import { apiClient } from "~/services/api-client";
 import { useState } from "react";
 
 export const StopButton: React.FC<{ uuid: string }> = ({ uuid }) => {

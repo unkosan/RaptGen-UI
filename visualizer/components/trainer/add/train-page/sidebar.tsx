@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
-import IntegerForm from "../../../uploader/sidebar-vae/optional-params/integer-form";
+import IntegerForm from "~/components/uploader/sidebar-vae/optional-params/integer-form";
 import { useDispatch } from "react-redux";
 import { Button, Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { apiClient } from "../../../../services/api-client";
+import { apiClient } from "~/services/api-client";
 
 const SideBar: React.FC = () => {
   const [reiteration, setReiteration] = React.useState<number | undefined>(
