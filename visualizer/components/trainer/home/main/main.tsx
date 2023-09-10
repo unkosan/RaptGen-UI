@@ -7,7 +7,7 @@ import { formatDuration, intervalToDuration } from "date-fns";
 import { responseGetItemChild } from "~/services/route/train";
 import { responseGetItem } from "~/services/route/train";
 import { z } from "zod";
-import { Alert, Badge, Button } from "react-bootstrap";
+import { Alert, Badge } from "react-bootstrap";
 import { Summary } from "./summary";
 import { LatentGraph } from "./latent-graph";
 import { LossesGraph } from "./losses-graph";
@@ -22,7 +22,6 @@ import {
   StopButton,
 } from "./action-buttons";
 import _ from "lodash";
-import { ArrowLeft } from "react-bootstrap-icons";
 import { useDispatch } from "react-redux";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
