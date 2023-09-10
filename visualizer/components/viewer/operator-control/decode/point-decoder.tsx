@@ -5,7 +5,7 @@ import { RootState } from "../../redux/store";
 import { Form, InputGroup } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
-import { apiClient } from "../../../../services/api-client";
+import { apiClient } from "~/services/api-client";
 
 const PointDecoder: React.FC = () => {
   const [pointX, setPointX] = useState<number>(0);

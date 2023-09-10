@@ -2,11 +2,11 @@ import "bootswatch/dist/cosmo/bootstrap.min.css";
 import { NextPage } from "next";
 import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
-import Navigator from "../../components/common/navigator";
-import SideBar from "../../components/trainer/home/sidebar/sidebar";
+import Navigator from "~/components/common/navigator";
+import SideBar from "~/components/trainer/home/sidebar/sidebar";
 import { Provider } from "react-redux";
-import { store } from "../../components/trainer/home/redux/store";
-import Main from "../../components/trainer/home/main/main";
+import { store } from "~/components/trainer/home/redux/store";
+import Main from "~/components/trainer/home/main/main";
 import "@inovua/reactdatagrid-community/index.css";
 
 const Home: React.FC = () => {

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { responseGetItem } from "../../../../services/route/train";
-import CustomDataGrid from "../../../common/custom-datagrid";
+import { responseGetItem } from "~/services/route/train";
+import CustomDataGrid from "~/components/common/custom-datagrid";
 
 type ParamsType = z.infer<typeof responseGetItem>["params_training"];
 

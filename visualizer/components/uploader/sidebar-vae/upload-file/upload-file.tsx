@@ -4,8 +4,8 @@ import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import parseSelex from "../../../common/parse-selex";
-import { apiClient } from "../../../../services/api-client";
+import parseSelex from "~/components/common/parse-selex";
+import { apiClient } from "~/services/api-client";
 
 type Props = {
   setVaeFile: React.Dispatch<React.SetStateAction<File | null>>;

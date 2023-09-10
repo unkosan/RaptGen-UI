@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
-import parseSelex from "../../../../common/parse-selex";
+import parseSelex from "~/components/common/parse-selex";
 import { countBy } from "lodash";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
-import ClientOnly from "../../../../common/client-only";
+import ClientOnly from "~/components/common/client-only";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";

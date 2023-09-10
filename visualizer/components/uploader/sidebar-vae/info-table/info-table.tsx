@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import React from "react";
 import ReactDataGrid from "@inovua/reactdatagrid-community";
-import ClientOnly from "../../../common/client-only";
+import ClientOnly from "~/components/common/client-only";
 
 const gridStyle = { minHeight: 163, width: "100%", zIndex: 1000 };
 

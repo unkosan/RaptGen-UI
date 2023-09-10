@@ -2,7 +2,7 @@ import { rest } from "msw";
 import { selex } from "./asset/random-selex";
 import { loss } from "./asset/train-losses";
 import { z } from "zod";
-import * as trainZod from "../../services/route/train";
+import * as trainZod from "~/services/route/train";
 
 export const mockURL = (path: string) => {
   return `http://localhost:8000/api${path}`;

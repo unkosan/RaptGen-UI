@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { MeasuredDataEntry } from "../../redux/measured-data";
-import { apiClient } from "../../../../services/api-client";
+import { apiClient } from "~/services/api-client";
 
 const SelectMeasured: React.FC = () => {
   const [value, setValue] = useState<string>("");

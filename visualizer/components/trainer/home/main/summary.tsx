@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { responseGetItem } from "../../../../services/route/train";
+import { responseGetItem } from "~/services/route/train";
 import Button from "@inovua/reactdatagrid-community/packages/Button";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { CustomDataGrid } from "../../../common/custom-datagrid";
+import { CustomDataGrid } from "~/components/common/custom-datagrid";
 
 type SummaryType = z.infer<typeof responseGetItem>["summary"];
 

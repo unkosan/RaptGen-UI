@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
 import { RootState } from "../../redux/store";
 import { useSelector } from "react-redux";
-import { apiClient } from "../../../../../services/api-client";
+import { apiClient } from "~/services/api-client";
 
 type Props = {
   value: number;

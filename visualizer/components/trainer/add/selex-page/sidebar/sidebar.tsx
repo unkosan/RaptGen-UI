@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import ModelTypeSelect from "./model-type-select";
-import TextForm from "../../../../uploader/sidebar-vae/optional-params/text-form";
-import IntegerForm from "../../../../uploader/sidebar-vae/optional-params/integer-form";
+import TextForm from "~/components/uploader/sidebar-vae/optional-params/text-form";
+import IntegerForm from "~/components/uploader/sidebar-vae/optional-params/integer-form";
 import FormForward from "./form-forward";
 import FormReverse from "./form-reverse";
 import FormTargetLength from "./form-target-length";

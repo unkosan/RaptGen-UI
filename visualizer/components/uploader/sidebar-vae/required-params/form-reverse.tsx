@@ -2,7 +2,7 @@ import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useEffect, useState } from "react";
-import { apiClient } from "../../../../services/api-client";
+import { apiClient } from "~/services/api-client";
 
 type Props = {
   value: string;
