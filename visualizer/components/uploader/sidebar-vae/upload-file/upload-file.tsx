@@ -28,8 +28,6 @@ const UploadFile: React.FC<Props> = (props) => {
     props.setFileIsDirty(true);
     if (e.target.files) {
       const file = e.target.files[0];
-      let formData = new FormData();
-      formData.append("state_dict", file);
       (async () => {
         const res = await apiClient.validatepHMMModel({
           state_dict: file,
