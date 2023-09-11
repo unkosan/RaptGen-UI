@@ -1,8 +1,7 @@
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import React from "react";
-import ReactDataGrid from "@inovua/reactdatagrid-community";
-import ClientOnly from "~/components/common/client-only";
+import CustomDataGrid from "~/components/common/custom-datagrid";
 
 const gridStyle = { minHeight: 163, width: "100%", zIndex: 1000 };
 
@@ -28,18 +27,16 @@ const InfoTable: React.FC = () => {
   ];
 
   return (
-    <ClientOnly>
-      <ReactDataGrid
-        idProperty="id"
-        columns={columns}
-        dataSource={data}
-        style={gridStyle}
-        rowHeight={30}
-        rowStyle={{
-          fontFamily: "monospace",
-        }}
-      />
-    </ClientOnly>
+    <CustomDataGrid
+      idProperty="id"
+      columns={columns}
+      dataSource={data}
+      style={gridStyle}
+      rowHeight={30}
+      rowStyle={{
+        fontFamily: "monospace",
+      }}
+    />
   );
 };
 
