@@ -32,11 +32,9 @@ const DataTable: React.FC = () => {
       style={gridStyle}
       columns={columns}
       dataSource={data}
-      rowHeight={25}
+      rowHeight={30}
       pagination
       defaultLimit={20}
-      enableSelection
-      multiSelect
       rowStyle={{
         fontFamily: "monospace",
       }}
