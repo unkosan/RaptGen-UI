@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import TextForm from "../../sidebar-vae/optional-params/text-form";
 import IntegerForm from "../../sidebar-vae/optional-params/integer-form";
-import { isInteger } from "lodash";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useDispatch } from "react-redux";
@@ -33,21 +32,19 @@ const OptionalParams: React.FC<Props> = (props) => {
   }, [weights]);
 
   useEffect(() => {
-    (async () => {
-      if (isValidNumComponents && isValidSeed && isValidModelType) {
-        dispatch({
-          type: "gmmConfig/setOptionalParams",
-          payload: {
-            numComponents,
-            seed,
-            modelType,
-          },
-        });
-        props.setParamsIsValid(true);
-      } else {
-        props.setParamsIsValid(false);
-      }
-    })();
+    if (isValidNumComponents && isValidSeed && isValidModelType) {
+      dispatch({
+        type: "gmmConfig/setOptionalParams",
+        payload: {
+          numComponents,
+          seed,
+          modelType,
+        },
+      });
+      props.setParamsIsValid(true);
+    } else {
+      props.setParamsIsValid(false);
+    }
   }, [
     numComponents,
     seed,
@@ -62,7 +59,7 @@ const OptionalParams: React.FC<Props> = (props) => {
       <IntegerForm
         label="Number of Components"
         placeholder="Enter the number of Gaussian distribution"
-        predicate={(value: number) => value > 1}
+        predicate={(value: number) => value >= 1}
         value={numComponents}
         setValue={setNumComponents}
         isValid={isValidNumComponents}
@@ -71,7 +68,7 @@ const OptionalParams: React.FC<Props> = (props) => {
       <IntegerForm
         label="Seed"
         placeholder="Enter the seed value"
-        predicate={(value: number) => isInteger(value)}
+        predicate={(value: number) => true}
         value={seed}
         setValue={setSeed}
         isValid={isValidSeed}

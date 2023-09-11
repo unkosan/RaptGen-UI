@@ -12,10 +12,10 @@ const SideBarGMM: React.FC = () => {
 
   const [vaeIsValid, setVaeIsValid] = useState<boolean>(false);
   const [fileIsValid, setFileIsValid] = useState<boolean>(false);
-  const [optionalParamsIsValid, setOptionalParamsIsValid] =
-    useState<boolean>(true);
   const [requiredParamsIsValid, setRequiredParamsIsValid] =
     useState<boolean>(false);
+  const [optionalParamsIsValid, setOptionalParamsIsValid] =
+    useState<boolean>(true);
 
   return (
     <div className="sidebar-gmm">

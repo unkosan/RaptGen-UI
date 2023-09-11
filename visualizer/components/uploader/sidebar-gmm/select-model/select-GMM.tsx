@@ -10,7 +10,7 @@ type Props = {
 
 const SelectGMM: React.FC<Props> = (props) => {
   const [gmmFile, setGmmFile] = useState<File | null>(null);
-  const [isValid, setIsValid] = useState<boolean>(true);
+  const [isValid, setIsValid] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<string>("");
 
   useEffect(() => {
@@ -26,6 +26,8 @@ const SelectGMM: React.FC<Props> = (props) => {
   const handleGmmFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const file = e.target.files[0];
+      setGmmFile(file);
+
       (async () => {
         const res = await apiClient.validateGMMModel({
           gmm_data: file,
@@ -41,11 +43,9 @@ const SelectGMM: React.FC<Props> = (props) => {
             },
           });
           setIsValid(true);
-          setGmmFile(file);
         } else {
           setFeedback(res.message);
           setIsValid(false);
-          setGmmFile(null);
         }
       })();
     } else {
@@ -60,7 +60,7 @@ const SelectGMM: React.FC<Props> = (props) => {
       <Form.Control
         type="file"
         onChange={handleGmmFileChange}
-        isInvalid={isValid === false && gmmFile !== null}
+        isInvalid={!isValid && gmmFile !== null}
       />
       <Form.Control.Feedback type="invalid">{feedback}</Form.Control.Feedback>
     </>
