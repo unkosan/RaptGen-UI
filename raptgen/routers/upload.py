@@ -11,6 +11,7 @@ from core.algorithms import CNN_PHMM_VAE
 from datetime import datetime
 import torch
 import pandas as pd
+import numpy as np
 
 DATA_PATH = "/app/data/"
 
@@ -239,7 +240,16 @@ async def validate_GMM_model(gmm_data: bytes = File(...)):
     if result["status"] == "error":
         return result
     else:
-        return {"status": "success"}
+        gmm: GaussianMixture = result["model"]
+        return {
+            "status": "success",
+            "data": {
+                "num_components": np.array(gmm.weights_).shape[0],
+                "weights": np.array(gmm.weights_).tolist(),
+                "means": np.array(gmm.means_).tolist(),
+                "covariances": np.array(gmm.covariances_).tolist(),
+            },
+        }
 
 
 def _validate_GMM_model(pickle_gmm: BytesIO) -> Dict[str, Any]:
@@ -251,7 +261,10 @@ def _validate_GMM_model(pickle_gmm: BytesIO) -> Dict[str, Any]:
     if not isinstance(gmm, GaussianMixture):
         return {"status": "error", "message": "Not a sklearn GMM file"}
 
-    return {"status": "success", "data": {"model": gmm}}
+    return {
+        "status": "success",
+        "model": gmm,
+    }
 
 
 from tasks import batch_encode, celery

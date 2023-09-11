@@ -47,9 +47,21 @@ export const responsePostValidatepHMMModel = z.object({
 export const requestPostValidateGMMModel = z.object({
   gmm_data: z.instanceof(Blob),
 });
-export const responsePostValidateGMMModel = z.object({
-  status: z.enum(["success", "error"]),
-});
+export const responsePostValidateGMMModel = z.union([
+  z.object({
+    status: z.enum(["success"]),
+    data: z.object({
+      num_components: z.number(),
+      weights: z.array(z.number()),
+      means: z.array(z.array(z.number())),
+      covariances: z.array(z.array(z.array(z.number()))),
+    }),
+  }),
+  z.object({
+    status: z.enum(["error"]),
+    message: z.string(),
+  }),
+]);
 
 // API POST /upload/upload-vae
 export const requestPostUploadVAE = z.object({
