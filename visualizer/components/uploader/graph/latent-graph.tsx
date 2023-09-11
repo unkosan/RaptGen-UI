@@ -78,6 +78,9 @@ const LatentGraph: React.FC = () => {
   const vaeData = useSelector((state: RootState) => state.vaeData);
   const gmmData = useSelector((state: RootState) => state.gmmData);
   const measuredData = useSelector((state: RootState) => state.measuredData);
+  const minCount = useSelector(
+    (state: RootState) => state.vaeConfig.showMinCount
+  );
 
   const layout = returnLayout("");
 
@@ -86,13 +89,13 @@ const LatentGraph: React.FC = () => {
     let vaeDataPlot = cloneDeep(vaeData);
 
     // filter with minimum count
-    // vaeDataPlot.forEach((value) => {
-    //   if (value.duplicates >= graphConfig.minCount) {
-    //     value.isShown = true;
-    //   } else {
-    //     value.isShown = false;
-    //   }
-    // });
+    vaeDataPlot.forEach((value) => {
+      if (value.duplicates >= minCount) {
+        value.isShown = true;
+      } else {
+        value.isShown = false;
+      }
+    });
 
     // return PlotData object
     const filteredData = vaeDataPlot.filter((value) => value.isShown);
@@ -116,7 +119,7 @@ const LatentGraph: React.FC = () => {
         "<b>Seq</b>: %{customdata[0]}<br>" +
         "<b>Duplicates</b>: %{customdata[1]}",
     };
-  }, [vaeData]);
+  }, [vaeData, minCount]);
 
   // Measured data //
   const measuredDataPlot: Partial<PlotData>[] = useMemo(() => {

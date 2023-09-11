@@ -26,7 +26,7 @@ const SelectVAE: React.FC = () => {
 
   // retrieve VAE data
   useEffect(() => {
-    async () => {
+    (async () => {
       if (value === "") {
         return;
       }
@@ -38,9 +38,31 @@ const SelectVAE: React.FC = () => {
       });
 
       if (res.status === "success") {
-        console.log("res", res);
+        const rawData = res.data;
+        const vaeData = rawData.Sequence.map((value, index) => {
+          return {
+            key: index,
+            sequence: value,
+            randomRegion: rawData.Without_Adapters[index],
+            duplicates: rawData.Duplicates[index],
+            coordX: rawData.coord_x[index],
+            coordY: rawData.coord_y[index],
+            isSelected: false,
+            isShown: true,
+          };
+        });
+
+        dispatch({
+          type: "vaeConfig/setShowMinCount",
+          payload: 3,
+        });
+
+        dispatch({
+          type: "vaeData/set",
+          payload: vaeData,
+        });
       }
-    };
+    })();
   }, [value]);
 
   return (

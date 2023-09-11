@@ -56,6 +56,10 @@ const ProcessInfo: React.FC<Props> = (props) => {
             (seq, i) => mask[i]
           );
           dispatch({
+            type: "vaeConfig/setShowMinCount",
+            payload: 1,
+          });
+          dispatch({
             type: "vaeData/set",
             payload: sequences.map((seq, i) => {
               return {

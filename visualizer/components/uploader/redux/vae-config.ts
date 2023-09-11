@@ -20,6 +20,7 @@ type VaeConfig = {
     randomRegions: string[]; // random regions of unique sequences (if unique seq doesn't have adapters, it will be empty string)
     adapterMatched: boolean[]; // true if the sequence has adapters
   };
+  showMinCount: number;
 };
 
 const vaeConfigSlice = createSlice({
@@ -42,6 +43,7 @@ const vaeConfigSlice = createSlice({
       randomRegions: [] as string[],
       adapterMatched: [] as boolean[],
     },
+    showMinCount: 1,
   },
   reducers: {
     setUUID: (state: VaeConfig, action: PayloadAction<string>) => {
@@ -75,6 +77,12 @@ const vaeConfigSlice = createSlice({
       return {
         ...state,
         sequenceData: action.payload,
+      };
+    },
+    setShowMinCount: (state: VaeConfig, action: PayloadAction<number>) => {
+      return {
+        ...state,
+        showMinCount: action.payload,
       };
     },
   },
