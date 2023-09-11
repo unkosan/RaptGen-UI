@@ -29,10 +29,25 @@ const SideBarGMM: React.FC = () => {
           <Form.Label>Uploaded GMM Model</Form.Label>
           <SelectGMM setGmmFile={setGmmFile} setFileIsValid={setFileIsValid} />
         </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Text className="text-muted">
+            Please select a VAE model first. Then upload a{" "}
+            <code>GuassianMixture</code> model defined in{" "}
+            <code>sklearn.mixture</code>. The model needed to be pickle dumped
+            with <code>pickle</code> in Python standard library.
+          </Form.Text>
+        </Form.Group>
       </Form>
       <legend>Setup Config Params</legend>
       <RequiredParams setParamsIsValid={setRequiredParamsIsValid} />
       <OptionalParams setParamsIsValid={setOptionalParamsIsValid} />
+      <Form.Group className="mb-3">
+        <Form.Text className="text-muted">
+          You need to fill in <code>Model Name</code>. The others are optional.
+          The number of distribution components will be inferred from the GMM
+          model.
+        </Form.Text>
+      </Form.Group>
       <SubmitButtons
         submitDisabled={
           !(

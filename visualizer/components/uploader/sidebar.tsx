@@ -37,6 +37,7 @@ const SideBar: React.FC = () => {
             </Card.Text>
           </Card.Body>
         </Card>
+        <br />
         <Card onClick={handleClickGMM} style={{ cursor: "pointer" }}>
           <Card.Body>
             <Card.Title>Upload GMM</Card.Title>
