@@ -38,6 +38,8 @@ const DataTable: React.FC = () => {
       rowStyle={{
         fontFamily: "monospace",
       }}
+      downloadable
+      copiable
     />
   );
 };

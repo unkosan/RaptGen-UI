@@ -128,6 +128,8 @@ const SelectionTable: React.FC = () => {
         defaultFilterValue={filterValue}
         pagination
         rowStyle={{ fontFamily: "monospace" }}
+        downloadable
+        copiable
       />
     </>
   );
