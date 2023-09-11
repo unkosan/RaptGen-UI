@@ -7,13 +7,14 @@ import { apiClient } from "~/services/api-client";
 
 type Props = {
   submitDisabled: boolean;
+  gmmFile: File | null;
+  vaeName: string;
 };
 
-// TODO: implement submit button
 const SubmitButtons: React.FC<Props> = (props) => {
   const dispatch = useDispatch();
 
-  //   const vaeConfig = useSelector((state: RootState) => state.vaeConfig);
+  const gmmConfig = useSelector((state: RootState) => state.gmmConfig);
 
   const handleBack = () => {
     dispatch({
@@ -24,37 +25,39 @@ const SubmitButtons: React.FC<Props> = (props) => {
 
   const handleSubmit = async () => {
     (async () => {
-      //   const optional = {
-      //     published_time: vaeConfig.optionalParams.uploadDate,
-      //     tolerance: Number(vaeConfig.optionalParams.tolerance),
-      //     minimum_count: Number(vaeConfig.optionalParams.minCount),
-      //     epochs: Number(vaeConfig.optionalParams.epochs),
-      //     beta_weighting_epochs: Number(vaeConfig.optionalParams.betaDuration),
-      //     match_forcing_epochs: Number(
-      //       vaeConfig.optionalParams.matchForcingDuration
-      //     ),
-      //     match_cost: Number(vaeConfig.optionalParams.matchCost),
-      //     early_stopping_patience: Number(
-      //       vaeConfig.optionalParams.earlyStopDuration
-      //     ),
-      //     CUDA_num_threads: Number(vaeConfig.optionalParams.numberWorkers),
-      //     CUDA_pin_memory: Boolean(vaeConfig.optionalParams.pinned),
-      //     seed: Number(vaeConfig.optionalParams.seedValue),
-      //   };
-      //   // remove empty optional params
-      //   type Optional = keyof typeof optional;
-      //   Object.keys(optional).forEach((key) => {
-      //     const keyGuarded = key as Optional;
-      //     if (
-      //       optional[keyGuarded] === undefined ||
-      //       isNaN(Number(optional[keyGuarded]))
-      //     ) {
-      //       delete optional[keyGuarded];
-      //     }
-      //   });
-      //   const res = await apiClient.uploadVAE({
-      //     ...optional,
-      //   });
+      if (!props.gmmFile) {
+        return;
+      }
+
+      const required = {
+        VAE_model_name: props.vaeName,
+        GMM_model_name: gmmConfig.requiredParams.modelName,
+        model: props.gmmFile,
+      };
+      const optional = {
+        num_components: Number(gmmConfig.optionalParams.numComponents),
+        seed: Number(gmmConfig.optionalParams.seed),
+        model_type: gmmConfig.optionalParams.modelType,
+      };
+
+      // remove empty optional params
+      type Optional = keyof typeof optional;
+      Object.keys(optional).forEach((key) => {
+        const keyGuarded = key as Optional;
+        if (typeof optional[keyGuarded] === "number") {
+          const value = Number(optional[keyGuarded]);
+          if (isNaN(value)) {
+            delete optional[keyGuarded];
+          }
+        } else if (optional[keyGuarded] === undefined) {
+          delete optional[keyGuarded];
+        }
+      });
+
+      const res = await apiClient.uploadGMM({
+        ...required,
+        ...optional,
+      });
     })();
   };
 

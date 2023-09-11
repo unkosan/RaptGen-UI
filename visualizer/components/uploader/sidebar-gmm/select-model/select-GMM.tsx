@@ -1,11 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 
-const SelectGMM: React.FC = () => {
-  const [isValidGmm, setIsValidGmm] = useState<boolean>(true);
+type Props = {
+  setGmmFile: React.Dispatch<React.SetStateAction<File | null>>;
+  setFileIsValid: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const SelectGMM: React.FC<Props> = (props) => {
+  const [gmmFile, setGmmFile] = useState<File | null>(null);
+  const [isValid, setIsValid] = useState<boolean>(true);
   const [feedback, setFeedback] = useState<string>("");
+
+  useEffect(() => {
+    props.setFileIsValid(isValid);
+  }, [isValid]);
+
+  useEffect(() => {
+    props.setGmmFile(gmmFile);
+  }, [gmmFile]);
 
   const dispatch = useDispatch();
 
@@ -19,30 +33,37 @@ const SelectGMM: React.FC = () => {
         if (res.status === "success") {
           const data = res.data;
           dispatch({
-            type: "gmmData/set",
+            type: "gmmConfig/setData",
             payload: {
               weights: data.weights,
               means: data.means,
               covariances: data.covariances,
             },
           });
-          setIsValidGmm(true);
+          setIsValid(true);
+          setGmmFile(file);
         } else {
           setFeedback(res.message);
-          setIsValidGmm(false);
+          setIsValid(false);
+          setGmmFile(null);
         }
       })();
     } else {
-      setIsValidGmm(false);
+      setFeedback("");
+      setIsValid(false);
+      setGmmFile(null);
     }
     return;
   };
   return (
-    <Form.Control
-      type="file"
-      // accept=".pkl"
-      onChange={handleGmmFileChange}
-    />
+    <>
+      <Form.Control
+        type="file"
+        onChange={handleGmmFileChange}
+        isInvalid={isValid === false && gmmFile !== null}
+      />
+      <Form.Control.Feedback type="invalid">{feedback}</Form.Control.Feedback>
+    </>
   );
 };
 

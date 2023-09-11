@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 
 import vaeDataReducer from "./vae-data";
-import gmmDataReducer from "./gmm-data";
+import gmmConfigReducer from "./gmm-config";
 import measuredDataReducer from "./measured-data";
 import uploadConfigReducer from "./upload-config";
 import vaeConfigReducer from "./vae-config";
@@ -11,7 +11,7 @@ export const store = configureStore({
     uploadConfig: uploadConfigReducer,
     vaeConfig: vaeConfigReducer,
     vaeData: vaeDataReducer,
-    gmmData: gmmDataReducer,
+    gmmConfig: gmmConfigReducer,
     measuredData: measuredDataReducer,
   },
 });

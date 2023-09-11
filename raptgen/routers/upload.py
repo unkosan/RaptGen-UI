@@ -344,7 +344,7 @@ async def upload(
     result = _validate_GMM_model(BytesIO(model))
     if result["status"] == "error":
         return result
-    gmm: GaussianMixture = result["data"]["model"]
+    gmm: GaussianMixture = result["model"]
 
     data_df = pd.DataFrame(
         {

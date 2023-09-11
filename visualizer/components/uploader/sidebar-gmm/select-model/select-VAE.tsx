@@ -3,9 +3,23 @@ import { Form } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 
-const SelectVAE: React.FC = () => {
+type Props = {
+  setVaeName: React.Dispatch<React.SetStateAction<string>>;
+  setVaeIsValid: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const SelectVAE: React.FC<Props> = (props) => {
   const [value, setValue] = useState<string>("");
   const [nameList, setNameList] = useState<string[]>([""]);
+
+  useEffect(() => {
+    if (value !== "") {
+      props.setVaeName(value);
+      props.setVaeIsValid(true);
+    } else {
+      props.setVaeIsValid(false);
+    }
+  }, [value]);
 
   const dispatch = useDispatch();
 

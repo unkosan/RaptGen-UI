@@ -76,7 +76,7 @@ const calculateTraces = (mu: number[], sigma: number[][]) => {
 
 const LatentGraph: React.FC = () => {
   const vaeData = useSelector((state: RootState) => state.vaeData);
-  const gmmData = useSelector((state: RootState) => state.gmmData);
+  const gmmData = useSelector((state: RootState) => state.gmmConfig.gmmData);
   const measuredData = useSelector((state: RootState) => state.measuredData);
   const minCount = useSelector(
     (state: RootState) => state.vaeConfig.showMinCount
