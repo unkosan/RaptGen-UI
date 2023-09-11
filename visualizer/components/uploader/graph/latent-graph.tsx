@@ -160,10 +160,6 @@ const LatentGraph: React.FC = () => {
 
     let gmmDataPlot: Partial<PlotData>[] = [];
     for (let i = 0; i < gmmData.weights.length; i++) {
-      if (!gmmData.isShown[i]) {
-        continue;
-      }
-
       const covalStr =
         "[" +
         gmmData.covariances[i]
@@ -191,8 +187,7 @@ const LatentGraph: React.FC = () => {
           `<b>MoG No.${i}</b><br>` +
           `<b>Weight:</b> ${weightStr}<br>` +
           `<b>Mean:</b> ${meanStr}<br>` +
-          `<b>Coval:</b> ${covalStr}<br>` +
-          `<b>Sequence:</b> ${gmmData.decodedSequences[i]}<br>`,
+          `<b>Coval:</b> ${covalStr}<br>`,
       };
       const plotLabel: Partial<PlotData> = {
         name: `MoG No.${i}`,
@@ -207,8 +202,7 @@ const LatentGraph: React.FC = () => {
           `<b>MoG No.${i}</b><br>` +
           `<b>Weight:</b> ${weightStr}<br>` +
           `<b>Mean:</b> ${meanStr}<br>` +
-          `<b>Coval:</b> ${covalStr}<br>` +
-          `<b>Sequence:</b> ${gmmData.decodedSequences[i]}<br>`,
+          `<b>Coval:</b> ${covalStr}<br>`,
       };
       gmmDataPlot.push(...[plotData, plotLabel]);
     }
