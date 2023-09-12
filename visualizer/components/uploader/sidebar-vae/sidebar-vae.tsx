@@ -111,10 +111,12 @@ const SideBarVAE: React.FC = () => {
       >
         <legend>Uploaded Sequence Counts</legend>
         <InfoTable />
-        <p>
-          Adapters Matched means the number of entries of uniquifed sequences,
-          which has specified adapters.
-        </p>
+        <Form.Group className="mb-3">
+          <Form.Text className="text-muted">
+            Adapters Matched means the number of entries of uniquifed sequences,
+            which has specified adapters.
+          </Form.Text>
+        </Form.Group>
         <legend>Sequence Data</legend>
         <DataTable />
         <legend>Processing Information</legend>
@@ -130,7 +132,11 @@ const SideBarVAE: React.FC = () => {
         style={{ display: pseudoRoute === "/vae/submit" ? "block" : "none" }}
       >
         <legend>Setup Training Params</legend>
-        <p>All of the params below is not required for uploading.</p>
+        <Form.Group className="mb-3">
+          <Form.Text className="text-muted">
+            All of the params below is not required for uploading.
+          </Form.Text>
+        </Form.Group>
         <OptionalParams setParamsIsValid={setSubmitValid} />
         <SubmitButtons submitDisabled={!submitValid} vaeFile={vaeFile} />
       </div>
