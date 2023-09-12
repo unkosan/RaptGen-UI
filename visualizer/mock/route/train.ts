@@ -5,7 +5,7 @@ import { z } from "zod";
 import * as trainZod from "~/services/route/train";
 
 export const mockURL = (path: string) => {
-  return `http://localhost:8000/api${path}`;
+  return `http://localhost:3000/api${path}`;
 };
 
 const uuids = {

@@ -4,7 +4,7 @@ import { sessionHandlers } from "./route/session";
 import { toolsHandlers } from "./route/tools";
 
 export const mockURL = (path: string) => {
-  return `http://localhost:8000/api${path}`;
+  return `http://localhost:3000/api${path}`;
 };
 
 export const handlers = [
