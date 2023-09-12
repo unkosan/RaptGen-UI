@@ -19,6 +19,13 @@ const SideBarVAE: React.FC = () => {
     (state: RootState) => state.uploadConfig.pseudoRoute
   );
 
+  useEffect(() => {
+    dispatch({
+      type: "uploadConfig/setRoute",
+      payload: "/vae/home",
+    });
+  }, []);
+
   // /vae/home
   const [vaeFile, setVaeFile] = useState<File | null>(null);
   const [selexFile, setSelexFile] = useState<File | null>(null);

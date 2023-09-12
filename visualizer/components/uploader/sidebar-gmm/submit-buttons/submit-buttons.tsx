@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { apiClient } from "~/services/api-client";
+import { useRouter } from "next/router";
 
 type Props = {
   submitDisabled: boolean;
@@ -12,16 +13,9 @@ type Props = {
 };
 
 const SubmitButtons: React.FC<Props> = (props) => {
-  const dispatch = useDispatch();
+  const router = useRouter();
 
   const gmmConfig = useSelector((state: RootState) => state.gmmConfig);
-
-  const handleBack = () => {
-    dispatch({
-      type: "uploadConfig/setRoute",
-      payload: "/",
-    });
-  };
 
   const handleSubmit = async () => {
     (async () => {
@@ -64,7 +58,7 @@ const SubmitButtons: React.FC<Props> = (props) => {
   return (
     <>
       <ButtonToolbar className="justify-content-between">
-        <Button className="col-3" onClick={handleBack}>
+        <Button className="col-3" onClick={() => router.push("/uploader")}>
           Back
         </Button>
         <Button
