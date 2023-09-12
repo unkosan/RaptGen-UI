@@ -6,7 +6,7 @@ import axios from "axios";
 const server = setupServer(...handlers);
 
 export const mockURL = (path: string) => {
-  return `http://localhost:8000/api${path}`;
+  return `http://localhost:3000/api${path}`;
 };
 
 function isBinaryData(input: string): boolean {

@@ -5,7 +5,7 @@ import { apiTool } from "./route/tool";
 import { apiTrain } from "./route/train";
 import { apiUpload } from "./route/upload";
 
-export const apiClient = new Zodios("http://localhost:8000/api", [
+export const apiClient = new Zodios("http://localhost:3000/api", [
   ...apiData,
   ...apiSession,
   ...apiTool,
