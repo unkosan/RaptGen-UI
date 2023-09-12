@@ -11,6 +11,7 @@ import ProcessInfo from "./process-info/process-info";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
+import { Form } from "react-bootstrap";
 
 const SideBarVAE: React.FC = () => {
   const dispatch = useDispatch();
@@ -65,23 +66,27 @@ const SideBarVAE: React.FC = () => {
           setVaeFile={setVaeFile}
           setSelexFile={setSelexFile}
         />
-        <p>
-          Please upload a checkpoint file and HT-SELEX data. The checkpoint file
-          is located where you assigned on the script{" "}
-          <code>raptgen/real.py</code>. Either FASTA or FASTQ file is allowed
-          for the SELEX file.
-        </p>
+        <Form.Group className="mb-3">
+          <Form.Text className="text-muted">
+            Please upload a checkpoint file and HT-SELEX data. The checkpoint
+            file is located where you assigned on the script{" "}
+            <code>raptgen/real.py</code>. Either FASTA or FASTQ file is allowed
+            for the SELEX file.
+          </Form.Text>
+        </Form.Group>
         <legend>Setup SELEX Params</legend>
         <RequiredParams
           setParamsIsValid={setRequiredIsValid}
           setParamsIsDirty={setRequiredIsDirty}
         />
-        <p>
-          You need to fill in the forms for the model name and target length.
-          Target length is the total length of adapters and the random region.
-          Click on <code>Estimate</code> button and target length and adapters
-          are automatically detected
-        </p>
+        <Form.Group className="mb-3">
+          <Form.Text className="text-muted">
+            You need to fill in the forms for the model name and target length.
+            Target length is the total length of adapters and the random region.
+            Click on <code>Estimate</code> button and target length and adapters
+            are automatically detected
+          </Form.Text>
+        </Form.Group>
         <EncodeButtons
           encodeDisabled={!encodeValid}
           isDirty={requiredIsDirty || fileIsDirty}

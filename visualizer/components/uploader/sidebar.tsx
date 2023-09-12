@@ -1,5 +1,6 @@
 import { Card } from "react-bootstrap";
 import SideBarVAE from "./sidebar-vae/sidebar-vae";
+import SideBarGMM from "./sidebar-gmm/sidebar-gmm";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
@@ -17,6 +18,13 @@ const SideBar: React.FC = () => {
     });
   };
 
+  const handleClickGMM = () => {
+    dispatch({
+      type: "uploadConfig/setRoute",
+      payload: "/gmm/home",
+    });
+  };
+
   return (
     <>
       <div style={{ display: pseudoRoute === "/" ? "block" : "none" }}>
@@ -29,11 +37,23 @@ const SideBar: React.FC = () => {
             </Card.Text>
           </Card.Body>
         </Card>
+        <br />
+        <Card onClick={handleClickGMM} style={{ cursor: "pointer" }}>
+          <Card.Body>
+            <Card.Title>Upload GMM</Card.Title>
+            <Card.Text>You nead a trained GMM model file.</Card.Text>
+          </Card.Body>
+        </Card>
       </div>
       <div
         style={{ display: pseudoRoute.startsWith("/vae") ? "block" : "none" }}
       >
         <SideBarVAE />
+      </div>
+      <div
+        style={{ display: pseudoRoute.startsWith("/gmm") ? "block" : "none" }}
+      >
+        <SideBarGMM />
       </div>
     </>
   );
