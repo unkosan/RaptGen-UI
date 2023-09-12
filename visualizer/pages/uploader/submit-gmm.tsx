@@ -6,9 +6,10 @@ import { Provider } from "react-redux";
 import Head from "next/head";
 import Navigator from "~/components/common/navigator";
 import { Col, Container, Row } from "react-bootstrap";
-import SideBar from "~/components/uploader/sidebar";
 import LatentGraph from "~/components/uploader/graph/latent-graph";
 import { store } from "~/components/uploader/redux/store";
+import SideBarGMM from "~/components/uploader/sidebar-gmm/sidebar-gmm";
+import { useEffect } from "react";
 
 const Home: React.FC = () => {
   return (
@@ -26,7 +27,7 @@ const Home: React.FC = () => {
           <hr />
           <Row>
             <Col md={4}>
-              <SideBar />
+              <SideBarGMM />
             </Col>
             <Col>
               <LatentGraph />

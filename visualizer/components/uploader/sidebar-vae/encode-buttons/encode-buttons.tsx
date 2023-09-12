@@ -2,6 +2,7 @@ import { Button, ButtonToolbar } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
+import { useRouter } from "next/router";
 import { apiClient } from "~/services/api-client";
 
 type Props = {
@@ -20,12 +21,7 @@ const EncodeButtons: React.FC<Props> = (props) => {
     (state: RootState) => state.vaeConfig.sequenceData
   );
 
-  const handleBack = () => {
-    dispatch({
-      type: "uploadConfig/setRoute",
-      payload: "/",
-    });
-  };
+  const router = useRouter();
 
   const handleEncode = () => {
     (async () => {
@@ -80,7 +76,6 @@ const EncodeButtons: React.FC<Props> = (props) => {
       }
 
       dispatch({
-        // type: 'uploadConfig/setRoute',
         type: "uploadConfig/setRoute",
         payload: "/vae/encode",
       });
@@ -90,7 +85,7 @@ const EncodeButtons: React.FC<Props> = (props) => {
   return (
     <>
       <ButtonToolbar className="justify-content-between">
-        <Button className="col-3" onClick={handleBack}>
+        <Button className="col-3" onClick={() => router.push("/uploader")}>
           Back
         </Button>
         <Button

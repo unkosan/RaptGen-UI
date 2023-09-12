@@ -2,6 +2,7 @@ from fastapi import APIRouter, File, Form
 
 router = APIRouter()
 
+import os
 from io import BytesIO
 import pickle
 from typing import List, Optional, Tuple, Dict, Any, OrderedDict
@@ -12,6 +13,7 @@ from datetime import datetime
 import torch
 import pandas as pd
 import numpy as np
+
 
 DATA_PATH = "/app/data/"
 
@@ -139,7 +141,7 @@ async def upload_vae(
     if published_time == None:
         published_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Upload config data to database
+    # Upload config data to profile dataframe
     config_data = {
         "published_time": published_time,
         "experiment": experiment_name,
@@ -159,16 +161,18 @@ async def upload_vae(
         "match_forcing_epochs": match_forcing_epochs,
         "match_cost": match_cost,
         "early_stopping_epochs": early_stopping_patience,
-        "CUDA_num_threads": CUDA_num_threads,
+        "CUDA_num_workers": CUDA_num_threads,
         "CUDA_pin_memory": CUDA_pin_memory,
         "pHMM_VAE_model_length": motif_length,
         "pHMM_VAE_seed": seed,
     }
     new_entry_df = pd.DataFrame(config_data, index=[model_name])
     new_entry_df.index.name = "name"
-    config_df: pd.DataFrame = pd.read_pickle(DATA_PATH + "profile_dataframe.pkl")
-    config_df = pd.concat([config_df, new_entry_df])
-    print(config_df)
+    profile_df: pd.DataFrame = pd.read_pickle(DATA_PATH + "profile_dataframe.pkl")
+    if model_name in profile_df.index:
+        return {"status": "error", "message": "Model name already exists"}
+    profile_df = pd.concat([profile_df, new_entry_df])
+    profile_df.to_pickle(DATA_PATH + "profile_dataframe.pkl")
 
     # Upload sequences to database
     seq_df = pd.DataFrame(
@@ -180,19 +184,34 @@ async def upload_vae(
             "coord_y": coord_y_float,
         }
     )
-    print(seq_df.head(5))
+    model_path = DATA_PATH + "/items/" + model_name
+    if os.path.exists(model_path):
+        return {"status": "error", "message": "Model name already exists"}
+    os.mkdir(model_path)
+    pickle.dump(seq_df, open(model_path + "/unique_seq_dataframe.pkl", "wb"))
 
     # Upload model to database
-    data_df = pd.DataFrame(
+    with open(model_path + "/VAE_model.pkl", "wb") as f:
+        f.write(model)
+
+    # upload gmm dataframe to database
+    gmm_df = pd.DataFrame(
+        columns=[
+            "GMM_num_components",
+            "GMM_seed",
+            "GMM_optimal_model",
+            "GMM_model_type",
+        ]
+    ).astype(
         {
-            "Sequence": sequences,
-            "Duplicates": duplicates_int,
-            "Without_Adapters": random_regions,
-            "coord_x": coord_x_float,
-            "coord_y": coord_y_float,
+            "GMM_num_components": "int64",
+            "GMM_seed": "int64",
+            "GMM_optimal_model": "object",
+            "GMM_model_type": "object",
         }
     )
-    print(data_df.head(5))
+    gmm_df.index.name = "name"
+    pickle.dump(gmm_df, open(model_path + "/best_gmm_dataframe.pkl", "wb"))
 
     return {
         "status": "success",
@@ -346,18 +365,28 @@ async def upload(
         return result
     gmm: GaussianMixture = result["model"]
 
-    data_df = pd.DataFrame(
+    new_entry_df = pd.DataFrame(
         {
             "GMM_num_components": [num_components],
             "GMM_seed": [seed],
             "GMM_optimal_model": [gmm],
             "GMM_model_type": [model_type],
-        }
+        },
+        index=[GMM_model_name],
     )
-    data_df.index.name = GMM_model_name
+    new_entry_df.index.name = GMM_model_name
 
-    # upload df
-    print(data_df.head(5))
-    print(VAE_model_name)
+    gmm_df: pd.DataFrame = pd.read_pickle(
+        DATA_PATH + "items/" + VAE_model_name + "/best_gmm_dataframe.pkl"
+    )
+    if GMM_model_name in gmm_df.index:
+        return {"status": "error", "message": "Model name already exists"}
+    gmm_df = pd.concat([gmm_df, new_entry_df])
+    print(gmm_df)
+
+    pickle.dump(
+        gmm_df,
+        open(DATA_PATH + "items/" + VAE_model_name + "/best_gmm_dataframe.pkl", "wb"),
+    )
 
     return {"status": "success"}

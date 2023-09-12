@@ -6,7 +6,6 @@ import os
 from sklearn.mixture import GaussianMixture
 import pandas as pd
 
-# DATA_PATH = "/app/local/down/data/"
 DATA_PATH = "/app/data/"
 
 

@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import OptionalParams from "./optional-params/optional-params";
 import SubmitButtons from "./submit-buttons/submit-buttons";
 import RequiredParams from "./optional-params/required-params";
 import { Form } from "react-bootstrap";
 import SelectGMM from "./select-model/select-GMM";
 import SelectVAE from "./select-model/select-VAE";
+import { useDispatch } from "react-redux";
 
 const SideBarGMM: React.FC = () => {
   const [vaeName, setVaeName] = useState<string>("");
@@ -16,6 +17,14 @@ const SideBarGMM: React.FC = () => {
     useState<boolean>(false);
   const [optionalParamsIsValid, setOptionalParamsIsValid] =
     useState<boolean>(true);
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch({
+      type: "uploadConfig/setRoute",
+      payload: "/gmm",
+    });
+  }, []);
 
   return (
     <div className="sidebar-gmm">

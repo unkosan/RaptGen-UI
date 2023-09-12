@@ -1,9 +1,11 @@
-import { ButtonToolbar } from "react-bootstrap";
+import { Alert, ButtonToolbar, Spinner } from "react-bootstrap";
 import { Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { apiClient } from "~/services/api-client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 type Props = {
   submitDisabled: boolean;
@@ -14,21 +16,24 @@ type Props = {
 const SubmitButtons: React.FC<Props> = (props) => {
   const dispatch = useDispatch();
 
+  const router = useRouter();
+
   const vaeConfig = useSelector((state: RootState) => state.vaeConfig);
   const vaeData = useSelector((state: RootState) => state.vaeData);
 
-  const handleBack = () => {
-    dispatch({
-      type: "uploadConfig/setRoute",
-      payload: "/vae/encode",
-    });
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
 
-  const handleSubmit = async () => {
+  useEffect(() => {
     (async () => {
-      if (!props.vaeFile) {
+      if (!isLoading) {
         return;
-      }
+      } // this is to prevent triggering this effect when isLoading is set to false
+      if (!props.vaeFile) {
+        setIsLoading(false);
+        setIsFinished(false);
+        return;
+      } // type guard
 
       const required = {
         model: props.vaeFile,
@@ -72,31 +77,67 @@ const SubmitButtons: React.FC<Props> = (props) => {
         }
       });
 
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       const res = await apiClient.uploadVAE({
         ...required,
         ...optional,
       });
 
       console.log(res);
+
+      setIsLoading(false);
+      if (res.status === "success") {
+        setIsFinished(true);
+      } else {
+        alert("Upload failed");
+      }
     })();
+  }, [isLoading]);
+
+  const handleBack = () => {
+    dispatch({
+      type: "uploadConfig/setRoute",
+      payload: "/vae/encode",
+    });
   };
 
-  return (
-    <>
-      <ButtonToolbar className="justify-content-between">
-        <Button className="col-3" onClick={handleBack}>
-          Back
-        </Button>
-        <Button
-          className="col-3"
-          disabled={props.submitDisabled}
-          onClick={handleSubmit}
-        >
-          Submit
-        </Button>
-      </ButtonToolbar>
-    </>
-  );
+  if (isFinished) {
+    return (
+      <Alert variant="success">
+        <Alert.Heading>Upload successful!</Alert.Heading>
+        <p>
+          Your model is now being uploaded. You can check the model in viewer
+          page.
+        </p>
+        <hr />
+        <div className="d-flex justify-content-end">
+          <Button
+            onClick={() => router.push("/viewer")}
+            variant="outline-success"
+          >
+            Go to viewer
+          </Button>
+        </div>
+      </Alert>
+    );
+  } else {
+    return (
+      <>
+        <ButtonToolbar className="justify-content-between">
+          <Button className="col-3" onClick={handleBack}>
+            Back
+          </Button>
+          <Button
+            className={isLoading ? "" : "col-3"}
+            disabled={props.submitDisabled || isLoading}
+            onClick={() => setIsLoading(true)}
+          >
+            {isLoading ? <Spinner animation="border" size="sm" /> : <>Submit</>}
+          </Button>
+        </ButtonToolbar>
+      </>
+    );
+  }
 };
 
 export default SubmitButtons;
