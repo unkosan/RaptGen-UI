@@ -2,11 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
 import parseSelex from "~/components/common/parse-selex";
 import { countBy } from "lodash";
-import ReactDataGrid from "@inovua/reactdatagrid-community";
-import ClientOnly from "~/components/common/client-only";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import CustomDataGrid from "~/components/common/custom-datagrid";
 
 type Props = {};
 
@@ -94,17 +93,15 @@ const UploadFile: React.FC<Props> = (props) => {
         />
         <Form.Control.Feedback type="invalid">{feedback}</Form.Control.Feedback>
       </Form.Group>
-      <ClientOnly>
-        <ReactDataGrid
-          idProperty="id"
-          columns={columns}
-          dataSource={dataSource}
-          style={gridStyle}
-          rowStyle={{
-            fontFamily: "monospace",
-          }}
-        />
-      </ClientOnly>
+      <CustomDataGrid
+        idProperty="id"
+        columns={columns}
+        dataSource={dataSource}
+        style={gridStyle}
+        rowStyle={{
+          fontFamily: "monospace",
+        }}
+      />
     </>
   );
 };

@@ -1,8 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import ClientOnly from "~/components/common/client-only";
-import ReactDataGrid from "@inovua/reactdatagrid-community";
+import CustomDataGrid from "~/components/common/custom-datagrid";
 
 const columnsCountTable = [
   { name: "id", type: "number", header: "ID", defaultVisible: false },
@@ -49,17 +48,15 @@ const CountTable: React.FC = () => {
   ];
 
   return (
-    <ClientOnly>
-      <ReactDataGrid
-        idProperty="id"
-        columns={columnsCountTable}
-        dataSource={dataTable}
-        style={gridStyleCountTable}
-        rowStyle={{
-          fontFamily: "monospace",
-        }}
-      />
-    </ClientOnly>
+    <CustomDataGrid
+      idProperty="id"
+      columns={columnsCountTable}
+      dataSource={dataTable}
+      style={gridStyleCountTable}
+      rowStyle={{
+        fontFamily: "monospace",
+      }}
+    />
   );
 };
 
@@ -89,17 +86,15 @@ const SequenceTable: React.FC = () => {
     });
   }
   return (
-    <ClientOnly>
-      <ReactDataGrid
-        idProperty="id"
-        columns={columnsSequenceTable}
-        dataSource={dataSource}
-        style={gridStyleSequenceTable}
-        rowStyle={{
-          fontFamily: "monospace",
-        }}
-      />
-    </ClientOnly>
+    <CustomDataGrid
+      idProperty="id"
+      columns={columnsSequenceTable}
+      dataSource={dataSource}
+      style={gridStyleSequenceTable}
+      rowStyle={{
+        fontFamily: "monospace",
+      }}
+    />
   );
 };
 

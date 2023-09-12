@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import ClientOnly from "~/components/common/client-only";
-import ReactDataGrid from "@inovua/reactdatagrid-community";
 import { apiClient } from "~/services/api-client";
+import CustomDataGrid from "~/components/common/custom-datagrid";
 
 const GMMParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
@@ -39,37 +38,35 @@ const GMMParamsTable: React.FC = () => {
   }, [vaeName, gmmName]);
 
   const gridStyle = {
-    minHeight: 250,
+    minHeight: 300,
     width: "100%",
     zIndex: 1000,
   };
 
   return (
-    <ClientOnly>
-      <ReactDataGrid
-        idProperty="id"
-        columns={[
-          {
-            name: "parameter",
-            header: "Parameter",
-            defaultFlex: 1,
-          },
-          {
-            name: "value",
-            header: "Value",
-            defaultFlex: 1,
-          },
-        ]}
-        dataSource={Object.keys(paramsList).map((key) => ({
-          id: key,
-          parameter: key,
-          value: paramsList[key],
-        }))}
-        rowStyle={{ fontFamily: "monospace" }}
-        rowHeight={35}
-        style={gridStyle}
-      />
-    </ClientOnly>
+    <CustomDataGrid
+      idProperty="id"
+      columns={[
+        {
+          name: "parameter",
+          header: "Parameter",
+          defaultFlex: 1,
+        },
+        {
+          name: "value",
+          header: "Value",
+          defaultFlex: 1,
+        },
+      ]}
+      dataSource={Object.keys(paramsList).map((key) => ({
+        id: key,
+        parameter: key,
+        value: paramsList[key],
+      }))}
+      rowStyle={{ fontFamily: "monospace" }}
+      rowHeight={35}
+      style={gridStyle}
+    />
   );
 };
 

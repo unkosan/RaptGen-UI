@@ -3,9 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import ReactDataGrid from "@inovua/reactdatagrid-community";
-import ClientOnly from "~/components/common/client-only";
 import { apiClient } from "~/services/api-client";
+import CustomDataGrid from "~/components/common/custom-datagrid";
 
 type CoordEditorProps = {
   value: number;
@@ -266,7 +265,7 @@ const columns = [
   },
 ];
 
-const gridStyle = { minHeight: 400, width: "100%", zIndex: 1000 };
+const gridStyle = { minHeight: 500, width: "100%", zIndex: 1000 };
 
 const DecodeTable: React.FC = () => {
   const decodeData = useSelector((state: RootState) => state.decodeData);
@@ -281,19 +280,17 @@ const DecodeTable: React.FC = () => {
   }));
 
   return (
-    <ClientOnly>
-      <ReactDataGrid
-        idProperty="key"
-        columns={columns}
-        dataSource={data}
-        editable={true}
-        rowStyle={{ fontFamily: "monospace" }}
-        pagination
-        defaultLimit={20}
-        rowHeight={35}
-        style={gridStyle}
-      />
-    </ClientOnly>
+    <CustomDataGrid
+      idProperty="key"
+      columns={columns}
+      dataSource={data}
+      editable={true}
+      rowStyle={{ fontFamily: "monospace" }}
+      pagination
+      defaultLimit={20}
+      rowHeight={35}
+      style={gridStyle}
+    />
   );
 };
 
