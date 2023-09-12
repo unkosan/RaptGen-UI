@@ -23,11 +23,14 @@ const SubmitButtons: React.FC<Props> = (props) => {
 
   useEffect(() => {
     (async () => {
+      if (!isLoading) {
+        return;
+      } // this is to prevent triggering this effect when isLoading is set to false
       if (!props.gmmFile) {
         setIsLoading(false);
         setIsFinished(false);
         return;
-      }
+      } // type guard
 
       const required = {
         VAE_model_name: props.vaeName,

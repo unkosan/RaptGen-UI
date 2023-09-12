@@ -365,18 +365,28 @@ async def upload(
         return result
     gmm: GaussianMixture = result["model"]
 
-    data_df = pd.DataFrame(
+    new_entry_df = pd.DataFrame(
         {
             "GMM_num_components": [num_components],
             "GMM_seed": [seed],
             "GMM_optimal_model": [gmm],
             "GMM_model_type": [model_type],
-        }
+        },
+        index=[GMM_model_name],
     )
-    data_df.index.name = GMM_model_name
+    new_entry_df.index.name = GMM_model_name
 
-    # upload df
-    print(data_df.head(5))
-    print(VAE_model_name)
+    gmm_df: pd.DataFrame = pd.read_pickle(
+        DATA_PATH + "items/" + VAE_model_name + "/best_gmm_dataframe.pkl"
+    )
+    if GMM_model_name in gmm_df.index:
+        return {"status": "error", "message": "Model name already exists"}
+    gmm_df = pd.concat([gmm_df, new_entry_df])
+    print(gmm_df)
+
+    pickle.dump(
+        gmm_df,
+        open(DATA_PATH + "items/" + VAE_model_name + "/best_gmm_dataframe.pkl", "wb"),
+    )
 
     return {"status": "success"}
