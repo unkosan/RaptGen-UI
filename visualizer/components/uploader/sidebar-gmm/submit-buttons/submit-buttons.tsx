@@ -1,10 +1,11 @@
-import { ButtonToolbar } from "react-bootstrap";
+import { Alert, ButtonToolbar, Spinner } from "react-bootstrap";
 import { Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { apiClient } from "~/services/api-client";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 type Props = {
   submitDisabled: boolean;
@@ -17,9 +18,14 @@ const SubmitButtons: React.FC<Props> = (props) => {
 
   const gmmConfig = useSelector((state: RootState) => state.gmmConfig);
 
-  const handleSubmit = async () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+
+  useEffect(() => {
     (async () => {
       if (!props.gmmFile) {
+        setIsLoading(false);
+        setIsFinished(false);
         return;
       }
 
@@ -48,29 +54,58 @@ const SubmitButtons: React.FC<Props> = (props) => {
         }
       });
 
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       const res = await apiClient.uploadGMM({
         ...required,
         ...optional,
       });
-    })();
-  };
 
-  return (
-    <>
-      <ButtonToolbar className="justify-content-between">
-        <Button className="col-3" onClick={() => router.push("/uploader")}>
-          Back
-        </Button>
-        <Button
-          className="col-3"
-          disabled={props.submitDisabled}
-          onClick={handleSubmit}
-        >
-          Submit
-        </Button>
-      </ButtonToolbar>
-    </>
-  );
+      setIsLoading(false);
+      if (res.status === "success") {
+        setIsFinished(true);
+      } else {
+        alert("Upload failed");
+      }
+    })();
+  }, [isLoading]);
+
+  if (isFinished) {
+    return (
+      <Alert variant="success">
+        <Alert.Heading>Upload successful!</Alert.Heading>
+        <p>
+          Your model is now being uploaded. You can check the model in viewer
+          page.
+        </p>
+        <hr />
+        <div className="d-flex justify-content-end">
+          <Button
+            onClick={() => router.push("/viewer")}
+            variant="outline-success"
+          >
+            Go to viewer
+          </Button>
+        </div>
+      </Alert>
+    );
+  } else {
+    return (
+      <>
+        <ButtonToolbar className="justify-content-between">
+          <Button className="col-3" onClick={() => router.push("/uploader")}>
+            Back
+          </Button>
+          <Button
+            className={isLoading ? "" : "col-3"}
+            disabled={props.submitDisabled || isLoading}
+            onClick={() => setIsLoading(true)}
+          >
+            {isLoading ? <Spinner animation="border" size="sm" /> : <>Submit</>}
+          </Button>
+        </ButtonToolbar>
+      </>
+    );
+  }
 };
 
 export default SubmitButtons;
