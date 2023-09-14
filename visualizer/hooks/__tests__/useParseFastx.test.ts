@@ -1,31 +1,29 @@
-import useParseFastx from "../useParseFasta";
-import { renderHook, act } from "@testing-library/react-hooks";
+import { File } from "web-file-polyfill";
+import useParseFastx from "../useParseFastx";
+import { renderHook, act } from "@testing-library/react";
+
+import workerpool from "workerpool";
+const pool = workerpool.pool();
 
 describe("useParseFastx", () => {
-  xit("should return correct initial state", () => {
-    const { result } = renderHook(() => useParseFastx());
-    const { setFastx, isParsing, isValid, parseResult } = result.current;
-
-    expect(setFastx).toBeInstanceOf(Function);
-    expect(isParsing).toBe(false);
-    expect(isValid).toBe(false);
-    expect(parseResult).toEqual([]);
+  afterAll(() => {
+    pool.terminate();
   });
 
   it("should parse valid fasta file", async () => {
-    const { result } = renderHook(() => useParseFastx());
+    const { result } = renderHook(() => useParseFastx(pool));
     const { setFastx } = result.current;
 
     await act(async () => {
-      setFastx(
+      await setFastx(
         new File([">test\nATCG\n".repeat(10)], "test.fasta", {
           type: "text/plain",
         })
       );
-    });
 
-    // wait for parsing to finish
-    await new Promise((resolve) => setTimeout(resolve, 4000));
+      // wait for parsing to finish
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
 
     const { isValid, isParsing, parseResult } = result.current;
     expect(isParsing).toBe(false);
@@ -33,20 +31,20 @@ describe("useParseFastx", () => {
     expect(parseResult).toEqual(Array(10).fill({ id: "test", seq: "ATCG" }));
   });
 
-  xit("should not parse invalid fasta file", async () => {
-    const { result } = renderHook(() => useParseFastx());
+  it("should not parse invalid fasta file", async () => {
+    const { result } = renderHook(() => useParseFastx(pool));
     const { setFastx } = result.current;
 
     await act(async () => {
-      setFastx(
+      await setFastx(
         new File(["@test\nATCG\n".repeat(10)], "test.fasta", {
           type: "text/plain",
         })
       );
-    });
 
-    // wait for parsing to finish
-    await new Promise((resolve) => setTimeout(resolve, 100));
+      // wait for parsing to finish
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
 
     const { isValid, isParsing, parseResult } = result.current;
     expect(isParsing).toBe(false);
@@ -54,8 +52,8 @@ describe("useParseFastx", () => {
     expect(parseResult).toEqual([]);
   });
 
-  xit("should not parse null file", async () => {
-    const { result } = renderHook(() => useParseFastx());
+  it("should not parse null file", async () => {
+    const { result } = renderHook(() => useParseFastx(pool));
     const { setFastx } = result.current;
 
     await act(async () => {
@@ -71,95 +69,121 @@ describe("useParseFastx", () => {
     expect(parseResult).toEqual([]);
   });
 
-  xit("should set invalid on parsing", async () => {
-    const { result } = renderHook(() => useParseFastx());
-    const { setFastx } = result.current;
+  it("should set invalid on parsing", async () => {
+    const { result } = renderHook(() => useParseFastx(pool));
+    const { cancelParsing, setFastx } = result.current;
 
     await act(async () => {
-      setFastx(
+      await setFastx(
         new File([">test\nATCG\n".repeat(1000000)], "test.fasta", {
           type: "text/plain",
         })
       );
-    });
 
-    // wait for just initialization
-    await new Promise((resolve) => setTimeout(resolve, 10));
+      // wait for just initialization
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
 
     const { isValid, isParsing, parseResult } = result.current;
     expect(isParsing).toBe(true);
     expect(isValid).toBe(false);
     expect(parseResult).toEqual([]);
+
+    // kill worker
+    await act(async () => {
+      cancelParsing();
+
+      // wait for termination
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
   });
 
-  xit("should resume parsing when setting new file", async () => {
-    const { result } = renderHook(() => useParseFastx());
-    const { setFastx } = result.current;
+  it("should cancel parsing", async () => {
+    const { result } = renderHook(() => useParseFastx(pool));
+    const { cancelParsing, setFastx } = result.current;
 
     await act(async () => {
-      setFastx(
-        new File([">test\nATCG\n".repeat(200)], "test.fasta", {
+      await setFastx(
+        new File([">test\nATCG\n".repeat(1000000)], "test.fasta", {
           type: "text/plain",
         })
       );
+
+      // wait for just initialization
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      cancelParsing();
     });
 
-    await act(async () => {
-      setFastx(
-        new File([">test2\nGCTA\n".repeat(100)], "test.fasta", {
-          type: "text/plain",
-        })
-      );
-    });
-
-    // wait for parsing to finish
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const { isValid, isParsing, parseResult } = result.current;
     expect(isParsing).toBe(false);
-    expect(isValid).toBe(true);
-    expect(parseResult).toEqual(Array(200).fill({ id: "test", seq: "ATCG" }));
+    expect(isValid).toBe(false);
+    expect(parseResult).toEqual([]);
   });
 
-  xit("should resume parsing after setting empty file", async () => {
-    const { result } = renderHook(() => useParseFastx());
+  it("should reset parsing when setting new file", async () => {
+    const { result } = renderHook(() => useParseFastx(pool));
     const { setFastx } = result.current;
 
     await act(async () => {
-      setFastx(
-        new File([">test\nATCG\n".repeat(200)], "test.fasta", {
+      await setFastx(
+        new File([">test\nATCG\n".repeat(1000000)], "test.fasta", {
           type: "text/plain",
         })
       );
+      await setFastx(
+        new File([">test2\nGCTA\n".repeat(10)], "test.fasta", {
+          type: "text/plain",
+        })
+      );
+      // wait for parsing to finish
+      await new Promise((resolve) => setTimeout(resolve, 100));
     });
-
-    await act(async () => {
-      setFastx(null);
-    });
-
-    // wait for parsing to finish
-    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const { isValid, isParsing, parseResult } = result.current;
     expect(isParsing).toBe(false);
     expect(isValid).toBe(true);
-    expect(parseResult).toEqual(Array(200).fill({ id: "test", seq: "ATCG" }));
+    expect(parseResult).toEqual(Array(10).fill({ id: "test2", seq: "GCTA" }));
   });
 
-  xit("should parse valid fastq file", async () => {
-    const { result } = renderHook(() => useParseFastx());
+  it("should stop parsing after setting empty file", async () => {
+    const { result } = renderHook(() => useParseFastx(pool));
     const { setFastx } = result.current;
 
     await act(async () => {
-      setFastx(
+      await setFastx(
+        new File([">test\nATCG\n".repeat(1000000)], "test.fasta", {
+          type: "text/plain",
+        })
+      );
+      await setFastx(null);
+
+      // wait for parsing to finish
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+
+    const { isValid, isParsing, parseResult } = result.current;
+    expect(isParsing).toBe(false);
+    expect(isValid).toBe(false);
+    expect(parseResult).toEqual([]);
+  });
+
+  it("should parse valid fastq file", async () => {
+    const { result } = renderHook(() => useParseFastx(pool));
+    const { setFastx } = result.current;
+
+    await act(async () => {
+      await setFastx(
         new File(["@test\nATCG\n+\nAAAA\n".repeat(10)], "test.fastq", {
           type: "text/plain",
         })
       );
-    });
 
-    // wait for parsing to finish
-    await new Promise((resolve) => setTimeout(resolve, 100));
+      // wait for parsing to finish
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
 
     const { isValid, isParsing, parseResult } = result.current;
     expect(isParsing).toBe(false);
