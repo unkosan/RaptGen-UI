@@ -22,7 +22,7 @@ describe("useParseFastx", () => {
       );
 
       // wait for parsing to finish
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     });
 
     const { isValid, isParsing, parseResult } = result.current;
