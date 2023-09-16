@@ -6,9 +6,8 @@ import Navigator from "~/components/common/navigator";
 import { Provider } from "react-redux";
 import { RootState, store } from "~/components/trainer/add/redux/store";
 import { useSelector } from "react-redux";
-import SelexPage from "~/components/trainer/add/selex-page/selex-page";
-import TrainPage from "~/components/trainer/add/train-page/train-page";
 import "@inovua/reactdatagrid-community/index.css";
+import PageContent from "~/components/trainer/add/page-content/page-content";
 
 const Home: React.FC = () => {
   const route = useSelector((state: RootState) => state.pageConfig.pseudoRoute);
@@ -26,12 +25,7 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>Trainer</h1>
           <hr />
-          <div style={{ display: route === "/selex" ? "block" : "none" }}>
-            <SelexPage />
-          </div>
-          <div style={{ display: route === "/train" ? "block" : "none" }}>
-            <TrainPage />
-          </div>
+          <PageContent />
         </Container>
       </main>
     </>

@@ -3,11 +3,11 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 type PreprocessingConfig = {
   isDirty: boolean;
   isValidParams: boolean;
-  forwardAdapter?: string;
-  reverseAdapter?: string;
-  targetLength?: number;
-  tolerance?: number;
-  minCount?: number;
+  forwardAdapter: string;
+  reverseAdapter: string;
+  targetLength: number;
+  tolerance: number;
+  minCount: number;
 };
 
 const preprocessingConfigSlice = createSlice({
@@ -15,11 +15,11 @@ const preprocessingConfigSlice = createSlice({
   initialState: {
     isDirty: false,
     isValidParams: false,
-    forwardAdapter: undefined as string | undefined,
-    reverseAdapter: undefined as string | undefined,
-    targetLength: undefined as number | undefined,
-    tolerance: undefined as number | undefined,
-    minCount: undefined as number | undefined,
+    forwardAdapter: "",
+    reverseAdapter: "",
+    targetLength: NaN,
+    tolerance: NaN,
+    minCount: NaN,
   },
   reducers: {
     set: (
