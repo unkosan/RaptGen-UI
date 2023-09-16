@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
 import workerpool from "workerpool";
-import _ from "lodash";
+// cannot bundle libraries
+// import { countBy } from "lodash";
 
-type ProcessResult = {
+// export for testing
+export type ProcessResult = {
   config: {
     minCount: number;
     tolerance: number;
@@ -22,7 +24,8 @@ type ProcessResult = {
   };
 };
 
-const process = (
+// export for testing
+export const process = (
   seqs: string[],
   minCount: number,
   tolerance: number,
@@ -44,7 +47,16 @@ const process = (
 
   let uniqueSeqs: string[] = [];
   let dups: number[] = [];
-  let counts = _.countBy(filtedSeqs);
+
+  let counts = {} as { [seq: string]: number };
+  for (let seq of filtedSeqs) {
+    if (seq in counts) {
+      counts[seq] += 1;
+    } else {
+      counts[seq] = 1;
+    }
+  }
+
   for (let seq in counts) {
     if (counts[seq] >= minCount) {
       uniqueSeqs.push(seq);
@@ -78,7 +90,8 @@ const process = (
   } as ProcessResult;
 };
 
-const processResultInit = {
+// export for testing
+export const processResultInit = {
   config: {
     minCount: 0,
     tolerance: 0,
