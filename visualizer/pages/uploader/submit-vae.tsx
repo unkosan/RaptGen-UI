@@ -9,6 +9,7 @@ import { Col, Container, Row } from "react-bootstrap";
 import LatentGraph from "~/components/uploader/graph/latent-graph";
 import { store } from "~/components/uploader/redux/store";
 import SideBarVAE from "~/components/uploader/sidebar-vae/sidebar-vae";
+import SplitPane from "~/components/common/split-pane";
 
 const Home: React.FC = () => {
   return (
@@ -24,14 +25,7 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>Uploader</h1>
           <hr />
-          <Row>
-            <Col md={4}>
-              <SideBarVAE />
-            </Col>
-            <Col>
-              <LatentGraph />
-            </Col>
-          </Row>
+          <SplitPane left={<SideBarVAE />} right={<LatentGraph />} />
         </Container>
       </main>
     </>

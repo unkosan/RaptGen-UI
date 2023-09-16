@@ -10,6 +10,7 @@ import DataControl from "~/components/viewer/data-control/data-control";
 import OperatorControl from "~/components/viewer/operator-control/operator-control";
 import SelectionTable from "~/components/viewer/graph/selection-table";
 import "@inovua/reactdatagrid-community/index.css";
+import SplitPane from "~/components/common/split-pane";
 
 const SideBar: React.FC = () => {
   return (
@@ -36,15 +37,15 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>Viewer</h1>
           <hr />
-          <Row>
-            <Col md={4}>
-              <SideBar />
-            </Col>
-            <Col>
-              <LatentGraph />
-              <SelectionTable />
-            </Col>
-          </Row>
+          <SplitPane
+            left={<SideBar />}
+            right={
+              <>
+                <LatentGraph />
+                <SelectionTable />
+              </>
+            }
+          />
         </Container>
       </main>
     </>

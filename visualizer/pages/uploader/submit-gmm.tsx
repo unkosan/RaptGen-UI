@@ -10,6 +10,7 @@ import LatentGraph from "~/components/uploader/graph/latent-graph";
 import { store } from "~/components/uploader/redux/store";
 import SideBarGMM from "~/components/uploader/sidebar-gmm/sidebar-gmm";
 import { useEffect } from "react";
+import SplitPane from "~/components/common/split-pane";
 
 const Home: React.FC = () => {
   return (
@@ -25,14 +26,7 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>Uploader</h1>
           <hr />
-          <Row>
-            <Col md={4}>
-              <SideBarGMM />
-            </Col>
-            <Col>
-              <LatentGraph />
-            </Col>
-          </Row>
+          <SplitPane left={<SideBarGMM />} right={<LatentGraph />} />
         </Container>
       </main>
     </>

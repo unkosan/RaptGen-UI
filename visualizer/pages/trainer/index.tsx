@@ -8,6 +8,7 @@ import { Provider } from "react-redux";
 import { store } from "~/components/trainer/home/redux/store";
 import Main from "~/components/trainer/home/main/main";
 import "@inovua/reactdatagrid-community/index.css";
+import SplitPane from "~/components/common/split-pane";
 
 const Home: React.FC = () => {
   return (
@@ -23,14 +24,7 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>Trainer</h1>
           <hr />
-          <Row>
-            <Col md={4}>
-              <SideBar />
-            </Col>
-            <Col>
-              <Main />
-            </Col>
-          </Row>
+          <SplitPane left={<SideBar />} right={<Main />} />
         </Container>
       </main>
     </>
