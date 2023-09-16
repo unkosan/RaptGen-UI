@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import SideBar from "../selex-page/sidebar/sidebar";
-import Main from "../selex-page/main/main";
-import SplitPane from "./split-pane";
+import SplitPane from "~/components/common/split-pane";
 import TrainConfigLeft from "./train-config/train-config-left";
 import TrainConfigRight from "./train-config/train-config-right";
 import PreprocessConfigLeft from "./preprocess-config/preprocess-config-left";

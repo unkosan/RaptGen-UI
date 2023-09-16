@@ -5,7 +5,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
+import { RootState } from "../redux/store";
 import { useDispatch } from "react-redux";
 import {
   EstimateForwardButton,

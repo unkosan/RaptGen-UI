@@ -9,7 +9,7 @@ import { TypeDataSource } from "@inovua/reactdatagrid-community/types";
 import CustomDataGrid from "~/components/common/custom-datagrid";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
+import { RootState } from "../redux/store";
 
 const columns = [
   { name: "id", type: "number", header: "ID", defaultVisible: false },

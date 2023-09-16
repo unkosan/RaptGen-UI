@@ -7,7 +7,7 @@ import { Provider } from "react-redux";
 import { RootState, store } from "~/components/trainer/add/redux/store";
 import { useSelector } from "react-redux";
 import "@inovua/reactdatagrid-community/index.css";
-import PageContent from "~/components/trainer/add/page-content/page-content";
+import PageContent from "~/components/trainer/add/page-content";
 
 const Home: React.FC = () => {
   const route = useSelector((state: RootState) => state.pageConfig.pseudoRoute);
