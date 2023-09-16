@@ -21,6 +21,7 @@ export type ProcessResult = {
   data: {
     seqs: string[];
     dups: number[];
+    randomRegions: string[];
   };
 };
 
@@ -33,7 +34,12 @@ export const process = (
   fwdPrimer: string,
   revPrimer: string
 ) => {
-  let filtedSeqs: string[] = [];
+  // change T to U
+  seqs = seqs.map((seq) => seq.replaceAll("T", "U"));
+  fwdPrimer = fwdPrimer.replaceAll("T", "U");
+  revPrimer = revPrimer.replaceAll("T", "U");
+
+  let filterdSeqs: string[] = [];
   for (let seq of seqs) {
     if (
       targetLength - tolerance <= seq.length &&
@@ -41,15 +47,16 @@ export const process = (
       seq.startsWith(fwdPrimer) &&
       seq.endsWith(revPrimer)
     ) {
-      filtedSeqs.push(seq);
+      filterdSeqs.push(seq);
     }
   }
 
   let uniqueSeqs: string[] = [];
   let dups: number[] = [];
+  let randomRegions: string[] = [];
 
   let counts = {} as { [seq: string]: number };
-  for (let seq of filtedSeqs) {
+  for (let seq of filterdSeqs) {
     if (seq in counts) {
       counts[seq] += 1;
     } else {
@@ -61,11 +68,17 @@ export const process = (
     if (counts[seq] >= minCount) {
       uniqueSeqs.push(seq);
       dups.push(counts[seq]);
+      randomRegions.push(
+        seq.slice(
+          fwdPrimer.length,
+          revPrimer.length === 0 ? seq.length : -revPrimer.length
+        )
+      );
     }
   }
 
   const numTotal = seqs.length;
-  const numFiltered = filtedSeqs.length;
+  const numFiltered = filterdSeqs.length;
   const numUnique = uniqueSeqs.length;
   const uniqueRatio = numUnique / numFiltered;
 
@@ -86,6 +99,7 @@ export const process = (
     data: {
       seqs: uniqueSeqs,
       dups,
+      randomRegions,
     },
   } as ProcessResult;
 };
@@ -108,6 +122,7 @@ export const processResultInit = {
   data: {
     seqs: [],
     dups: [],
+    randomRegions: [],
   },
 } as ProcessResult;
 

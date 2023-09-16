@@ -1,9 +1,5 @@
 import useProcessRawReads from "../useProcessRawReads";
-import {
-  process,
-  ProcessResult,
-  processResultInit,
-} from "../useProcessRawReads";
+import { process, processResultInit } from "../useProcessRawReads";
 import { renderHook, act, waitFor } from "@testing-library/react";
 
 import workerpool from "workerpool";
@@ -87,6 +83,7 @@ describe("useProcessRawReads", () => {
       data: {
         seqs: [fwd + "A" + rev, fwd + "G" + rev],
         dups: [3, 2],
+        randomRegions: ["A", "G"],
       },
     });
 
@@ -122,6 +119,7 @@ describe("useProcessRawReads", () => {
           fwd + "AU" + rev,
         ],
         dups: [3, 2, 1, 1, 1],
+        randomRegions: ["A", "G", "C", "U", "AU"],
       },
     });
   });
