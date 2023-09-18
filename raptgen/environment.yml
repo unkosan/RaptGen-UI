@@ -13,6 +13,7 @@ dependencies:
   - matplotlib
   - pytorch
   - pytorch-cuda=11.8
+  - cuda-toolkit=11.8
   - scikit-learn
   - biopython=1.78
   - centroid_rna_package=0.0.16
