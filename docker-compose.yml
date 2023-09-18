@@ -29,6 +29,13 @@ services:
       - PYTHONPATH=/app
     command: sh
     # command: sh -c "uvicorn --reload --host 0.0.0.0 dev:app"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   redis:
     image: redis
