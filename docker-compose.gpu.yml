@@ -1,6 +1,5 @@
-version: '3'
+version: "3"
 services:
-
   visualizer:
     build:
       context: ./visualizer
@@ -13,7 +12,7 @@ services:
       - ./visualizer:/app
     environment:
       - WATCHPACK_POLLING=true
-    command: sh -c "yarn install; yarn run dev"
+    command: sh -c "yarn install; yarn next build; yarn next start"
 
   back:
     build:
@@ -27,8 +26,14 @@ services:
       - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
-    command: sh
-    # command: sh -c "uvicorn --reload --host 0.0.0.0 dev:app"
+    command: sh -c "uvicorn --host 0.0.0.0 dev:app"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   redis:
     image: redis
@@ -50,6 +55,13 @@ services:
       - PYTHONPATH=/app
     user: "${UID}:${GID}"
     command: sh -c "celery --app=tasks.celery worker --loglevel=info"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   flower:
     build:
