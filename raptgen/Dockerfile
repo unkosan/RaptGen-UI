@@ -1,12 +1,14 @@
 FROM --platform=amd64 condaforge/mambaforge
 
+RUN useradd -m devcontainer 
+
 RUN apt-get update \
- && apt-get upgrade -y \
- && apt-get install -y git curl vim wget ghostscript
+    && apt-get upgrade -y \
+    && apt-get install -y git curl vim wget ghostscript
 
 RUN mkdir /usr/share/fonts/opentype/noto \
- && wget https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTC/NotoSansCJK-Bold.ttc \
- && mv NotoSansCJK-Bold.ttc /usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc
+    && wget https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTC/NotoSansCJK-Bold.ttc \
+    && mv NotoSansCJK-Bold.ttc /usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc
 
 COPY ./environment.yml environment.yml
 RUN mamba env create -f environment.yml
