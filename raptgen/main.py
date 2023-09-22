@@ -4,6 +4,16 @@ import pandas as pd
 import random
 from pydantic import BaseModel
 from typing import List
+from sqlalchemy import Column, Integer, String, DateTime, create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+
+# Create the SQLite database and session
+engine = create_engine("sqlite:////dbdata/tasks.db")
+Session = sessionmaker(bind=engine)
+
+Base = declarative_base()
+Base.metadata.create_all(engine)
 
 app = FastAPI()
 
@@ -157,3 +167,40 @@ async def post_test(seq: Sequence):
         # "res": "ok",
         "message": f"Received {seq.seq}",
     }
+
+
+from celery.signals import task_success
+from datetime import datetime
+
+
+class TaskInfo(Base):
+    __tablename__ = "tasks"
+
+    id = Column(Integer, primary_key=True)
+    task_id = Column(String)
+    status = Column(String)
+    result = Column(String)
+    time_started = Column(DateTime)
+    time_finished = Column(DateTime)
+    # Add other fields as necessary
+
+
+@task_success.connect
+def handle_task_success(sender=None, result=None, **kwargs):
+    task = sender
+    session = Session()
+
+    # Create a new task object
+    new_task = TaskInfo(
+        task_id=task.request.id,
+        status=task.AsyncResult(task.request.id).status,
+        result=str(result),  # Convert result to string before storing in SQLite
+        time_started=datetime.utcfromtimestamp(task.request.started),
+        time_finished=datetime.utcnow(),  # Mark as finished now
+    )
+
+    # Add and commit the new task
+    session.add(new_task)
+    session.commit()
+
+    session.close()
