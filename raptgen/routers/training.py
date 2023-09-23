@@ -3,41 +3,29 @@ from torch.utils.data import DataLoader
 from fastapi import APIRouter, File, Form, Body, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
-
-
 from tasks import train_model
+from sqlalchemy.orm import Session
 
 from core.algorithms import CNN_PHMM_VAE
-
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    DateTime,
-    Float,
-    JSON,
-    Boolean,
-    ForeignKey,
-    create_engine,
-    or_,
-)
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql import func
+from core.db import get_engine, get_session, ChildJob, Job
+from fastapi import Depends
 
 
-# Create the SQLite database and session
-engine = create_engine("sqlite:////dbdata/tasks.db")
-Session = sessionmaker(bind=engine)
+def get_db_session():
+    """Dependency to get the database session"""
+    session = get_session()
+    try:
+        yield session
+    finally:
+        session.close()
 
-Base = declarative_base()
-Base.metadata.create_all(engine)
 
 router = APIRouter()
 
 
 @router.get("/train/device/process")
 async def get_available_devices():
+    """get available devices"""
     devices = ["CPU"]
 
     if torch.cuda.is_available():
@@ -56,7 +44,7 @@ class PreprocessingParams(BaseModel):
 
 
 class TrainingJobPayload(BaseModel):
-    model_type: str = Field(..., pattern="RaptGen|RpatGen-freq|RaptGen-logfreq")
+    raptgen_model_type: str = Field(..., pattern="RaptGen|RpatGen-freq|RaptGen-logfreq")
     name: str
     params_preprocessing: PreprocessingParams
     random_regions: List[str]
@@ -94,7 +82,7 @@ async def submit_training_job(payload: TrainingJobPayload = Body(...)):
     #     pin_memory=True,
     # )
 
-    task = train_model.delay(payload.dict())
+    task = train_model.delay(payload.model_dump())
 
     # TODO: 残りの変数の設定
     return {"status": "success", "data": {"task_id": task.id}}
@@ -107,36 +95,9 @@ class SearchPayload(BaseModel):
     type: Optional[List[str]]
 
 
-class Job(Base):
-    __tablename__ = "jobs"
-
-    id = Column(Integer, primary_key=True)
-    uuid = Column(String, unique=True)
-    name = Column(String)
-    type = Column(String)
-    status = Column(String)
-    start = Column(DateTime, default=func.now())
-    duration = Column(
-        Integer
-    )  # this could be calculated as difference between start and end times
-    reiteration = Column(Integer)
-    params_training = Column(JSON)
-    summary = Column(JSON)
-    child_jobs = relationship("ChildJob", backref="job")
-
-
-class ChildJob(Base):
-    __tablename__ = "child_jobs"
-
-    id = Column(Integer, primary_key=True)
-    uuid = Column(String, unique=True)
-    parent_uuid = Column(String, ForeignKey("jobs.uuid"))
-    # other fields as per the requirements
-
-
 @router.get("/train/jobs/items/{parent_uuid}")
 async def get_parent_job(parent_uuid: str):
-    session = Session()
+    session = get_session()
     job = session.query(Job).filter(Job.uuid == parent_uuid).first()
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -158,7 +119,7 @@ async def get_parent_job(parent_uuid: str):
 
 @router.get("/train/jobs/items/{parent_uuid}/{child_id}")
 async def get_child_job(parent_uuid: str, child_id: int):
-    session = Session()
+    session = get_session()
     child_job = (
         session.query(ChildJob)
         .filter(ChildJob.parent_uuid == parent_uuid, ChildJob.id == child_id)
@@ -188,9 +149,8 @@ async def search_jobs(
     search_regex: Optional[str] = None,
     is_multiple: Optional[bool] = None,
     type: Optional[List[str]] = None,
+    session: Session = Depends(get_db_session),  # Use dependency injection for session
 ):
-    session = Session()
-
     query = session.query(Job)
 
     # if 'status' field is provided in the request
@@ -229,7 +189,5 @@ async def search_jobs(
                 "summary": job.summary,
             }
         )
-
-    session.close()
 
     return response

@@ -8,12 +8,15 @@ from sqlalchemy import Column, Integer, String, DateTime, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-# Create the SQLite database and session
-engine = create_engine("sqlite:////dbdata/tasks.db")
-Session = sessionmaker(bind=engine)
+import logging
 
-Base = declarative_base()
-Base.metadata.create_all(engine)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(), logging.FileHandler("app.log")],
+)
+logger = logging.getLogger(__name__)
+
 
 app = FastAPI()
 
@@ -30,6 +33,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def startup_event():
+    logger.info("startup_event")
+    # Create the database tables
+    Base.metadata.create_all(engine)
 
 
 @app.get("/")
