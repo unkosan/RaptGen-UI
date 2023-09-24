@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 import os
 import pytest
 from datetime import datetime
-from core.db import Base, engine, get_session, Job, ChildJob
+from core.db import Base, engine, get_session, ParentJob, ChildJob
 from routers.training import get_db_session
 
 # Set the TESTING environment variable
@@ -77,7 +77,7 @@ def test_search_job_with_status(override_dependencies):
     session_generator = get_db_session()
     session = next(session_generator)  # Get the session object from the generator
 
-    new_job = Job(
+    parent_job = ParentJob(
         uuid="465e884b-7657-47fa-b624-ed752864ae7a",
         name="test_name",
         type="RaptGen",
@@ -102,7 +102,7 @@ def test_search_job_with_status(override_dependencies):
     child_job = ChildJob(
         id=0,
         uuid="29c738ec-0e81-4f58-9839-a5970c0ae524",
-        parent_uuid=new_job.uuid,
+        parent_uuid=parent_job.uuid,
         # Add other attributes as needed
         start=int(
             datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").timestamp()
@@ -112,12 +112,12 @@ def test_search_job_with_status(override_dependencies):
         epochs_total=100,
         epochs_current=100,
     )
-    new_job.child_jobs.append(child_job)
+    parent_job.child_jobs.append(child_job)
 
     child_job = ChildJob(
         id=1,
         uuid="8e8c472b-59a6-4399-9a5b-0d85e3772ea2",
-        parent_uuid=new_job.uuid,
+        parent_uuid=parent_job.uuid,
         # Add other attributes as needed
         start=int(
             datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").timestamp()
@@ -127,9 +127,9 @@ def test_search_job_with_status(override_dependencies):
         epochs_total=100,
         epochs_current=100,
     )
-    new_job.child_jobs.append(child_job)
+    parent_job.child_jobs.append(child_job)
 
-    session.add(new_job)
+    session.add(parent_job)
     session.commit()
 
     # Close the session

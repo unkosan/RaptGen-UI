@@ -7,7 +7,7 @@ from tasks import train_model
 from sqlalchemy.orm import Session
 
 from core.algorithms import CNN_PHMM_VAE
-from core.db import get_engine, get_session, ChildJob, Job
+from core.db import get_engine, get_session, ChildJob, ParentJob
 from fastapi import Depends
 import re
 
@@ -92,7 +92,7 @@ async def submit_training_job(payload: TrainingJobPayload = Body(...)):
 @router.get("/train/jobs/items/{parent_uuid}")
 async def get_parent_job(parent_uuid: str):
     session = get_session()
-    job = session.query(Job).filter(Job.uuid == parent_uuid).first()
+    job = session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
 
@@ -149,18 +149,18 @@ async def search_jobs(
     request: SearchPayload,
     session: Session = Depends(get_db_session),  # Use dependency injection for session
 ):
-    query = session.query(Job)
+    query = session.query(ParentJob)
 
     # if 'status' field is provided in the request
     if request.status is not None:
-        query = query.filter(Job.status.in_(request.status))
+        query = query.filter(ParentJob.status.in_(request.status))
 
     # if 'search_regex' field is provided in the request
     if request.search_regex is not None:
         try:
             # check if the regex pattern is valid
             re.compile(request.search_regex)
-            query = query.filter(Job.name.op("REGEXP")(request.search_regex))
+            query = query.filter(ParentJob.name.op("REGEXP")(request.search_regex))
         except re.error:
             raise HTTPException(
                 status_code=422,
@@ -188,14 +188,14 @@ async def search_jobs(
                     }
                 ],
             )
-        query = query.filter(Job.type.in_(request.type))
+        query = query.filter(ParentJob.type.in_(request.type))
 
     # if 'is_multiple' field is provided in the request, we assume that this refers to whether a Job has multiple ChildJobs
     if request.is_multiple is not None:
         if request.is_multiple is True:
-            query = query.filter(Job.reiteration > 1)
+            query = query.filter(ParentJob.reiteration > 1)
         else:
-            query = query.filter(Job.reiteration == 1)
+            query = query.filter(ParentJob.reiteration == 1)
 
     results = query.all()
 
