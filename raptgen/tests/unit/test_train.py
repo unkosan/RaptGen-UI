@@ -5,7 +5,8 @@ from fastapi.testclient import TestClient
 
 import os
 import pytest
-from core.db import Base, engine, get_session
+from datetime import datetime
+from core.db import Base, engine, get_session, Job, ChildJob
 from routers.training import get_db_session
 
 # Set the TESTING environment variable
@@ -68,16 +69,122 @@ def test_search_job(override_dependencies):
     response = client.post("/train/jobs/search", json={})
 
     assert response.status_code == 200
-
-    # 以下は一例で、実際の環境によって異なります
     assert response.json() == list()
 
 
-# def test_enqueue_job():
+def test_search_job_with_status(override_dependencies):
+    # Get a session
+    session_generator = get_db_session()
+    session = next(session_generator)  # Get the session object from the generator
+
+    new_job = Job(
+        uuid="465e884b-7657-47fa-b624-ed752864ae7a",
+        name="test_name",
+        type="RaptGen",
+        status="success",
+        start=int(
+            datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").timestamp()
+        ),
+        duration=60,
+        reiteration=2,
+        params_training={
+            "num_epochs": 100,
+            "batch_size": 100,
+            "learning_rate": 0.001,
+            "weight_decay": 0.0001,
+            "num_workers": 4,
+            "pin_memory": True,
+            "device": "CPU",
+        },
+    )
+
+    # Create a new child job instance
+    child_job = ChildJob(
+        id=0,
+        uuid="29c738ec-0e81-4f58-9839-a5970c0ae524",
+        parent_uuid=new_job.uuid,
+        # Add other attributes as needed
+        start=int(
+            datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").timestamp()
+        ),
+        duration=60,
+        status="success",
+        epochs_total=100,
+        epochs_current=100,
+    )
+    new_job.child_jobs.append(child_job)
+
+    child_job = ChildJob(
+        id=1,
+        uuid="8e8c472b-59a6-4399-9a5b-0d85e3772ea2",
+        parent_uuid=new_job.uuid,
+        # Add other attributes as needed
+        start=int(
+            datetime.strptime("2021-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").timestamp()
+        ),
+        duration=60,
+        status="success",
+        epochs_total=100,
+        epochs_current=100,
+    )
+    new_job.child_jobs.append(child_job)
+
+    session.add(new_job)
+    session.commit()
+
+    # Close the session
+    session.close()
+
+    # get success jobs
+    response = client.post("/train/jobs/search", json={"status": ["success"]})
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["status"] == "success"
+
+    # get failure jobs
+    response = client.post("/train/jobs/search", json={"status": ["failure"]})
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+
+    # test regex
+    response = client.post("/train/jobs/search", json={"search_regex": r"test_.*"})
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+
+    response = client.post("/train/jobs/search", json={"search_regex": r"test"})
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+
+    # invalid regex
+    response = client.post("/train/jobs/search", json={"search_regex": r"*"})
+    assert response.status_code == 422
+
+    # is_multipleのテスト
+    response = client.post("/train/jobs/search", json={"is_multiple": True})
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+
+    response = client.post("/train/jobs/search", json={"is_multiple": False})
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+
+    response = client.post("/train/jobs/search", json={"is_multiple": 2})
+    assert response.status_code == 422
+
+    # typeのテスト
+    response = client.post("/train/jobs/search", json={"type": ["RaptGen"]})
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+
+    response = client.post("/train/jobs/search", json={"type": ["AptGen"]})
+    assert response.status_code == 422
+
+
+# def test_enqueue_job(override_dependencies):
 #     response = client.post(
 #         "/train/jobs/submit",
 #         json={
-#             "model_type": "RaptGen",
+#             "raptgen_model_type": "RaptGen",
 #             "name": "test",
 #             "params_preprocessing": {
 #                 "forward": "A",
@@ -115,6 +222,7 @@ def test_search_job(override_dependencies):
 #     # check if the job is enqueued
 #     task_id = response.json()["data"]["task_id"]
 #     response = client.post("/train/jobs/search", json={})  # get all jobs
-
+#     job = response.json()
 #     assert response.status_code == 200
+
 #     assert any(task_id == job["task_id"] for job in response.json()["data"])
