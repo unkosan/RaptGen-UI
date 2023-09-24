@@ -151,8 +151,6 @@ async def search_jobs(
 ):
     query = session.query(Job)
 
-    print(request)
-
     # if 'status' field is provided in the request
     if request.status is not None:
         query = query.filter(Job.status.in_(request.status))
