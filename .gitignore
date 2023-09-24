@@ -289,3 +289,6 @@ Temporary Items
 
 # vscode config files
 .vscode/
+
+# test db
+raptgen/data/test_tasks.db
