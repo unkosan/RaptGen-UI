@@ -2,8 +2,6 @@ name: raptgen
 
 channels:
   - bioconda
-  - pytorch
-  - nvidia
   - conda-forge
 
 dependencies:
@@ -12,8 +10,6 @@ dependencies:
   - numpy
   - matplotlib
   - pytorch
-  - pytorch-cuda=11.8
-  - cuda-toolkit=11.8
   - scikit-learn
   - biopython=1.78
   - centroid_rna_package=0.0.16
@@ -30,10 +26,9 @@ dependencies:
   - tqdm
   - httpx
   - pip:
-    - python-multipart
+      - python-multipart
   - pytest
   - pre-commit
 
 variables:
   PYTHONPATH: /app
-

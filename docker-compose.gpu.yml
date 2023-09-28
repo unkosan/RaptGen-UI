@@ -17,7 +17,7 @@ services:
   back:
     build:
       context: ./raptgen
-      dockerfile: Dockerfile
+      dockerfile: gpu.Dockerfile
     container_name: backend
     tty: true
     ports:
