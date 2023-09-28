@@ -9,7 +9,7 @@ dependencies:
   - pandas
   - numpy
   - matplotlib
-  - pytorch=1.12.1
+  - pytorch
   - scikit-learn
   - biopython=1.78
   - centroid_rna_package=0.0.16
@@ -26,10 +26,9 @@ dependencies:
   - tqdm
   - httpx
   - pip:
-    - python-multipart
+      - python-multipart
   - pytest
   - pre-commit
 
 variables:
   PYTHONPATH: /app
-

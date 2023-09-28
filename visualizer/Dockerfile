@@ -1,4 +1,4 @@
-FROM node:lts-buster-slim
+FROM node:20.2-slim
 
 RUN apt-get update \
  && apt-get upgrade -y \
