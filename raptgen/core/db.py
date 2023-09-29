@@ -69,6 +69,7 @@ class ChildJob(Base):
     epochs_current = Column(Integer)
     # TODO: epoch_recently_finished=100,
     # TODO: 0-index か　1-index かきめる
+    minimum_NLL = Column(Float)
 
 
 class SequenceEmbeddings(Base):

@@ -1,13 +1,17 @@
-from routers import training
+import os
+import pytest
+from datetime import datetime
+from collections import defaultdict
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-import os
-import pytest
-from datetime import datetime
 from core.db import Base, engine, get_session, ParentJob, ChildJob
+from routers import training
 from routers.training import get_db_session
+
+from mocks.test_train_mock_children import mock_children
+from mocks.test_train_mock_parents import mock_parents
 
 # Set the TESTING environment variable
 os.environ["TESTING"] = "1"
@@ -35,7 +39,7 @@ def test_get_available_devices():
     # assert any("CUDA:" in device for device in devices)
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def setup_database():
     # Create tables for testing
     Base.metadata.create_all(engine)
@@ -62,6 +66,57 @@ def override_dependencies(test_session):  # Add test_session as an argument
     app.dependency_overrides[get_db_session] = _get_test_session
     yield
     app.dependency_overrides.pop(get_db_session, None)
+
+
+def test_get_parent_job_info(override_dependencies):
+    # Get a session
+    session_generator = get_db_session()
+    session = next(session_generator)  # Get the session object from the generator
+
+    d = defaultdict(list)
+    for child_job_info in mock_children:
+        child_job = ChildJob(**child_job_info)
+        d[child_job_info["parent_uuid"]].append(child_job)
+
+    # Create a new parent job instance
+    for parent_job in mock_parents:
+        session.add(ParentJob(child_jobs=d[parent_job["uuid"]], **parent_job))
+
+    session.commit()
+
+    # Close the session
+    session.close()
+
+    # from mock_parents[0]["uuid"]
+    parent_uuid = "465e884b-7657-47fa-b624-ed752864ae7a"
+    response = client.get(f"/train/jobs/items/{parent_uuid}")
+    assert response.status_code == 200
+    assert response.json()["uuid"] == parent_uuid
+    assert response.json()["start"] == 1609459200
+
+    # 子ジョブが取得できているかを確認する
+    assert response.json()["summary"]["indices"] == [0]
+    assert response.json()["summary"]["minimum_NLLs"][0] == pytest.approx(0.01)
+
+    # multiple child job : 465e884b-7657-47fa-b624-ed752864ae7d
+    parent_uuid = "465e884b-7657-47fa-b624-ed752864ae7d"
+    response = client.get(f"/train/jobs/items/{parent_uuid}")
+    assert response.status_code == 200
+    assert response.json()["uuid"] == parent_uuid
+
+    # second value is None
+    assert response.json()["summary"]["indices"] == [0, 1]
+    assert response.json()["summary"]["minimum_NLLs"][0] == pytest.approx(0.05)
+    assert response.json()["summary"]["minimum_NLLs"][1] is None
+
+    # 存在しない場合にエラーが吐かれること
+    response = client.get("/train/jobs/items/465e884b-7657-47fa-b624-1234567890ab")
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["msg"] == "Job not found"
+
+    # 存在しない場合にエラーが吐かれること
+    response = client.get("/train/jobs/items/")
+    assert response.status_code == 404
 
 
 def test_search_job(override_dependencies):

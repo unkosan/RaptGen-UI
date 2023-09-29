@@ -90,30 +90,55 @@ async def submit_training_job(payload: TrainingJobPayload = Body(...)):
 
 
 @router.get("/train/jobs/items/{parent_uuid}")
-async def get_parent_job(parent_uuid: str):
-    session = get_session()
+async def get_parent_job(
+    parent_uuid: str,
+    session: Session = Depends(get_db_session),  # Use dependency injection for session
+):
     job = session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
     if job is None:
-        raise HTTPException(status_code=404, detail="Job not found")
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "search_regex"],
+                    "msg": "Job not found",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    summary = {
+        "indices": [],
+        "statuses": [],
+        "epochs_finished": [],
+        "minimum_NLLs": [],
+    }
+    for child_job in job.child_jobs:
+        summary["indices"].append(child_job.id)
+        summary["statuses"].append(child_job.status)
+        summary["epochs_finished"].append(child_job.epochs_current)
+        summary["minimum_NLLs"].append(child_job.minimum_NLL)
 
     response = {
         "uuid": job.uuid,
         "name": job.name,
         "type": job.type,
         "status": job.status,
-        "start": job.start.timestamp(),
+        "start": job.start,
         "duration": job.duration,
         "reiteration": job.reiteration,
         "params_training": job.params_training,
-        "summary": job.summary,
+        "summary": summary,
     }
-    session.close()
     return response
 
 
 @router.get("/train/jobs/items/{parent_uuid}/{child_id}")
-async def get_child_job(parent_uuid: str, child_id: int):
-    session = get_session()
+async def get_child_job(
+    parent_uuid: str,
+    child_id: int,
+    session: Session = Depends(get_db_session),  # Use dependency injection for session
+):
     child_job = (
         session.query(ChildJob)
         .filter(ChildJob.parent_uuid == parent_uuid, ChildJob.id == child_id)
@@ -133,7 +158,6 @@ async def get_child_job(parent_uuid: str, child_id: int):
         "params_training": child_job.params_training,
         "summary": child_job.summary,
     }
-    session.close()
     return response
 
 
