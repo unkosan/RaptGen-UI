@@ -1,8 +1,7 @@
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import ReactDataGrid from "@inovua/reactdatagrid-community";
 import "@inovua/reactdatagrid-community/index.css";
-import ClientOnly from "../../../common/client-only";
+import CustomDataGrid from "~/components/common/custom-datagrid";
 
 const columns = [
   { name: "id", type: "number", header: "ID", defaultVisible: false },
@@ -28,22 +27,20 @@ const DataTable: React.FC = () => {
     })
     .filter((obj) => obj !== null);
   return (
-    <ClientOnly>
-      <ReactDataGrid
-        idProperty="id"
-        style={gridStyle}
-        columns={columns}
-        dataSource={data}
-        rowHeight={25}
-        pagination
-        defaultLimit={20}
-        enableSelection
-        multiSelect
-        rowStyle={{
-          fontFamily: "monospace",
-        }}
-      />
-    </ClientOnly>
+    <CustomDataGrid
+      idProperty="id"
+      style={gridStyle}
+      columns={columns}
+      dataSource={data}
+      rowHeight={30}
+      pagination
+      defaultLimit={20}
+      rowStyle={{
+        fontFamily: "monospace",
+      }}
+      downloadable
+      copiable
+    />
   );
 };
 

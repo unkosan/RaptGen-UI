@@ -1,12 +1,10 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import { ResponseMeasuredData } from "../../../../types/api-interface/data";
-import { ResponseEncode } from "../../../../types/api-interface/session";
 import { MeasuredDataEntry } from "../../redux/measured-data";
+import { apiClient } from "~/services/api-client";
 
 const SelectMeasured: React.FC = () => {
   const [value, setValue] = useState<string>("");
@@ -21,14 +19,11 @@ const SelectMeasured: React.FC = () => {
       if (graphConfig.vaeName === "") {
         return;
       }
-      const res = await axios
-        .get("/data/measured-data-names")
-        .then((res) => res.data);
-      const nameList: string[] = res.data;
+      const res = await apiClient.getMeasuredDataNames();
       if (res.status === "success") {
-        setNameList(nameList);
-        if (nameList.length > 0) {
-          setValue(nameList[0]);
+        setNameList(res.data);
+        if (res.data.length > 0) {
+          setValue(res.data[0]);
         } else {
           setValue("");
         }
@@ -45,11 +40,11 @@ const SelectMeasured: React.FC = () => {
         });
         return;
       }
-      const res = await axios
-        .get<ResponseMeasuredData>("/data/measured-data", {
-          params: { measured_data_name: value },
-        })
-        .then((res) => res.data);
+      const res = await apiClient.getMeasuredData({
+        queries: {
+          measured_data_name: value,
+        },
+      });
       if (res.status === "error") {
         dispatch({
           type: "measuredData/set",
@@ -86,12 +81,10 @@ const SelectMeasured: React.FC = () => {
         return;
       }
 
-      const resCoords = await axios
-        .post<ResponseEncode>("/session/encode", {
-          session_id: sessionConfig.sessionId,
-          sequences: randomRegions,
-        })
-        .then((res) => res.data);
+      const resCoords = await apiClient.encode({
+        session_id: sessionConfig.sessionId,
+        sequences: randomRegions,
+      });
 
       if (resCoords.status === "error") {
         dispatch({

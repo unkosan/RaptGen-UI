@@ -1,0 +1,38 @@
+name: raptgen
+
+channels:
+  - bioconda
+  - pytorch
+  - nvidia
+  - conda-forge
+
+dependencies:
+  - gcc=12.1.0
+  - pandas
+  - numpy
+  - matplotlib
+  - pytorch
+  - pytorch-cuda=11.8
+  - cuda-toolkit=11.8
+  - scikit-learn
+  - biopython=1.78
+  - centroid_rna_package=0.0.16
+  - fastapi
+  - uvicorn
+  - ipykernel
+  - ipython
+  - jupyter
+  - scipy
+  - celery
+  - redis-py
+  - flower
+  - pip
+  - tqdm
+  - httpx
+  - pip:
+      - python-multipart
+  - pytest
+  - pre-commit
+
+variables:
+  PYTHONPATH: /app

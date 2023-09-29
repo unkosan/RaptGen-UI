@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
 import { RootState } from "../../redux/store";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import { apiClient } from "~/services/api-client";
 
 type Props = {
   value: number;
@@ -33,14 +33,13 @@ const FormTargetLength: React.FC<Props> = (props) => {
   useEffect(() => {
     if (isLoading) {
       (async () => {
-        const res = await axios
-          .post("/upload/estimate-target-length", {
-            sequences: sequences,
-          })
-          .then((res) => res.data);
+        console.log(sequences);
+        const res = await apiClient.estimateTargetLength({
+          sequences: sequences,
+        });
 
         if (res.status === "success") {
-          const value: number = res.data["target_length"];
+          const value: number = res.data.target_length;
           setValue(value.toString());
           props.setValue(value);
           props.setIsValid(true);

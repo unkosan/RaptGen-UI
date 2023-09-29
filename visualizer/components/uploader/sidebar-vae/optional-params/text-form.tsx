@@ -6,11 +6,11 @@ type Props = {
   setIsValid: React.Dispatch<React.SetStateAction<boolean>>;
   value: string | undefined;
   isValid: boolean;
-  label: string;
+  label?: string;
   placeholder: string;
 };
 
-// if empty, value equals undefined
+// if empty, value equals undefined, isValid is true
 const TextForm: React.FC<Props> = (props) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value;
@@ -25,13 +25,13 @@ const TextForm: React.FC<Props> = (props) => {
 
   return (
     <Form.Group className="mb-3">
-      <Form.Label>{props.label}</Form.Label>
+      {props.label && <Form.Label>{props.label}</Form.Label>}
       <Form.Control
         value={props.value ?? ""}
         onChange={handleChange}
         type="text"
         placeholder={props.placeholder}
-        isInvalid={!props.isValid}
+        isInvalid={!props.isValid && props.value !== undefined}
       />
       <Form.Control.Feedback type="invalid">
         Please enter a valid string.

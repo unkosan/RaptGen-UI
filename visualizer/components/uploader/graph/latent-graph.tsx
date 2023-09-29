@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { Layout, PlotData } from "plotly.js";
 import dynamic from "next/dynamic";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import axios from "axios";
 import { cloneDeep, groupBy, zip } from "lodash";
 
 import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
@@ -77,8 +76,11 @@ const calculateTraces = (mu: number[], sigma: number[][]) => {
 
 const LatentGraph: React.FC = () => {
   const vaeData = useSelector((state: RootState) => state.vaeData);
-  const gmmData = useSelector((state: RootState) => state.gmmData);
+  const gmmData = useSelector((state: RootState) => state.gmmConfig.gmmData);
   const measuredData = useSelector((state: RootState) => state.measuredData);
+  const minCount = useSelector(
+    (state: RootState) => state.vaeConfig.showMinCount
+  );
 
   const layout = returnLayout("");
 
@@ -87,13 +89,13 @@ const LatentGraph: React.FC = () => {
     let vaeDataPlot = cloneDeep(vaeData);
 
     // filter with minimum count
-    // vaeDataPlot.forEach((value) => {
-    //   if (value.duplicates >= graphConfig.minCount) {
-    //     value.isShown = true;
-    //   } else {
-    //     value.isShown = false;
-    //   }
-    // });
+    vaeDataPlot.forEach((value) => {
+      if (value.duplicates >= minCount) {
+        value.isShown = true;
+      } else {
+        value.isShown = false;
+      }
+    });
 
     // return PlotData object
     const filteredData = vaeDataPlot.filter((value) => value.isShown);
@@ -117,7 +119,7 @@ const LatentGraph: React.FC = () => {
         "<b>Seq</b>: %{customdata[0]}<br>" +
         "<b>Duplicates</b>: %{customdata[1]}",
     };
-  }, [vaeData]);
+  }, [vaeData, minCount]);
 
   // Measured data //
   const measuredDataPlot: Partial<PlotData>[] = useMemo(() => {
@@ -158,10 +160,6 @@ const LatentGraph: React.FC = () => {
 
     let gmmDataPlot: Partial<PlotData>[] = [];
     for (let i = 0; i < gmmData.weights.length; i++) {
-      if (!gmmData.isShown[i]) {
-        continue;
-      }
-
       const covalStr =
         "[" +
         gmmData.covariances[i]
@@ -189,8 +187,7 @@ const LatentGraph: React.FC = () => {
           `<b>MoG No.${i}</b><br>` +
           `<b>Weight:</b> ${weightStr}<br>` +
           `<b>Mean:</b> ${meanStr}<br>` +
-          `<b>Coval:</b> ${covalStr}<br>` +
-          `<b>Sequence:</b> ${gmmData.decodedSequences[i]}<br>`,
+          `<b>Coval:</b> ${covalStr}<br>`,
       };
       const plotLabel: Partial<PlotData> = {
         name: `MoG No.${i}`,
@@ -205,8 +202,7 @@ const LatentGraph: React.FC = () => {
           `<b>MoG No.${i}</b><br>` +
           `<b>Weight:</b> ${weightStr}<br>` +
           `<b>Mean:</b> ${meanStr}<br>` +
-          `<b>Coval:</b> ${covalStr}<br>` +
-          `<b>Sequence:</b> ${gmmData.decodedSequences[i]}<br>`,
+          `<b>Coval:</b> ${covalStr}<br>`,
       };
       gmmDataPlot.push(...[plotData, plotLabel]);
     }

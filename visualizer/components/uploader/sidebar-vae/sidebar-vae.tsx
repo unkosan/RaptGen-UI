@@ -11,12 +11,20 @@ import ProcessInfo from "./process-info/process-info";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
+import { Form } from "react-bootstrap";
 
 const SideBarVAE: React.FC = () => {
   const dispatch = useDispatch();
   const pseudoRoute = useSelector(
     (state: RootState) => state.uploadConfig.pseudoRoute
   );
+
+  useEffect(() => {
+    dispatch({
+      type: "uploadConfig/setRoute",
+      payload: "/vae/home",
+    });
+  }, []);
 
   // /vae/home
   const [vaeFile, setVaeFile] = useState<File | null>(null);
@@ -65,23 +73,27 @@ const SideBarVAE: React.FC = () => {
           setVaeFile={setVaeFile}
           setSelexFile={setSelexFile}
         />
-        <p>
-          Please upload a checkpoint file and HT-SELEX data. The checkpoint file
-          is located where you assigned on the script{" "}
-          <code>raptgen/real.py</code>. Either FASTA or FASTQ file is allowed
-          for the SELEX file.
-        </p>
+        <Form.Group className="mb-3">
+          <Form.Text className="text-muted">
+            Please upload a checkpoint file and HT-SELEX data. The checkpoint
+            file is located where you assigned on the script{" "}
+            <code>raptgen/real.py</code>. Either FASTA or FASTQ file is allowed
+            for the SELEX file.
+          </Form.Text>
+        </Form.Group>
         <legend>Setup SELEX Params</legend>
         <RequiredParams
           setParamsIsValid={setRequiredIsValid}
           setParamsIsDirty={setRequiredIsDirty}
         />
-        <p>
-          You need to fill in the forms for the model name and target length.
-          Target length is the total length of adapters and the random region.
-          Click on <code>Estimate</code> button and target length and adapters
-          are automatically detected
-        </p>
+        <Form.Group className="mb-3">
+          <Form.Text className="text-muted">
+            You need to fill in the forms for the model name and target length.
+            Target length is the total length of adapters and the random region.
+            Click on <code>Estimate</code> button and target length and adapters
+            are automatically detected
+          </Form.Text>
+        </Form.Group>
         <EncodeButtons
           encodeDisabled={!encodeValid}
           isDirty={requiredIsDirty || fileIsDirty}
@@ -99,10 +111,12 @@ const SideBarVAE: React.FC = () => {
       >
         <legend>Uploaded Sequence Counts</legend>
         <InfoTable />
-        <p>
-          Adapters Matched means the number of entries of uniquifed sequences,
-          which has specified adapters.
-        </p>
+        <Form.Group className="mb-3">
+          <Form.Text className="text-muted">
+            Adapters Matched means the number of entries of uniquifed sequences,
+            which has specified adapters.
+          </Form.Text>
+        </Form.Group>
         <legend>Sequence Data</legend>
         <DataTable />
         <legend>Processing Information</legend>
@@ -118,7 +132,11 @@ const SideBarVAE: React.FC = () => {
         style={{ display: pseudoRoute === "/vae/submit" ? "block" : "none" }}
       >
         <legend>Setup Training Params</legend>
-        <p>All of the params below is not required for uploading.</p>
+        <Form.Group className="mb-3">
+          <Form.Text className="text-muted">
+            All of the params below is not required for uploading.
+          </Form.Text>
+        </Form.Group>
         <OptionalParams setParamsIsValid={setSubmitValid} />
         <SubmitButtons submitDisabled={!submitValid} vaeFile={vaeFile} />
       </div>

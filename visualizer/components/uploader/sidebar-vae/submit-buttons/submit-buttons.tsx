@@ -1,9 +1,11 @@
-import { ButtonToolbar } from "react-bootstrap";
+import { Alert, ButtonToolbar, Spinner } from "react-bootstrap";
 import { Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import axios from "axios";
+import { apiClient } from "~/services/api-client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 type Props = {
   submitDisabled: boolean;
@@ -14,8 +16,83 @@ type Props = {
 const SubmitButtons: React.FC<Props> = (props) => {
   const dispatch = useDispatch();
 
+  const router = useRouter();
+
   const vaeConfig = useSelector((state: RootState) => state.vaeConfig);
   const vaeData = useSelector((state: RootState) => state.vaeData);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      if (!isLoading) {
+        return;
+      } // this is to prevent triggering this effect when isLoading is set to false
+      if (!props.vaeFile) {
+        setIsLoading(false);
+        setIsFinished(false);
+        return;
+      } // type guard
+
+      const required = {
+        model: props.vaeFile,
+        model_name: vaeConfig.requiredParams.modelName,
+        forward_adapter: vaeConfig.requiredParams.forwardAdapter,
+        reverse_adapter: vaeConfig.requiredParams.reverseAdapter,
+        target_length: vaeConfig.requiredParams.targetLength,
+        sequences: vaeData.map((value) => value.sequence),
+        coord_x: vaeData.map((value) => value.coordX),
+        coord_y: vaeData.map((value) => value.coordY),
+        duplicates: vaeData.map((value) => value.duplicates),
+      };
+
+      const optional = {
+        published_time: vaeConfig.optionalParams.uploadDate,
+        tolerance: Number(vaeConfig.optionalParams.tolerance),
+        minimum_count: Number(vaeConfig.optionalParams.minCount),
+        epochs: Number(vaeConfig.optionalParams.epochs),
+        beta_weighting_epochs: Number(vaeConfig.optionalParams.betaDuration),
+        match_forcing_epochs: Number(
+          vaeConfig.optionalParams.matchForcingDuration
+        ),
+        match_cost: Number(vaeConfig.optionalParams.matchCost),
+        early_stopping_patience: Number(
+          vaeConfig.optionalParams.earlyStopDuration
+        ),
+        CUDA_num_threads: Number(vaeConfig.optionalParams.numberWorkers),
+        CUDA_pin_memory: Boolean(vaeConfig.optionalParams.pinned),
+        seed: Number(vaeConfig.optionalParams.seedValue),
+      };
+
+      // remove empty optional params
+      type Optional = keyof typeof optional;
+      Object.keys(optional).forEach((key) => {
+        const keyGuarded = key as Optional;
+        if (
+          optional[keyGuarded] === undefined ||
+          isNaN(Number(optional[keyGuarded]))
+        ) {
+          delete optional[keyGuarded];
+        }
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      const res = await apiClient.uploadVAE({
+        ...required,
+        ...optional,
+      });
+
+      console.log(res);
+
+      setIsLoading(false);
+      if (res.status === "success") {
+        setIsFinished(true);
+      } else {
+        alert("Upload failed");
+      }
+    })();
+  }, [isLoading]);
 
   const handleBack = () => {
     dispatch({
@@ -24,123 +101,43 @@ const SubmitButtons: React.FC<Props> = (props) => {
     });
   };
 
-  const handleSubmit = async () => {
-    (async () => {
-      const formData = new FormData();
-
-      if (!props.vaeFile) {
-        return;
-      }
-      formData.append("model", props.vaeFile);
-
-      // required params
-      formData.append("model_name", vaeConfig.requiredParams.modelName);
-      formData.append(
-        "forward_adapter",
-        vaeConfig.requiredParams.forwardAdapter
-      );
-      formData.append(
-        "reverse_adapter",
-        vaeConfig.requiredParams.reverseAdapter
-      );
-      formData.append(
-        "target_length",
-        vaeConfig.requiredParams.targetLength.toString()
-      );
-      formData.append(
-        "sequences",
-        vaeData.map((value) => value.sequence).join(",")
-      );
-      formData.append(
-        "coord_x",
-        vaeData.map((value) => value.coordX.toString()).join(",")
-      );
-      formData.append(
-        "coord_y",
-        vaeData.map((value) => value.coordY.toString()).join(",")
-      );
-      formData.append(
-        "duplicates",
-        vaeData.map((value) => value.duplicates.toString()).join(",")
-      );
-
-      // optional params
-      if (vaeConfig.optionalParams.uploadDate) {
-        formData.append("published_time", vaeConfig.optionalParams.uploadDate);
-      }
-      if (vaeConfig.optionalParams.tolerance) {
-        formData.append("tolerance", vaeConfig.optionalParams.tolerance);
-      }
-      if (vaeConfig.optionalParams.minCount) {
-        formData.append("minimum_count", vaeConfig.optionalParams.minCount);
-      }
-      if (vaeConfig.optionalParams.epochs) {
-        formData.append("epochs", vaeConfig.optionalParams.epochs);
-      }
-      if (vaeConfig.optionalParams.betaDuration) {
-        formData.append(
-          "beta_weighting_epochs",
-          vaeConfig.optionalParams.betaDuration
-        );
-      }
-      if (vaeConfig.optionalParams.matchForcingDuration) {
-        formData.append(
-          "match_forcing_epochs",
-          vaeConfig.optionalParams.matchForcingDuration
-        );
-      }
-      if (vaeConfig.optionalParams.matchCost) {
-        formData.append("match_cost", vaeConfig.optionalParams.matchCost);
-      }
-      if (vaeConfig.optionalParams.earlyStopDuration) {
-        formData.append(
-          "early_stopping_patience",
-          vaeConfig.optionalParams.earlyStopDuration
-        );
-      }
-      if (vaeConfig.optionalParams.numberWorkers) {
-        formData.append(
-          "CUDA_num_threads",
-          vaeConfig.optionalParams.numberWorkers
-        );
-      }
-      if (vaeConfig.optionalParams.pinned) {
-        formData.append("CUDA_pin_memory", vaeConfig.optionalParams.pinned);
-      }
-      if (vaeConfig.optionalParams.seedValue) {
-        formData.append("seed", vaeConfig.optionalParams.seedValue);
-      }
-
-      // send data and params to backend
-      const res = await axios
-        .post("/upload/upload-vae", formData, {
-          // .post("/test-form", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-        .then((res) => res.data);
-
-      console.log(res);
-    })();
-  };
-
-  return (
-    <>
-      <ButtonToolbar className="justify-content-between">
-        <Button className="col-3" onClick={handleBack}>
-          Back
-        </Button>
-        <Button
-          className="col-3"
-          disabled={props.submitDisabled}
-          onClick={handleSubmit}
-        >
-          Submit
-        </Button>
-      </ButtonToolbar>
-    </>
-  );
+  if (isFinished) {
+    return (
+      <Alert variant="success">
+        <Alert.Heading>Upload successful!</Alert.Heading>
+        <p>
+          Your model is now being uploaded. You can check the model in viewer
+          page.
+        </p>
+        <hr />
+        <div className="d-flex justify-content-end">
+          <Button
+            onClick={() => router.push("/viewer")}
+            variant="outline-success"
+          >
+            Go to viewer
+          </Button>
+        </div>
+      </Alert>
+    );
+  } else {
+    return (
+      <>
+        <ButtonToolbar className="justify-content-between">
+          <Button className="col-3" onClick={handleBack}>
+            Back
+          </Button>
+          <Button
+            className={isLoading ? "" : "col-3"}
+            disabled={props.submitDisabled || isLoading}
+            onClick={() => setIsLoading(true)}
+          >
+            {isLoading ? <Spinner animation="border" size="sm" /> : <>Submit</>}
+          </Button>
+        </ButtonToolbar>
+      </>
+    );
+  }
 };
 
 export default SubmitButtons;

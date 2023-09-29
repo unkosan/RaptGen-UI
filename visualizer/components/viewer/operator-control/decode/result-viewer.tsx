@@ -5,7 +5,7 @@ import { Button, Form, Image } from "react-bootstrap";
 import { InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { apiClient } from "~/services/api-client";
 
 const ResultViewer: React.FC = () => {
   const dispatch = useDispatch();
@@ -46,21 +46,20 @@ const ResultViewer: React.FC = () => {
     }
 
     (async () => {
-      const res = await axios
-        .post(
-          "/session/decode/weblogo",
-          {
-            session_id: sessionConfig.sessionId,
-            coords: [
-              {
-                coord_x: gridPoint.coordX,
-                coord_y: gridPoint.coordY,
-              },
-            ],
-          },
-          { responseType: "arraybuffer" }
-        )
-        .then((res) => res.data);
+      const res = await apiClient.getWeblogo(
+        {
+          session_id: sessionConfig.sessionId,
+          coords: [
+            {
+              coord_x: gridPoint.coordX,
+              coord_y: gridPoint.coordY,
+            },
+          ],
+        },
+        {
+          responseType: "arraybuffer",
+        }
+      );
       const base64 = Buffer.from(res, "binary").toString("base64");
       setWeblogoBase64(base64);
     })();
@@ -77,14 +76,12 @@ const ResultViewer: React.FC = () => {
     }
 
     (async () => {
-      const res = await axios
-        .get("/tool/secondary-structure", {
-          params: {
-            sequence: gridPoint.randomRegion.replace(/\_/g, ""),
-          },
-          responseType: "arraybuffer",
-        })
-        .then((res) => res.data);
+      const res = await apiClient.getSecondaryStructureImage({
+        queries: {
+          sequence: gridPoint.randomRegion.replace(/\_/g, ""),
+        },
+        responseType: "arraybuffer",
+      });
 
       const base64 = Buffer.from(res, "binary").toString("base64");
       setSecondaryStructureBase64(base64);
@@ -130,7 +127,7 @@ const ResultViewer: React.FC = () => {
       {showWeblogo ? (
         <div>
           <Form.Label>Weblogo</Form.Label>
-          <Image src={`data:image/png;base64,${weblogoBase64}`} fluid />
+          <Image src={`data:image/png;base64, ${weblogoBase64}`} fluid />
         </div>
       ) : null}
       {showSecondaryStructure ? (

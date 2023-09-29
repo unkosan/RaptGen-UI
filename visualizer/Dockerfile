@@ -1,4 +1,4 @@
-FROM node:lts-buster-slim
+FROM node:20.2-slim
 
 RUN useradd -m devcontainer 
 

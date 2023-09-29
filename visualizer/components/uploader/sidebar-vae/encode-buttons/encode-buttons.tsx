@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
 import { Button, ButtonToolbar } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import axios from "axios";
+import { useRouter } from "next/router";
+import { apiClient } from "~/services/api-client";
 
 type Props = {
   encodeDisabled: boolean;
@@ -21,12 +21,7 @@ const EncodeButtons: React.FC<Props> = (props) => {
     (state: RootState) => state.vaeConfig.sequenceData
   );
 
-  const handleBack = () => {
-    dispatch({
-      type: "uploadConfig/setRoute",
-      payload: "/",
-    });
-  };
+  const router = useRouter();
 
   const handleEncode = () => {
     (async () => {
@@ -50,21 +45,15 @@ const EncodeButtons: React.FC<Props> = (props) => {
         });
 
         // get uuid
-        const formData = new FormData();
         if (!props.vaeFile) {
           return;
         }
-        formData.append("state_dict", props.vaeFile);
-        formData.append("seqs", randomRegions.filter((e) => e).join(","));
-        console.log(randomRegions.join(","));
 
-        const res = await axios
-          .post("/upload/batch-encode", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          })
-          .then((res) => res.data);
+        const res = await apiClient.batchEncode({
+          state_dict: props.vaeFile,
+          seqs: randomRegions.filter((e) => e),
+        });
+
         if (res.status === "success") {
           const uuid: string = res.data.task_id;
 
@@ -87,7 +76,6 @@ const EncodeButtons: React.FC<Props> = (props) => {
       }
 
       dispatch({
-        // type: 'uploadConfig/setRoute',
         type: "uploadConfig/setRoute",
         payload: "/vae/encode",
       });
@@ -97,7 +85,7 @@ const EncodeButtons: React.FC<Props> = (props) => {
   return (
     <>
       <ButtonToolbar className="justify-content-between">
-        <Button className="col-3" onClick={handleBack}>
+        <Button className="col-3" onClick={() => router.push("/uploader")}>
           Back
         </Button>
         <Button

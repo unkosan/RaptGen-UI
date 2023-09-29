@@ -2,9 +2,8 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useState } from "react";
-import axios from "axios";
-import { ResponseEncode } from "../../../../types/api-interface/session";
 import { Form } from "react-bootstrap";
+import { apiClient } from "~/services/api-client";
 
 const parser = (text: string) => {
   const regex = /^>\s*(\S+)[\n\r]+([ACGTUacgtu\n\r]+)$/gm;
@@ -51,39 +50,39 @@ const FastaUploader: React.FC = () => {
         return;
       }
 
-      const res = await axios
-        .post<ResponseEncode>("/session/encode", {
-          session_id: sessionId,
-          sequences: seqs,
-        })
-        .then((res) => res.data);
+      const res = await apiClient.encode({
+        session_id: sessionId,
+        sequences: seqs,
+      });
 
-      if (res.status === "success") {
-        const coords = res.data;
-        const firstKey = (encodeData[-1]?.key ?? 0) + 1;
-        console.log(coords);
-
-        dispatch({
-          type: "encodeData/set",
-          payload: encodeData.concat(
-            coords.map((coord, i) => {
-              return {
-                key: firstKey + i,
-                id: ids[i],
-                sequence: "",
-                randomRegion: seqs[i],
-                coordX: coord.coord_x,
-                coordY: coord.coord_y,
-                isSelected: false,
-                isShown: true,
-                category: "fasta",
-                seriesName: file.name,
-              };
-            })
-          ),
-        }),
-          setIsValid(true);
+      if (res.status === "error") {
+        return;
       }
+
+      const coords = res.data;
+      const firstKey = (encodeData[-1]?.key ?? 0) + 1;
+      console.log(coords);
+
+      dispatch({
+        type: "encodeData/set",
+        payload: encodeData.concat(
+          coords.map((coord, i) => {
+            return {
+              key: firstKey + i,
+              id: ids[i],
+              sequence: "",
+              randomRegion: seqs[i],
+              coordX: coord.coord_x,
+              coordY: coord.coord_y,
+              isSelected: false,
+              isShown: true,
+              category: "fasta",
+              seriesName: file.name,
+            };
+          })
+        ),
+      }),
+        setIsValid(true);
     };
     reader.readAsText(file);
   };

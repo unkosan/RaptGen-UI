@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { Alert, Form, ProgressBar } from "react-bootstrap";
-import axios from "axios";
+import { apiClient } from "~/services/api-client";
 
 type Props = {
   finished: boolean;
@@ -32,13 +32,12 @@ const ProcessInfo: React.FC<Props> = (props) => {
       }
 
       (async () => {
-        const res = await axios
-          .get("/upload/batch-encode", {
-            params: {
-              task_id: uuid,
-            },
-          })
-          .then((res) => res.data);
+        const res = await apiClient.getBatchEncodeStatus({
+          queries: {
+            task_id: uuid,
+          },
+        });
+
         console.log(
           "interval called, state: " + res.state + "\n progid: " + uuid
         );
@@ -56,6 +55,10 @@ const ProcessInfo: React.FC<Props> = (props) => {
           const duplicates: number[] = sequenceData.duplicates.filter(
             (seq, i) => mask[i]
           );
+          dispatch({
+            type: "vaeConfig/setShowMinCount",
+            payload: 1,
+          });
           dispatch({
             type: "vaeData/set",
             payload: sequences.map((seq, i) => {

@@ -1,13 +1,11 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { Table } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 
-import ReactDataGrid from "@inovua/reactdatagrid-community";
 import "@inovua/reactdatagrid-community/index.css";
-import ClientOnly from "../../common/client-only";
+import { apiClient } from "~/services/api-client";
+import CustomDataGrid from "~/components/common/custom-datagrid";
 
 const VAEParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
@@ -28,13 +26,11 @@ const VAEParamsTable: React.FC = () => {
         return;
       }
 
-      const res = await axios
-        .get("/data/VAE-model-parameters", {
-          params: {
-            VAE_model_name: vaeName,
-          },
-        })
-        .then((res) => res.data);
+      const res = await apiClient.getVAEModelParameters({
+        queries: {
+          VAE_model_name: vaeName,
+        },
+      });
 
       if (res.status === "success") {
         setParamsList(res.data);
@@ -61,37 +57,35 @@ const VAEParamsTable: React.FC = () => {
   }, [forwardAdapter, reverseAdapter]);
 
   const gridStyle = {
-    minHeight: 250,
+    minHeight: 300,
     width: "100%",
     zIndex: 1000,
   };
 
   return (
-    <ClientOnly>
-      <ReactDataGrid
-        idProperty="id"
-        columns={[
-          {
-            name: "parameter",
-            header: "Parameter",
-            defaultFlex: 1,
-          },
-          {
-            name: "value",
-            header: "Value",
-            defaultFlex: 1,
-          },
-        ]}
-        dataSource={Object.keys(paramsList).map((key) => ({
-          id: key,
-          parameter: key,
-          value: paramsList[key],
-        }))}
-        rowStyle={{ fontFamily: "monospace" }}
-        rowHeight={35}
-        style={gridStyle}
-      />
-    </ClientOnly>
+    <CustomDataGrid
+      idProperty="id"
+      columns={[
+        {
+          name: "parameter",
+          header: "Parameter",
+          defaultFlex: 1,
+        },
+        {
+          name: "value",
+          header: "Value",
+          defaultFlex: 1,
+        },
+      ]}
+      dataSource={Object.keys(paramsList).map((key) => ({
+        id: key,
+        parameter: key,
+        value: paramsList[key],
+      }))}
+      rowStyle={{ fontFamily: "monospace" }}
+      rowHeight={35}
+      style={gridStyle}
+    />
   );
 };
 

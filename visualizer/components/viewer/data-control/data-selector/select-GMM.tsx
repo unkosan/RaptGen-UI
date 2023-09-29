@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import axios from "axios";
 import { Form } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { ResponseGmmModel } from "../../../../types/api-interface/data";
-import { ResponseDecode } from "../../../../types/api-interface/session";
+import { apiClient } from "~/services/api-client";
 
 const SelectGMM: React.FC = () => {
   const [value, setValue] = useState<string>("");
@@ -22,17 +20,18 @@ const SelectGMM: React.FC = () => {
   // retrieve GMM model names
   useEffect(() => {
     (async () => {
-      const res = await axios
-        .get("/data/GMM-model-names", {
-          params: {
-            VAE_model_name: graphConfig.vaeName,
-          },
-        })
-        .then((res) => res.data);
-      const nameList: string[] = res.data;
+      if (graphConfig.vaeName === "") {
+        return;
+      }
+
+      const res = await apiClient.getGMMModelNames({
+        queries: {
+          VAE_model_name: graphConfig.vaeName,
+        },
+      });
       if (res.status === "success") {
         setValue("");
-        setNameList(nameList);
+        setNameList(res.data);
       }
     })();
   }, [graphConfig.vaeName]);
@@ -61,14 +60,12 @@ const SelectGMM: React.FC = () => {
       if (value === "" || sessionId === 0) {
         return;
       }
-      const res = await axios
-        .get<ResponseGmmModel>("/data/GMM-model", {
-          params: {
-            VAE_model_name: graphConfig.vaeName,
-            GMM_model_name: value,
-          },
-        })
-        .then((res) => res.data);
+      const res = await apiClient.getGMMModel({
+        queries: {
+          VAE_model_name: graphConfig.vaeName,
+          GMM_model_name: value,
+        },
+      });
 
       if (res.status !== "success") {
         return;
@@ -77,20 +74,19 @@ const SelectGMM: React.FC = () => {
       const gmm = res.data;
       const { weights, means, covariances } = gmm;
 
-      const resDecord = await axios
-        .post<ResponseDecode>("/session/decode", {
-          session_id: sessionId,
-          coords: means.map((value) => {
-            return { coord_x: value[0], coord_y: value[1] };
-          }),
-        })
-        .then((res) => res.data);
+      const resDecode = await apiClient.decode({
+        session_id: sessionId,
+        coords: means.map((value) => {
+          return { coord_x: value[0], coord_y: value[1] };
+        }),
+      });
 
-      if (res.status !== "success") {
+      if (resDecode.status !== "success") {
         return;
       }
 
-      const decoded = resDecord.data;
+      // const decoded = resDecord.data;
+      const decoded = resDecode.data;
 
       dispatch({
         type: "gmmData/set",

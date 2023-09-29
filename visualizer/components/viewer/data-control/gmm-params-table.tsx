@@ -1,10 +1,8 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { Table } from "react-bootstrap";
-import ClientOnly from "../../common/client-only";
-import ReactDataGrid from "@inovua/reactdatagrid-community";
+import { apiClient } from "~/services/api-client";
+import CustomDataGrid from "~/components/common/custom-datagrid";
 
 const GMMParamsTable: React.FC = () => {
   const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
@@ -26,14 +24,12 @@ const GMMParamsTable: React.FC = () => {
         return;
       }
 
-      const res = await axios
-        .get("/data/GMM-model-parameters", {
-          params: {
-            VAE_model_name: vaeName,
-            GMM_model_name: gmmName,
-          },
-        })
-        .then((res) => res.data);
+      const res = await apiClient.getGMMModelParameters({
+        queries: {
+          VAE_model_name: vaeName,
+          GMM_model_name: gmmName,
+        },
+      });
 
       if (res.status === "success") {
         setParamsList(res.data);
@@ -42,37 +38,35 @@ const GMMParamsTable: React.FC = () => {
   }, [vaeName, gmmName]);
 
   const gridStyle = {
-    minHeight: 250,
+    minHeight: 300,
     width: "100%",
     zIndex: 1000,
   };
 
   return (
-    <ClientOnly>
-      <ReactDataGrid
-        idProperty="id"
-        columns={[
-          {
-            name: "parameter",
-            header: "Parameter",
-            defaultFlex: 1,
-          },
-          {
-            name: "value",
-            header: "Value",
-            defaultFlex: 1,
-          },
-        ]}
-        dataSource={Object.keys(paramsList).map((key) => ({
-          id: key,
-          parameter: key,
-          value: paramsList[key],
-        }))}
-        rowStyle={{ fontFamily: "monospace" }}
-        rowHeight={35}
-        style={gridStyle}
-      />
-    </ClientOnly>
+    <CustomDataGrid
+      idProperty="id"
+      columns={[
+        {
+          name: "parameter",
+          header: "Parameter",
+          defaultFlex: 1,
+        },
+        {
+          name: "value",
+          header: "Value",
+          defaultFlex: 1,
+        },
+      ]}
+      dataSource={Object.keys(paramsList).map((key) => ({
+        id: key,
+        parameter: key,
+        value: paramsList[key],
+      }))}
+      rowStyle={{ fontFamily: "monospace" }}
+      rowHeight={35}
+      style={gridStyle}
+    />
   );
 };
 
