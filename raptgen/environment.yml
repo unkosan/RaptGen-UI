@@ -29,6 +29,7 @@ dependencies:
     - python-multipart
   - pytest
   - pre-commit
+  - sqlalchemy
 
 variables:
   PYTHONPATH: /app
