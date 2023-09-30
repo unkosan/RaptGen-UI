@@ -24,19 +24,14 @@ client = TestClient(app)
 
 
 def test_get_available_devices():
-    response = client.get("/train/device/process")
+    response = client.get("/api/train/device/process")
 
     assert response.status_code == 200
-    assert "devices" in response.json()
-
-    devices = response.json()["devices"]
-
-    # 以下は一例で、実際の環境によって異なります
-    # CPUは必ず含まれるべき
-    assert "CPU" in devices
+    assert "CPU" in response.json()
 
     # CUDAが利用可能な環境でテストを行う場合には以下を有効に
-    # assert any("CUDA:" in device for device in devices)
+    # CUDAという文字列がいずれかのdeviceの中にあることをテスト
+    # assert any("CUDA:" in device for device in response.json())
 
 
 @pytest.fixture(scope="function", autouse=True)
