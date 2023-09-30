@@ -79,17 +79,17 @@ class ChildJob(Base):
     # TODO: epoch_recently_finished=100,
     # TODO: 0-index か　1-index かきめる
     minimum_NLL = Column(Float)
+    is_added_viewer_dataset = Column(Boolean, default=False)
+    error_msg = Column(String)
 
 
 class SequenceEmbeddings(Base):
     """Job result per ChildJob"""
 
-    __tablename__ = "job_results"
+    __tablename__ = "sequence_embeddings"
 
     # identifier
-    child_uuid = Column(
-        String, ForeignKey("child_jobs.uuid"), unique=True, primary_key=True
-    )
+    child_uuid = Column(String, ForeignKey("child_jobs.uuid"), primary_key=True)
     seq_id = Column(Integer, primary_key=True)
 
     random_region = Column(String)
@@ -101,9 +101,7 @@ class SequenceEmbeddings(Base):
 class TrainingLosses(Base):
     __tablename__ = "training_losses"
 
-    child_uuid = Column(
-        String, ForeignKey("child_jobs.uuid"), unique=True, primary_key=True
-    )
+    child_uuid = Column(String, ForeignKey("child_jobs.uuid"), primary_key=True)
     epoch = Column(Integer, primary_key=True)  # [TODO]: 0-indexed or 1-indexed?
     train_loss = Column(Float)
     test_loss = Column(Float)

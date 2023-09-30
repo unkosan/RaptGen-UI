@@ -1,5 +1,6 @@
 mock_children = [
     {
+        # データセットに追加されている場合
         "id": 0,
         "uuid": "22b3a0a0-5b7a-4b5a-8b0a-2b3a0a0b7a40",
         "parent_uuid": "465e884b-7657-47fa-b624-ed752864ae7a",
@@ -9,6 +10,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 100,
         "minimum_NLL": 0.01,
+        "is_added_viewer_dataset": True,
     },
     {
         "id": 0,
@@ -20,8 +22,10 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 100,
         "minimum_NLL": 0.02,
+        "is_added_viewer_dataset": False,
     },
     {
+        # embeddingsが定義されているやつ
         "id": 1,
         "uuid": "22b3a0a0-5b7a-4b5a-8b0a-2b3a0a0b7a42",
         "parent_uuid": "465e884b-7657-47fa-b624-ed752864ae7b",
@@ -31,6 +35,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 100,
         "minimum_NLL": 0.03,
+        "is_added_viewer_dataset": False,
     },
     {
         "id": 0,
@@ -42,6 +47,8 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 50,
         "minimum_NLL": None,
+        "is_added_viewer_dataset": False,
+        "error_msg": "error_message",
     },
     {
         "id": 0,
@@ -53,6 +60,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 100,
         "minimum_NLL": 0.05,
+        "is_added_viewer_dataset": False,
     },
     {
         "id": 1,
@@ -64,6 +72,8 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 50,
         "minimum_NLL": None,
+        "is_added_viewer_dataset": False,
+        "error_msg": "error_message",
     },
     {
         "id": 0,
@@ -75,6 +85,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 0,
         "minimum_NLL": None,
+        "is_added_viewer_dataset": False,
     },
     {
         "id": 0,
@@ -86,6 +97,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 0,
         "minimum_NLL": None,
+        "is_added_viewer_dataset": False,
     },
     {
         "id": 1,
@@ -97,6 +109,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 0,
         "minimum_NLL": None,
+        "is_added_viewer_dataset": False,
     },
     {
         "id": 0,
@@ -108,6 +121,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 50,
         "minimum_NLL": 0.10,
+        "is_added_viewer_dataset": False,
     },
     {
         "id": 0,
@@ -119,6 +133,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 100,
         "minimum_NLL": 0.11,
+        "is_added_viewer_dataset": False,
     },
     {
         "id": 1,
@@ -130,6 +145,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 50,
         "minimum_NLL": 0.12,
+        "is_added_viewer_dataset": False,
     },
     {
         "id": 0,
@@ -141,6 +157,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 50,
         "minimum_NLL": None,
+        "is_added_viewer_dataset": False,
     },
     {
         "id": 0,
@@ -152,6 +169,7 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 100,
         "minimum_NLL": 0.05,
+        "is_added_viewer_dataset": False,
     },
     {
         "id": 1,
@@ -163,5 +181,6 @@ mock_children = [
         "epochs_total": 100,
         "epochs_current": 50,
         "minimum_NLL": None,
+        "is_added_viewer_dataset": False,
     },
 ]
