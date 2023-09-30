@@ -1,3 +1,4 @@
+from pathlib import Path
 from sqlalchemy import (
     Column,
     Integer,
@@ -16,13 +17,21 @@ from sqlalchemy.sql import func
 import os
 
 # Check if we are in testing mode
-IS_TESTING = os.environ.get("TESTING")
+IS_TESTING = bool(os.environ.get("TESTING"))
+
+# get the root directory of the project
+BASE_DIR = Path(__file__).parent.parent
+TEST_DB_PATH = BASE_DIR / "data" / "test_tasks.db"
+PROD_DB_PATH = BASE_DIR / "data" / "tasks.db"
 
 # Use a temporary database for testing
 DATABASE_URL = (
-    "sqlite:///data/test_tasks.db" if IS_TESTING else "sqlite:///data/tasks.db"
+    f"sqlite:///{TEST_DB_PATH}" if IS_TESTING else f"sqlite:///{PROD_DB_PATH}"
 )
-
+if not PROD_DB_PATH.exists():
+    PROD_DB_PATH.touch()
+if IS_TESTING and not TEST_DB_PATH.exists():
+    TEST_DB_PATH.touch()
 
 # Create the SQLite database and session
 engine = create_engine(DATABASE_URL)
