@@ -1,12 +1,9 @@
 import torch
-from torch.utils.data import DataLoader
 from fastapi import APIRouter, File, Form, Body, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
-from tasks import train_model
 from sqlalchemy.orm import Session
 
-from core.algorithms import CNN_PHMM_VAE
 from core.db import (
     get_engine,
     get_session,
@@ -41,59 +38,6 @@ async def get_available_devices():
         devices.extend([f"CUDA:{i}" for i in range(cuda_device_count)])
 
     return devices
-
-
-class PreprocessingParams(BaseModel):
-    forward: str
-    reverse: str
-    random_region_length: int
-    tolerance: int
-    minimum_count: int
-
-
-class TrainingJobPayload(BaseModel):
-    raptgen_model_type: str = Field(..., pattern="RaptGen|RaptGen-freq|RaptGen-logfreq")
-    name: str
-    params_preprocessing: PreprocessingParams
-    random_regions: List[str]
-    duplicates: List[int]
-    reiteration: int
-    params_training: Dict[str, Any]
-
-
-@router.post("/api/train/jobs/submit")
-async def submit_training_job(payload: TrainingJobPayload = Body(...)):
-    """enqueue training job"""
-    # num_epochs: int = TrainingJobPayload.params_training.get("num_epochs") | 100
-
-    # model = CNN_PHMM_VAE()
-
-    # # split random_regions into train and test
-    # train_ratio = 0.8
-    # train_size = int(len(TrainingJobPayload.random_regions) * train_ratio)
-    # test_size = len(TrainingJobPayload.random_regions) - train_size
-    # train_dataset, test_dataset = torch.utils.data.random_split(
-    #     TrainingJobPayload.random_regions, [train_size, test_size]
-    # )
-
-    # train_loader = DataLoader(
-    #     dataset=train_dataset,
-    #     # batch_size=batch_size, # TODO: batch size
-    #     shuffle=True,
-    #     pin_memory=True,
-    # )
-
-    # test_loader = DataLoader(
-    #     dataset=test_dataset,
-    #     # batch_size=batch_size, # TODO: batch size
-    #     shuffle=True,
-    #     pin_memory=True,
-    # )
-
-    task = train_model.delay(payload.model_dump())
-
-    # TODO: 残りの変数の設定
-    return {"status": "success", "data": {"task_id": task.id}}
 
 
 @router.get("/api/train/jobs/items/{parent_uuid}")
