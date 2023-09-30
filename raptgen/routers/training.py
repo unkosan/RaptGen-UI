@@ -162,8 +162,11 @@ async def get_child_job(
         "status": child_job.status,
         "start": child_job.start,
         "is_added_viewer_dataset": child_job.is_added_viewer_dataset,
+        "epochs_total": child_job.epochs_total,
     }
 
+    if child_job.status in {"suspend", "progress"}:
+        response["epochs_current"] = child_job.epochs_current
     if child_job.status == "failure":
         response["error_msg"] = child_job.error_msg
     if child_job.status in {"success", "progress", "suspend"}:

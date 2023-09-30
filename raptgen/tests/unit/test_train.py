@@ -155,6 +155,8 @@ def test_get_child_job_info(override_dependencies):
     assert response.json()["uuid"] == child_uuid
     assert response.json()["status"] == "success"
     assert response.json()["start"] == 1609459200
+    assert response.json()["epochs_total"] == 100
+    assert response.json().get("epochs_current") is None
 
     latent = response.json()["latent"]
     assert latent["random_regions"] == ["AAA"]
@@ -187,6 +189,7 @@ def test_get_child_job_info(override_dependencies):
     assert response.json()["status"] == "failure"
     assert response.json().get("latent") is None
     assert response.json().get("losses") is None
+    assert response.json().get("epochs_current") is None
     assert response.json().get("error_msg") == "error_message"
 
     # pendingの時にlossesがNoneになっていることを確認する
@@ -200,6 +203,7 @@ def test_get_child_job_info(override_dependencies):
     assert response.json()["status"] == "pending"
     assert response.json().get("latent") is None
     assert response.json().get("losses") is None
+    assert response.json().get("epochs_current") is None
     assert response.json().get("error_msg") is None
 
     # success, progress, suspendの時にlatentがNoneになっていないことを確認する
@@ -214,6 +218,7 @@ def test_get_child_job_info(override_dependencies):
     assert response.json()["status"] == "progress"
     assert response.json().get("latent") is not None
     assert response.json().get("losses") is not None
+    assert response.json().get("epochs_current") is not None
     assert response.json().get("error_msg") is None
 
     parent_uuid = "465e884b-7657-47fa-b624-ed752864ae84"
@@ -224,6 +229,7 @@ def test_get_child_job_info(override_dependencies):
     assert response.json()["status"] == "suspend"
     assert response.json().get("latent") is not None
     assert response.json().get("losses") is not None
+    assert response.json().get("epochs_current") is not None
     assert response.json().get("error_msg") is None
 
     # 異常系

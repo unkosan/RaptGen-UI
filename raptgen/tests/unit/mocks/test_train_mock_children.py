@@ -8,7 +8,7 @@ mock_children = [
         "duration": 30,
         "status": "success",
         "epochs_total": 100,
-        "epochs_current": 100,
+        "epochs_current": 40,
         "minimum_NLL": 0.01,
         "is_added_viewer_dataset": True,
     },
