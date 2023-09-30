@@ -1,7 +1,6 @@
 from celery import Celery, current_task, Task
 from typing import List, Tuple, Dict, Any, OrderedDict, Optional
 from core.algorithms import CNN_PHMM_VAE, embed_sequences
-from core.train import train_VAE
 
 import time
 import numpy as np
@@ -84,12 +83,3 @@ def batch_encode(self: Task, seqs: List[str], state_dict_pkl: bytes):
         count = count + chunk_size
 
     return np.array(coord_list)
-
-
-@celery.task(bind=True)
-def train_model(self: Task, payload: Dict[str, Any]):
-    """train model"""
-
-    # model, result = train_VAE(**payload)
-
-    return {"status": "success", "data": {"result": "result"}}
