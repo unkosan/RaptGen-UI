@@ -67,19 +67,20 @@ class ChildJob(Base):
     __tablename__ = "child_jobs"
 
     # identifier
-    id = Column(Integer, primary_key=True)  # zero-indexed
-    uuid = Column(String, unique=True)
-    parent_uuid = Column(String, ForeignKey("parent_jobs.uuid"), primary_key=True)
+    id = Column(Integer, primary_key=True, nullable=False)  # zero-indexed
+    uuid = Column(String, unique=True, nullable=False)
+    parent_uuid = Column(
+        String, ForeignKey("parent_jobs.uuid"), primary_key=True, nullable=False
+    )
 
     start = Column(Integer, default=func.now())
     duration = Column(Integer)
-    status = Column(String)
-    epochs_total = Column(Integer)
-    epochs_current = Column(Integer)
+    status = Column(String, nullable=False)
+    epochs_total = Column(Integer, nullable=False)
+    epochs_current = Column(Integer)  # zero-indexed
     # TODO: epoch_recently_finished=100,
-    # TODO: 0-index か　1-index かきめる
     minimum_NLL = Column(Float)
-    is_added_viewer_dataset = Column(Boolean, default=False)
+    is_added_viewer_dataset = Column(Boolean, default=False, nullable=False)
     error_msg = Column(String)
 
 
@@ -89,8 +90,10 @@ class SequenceEmbeddings(Base):
     __tablename__ = "sequence_embeddings"
 
     # identifier
-    child_uuid = Column(String, ForeignKey("child_jobs.uuid"), primary_key=True)
-    seq_id = Column(Integer, primary_key=True)
+    child_uuid = Column(
+        String, ForeignKey("child_jobs.uuid"), primary_key=True, nullable=False
+    )
+    seq_id = Column(Integer, primary_key=True, nullable=False)
 
     random_region = Column(String)
     coord_x = Column(Float)
@@ -101,8 +104,12 @@ class SequenceEmbeddings(Base):
 class TrainingLosses(Base):
     __tablename__ = "training_losses"
 
-    child_uuid = Column(String, ForeignKey("child_jobs.uuid"), primary_key=True)
-    epoch = Column(Integer, primary_key=True)  # [TODO]: 0-indexed or 1-indexed?
+    child_uuid = Column(
+        String, ForeignKey("child_jobs.uuid"), primary_key=True, nullable=False
+    )
+    epoch = Column(
+        Integer, primary_key=True, nullable=False
+    )  # [TODO]: 0-indexed or 1-indexed?
     train_loss = Column(Float)
     test_loss = Column(Float)
     test_recon = Column(Float)
