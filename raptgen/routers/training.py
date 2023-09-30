@@ -101,6 +101,39 @@ async def get_parent_job(
     parent_uuid: str,
     session: Session = Depends(get_db_session),  # Use dependency injection for session
 ):
+    """
+    Retrieve detailed information about a specific parent job based on its UUID.
+
+    Parameters
+    ----------
+    parent_uuid : str
+        The UUID of the parent job.
+    session : Session, optional
+        The database session, by default uses dependency injection to get the session.
+
+    Returns
+    -------
+    dict
+        A dictionary containing detailed information about the parent job. This includes:
+        - uuid: The UUID of the parent job.
+        - name: The name of the parent job.
+        - type: The type of the parent job.
+        - status: The status of the parent job.
+        - start: The start time of the parent job.
+        - duration: The duration of the parent job.
+        - reiteration: The reiteration count of the parent job.
+        - params_training: The training parameters of the parent job.
+        - summary: A summary of all child jobs associated with the parent job.
+
+    Raises
+    ------
+    HTTPException
+        If the parent job is not found in the database.
+
+    Notes
+    -----
+    The summary includes indices, statuses, epochs finished, and minimum NLLs of all child jobs.
+    """
     job = session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
     if job is None:
         raise HTTPException(
@@ -146,6 +179,42 @@ async def get_child_job(
     child_id: int,
     session: Session = Depends(get_db_session),  # Use dependency injection for session
 ):
+    """
+    Retrieve detailed information about a specific child job based on its parent UUID and child ID.
+
+    Parameters
+    ----------
+    parent_uuid : str
+        The UUID of the parent job.
+    child_id : int
+        The ID of the child job.
+    session : Session, optional
+        The database session, by default uses dependency injection to get the session.
+
+    Returns
+    -------
+    dict
+        A dictionary containing detailed information about the child job. This includes:
+        - uuid: The UUID of the child job.
+        - id: The ID of the child job.
+        - status: The status of the child job.
+        - start: The start time of the child job.
+        - is_added_viewer_dataset: Boolean indicating if the viewer dataset was added.
+        - error_msg: Error message if the status is 'failure'.
+        - latent: Dictionary containing embedding details if the status is 'success', 'progress', or 'suspend'.
+        - losses: Dictionary containing training loss details if the status is 'success', 'progress', or 'suspend'.
+        - epochs_current: the number of finished epochs of the child job. (that is, zero-indexed value)
+        - epochs_total: Total epochs of the child job.
+
+    Raises
+    ------
+    HTTPException
+        If the child job is not found in the database.
+
+    Notes
+    -----
+    TODO: Consider changing the status code 422 to 404 for "Child Job not found".
+    """
     child_job = (
         session.query(ChildJob)
         .filter(ChildJob.parent_uuid == parent_uuid, ChildJob.id == child_id)
