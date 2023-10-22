@@ -20,7 +20,10 @@
 				"ms-python.python",
 				"usernamehw.errorlens",
 				"eamodio.gitlens",
-				"ms-python.black-formatter"
+				"ms-python.black-formatter",
+				"ms-vscode-remote.remote-containers",
+				"GitHub.vscode-pull-request-github",
+				"mhutchie.git-graph"
 			]
 		}
 	},
