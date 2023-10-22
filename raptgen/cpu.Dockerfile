@@ -4,7 +4,7 @@ RUN useradd -m devcontainer
 
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y git curl vim wget ghostscript
+    && apt-get install -y git curl vim wget ghostscript openssh-client
 
 RUN mkdir /usr/share/fonts/opentype/noto \
     && wget https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTC/NotoSansCJK-Bold.ttc \
