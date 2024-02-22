@@ -291,5 +291,7 @@ Temporary Items
 
 # ignore lock file of yarn
 **/yarn.lock
-# test db
+
+# ignore database file
 raptgen/data/test_tasks.db
+raptgen/data/tasks.db
