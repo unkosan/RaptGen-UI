@@ -70,6 +70,7 @@ def override_dependencies(test_session):  # Add test_session as an argument
     yield
     app.dependency_overrides.pop(get_db_session, None)
 
+
 def test_update_parent_job(override_dependencies):
     """
     Test the update API for parent jobs `PATCH /api/train/jobs/items/{uuid}`
@@ -99,7 +100,7 @@ def test_update_parent_job(override_dependencies):
         json={
             "target": "name",
             "value": "updated_value",
-        }
+        },
     )
     res_valid_1_get = client.get(f"/api/train/jobs/items/{parent_uuid}")
     assert res_valid_1_get.json()["name"] == "updated_value"
@@ -111,7 +112,7 @@ def test_update_parent_job(override_dependencies):
         json={
             "target": "invalid_target",
             "value": "updated_value",
-        }
+        },
     )
     assert res_invalid_1.status_code == 422
 
@@ -120,11 +121,12 @@ def test_update_parent_job(override_dependencies):
         json={
             "target": "name",
             "value": 123,
-        }
+        },
     )
     assert res_invalid_2.status_code == 422
 
     return
+
 
 def test_get_parent_job_info(override_dependencies):
     # Get a session

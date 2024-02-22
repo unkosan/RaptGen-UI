@@ -334,9 +334,11 @@ async def search_jobs(
 
     return response
 
+
 class UpdateParentJobPayload(BaseModel):
     target: str
     value: Any
+
 
 @router.patch("/api/train/jobs/items/{parent_uuid}")
 async def update_parent_job(
@@ -373,7 +375,7 @@ async def update_parent_job(
                 }
             ],
         )
-    
+
     if request.target not in {"name"}:
         raise HTTPException(
             status_code=422,
@@ -402,5 +404,5 @@ async def update_parent_job(
             setattr(job, request.target, request.value)
             session.commit()
             return {}
-    
+
     raise Exception(f"Not implemented target {request.target}")
