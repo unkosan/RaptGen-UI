@@ -71,6 +71,63 @@ def override_dependencies(test_session):  # Add test_session as an argument
     app.dependency_overrides.pop(get_db_session, None)
 
 
+def test_update_parent_job(override_dependencies):
+    """
+    Test the update API for parent jobs `PATCH /api/train/jobs/items/{uuid}`
+    """
+    # Get a session
+    session_generator = get_db_session()
+    session = next(session_generator)  # Get the session object from the generator
+
+    # Construct a new child and parent job database
+    d = defaultdict(list)
+    for child_job_info in mock_children:
+        child_job = ChildJob(**child_job_info)
+        d[child_job_info["parent_uuid"]].append(child_job)
+    for parent_job in mock_parents:
+        session.add(ParentJob(child_jobs=d[parent_job["uuid"]], **parent_job))
+    session.commit()
+
+    # Close the session
+    session.close()
+
+    # the target of the update API
+    parent_uuid = "465e884b-7657-47fa-b624-ed752864ae7a"
+
+    # valid update
+    res_valid_1 = client.patch(
+        f"/api/train/jobs/items/{parent_uuid}",
+        json={
+            "target": "name",
+            "value": "updated_value",
+        },
+    )
+    res_valid_1_get = client.get(f"/api/train/jobs/items/{parent_uuid}")
+    assert res_valid_1_get.json()["name"] == "updated_value"
+    assert res_valid_1.status_code == 200
+
+    # invalid update
+    res_invalid_1 = client.patch(
+        f"/api/train/jobs/items/{parent_uuid}",
+        json={
+            "target": "invalid_target",
+            "value": "updated_value",
+        },
+    )
+    assert res_invalid_1.status_code == 422
+
+    res_invalid_2 = client.patch(
+        f"/api/train/jobs/items/{parent_uuid}",
+        json={
+            "target": "name",
+            "value": 123,
+        },
+    )
+    assert res_invalid_2.status_code == 422
+
+    return
+
+
 def test_get_parent_job_info(override_dependencies):
     # Get a session
     session_generator = get_db_session()
