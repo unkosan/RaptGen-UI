@@ -171,6 +171,13 @@ export const responseGetItemChild = z.union([
   }),
 ]);
 
+// API PATCH train/jobs/items/{parent_uuid}
+export const requestPatchItem = z.object({
+  target: z.enum(["name"]),
+  value: z.string().nonempty(),
+});
+export const responsePatchItem = z.null();
+
 // API DELETE train/jobs/items/{parent_uuid}
 export const requestDeleteItem = z.void();
 export const responseDeleteItem = z.null();
@@ -288,6 +295,27 @@ export const apiTrain = makeApi([
       },
     ],
     response: responseGetItemChild,
+  },
+  {
+    alias: "patchItem",
+    method: "patch",
+    path: "/train/jobs/items/:parent_uuid",
+    description: "Patch info of a parent job",
+    parameters: [
+      {
+        name: "parent_uuid",
+        description: "UUID of the job",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "request",
+        description: "Request body",
+        type: "Body",
+        schema: requestPatchItem,
+      },
+    ],
+    response: responsePatchItem,
   },
   {
     alias: "deleteItem",
