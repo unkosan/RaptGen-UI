@@ -366,7 +366,7 @@ async def update_parent_job(
     job = session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
     if job is None:
         raise HTTPException(
-            status_code=422,
+            status_code=422,  # TODO: 404 is more appropriate than 422, but it's not consistent
             detail=[
                 {
                     "loc": ["path", "parent_uuid"],
@@ -378,7 +378,7 @@ async def update_parent_job(
 
     if request.target not in {"name"}:
         raise HTTPException(
-            status_code=422,
+            status_code=422,  # TODO: 404 is more appropriate than 422, but it's not consistent
             detail=[
                 {
                     "loc": ["body", "target"],
@@ -389,9 +389,9 @@ async def update_parent_job(
         )
 
     if request.target == "name":
-        if not isinstance(request.value, str) or len(request.value) == 0:
+        if not isinstance(request.value, str) or len(request.value.strip()) == 0:
             raise HTTPException(
-                status_code=422,
+                status_code=422,  # TODO: 404 is more appropriate than 422, but it's not consistent
                 detail=[
                     {
                         "loc": ["body", "value"],
@@ -405,4 +405,5 @@ async def update_parent_job(
             session.commit()
             return {}
 
+    # for future targets, raise an exception
     raise Exception(f"Not implemented target {request.target}")
