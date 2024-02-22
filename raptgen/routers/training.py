@@ -333,3 +333,74 @@ async def search_jobs(
         )
 
     return response
+
+class UpdateParentJobPayload(BaseModel):
+    target: str
+    value: Any
+
+@router.patch("/api/train/jobs/items/{parent_uuid}")
+async def update_parent_job(
+    parent_uuid: str,
+    request: UpdateParentJobPayload,
+    session: Session = Depends(get_db_session),  # Use dependency injection for session
+) -> dict:
+    """
+    Update the property of a parent job based on its UUID.
+
+    Parameters
+    ----------
+    parent_uuid : str
+        The UUID of the parent job.
+    request : UpdateParentJobPayload
+        The request body containing the target property and its value.
+    session : Session, optional
+        The database session, by default uses dependency injection to get the session.
+
+    Returns
+    -------
+    None
+        The response is an empty dictionary.
+    """
+    job = session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
+    if job is None:
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["path", "parent_uuid"],
+                    "msg": "Job not found",
+                    "type": "value_error",
+                }
+            ],
+        )
+    
+    if request.target not in {"name"}:
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "target"],
+                    "msg": "Invalid target",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    if request.target == "name":
+        if not isinstance(request.value, str) or len(request.value) == 0:
+            raise HTTPException(
+                status_code=422,
+                detail=[
+                    {
+                        "loc": ["body", "value"],
+                        "msg": "Invalid value",
+                        "type": "value_error",
+                    }
+                ],
+            )
+        else:
+            setattr(job, request.target, request.value)
+            session.commit()
+            return {}
+    
+    raise Exception(f"Not implemented target {request.target}")
