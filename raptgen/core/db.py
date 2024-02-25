@@ -11,7 +11,7 @@ from sqlalchemy import (
     create_engine,
     or_,
 )
-from sqlalchemy.orm import sessionmaker, relationship, declarative_base
+from sqlalchemy.orm import sessionmaker, relationship, declarative_base, Session
 from sqlalchemy.sql import func
 
 import os
@@ -56,7 +56,7 @@ class ParentJob(Base):
         Integer
     )  # this could be calculated as difference between start and end times
     reiteration = Column(Integer)
-    # params_preprocessing = Column(JSON)
+    params_preprocessing = Column(JSON)
     params_training = Column(JSON)
     child_jobs = relationship("ChildJob", backref="job")
 
@@ -125,3 +125,20 @@ def get_session():
     """Get the database session"""
     Session = sessionmaker(bind=engine)
     return Session()
+
+
+def update_parent_job_status_based_on_children_jobs(session: Session, uuid: str):
+    with Session() as session:
+        parent_job = session.query(ParentJob).filter(ParentJob.uuid == uuid).first()
+        children_jobs = (
+            session.query(ChildJob).filter(ChildJob.parent_uuid == uuid).all()
+        )
+        status = "SUCCESS"
+        for child in children_jobs:
+            if child.status == "FAILURE":
+                status = "FAILURE"
+                break
+            elif child.status == "PENDING":
+                status = "PENDING"
+        parent_job.status = status
+        session.commit()
