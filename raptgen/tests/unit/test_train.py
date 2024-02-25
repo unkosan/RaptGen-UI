@@ -6,6 +6,9 @@ from collections import defaultdict
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from celery.result import AsyncResult
+
+from unittest.mock import patch
 
 from core.db import (
     Base,
@@ -358,49 +361,66 @@ def test_search_job_with_status(override_dependencies):
     assert response.status_code == 422
 
 
-# def test_enqueue_job(override_dependencies):
-#     response = client.post(
-#         "/api/train/jobs/submit",
-#         json={
-#             "raptgen_model_type": "RaptGen",
-#             "name": "test",
-#             "params_preprocessing": {
-#                 "forward": "A",
-#                 "reverse": "T",
-#                 "random_region_length": 5,
-#                 "tolerance": 0,
-#                 "minimum_count": 1,
-#             },
-#             "random_regions": [  # ATAcgのモチーフが存在していることのテスト
-#                 "ATGAG",
-#                 "ATGCG",
-#                 "ATGGG",
-#                 "ATGTG",
-#                 "ATGCA",
-#                 "ATGCG",
-#                 "ATGCT",
-#                 "ATGCC",
-#             ],
-#             "duplicates": [],
-#             "reiteration": 1,
-#             "params_training": {
-#                 "num_epochs": 100,
-#                 "batch_size": 100,
-#                 "learning_rate": 0.001,
-#                 "weight_decay": 0.0001,
-#                 "num_workers": 4,
-#                 "pin_memory": True,
-#                 "device": "CPU",
-#             },
-#         },
-#     )
+from celery import Celery
 
-#     assert response.status_code == 200
 
-#     # check if the job is enqueued
-#     task_id = response.json()["data"]["task_id"]
-#     response = client.post("/api/train/jobs/search", json={})  # get all jobs
-#     job = response.json()
-#     assert response.status_code == 200
+def test_enqueue_job(override_dependencies):
+    from tasks import celery
 
-#     assert any(task_id == job["task_id"] for job in response.json()["data"])
+    response = client.post(
+        "/api/train/jobs/submit",
+        json={
+            "type": "RaptGen",
+            "name": "test",
+            "params_preprocessing": {
+                "forward": "A",
+                "reverse": "T",
+                "random_region_length": 5,
+                "tolerance": 0,
+                "minimum_count": 1,
+            },
+            "random_regions": [  # ATAcgのモチーフが存在していることのテスト
+                "ATGAG",
+                "ATGCG",
+                "ATGGG",
+                "ATGTG",
+                "ATGCA",
+                "ATGCG",
+                "ATGCT",
+                "ATGCC",
+            ],
+            "duplicates": [],
+            "reiteration": 1,
+            "params_training": {
+                "model_length": 10,
+                "epochs": 100,
+                "match_forcing_duration": 10,
+                "beta_duration": 10,
+                "early_stopping": 10,
+                "seed_value": 10,
+                "match_cost": 10,
+                "device": "CPU",
+                # "num_epochs": 100,
+                # "batch_size": 100,
+                # "learning_rate": 0.001,
+                # "weight_decay": 0.0001,
+                # "num_workers": 4,
+                # "pin_memory": True,
+                # "device": "CPU",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+
+    # check if the job is enqueued
+    task_id = response.json()["uuid"]
+    result = AsyncResult(task_id, app=celery)
+    if result.get(timeout=1):
+        responses = client.post("/api/train/jobs/search", json={})  # get all jobs
+        assert responses.status_code == 200
+        print(responses.json())
+        assert any(task_id == job["uuid"] for job in responses.json())
+    else:
+        print(result)
+        raise Exception("Task is not enqueued")

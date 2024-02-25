@@ -1,7 +1,5 @@
 import torch
 from fastapi import APIRouter, File, Form, Body, HTTPException
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 
 from core.db import (
@@ -12,8 +10,12 @@ from core.db import (
     SequenceEmbeddings,
     TrainingLosses,
 )
+from tasks import train_raptgen_model
+from core.schemas import RaptGenFreqModel, RaptGenModel
 from fastapi import Depends
 import re
+from typing import List, Optional, Union
+from pydantic import BaseModel
 
 
 def get_db_session():
@@ -67,6 +69,7 @@ async def get_parent_job(
         - duration: The duration of the parent job.
         - reiteration: The reiteration count of the parent job.
         - params_training: The training parameters of the parent job.
+        - params_preprocessing: The preprocessing parameters of the parent job.
         - summary: A summary of all child jobs associated with the parent job.
 
     Raises
@@ -112,6 +115,7 @@ async def get_parent_job(
         "duration": job.duration,
         "reiteration": job.reiteration,
         "params_training": job.params_training,
+        "params_preprocessing": job.params_preprocessing,
         "summary": summary,
     }
     return response
@@ -333,3 +337,57 @@ async def search_jobs(
         )
 
     return response
+
+
+class JobSubmissionResponse(BaseModel):
+    uuid: str
+
+
+@router.post("/api/train/jobs/submit", response_model=JobSubmissionResponse)
+async def submit_job(
+    request_param: Union[RaptGenModel, RaptGenFreqModel],
+    session: Session = Depends(get_db_session),  # Use dependency injection for session
+):
+    # なんでget_db_session()を使わないんだっけ？
+
+    # TODO: Validate the request body
+    # submit job and get uuid batch_encode
+    print("the task is going to be queued")
+    # preprocess
+    task = train_raptgen_model.delay(
+        name=request_param.name,
+        model_type=request_param.type,
+        reiteration=request_param.reiteration,  # [TODO] reiteration と reiterations の表記揺れ
+        params_preprocessing=request_param.params_preprocessing,
+        params_training=request_param.params_training,
+        random_regions=request_param.random_regions,
+    )
+    print("the task is queued")
+    # submit the job to the database
+    return JobSubmissionResponse(
+        message="Job submitted successfully",
+        uuid=task.id,
+    )
+
+
+# @router.post("/api/upload/batch-encode")
+# async def launch_batch_encode(
+#     state_dict: bytes = File(...), seqs: List[str] = Form(...)
+# ):
+#     # validate seqs and model
+#     result = _validate_pHMM_model(BytesIO(state_dict))
+#     if result["status"] == "error":
+#         return result
+#     model: CNN_PHMM_VAE = result["data"]["model"]
+
+#     if len(seqs) == 1:
+#         seqs = [seq.strip() for seq in seqs[0].split(",")]
+
+#     # Launch celery task
+#     task = batch_encode.delay(seqs, state_dict)  # CNN_PHMM_VAE is not sharable
+#     return {
+#         "status": "success",
+#         "data": {
+#             "task_id": task.id,
+#         },
+#     }
