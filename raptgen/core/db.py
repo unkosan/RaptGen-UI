@@ -130,6 +130,8 @@ class SequenceEmbeddings(BaseSchema):
         identifier of the sequence embeddings
     random_region : str
         random region of the sequence embeddings
+    is_training_data = bool
+        flag to indicate if the sequence embeddings are training data
     coord_x : float
         x-coordinate of the sequence embeddings
     coord_y : float
@@ -144,10 +146,11 @@ class SequenceEmbeddings(BaseSchema):
         String, ForeignKey("child_jobs.uuid"), primary_key=True, nullable=False
     )
     seq_id = Column(Integer, primary_key=True, nullable=False)
-    random_region = Column(String)
+    random_region = Column(String, nullable=False)
+    is_training_data = Column(Boolean, nullable=False)
     coord_x = Column(Float)
     coord_y = Column(Float)
-    duplicate = Column(Integer)
+    duplicate = Column(Integer, nullable=False)
 
 
 class TrainingLosses(BaseSchema):
