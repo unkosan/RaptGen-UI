@@ -50,7 +50,7 @@ class ParentJob(BaseSchema):
     name = Column(String)
     type = Column(String)
     status = Column(String)
-    start = Column(Integer, default=func.now())
+    start = Column(Integer)
     duration = Column(Integer)
     reiteration = Column(Integer)
     params_preprocessing = Column(JSON)
@@ -99,12 +99,10 @@ class ChildJob(BaseSchema):
 
     __tablename__ = "child_jobs"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    uuid = Column(String, unique=True, nullable=False)
-    parent_uuid = Column(
-        String, ForeignKey("parent_jobs.uuid"), primary_key=True, nullable=False
-    )
-    start = Column(Integer, default=func.now())
+    id = Column(Integer, nullable=False)
+    uuid = Column(String, unique=True, primary_key=True, nullable=False)
+    parent_uuid = Column(String, ForeignKey("parent_jobs.uuid"), nullable=False)
+    start = Column(Integer)
     duration = Column(Integer)
     status = Column(String, nullable=False)
     epochs_total = Column(Integer, nullable=False)
@@ -130,8 +128,6 @@ class SequenceEmbeddings(BaseSchema):
         identifier of the sequence embeddings
     random_region : str
         random region of the sequence embeddings
-    is_training_data = bool
-        flag to indicate if the sequence embeddings are training data
     coord_x : float
         x-coordinate of the sequence embeddings
     coord_y : float
@@ -147,7 +143,6 @@ class SequenceEmbeddings(BaseSchema):
     )
     seq_id = Column(Integer, primary_key=True, nullable=False)
     random_region = Column(String, nullable=False)
-    is_training_data = Column(Boolean, nullable=False)
     coord_x = Column(Float)
     coord_y = Column(Float)
     duplicate = Column(Integer, nullable=False)
@@ -186,26 +181,56 @@ class TrainingLosses(BaseSchema):
     test_kld = Column(Float)
 
 
-def get_db_session():
+class SequenceData(BaseSchema):
+    """
+    Inventory of sequence data. linked to parent jobs.
+
+    Attributes
+    ----------
+    parent_uuid : str
+        identifier of the parent job
+    seq_id : int
+        identifier of the sequence
+    random_region : str
+        random region of the sequence
+    duplicate : int
+        number of duplicates of the sequence
+    is_training_data : bool
+        flag to indicate if the sequence is training data
+    """
+
+    __tablename__ = "sequence_data"
+
+    parent_uuid = Column(
+        String, ForeignKey("parent_jobs.uuid"), primary_key=True, nullable=False
+    )
+    seq_id = Column(Integer, primary_key=True, nullable=False)
+    random_region = Column(String, nullable=False)
+    duplicate = Column(Integer, nullable=False)
+    is_training_data = Column(Boolean, nullable=False)
+
+
+def get_db_session(
+    url: str = "postgresql+psycopg2://postgres:postgres@db:5432/raptgen",
+):
     """
     Get the database session.
     This function is used for production.
+
+    Parameters
+    ----------
+    url : str
+        database URL to connect. Default is "postgresql+psycopg2://postgres:postgres@db:5432/raptgen"
 
     Yield
     -----
     session : Session
         database session
     """
+    print(f"Connecting to database: {url}")
 
     # create engine
-    params = {
-        "user": "postgres",
-        "password": "postgres",
-        "host": "db",
-        "port": "5432",
-    }
-    connection = f"postgresql+psycopg2://{params['user']}:{params['password']}@{params['host']}:{params['port']}/raptgen"
-    engine = create_engine(connection)
+    engine = create_engine(url)
 
     # create tables
     BaseSchema.metadata.create_all(engine)
