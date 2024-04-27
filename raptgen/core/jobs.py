@@ -52,10 +52,10 @@ class ChildJobTask(AbortableTask):
         if session is None:
             raise ValueError(f"ChildJobTask: Database session is not found.")
 
-        job = session.query(ChildJob).filter(ChildJob.uuid == task_id).first()
+        job = session.query(ChildJob).filter(ChildJob.worker_uuid == task_id).first()
         if job is None:
             raise ValueError(
-                f"ChildJobTask: Child job {task_id} does not exist on the database."
+                f"ChildJobTask: Task {task_id} does not exist on the database."
             )
         parent = (
             session.query(ParentJob).filter(ParentJob.uuid == job.parent_uuid).first()
@@ -81,6 +81,8 @@ class ChildJobTask(AbortableTask):
         else:
             parent.status = "success"
 
+        session.commit()
+
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         super().on_failure(exc, task_id, args, kwargs, einfo)
         database_url: str = kwargs["database_url"]
@@ -88,10 +90,10 @@ class ChildJobTask(AbortableTask):
         if session is None:
             raise ValueError(f"ChildJobTask: Database session is not found.")
 
-        job = session.query(ChildJob).filter(ChildJob.uuid == task_id).first()
+        job = session.query(ChildJob).filter(ChildJob.worker_uuid == task_id).first()
         if job is None:
             raise ValueError(
-                f"ChildJobTask: Child job {task_id} does not exist on the database."
+                f"ChildJobTask: Task {task_id} does not exist on the database."
             )
         parent = (
             session.query(ParentJob).filter(ParentJob.uuid == job.parent_uuid).first()
@@ -128,10 +130,10 @@ class ChildJobTask(AbortableTask):
         if session is None:
             raise ValueError("ChildJobTask: Database session is not found.")
 
-        job = session.query(ChildJob).filter(ChildJob.uuid == task_id).first()
+        job = session.query(ChildJob).filter(ChildJob.worker_uuid == task_id).first()
         if job is None:
             raise ValueError(
-                f"ChildJobTask: Child job {task_id} does not exist on the database."
+                f"ChildJobTask: Task {task_id} does not exist on the database."
             )
         job.status = "progress"
         parent = (
@@ -153,13 +155,19 @@ class ChildJobTask(AbortableTask):
 
         task_id = str(uuid4())
         if "resume_uuid" in kwargs and kwargs["resume_uuid"] is not None:
-            pass
+            child = (
+                session.query(ChildJob)
+                .filter(ChildJob.uuid == kwargs["resume_uuid"])
+                .first()
+            )
+            child.worker_uuid = task_id
         else:
             session.add(
                 ChildJob(
                     id=kwargs["child_id"],
                     uuid=task_id,
                     parent_uuid=kwargs["parent_uuid"],
+                    worker_uuid=task_id,
                     start=int(time.time()),
                     duration=None,
                     status="pending",
@@ -173,7 +181,6 @@ class ChildJobTask(AbortableTask):
             )
 
         session.commit()
-        print("ChildJobTask: running delay")
         return super().apply_async(task_id=task_id, args=args, kwargs=kwargs)
 
 
@@ -223,18 +230,15 @@ def job_raptgen(
     database_url : str
         database URL to connect
     """
-    print(f"job_raptgen: Running job_raptgen with child_id {child_id}.")
     device_t = torch.device(device.lower())
     # get the database session
     session = get_db_session(database_url).__next__()
 
-    # adjust the task_id and get child job entry
+    # check if the child job exists
     if resume_uuid is not None:
-        self.apply_async(task_id=resume_uuid)
         child_job = session.query(ChildJob).filter(ChildJob.uuid == resume_uuid).first()
         if child_job is None:
             raise ValueError(f"Child job {resume_uuid} does not exist.")
-        task_id = resume_uuid
     else:
         child_job = (
             session.query(ChildJob).filter(ChildJob.uuid == self.request.id).first()
@@ -243,7 +247,8 @@ def job_raptgen(
             raise ValueError(
                 "Child job does not exist. Maybe adding the child job failed."
             )
-        task_id = self.request.id
+    child_uuid = child_job.uuid
+    task_id = self.request.id
 
     # process the data from SequenceData
     sequence_records = (
@@ -300,7 +305,7 @@ def job_raptgen(
             patience = current_epoch - min_loss_epoch
             min_loss = min_loss_record.test_loss  # type: ignore
 
-            current_checkpoint_binary: bytes = child_job.current_checkpoint.tobytes()
+            current_checkpoint_binary: bytes = child_job.current_checkpoint
             with BytesIO(current_checkpoint_binary) as f:
                 current_checkpoint = torch.load(f)
                 model.load_state_dict(current_checkpoint["model"])
@@ -308,8 +313,6 @@ def job_raptgen(
 
     model.to(device_t)
     model.train()
-
-    print(f"job_raptgen: Training child job {task_id} on {device}.")
 
     for epoch in range(current_epoch, num_epochs):
         if self.is_aborted():
@@ -384,7 +387,7 @@ def job_raptgen(
 
         session.add(
             TrainingLosses(
-                child_uuid=task_id,
+                child_uuid=child_uuid,
                 epoch=epoch,
                 test_loss=test_loss,
                 test_recon=test_ce,
@@ -392,9 +395,6 @@ def job_raptgen(
                 train_loss=train_loss,
             )
         )
-
-        # update the child job entry
-        child_job.epochs_current = epoch
 
         with BytesIO() as f:
             torch.save(
@@ -437,16 +437,19 @@ def job_raptgen(
             embeddings_df = embeddings_df.drop(
                 columns=["encoded_id", "is_training_data"]
             )
-            embeddings_df["child_uuid"] = task_id
+            embeddings_df["child_uuid"] = child_uuid
             embeddings_dict = embeddings_df.to_dict(orient="records")
             # delete(SequenceEmbeddings).where(SequenceEmbeddings.child_uuid == task_id)
             session.query(SequenceEmbeddings).filter(
-                SequenceEmbeddings.child_uuid == task_id
+                SequenceEmbeddings.child_uuid == child_uuid
             ).delete()
             session.commit()
             session.bulk_insert_mappings(SequenceEmbeddings, embeddings_dict)
 
             child_job.optimal_checkpoint = current_checkpoint_binary
+
+        # update the child job entry
+        child_job.epochs_current = epoch + 1
 
         session.commit()
 
@@ -454,12 +457,7 @@ def job_raptgen(
         if patience >= early_stop_threshold:
             break
 
-        print(
-            f"job_raptgen: Child job {task_id} epoch {epoch}: train loss {train_loss}, test loss {test_loss}"
-        )
-
     # update the child job entry
-    print(f"job_raptgen: Child job {task_id} finished training.")
     child_job.status = "success"
     session.commit()
 

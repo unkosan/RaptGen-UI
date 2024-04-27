@@ -193,65 +193,59 @@ def test_job_raptgen_valid_train(db_session, celery_worker):
     assert status == "success"
 
 
-# def test_job_raptgen_valid_retrain(db_session, celery_worker):
-#     url = db_session.get_bind().url.render_as_string(hide_password=False)
+def test_job_raptgen_valid_retrain(db_session, celery_worker):
+    url = db_session.get_bind().url.render_as_string(hide_password=False)
 
-#     asyncres: AbortableAsyncResult = job_raptgen.delay(
-#         child_id=1,
-#         model_length=10,
-#         num_epochs=20,
-#         beta_threshold=0.1,
-#         force_matching_epochs=1,
-#         match_cost=4,
-#         early_stop_threshold=5,
-#         seed=1,
-#         device="CPU",
-#         parent_uuid="8aab26d7-7657-47fa-b624-ed752864ae76",
-#         resume_uuid=None,
-#         database_url=url,
-#     )  # type: ignore
+    asyncres: AbortableAsyncResult = job_raptgen.delay(
+        child_id=1,
+        model_length=10,
+        num_epochs=20,
+        beta_threshold=0.1,
+        force_matching_epochs=1,
+        match_cost=4,
+        early_stop_threshold=5,
+        seed=1,
+        device="CPU",
+        parent_uuid="8aab26d7-7657-47fa-b624-ed752864ae76",
+        resume_uuid=None,
+        database_url=url,
+    )  # type: ignore
 
-#     # wait for the 1st epoch to finish
-#     sleep(1)
-#     status = (
-#         db_session.query(ChildJob).filter(ChildJob.uuid == asyncres.id).first().status
-#     )
-#     assert status == "progress"
-#     while True:
-#         sleep(1)
-#         epoch = (
-#             db_session.query(ChildJob)
-#             .filter(ChildJob.uuid == asyncres.id)
-#             .first()
-#             .epochs_current
-#         )
-#         if epoch >= 1:
-#             break
+    # wait for the 1st epoch to finish
+    while True:
+        sleep(1)
+        epoch = (
+            db_session.query(ChildJob)
+            .filter(ChildJob.uuid == asyncres.id)
+            .first()
+            .epochs_current
+        )
+        if epoch >= 1:
+            break
 
-#     asyncres.abort()
-#     asyncres.wait()
-#     job_data = db_session.query(ChildJob).filter(ChildJob.uuid == asyncres.id).first()
-#     assert job_data.status == "suspend"
+    asyncres.abort()
+    asyncres.wait()
+    job_data = db_session.query(ChildJob).filter(ChildJob.uuid == asyncres.id).first()
+    assert job_data.status == "suspend"
 
-# resume_uuid = asyncres.id
-# print(f"Resuming the job with uuid: {resume_uuid}")
-# asyncres2: AbortableAsyncResult = job_raptgen.delay(
-#     child_id=1,
-#     model_length=10,
-#     num_epochs=5,
-#     beta_threshold=0.1,
-#     force_matching_epochs=1,
-#     match_cost=4,
-#     early_stop_threshold=1,
-#     seed=1,
-#     device="CPU",
-#     parent_uuid="8aab26d7-7657-47fa-b624-ed752864ae76",
-#     resume_uuid=resume_uuid,
-#     database_url=url,
-# )  # type: ignore
+    asyncres2: AbortableAsyncResult = job_raptgen.delay(
+        child_id=1,
+        model_length=10,
+        num_epochs=5,
+        beta_threshold=0.1,
+        force_matching_epochs=1,
+        match_cost=4,
+        early_stop_threshold=1,
+        seed=1,
+        device="CPU",
+        parent_uuid="8aab26d7-7657-47fa-b624-ed752864ae76",
+        resume_uuid=asyncres.id,
+        database_url=url,
+    )  # type: ignore
 
-# asyncres2.wait()
-# assert (
-#     db_session.query(ChildJob).filter(ChildJob.uuid == resume_uuid).first().status
-#     == "success"
-# )
+    db_session.commit()
+    asyncres2.wait()
+    job_data = (
+        db_session.query(ChildJob).filter(ChildJob.uuid == str(asyncres.id)).first()
+    )
+    assert job_data.status == "success"

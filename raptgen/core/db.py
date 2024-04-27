@@ -71,6 +71,8 @@ class ChildJob(BaseSchema):
         identifier of the child job
     parent_uuid : str
         identifier of the parent job
+    worker_uuid : str
+        identifier of the worker, needed for suspending/resuming the child job
     start : int
         start time of the child job
     duration : int
@@ -102,6 +104,7 @@ class ChildJob(BaseSchema):
     id = Column(Integer, nullable=False)
     uuid = Column(String, unique=True, primary_key=True, nullable=False)
     parent_uuid = Column(String, ForeignKey("parent_jobs.uuid"), nullable=False)
+    worker_uuid = Column(String)
     start = Column(Integer)
     duration = Column(Integer)
     status = Column(String, nullable=False)
