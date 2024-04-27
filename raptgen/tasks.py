@@ -44,11 +44,11 @@ celery = Celery(
     backend="redis://redis:6379/0",
 )
 
-celery.conf.update(
-    task_serializer="pickle",
-    result_serializer="pickle",
-    accept_content=["json", "pickle"],
-)
+# celery.conf.update(
+#     task_serializer="pickle",
+#     result_serializer="pickle",
+#     accept_content=["json", "pickle"],
+# )
 
 
 @celery.task(bind=True)
