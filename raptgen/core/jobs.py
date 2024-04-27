@@ -73,6 +73,8 @@ class ChildJobTask(AbortableTask):
             raise ValueError(
                 f"ChildJobTask: Task {task_id} does not exist on the database."
             )
+        job.status = "failure"  # type: ignore
+
         parent = (
             session.query(ParentJob).filter(ParentJob.uuid == job.parent_uuid).first()
         )
@@ -100,6 +102,7 @@ class ChildJobTask(AbortableTask):
             parent.status = "failure"  # type: ignore
 
         job.error_msg = str(exc)  # type: ignore
+        session.commit()
 
     def before_start(self, task_id, args, kwargs):
         super().before_start(task_id, args, kwargs)

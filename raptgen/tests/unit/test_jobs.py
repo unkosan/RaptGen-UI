@@ -7,7 +7,7 @@ from celery.contrib.abortable import AbortableAsyncResult
 from time import sleep
 import pandas as pd
 
-from core.jobs import job_raptgen
+from core.jobs import job_raptgen, ChildJobTask
 from core.db import (
     BaseSchema,
     ParentJob,
@@ -125,6 +125,19 @@ def wrapper_db_session(db_session):
     yield db_session
 
 
+@pytest.fixture
+def eager_mode():
+    celery.conf.update(
+        task_always_eager=True,
+        task_eager_propagates=False,
+    )
+    yield None
+    celery.conf.update(
+        task_always_eager=False,
+        task_eager_propagates=False,
+    )
+
+
 @celery.task(bind=True)
 def lightweight_job(
     self,
@@ -162,12 +175,54 @@ def test_job_raptgen_valid_train(db_session, celery_worker):
     )  # type: ignore
 
     sleep(1)
+    db_session.commit()
     task_id = asyncres.id
     status = db_session.query(ChildJob).filter(ChildJob.uuid == task_id).first().status
     assert status == "progress"
     asyncres.wait()
     status = db_session.query(ChildJob).filter(ChildJob.uuid == task_id).first().status
     assert status == "success"
+
+
+def test_job_raptgen_invalid_train(db_session, celery_worker, eager_mode):
+    url = db_session.get_bind().url.render_as_string(hide_password=False)
+
+    kwargs = {
+        "child_id": 1,
+        "model_length": 10,
+        "num_epochs": 2,
+        "beta_threshold": 0,
+        "force_matching_epochs": 1,
+        "match_cost": "string",
+        "early_stop_threshold": 1,
+        "seed": 1,
+        "device": "CPU",
+        "parent_uuid": "8aab26d7-7657-47fa-b624-ed752864ae76",
+        "resume_uuid": None,
+        "database_url": url,
+    }
+
+    task_id = None
+    try:
+        asyncres: AbortableAsyncResult = job_raptgen.delay(**kwargs)  # type: ignore
+        db_session.commit()
+        task_id = str(asyncres.id)
+        asyncres.wait()
+    except Exception as e:
+        print("Exception: ", e)
+        ChildJobTask.on_failure(
+            ChildJobTask(),
+            exc=e,
+            task_id=task_id,
+            args=[],
+            kwargs=kwargs,
+            einfo=None,
+        )
+
+    db_session.commit()
+    job = db_session.query(ChildJob).filter(ChildJob.uuid == task_id).first()
+    assert job.status == "failure"
+    assert job.error_msg != ""
 
 
 def test_job_raptgen_valid_retrain(db_session, celery_worker):
