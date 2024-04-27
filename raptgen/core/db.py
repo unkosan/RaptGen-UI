@@ -1,5 +1,4 @@
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, scoped_session
-from sqlalchemy.sql import func
 from sqlalchemy import (
     Column,
     Integer,

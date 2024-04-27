@@ -1,44 +1,21 @@
 import pytest
 import pytest_postgresql.factories as factories
 
-import pytest_redis.factories.proc as redis_factories
-import pytest_redis.factories.client as redis_client
-from collections import defaultdict
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-
 from celery.contrib.abortable import AbortableAsyncResult
 from time import sleep
-from celery.states import STARTED
+import pandas as pd
 
-from typing import (
-    List,
-    Dict,
-    Any,
-    Union,
-    Tuple,
-    Optional,
-    Sequence,
-    NamedTuple,
-    Callable,
-)
-
+from core.jobs import job_raptgen
 from core.db import (
     BaseSchema,
     ParentJob,
     ChildJob,
-    SequenceEmbeddings,
-    TrainingLosses,
     SequenceData,
 )
-from mocks import mock_children, mock_parents, mock_embeddings, mock_training_losses
-
-
-from core.jobs import job_raptgen
-import pandas as pd
-
 from tasks import celery
+
 
 raptgen_parent_params = {
     "uuid": "8aab26d7-7657-47fa-b624-ed752864ae76",

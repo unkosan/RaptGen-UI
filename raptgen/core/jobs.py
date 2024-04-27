@@ -1,27 +1,14 @@
-from collections import defaultdict
-from celery import Task
-
-from uuid import uuid4
-from sqlalchemy import create_engine, update, delete, insert
-from sqlalchemy.orm import sessionmaker, scoped_session, Session
+from typing import Optional
 
 import time
-
-from typing import (
-    List,
-    Dict,
-    Any,
-    Union,
-    Tuple,
-    Optional,
-    Sequence,
-    NamedTuple,
-    Callable,
-    Generator,
-)
+import pandas as pd
+import torch
+from torch.utils.data import TensorDataset, DataLoader
+from uuid import uuid4
+from io import BytesIO
+from celery.contrib.abortable import AbortableTask
 
 from core.db import (
-    BaseSchema,
     ParentJob,
     ChildJob,
     SequenceEmbeddings,
@@ -29,18 +16,9 @@ from core.db import (
     SequenceData,
     get_db_session,
 )
-from core.algorithms import VAE, profile_hmm_vae_loss, CNN_PHMM_VAE
+from core.algorithms import profile_hmm_vae_loss, CNN_PHMM_VAE
 from core.preprocessing import ID_encode
-from torch.utils.data import TensorDataset, DataLoader
-
-import torch
-
 from tasks import celery
-
-from io import BytesIO
-import pandas as pd
-
-from celery.contrib.abortable import AbortableTask
 
 
 class ChildJobTask(AbortableTask):
@@ -50,7 +28,7 @@ class ChildJobTask(AbortableTask):
         database_url: str = kwargs["database_url"]
         session = get_db_session(database_url).__next__()
         if session is None:
-            raise ValueError(f"ChildJobTask: Database session is not found.")
+            raise ValueError("ChildJobTask: Database session is not found.")
 
         job = session.query(ChildJob).filter(ChildJob.worker_uuid == task_id).first()
         if job is None:
@@ -75,11 +53,11 @@ class ChildJobTask(AbortableTask):
             )
 
         if any([subling.status == "pending" for subling in sublings]):
-            parent.status = "progress"
+            parent.status = "progress"  # type: ignore
         elif any([subling.status == "suspend" for subling in sublings]):
-            parent.status = "suspend"
+            parent.status = "suspend"  # type: ignore
         else:
-            parent.status = "success"
+            parent.status = "success"  # type: ignore
 
         session.commit()
 
@@ -88,7 +66,7 @@ class ChildJobTask(AbortableTask):
         database_url: str = kwargs["database_url"]
         session = get_db_session(database_url).__next__()
         if session is None:
-            raise ValueError(f"ChildJobTask: Database session is not found.")
+            raise ValueError("ChildJobTask: Database session is not found.")
 
         job = session.query(ChildJob).filter(ChildJob.worker_uuid == task_id).first()
         if job is None:
@@ -113,15 +91,15 @@ class ChildJobTask(AbortableTask):
             )
 
         if any([subling.status == "pending" for subling in sublings]):
-            parent.status = "progress"
+            parent.status = "progress"  # type: ignore
         elif any([subling.status == "suspend" for subling in sublings]):
-            parent.status = "suspend"
+            parent.status = "suspend"  # type: ignore
         elif any([subling.status == "success" for subling in sublings]):
-            parent.status = "success"
+            parent.status = "success"  # type: ignore
         else:
-            parent.status = "failure"
+            parent.status = "failure"  # type: ignore
 
-        job.error_msg = str(exc)
+        job.error_msg = str(exc)  # type: ignore
 
     def before_start(self, task_id, args, kwargs):
         super().before_start(task_id, args, kwargs)
@@ -135,7 +113,7 @@ class ChildJobTask(AbortableTask):
             raise ValueError(
                 f"ChildJobTask: Task {task_id} does not exist on the database."
             )
-        job.status = "progress"
+        job.status = "progress"  # type: ignore
         parent = (
             session.query(ParentJob).filter(ParentJob.uuid == job.parent_uuid).first()
         )
@@ -144,7 +122,7 @@ class ChildJobTask(AbortableTask):
                 f"ChildJobTask: Parent job {job.parent_uuid} does not exist on the database."
             )
 
-        parent.status = "progress"
+        parent.status = "progress"  # type: ignore
         session.commit()
 
     def delay(self, *args, **kwargs):
@@ -160,7 +138,7 @@ class ChildJobTask(AbortableTask):
                 .filter(ChildJob.uuid == kwargs["resume_uuid"])
                 .first()
             )
-            child.worker_uuid = task_id
+            child.worker_uuid = task_id  # type: ignore
         else:
             session.add(
                 ChildJob(
@@ -248,7 +226,6 @@ def job_raptgen(
                 "Child job does not exist. Maybe adding the child job failed."
             )
     child_uuid = child_job.uuid
-    task_id = self.request.id
 
     # process the data from SequenceData
     sequence_records = (
@@ -305,7 +282,7 @@ def job_raptgen(
             patience = current_epoch - min_loss_epoch
             min_loss = min_loss_record.test_loss  # type: ignore
 
-            current_checkpoint_binary: bytes = child_job.current_checkpoint
+            current_checkpoint_binary: bytes = child_job.current_checkpoint  # type: ignore
             with BytesIO(current_checkpoint_binary) as f:
                 current_checkpoint = torch.load(f)
                 model.load_state_dict(current_checkpoint["model"])
@@ -406,12 +383,12 @@ def job_raptgen(
             )
             f.seek(0)
             current_checkpoint_binary = f.read()
-        child_job.current_checkpoint = current_checkpoint_binary
+        child_job.current_checkpoint = current_checkpoint_binary  # type: ignore
 
         # when the lowest test loss is found, update the optimal checkpoint and embeddings
         if test_loss < min_loss:
             min_loss = test_loss
-            child_job.minimum_NLL = min_loss
+            child_job.minimum_NLL = min_loss  # type: ignore
 
             patience = 0
 
@@ -444,12 +421,12 @@ def job_raptgen(
                 SequenceEmbeddings.child_uuid == child_uuid
             ).delete()
             session.commit()
-            session.bulk_insert_mappings(SequenceEmbeddings, embeddings_dict)
+            session.bulk_insert_mappings(SequenceEmbeddings, embeddings_dict)  # type: ignore
 
-            child_job.optimal_checkpoint = current_checkpoint_binary
+            child_job.optimal_checkpoint = current_checkpoint_binary  # type: ignore
 
         # update the child job entry
-        child_job.epochs_current = epoch + 1
+        child_job.epochs_current = epoch + 1  # type: ignore
 
         session.commit()
 
@@ -458,7 +435,7 @@ def job_raptgen(
             break
 
     # update the child job entry
-    child_job.status = "success"
+    child_job.status = "success"  # type: ignore
     session.commit()
 
     return True
