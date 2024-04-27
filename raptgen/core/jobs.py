@@ -1,6 +1,7 @@
 from collections import defaultdict
 from celery import Task
 
+from uuid import uuid4
 from sqlalchemy import create_engine, update, delete, insert
 from sqlalchemy.orm import sessionmaker, scoped_session, Session
 
@@ -42,7 +43,141 @@ import pandas as pd
 from celery.contrib.abortable import AbortableTask
 
 
-@celery.task(bind=True, base=AbortableTask)
+class ChildJobTask(AbortableTask):
+
+    def on_success(self, retval, task_id, args, kwargs):
+        super().on_success(retval, task_id, args, kwargs)
+        database_url: str = kwargs["database_url"]
+        session = get_db_session(database_url).__next__()
+        if session is None:
+            raise ValueError(f"ChildJobTask: Database session is not found.")
+
+        job = session.query(ChildJob).filter(ChildJob.uuid == task_id).first()
+        if job is None:
+            raise ValueError(
+                f"ChildJobTask: Child job {task_id} does not exist on the database."
+            )
+        parent = (
+            session.query(ParentJob).filter(ParentJob.uuid == job.parent_uuid).first()
+        )
+        if parent is None:
+            raise ValueError(
+                f"ChildJobTask: Parent job {job.parent_uuid} does not exist on the database."
+            )
+        sublings = (
+            session.query(ChildJob)
+            .filter(ChildJob.parent_uuid == job.parent_uuid)
+            .all()
+        )
+        if len(sublings) == 0:
+            raise ValueError(
+                f"ChildJobTask: Parent job {job.parent_uuid} does not have any child jobs."
+            )
+
+        if any([subling.status == "pending" for subling in sublings]):
+            parent.status = "progress"
+        elif any([subling.status == "suspend" for subling in sublings]):
+            parent.status = "suspend"
+        else:
+            parent.status = "success"
+
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        super().on_failure(exc, task_id, args, kwargs, einfo)
+        database_url: str = kwargs["database_url"]
+        session = get_db_session(database_url).__next__()
+        if session is None:
+            raise ValueError(f"ChildJobTask: Database session is not found.")
+
+        job = session.query(ChildJob).filter(ChildJob.uuid == task_id).first()
+        if job is None:
+            raise ValueError(
+                f"ChildJobTask: Child job {task_id} does not exist on the database."
+            )
+        parent = (
+            session.query(ParentJob).filter(ParentJob.uuid == job.parent_uuid).first()
+        )
+        if parent is None:
+            raise ValueError(
+                f"ChildJobTask: Parent job {job.parent_uuid} does not exist on the database."
+            )
+        sublings = (
+            session.query(ChildJob)
+            .filter(ChildJob.parent_uuid == job.parent_uuid)
+            .all()
+        )
+        if len(sublings) == 0:
+            raise ValueError(
+                f"ChildJobTask: Parent job {job.parent_uuid} does not have any child jobs."
+            )
+
+        if any([subling.status == "pending" for subling in sublings]):
+            parent.status = "progress"
+        elif any([subling.status == "suspend" for subling in sublings]):
+            parent.status = "suspend"
+        elif any([subling.status == "success" for subling in sublings]):
+            parent.status = "success"
+        else:
+            parent.status = "failure"
+
+        job.error_msg = str(exc)
+
+    def before_start(self, task_id, args, kwargs):
+        super().before_start(task_id, args, kwargs)
+        database_url: str = kwargs["database_url"]
+        session = get_db_session(database_url).__next__()
+        if session is None:
+            raise ValueError("ChildJobTask: Database session is not found.")
+
+        job = session.query(ChildJob).filter(ChildJob.uuid == task_id).first()
+        if job is None:
+            raise ValueError(
+                f"ChildJobTask: Child job {task_id} does not exist on the database."
+            )
+        job.status = "progress"
+        parent = (
+            session.query(ParentJob).filter(ParentJob.uuid == job.parent_uuid).first()
+        )
+        if parent is None:
+            raise ValueError(
+                f"ChildJobTask: Parent job {job.parent_uuid} does not exist on the database."
+            )
+
+        parent.status = "progress"
+        session.commit()
+
+    def delay(self, *args, **kwargs):
+        database_url: str = kwargs["database_url"]
+        session = get_db_session(database_url).__next__()
+        if session is None:
+            raise ValueError("ChildJobTask: Database session is not found.")
+
+        task_id = str(uuid4())
+        if "resume_uuid" in kwargs and kwargs["resume_uuid"] is not None:
+            pass
+        else:
+            session.add(
+                ChildJob(
+                    id=kwargs["child_id"],
+                    uuid=task_id,
+                    parent_uuid=kwargs["parent_uuid"],
+                    start=int(time.time()),
+                    duration=None,
+                    status="pending",
+                    epochs_total=kwargs["num_epochs"],
+                    epochs_current=0,
+                    minimum_NLL=float("inf"),
+                    is_added_viewer_dataset=False,
+                    current_checkpoint=None,
+                    optimal_checkpoint=None,
+                )
+            )
+
+        session.commit()
+        print("ChildJobTask: running delay")
+        return super().apply_async(task_id=task_id, args=args, kwargs=kwargs)
+
+
+@celery.task(bind=True, base=ChildJobTask)
 def job_raptgen(
     self: AbortableTask,
     child_id: int,
@@ -88,6 +223,7 @@ def job_raptgen(
     database_url : str
         database URL to connect
     """
+    print(f"job_raptgen: Running job_raptgen with child_id {child_id}.")
     device_t = torch.device(device.lower())
     # get the database session
     session = get_db_session(database_url).__next__()
@@ -100,22 +236,6 @@ def job_raptgen(
             raise ValueError(f"Child job {resume_uuid} does not exist.")
         task_id = resume_uuid
     else:
-        session.add(
-            ChildJob(
-                id=child_id,
-                uuid=self.request.id,
-                parent_uuid=parent_uuid,
-                start=int(time.time()),
-                duration=None,
-                status="progress",
-                epochs_total=num_epochs,
-                epochs_current=0,
-                minimum_NLL=float("inf"),
-                is_added_viewer_dataset=False,
-                current_checkpoint=None,
-                optimal_checkpoint=None,
-            )
-        )
         child_job = (
             session.query(ChildJob).filter(ChildJob.uuid == self.request.id).first()
         )
@@ -188,6 +308,8 @@ def job_raptgen(
 
     model.to(device_t)
     model.train()
+
+    print(f"job_raptgen: Training child job {task_id} on {device}.")
 
     for epoch in range(current_epoch, num_epochs):
         if self.is_aborted():
@@ -332,7 +454,12 @@ def job_raptgen(
         if patience >= early_stop_threshold:
             break
 
+        print(
+            f"job_raptgen: Child job {task_id} epoch {epoch}: train loss {train_loss}, test loss {test_loss}"
+        )
+
     # update the child job entry
+    print(f"job_raptgen: Child job {task_id} finished training.")
     child_job.status = "success"
     session.commit()
 
