@@ -20,12 +20,17 @@
 				"ms-python.python",
 				"usernamehw.errorlens",
 				"eamodio.gitlens",
-				"ms-python.black-formatter"
+				"ms-python.black-formatter",
+				"ms-vscode-remote.remote-containers",
+				"GitHub.vscode-pull-request-github",
+				"mhutchie.git-graph"
 			]
 		}
 	},
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	 },
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 	// Uncomment the next line if you want start specific services in your Docker Compose config.

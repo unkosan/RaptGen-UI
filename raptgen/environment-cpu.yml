@@ -27,6 +27,10 @@ dependencies:
   - httpx
   - pip:
       - python-multipart
+      - pytest-celery
+      - pytest-postgresql
+  - postgresql
+  - psycopg2
   - pytest
   - pre-commit
   - sqlalchemy
