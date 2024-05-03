@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from celery.contrib.abortable import AbortableAsyncResult
 from time import sleep
 import pandas as pd
+import os
 
 from core.jobs import job_raptgen, ChildJobTask
 from core.db import (
@@ -59,9 +60,7 @@ raptgen_child_params_2 = {
     "is_added_viewer_dataset": False,
 }
 
-data_df = pd.read_csv(
-    "/Users/admin/workspace/RaptGen-UI-3/raptgen/tests/unit/mocks/test_train_mock_data.csv"
-)
+data_df = pd.read_csv(os.path.dirname(__file__) + "/mocks/test_train_mock_data.csv")
 data = data_df.to_dict(orient="records")
 
 
@@ -193,7 +192,7 @@ def test_job_raptgen_invalid_train(db_session, celery_worker, eager_mode):
         "num_epochs": 2,
         "beta_threshold": 0,
         "force_matching_epochs": 1,
-        "match_cost": "string",
+        "match_cost": "string",  # this should be an integer
         "early_stop_threshold": 1,
         "seed": 1,
         "device": "CPU",

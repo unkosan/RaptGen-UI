@@ -4,7 +4,7 @@ RUN useradd -m devcontainer
 
 RUN apt-get update \
     && apt-get upgrade -y \
-    && apt-get install -y git curl vim wget ghostscript
+    && apt-get install -y git curl vim wget ghostscript redis-server
 
 RUN mkdir /usr/share/fonts/opentype/noto \
     && wget https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTC/NotoSansCJK-Bold.ttc \
@@ -19,6 +19,8 @@ ENV CONDA_DEFAULT_ENV raptgen
 ENV PATH /opt/conda/envs/raptgen/bin:$PATH
 ENV PYTHONPATH /app
 
+USER devcontainer
 WORKDIR /app
+ENV PYTEST_PLUGINS=celery.contrib.pytest
 
 CMD [ "python3" ]
