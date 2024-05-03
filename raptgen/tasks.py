@@ -1,15 +1,11 @@
 from celery import Celery, current_task, Task
-from typing import List, Tuple, Dict, Any, OrderedDict, Optional
+from typing import List, Dict, Any, OrderedDict, Optional
 from core.algorithms import CNN_PHMM_VAE, embed_sequences
 
-import time
 import numpy as np
 import pickle
 import torch
 from io import BytesIO
-
-from core.train import train_VAE
-from core.db import ParentJob, ChildJob, get_session
 
 
 class CPU_Unpickler(pickle.Unpickler):
@@ -80,91 +76,3 @@ def batch_encode(self: Task, seqs: List[str], state_dict_pkl: bytes):
         count = count + chunk_size
 
     return np.array(coord_list)
-
-
-@celery.task(bind=True)
-def train_raptgen_model(
-    self: Task,
-    # ジョブの状態を管理するために必要なパラメータ
-    name: str,
-    model_type: str,  # one of raptgen, raptgen-freq, raptgen-logfreq
-    reiteration: int,
-    params_preprocessing: Dict[str, Any],
-    params_training: Dict[str, Any],
-    random_regions: List[str],
-):
-    print("the task is running")
-    self.update_state(
-        state="PROGRESS",
-        meta={
-            "current": 0,
-            "total": reiteration,
-        },
-    )
-
-    def get_db_session():
-        """Dependency to get the database session"""
-        session = get_session()
-        try:
-            yield session
-        finally:
-            session.close()
-
-    # add parent and children jobs to the database
-    Session = get_db_session()
-    with Session() as session:
-        # add parent job
-        parent_job = ParentJob(
-            uuid=current_task.request.id,
-            name=name,
-            status="PENDING",
-            start=int(time.time()),
-            duration=-1,
-            reiteration=reiteration,
-            params_preprocessing=params_preprocessing,
-            params_training=params_training,
-            child_jobs=[],
-        )
-        session.add(parent_job)
-
-        # add child jobs
-        for i in range(reiteration):
-            model = CNN_PHMM_VAE(
-                motif_len=params_training["motif_len"],
-                embed_size=params_training["embed_dim"],
-            )
-
-            child_job = ChildJob(
-                id=i,
-                uuid=current_task.request.id + f"-{i}",
-                parent_uuid=current_task.request.id,
-                start=int(time.time()),
-                duration=-1,
-                status="PENDING",
-                epochs_total=params_training["epochs"],
-                epochs_current=0,
-                minimum_NLL=None,
-                is_added_viewer_dataset=False,
-                error_msg=None,
-            )
-            session.add(child_job)
-
-        session.commit()
-
-        pass
-
-    for i in range(reiteration):
-        # create model based on model_type
-        model_type
-        # train_VAE(model, task=self)
-        pass
-
-    self.update_state(
-        state="SUCCESS",
-        meta={
-            "current": params_training["epochs"],
-            "total": reiteration,
-        },
-    )
-
-    return {"status": "success", "data": {"model": model}}
