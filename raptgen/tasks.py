@@ -44,12 +44,6 @@ celery = Celery(
     backend="redis://redis:6379/0",
 )
 
-celery.conf.update(
-    task_serializer="pickle",
-    result_serializer="pickle",
-    accept_content=["json", "pickle"],
-)
-
 
 @celery.task(bind=True)
 def batch_encode(self: Task, seqs: List[str], state_dict_pkl: bytes):
