@@ -47,8 +47,13 @@ def load_database(**kwargs):
         session.add(SequenceEmbeddings(**embeddings))
     for training_losses in mock_training_losses:
         session.add(TrainingLosses(**training_losses))
-    session.commit()
-    session.close()
+    try:
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
 
 
 postgresql_proc = factories.postgresql_proc(load=[load_database])

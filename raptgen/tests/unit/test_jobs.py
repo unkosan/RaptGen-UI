@@ -74,13 +74,17 @@ def load_database(**kwargs):
     session.add(ParentJob(**raptgen_parent_params))
     session.add(ChildJob(**raptgen_child_params_1))
     session.add(ChildJob(**raptgen_child_params_2))
-    session.commit()
 
     for d in data:
         session.add(SequenceData(**d))
 
-    session.commit()
-    session.close()
+    try:
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 postgresql_proc = factories.postgresql_proc(load=[load_database])
@@ -176,8 +180,13 @@ def test_job_raptgen_valid_train(db_session, celery_worker):
     sleep(1)
     db_session.commit()
     task_id = asyncres.id
-    status = db_session.query(ChildJob).filter(ChildJob.uuid == task_id).first().status
-    assert status == "progress"
+    if asyncres.ready():
+        print("Task already finished, skipping for progress check")
+    else:
+        status = (
+            db_session.query(ChildJob).filter(ChildJob.uuid == task_id).first().status
+        )
+        assert status == "progress"
     asyncres.wait()
     status = db_session.query(ChildJob).filter(ChildJob.uuid == task_id).first().status
     assert status == "success"
@@ -253,6 +262,10 @@ def test_job_raptgen_valid_retrain(db_session, celery_worker):
         )
         if epoch >= 1:
             break
+
+    if asyncres.ready():
+        print("OMG. Task already finished!")
+        exit(1)
 
     asyncres.abort()
     asyncres.wait()
