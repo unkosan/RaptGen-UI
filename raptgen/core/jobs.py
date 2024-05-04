@@ -28,7 +28,7 @@ from threading import Semaphore
 
 # Use a semaphore to limit the number of concurrent jobs
 semaphore_dict = {
-    "CPU": Semaphore(value=1),
+    "CPU": Semaphore(value=2),
 } | {f"CUDA:{i}": Semaphore(value=2) for i in range(torch.cuda.device_count())}
 
 
@@ -124,7 +124,6 @@ class ChildJobTask(AbortableTask):
                 f"ChildJobTask: Task {task_id} does not exist on the database."
             )
         job.status = "progress"  # type: ignore
-        job.worker_uuid = task_id  # type: ignore
 
         parent = (
             session.query(ParentJob).filter(ParentJob.uuid == job.parent_uuid).first()
@@ -136,6 +135,27 @@ class ChildJobTask(AbortableTask):
         parent.status = "progress"  # type: ignore
 
         session.commit()
+
+    def delay(self, *args, **kwargs):
+        database_url: str = kwargs["database_url"]
+        session = get_db_session(database_url).__next__()
+        if session is None:
+            raise ValueError("ChildJobTask: Database session is not found.")
+
+        child_uuid = kwargs["child_uuid"]
+        job = session.query(ChildJob).filter(ChildJob.uuid == child_uuid).first()
+        if job is None:
+            raise ValueError(
+                f"ChildJobTask: ChildJob {child_uuid} does not exist on the database."
+            )
+
+        uuid = str(uuid4())
+        job.worker_uuid = uuid  # type: ignore
+        session.commit()
+
+        print(f"ChildJobTask: Running task {uuid} for child job {child_uuid}.")
+
+        return self.apply_async(args, kwargs, task_id=uuid)
 
 
 @celery.task(bind=True, base=ChildJobTask)
@@ -165,6 +185,7 @@ def run_job_raptgen(
 
     with semaphore_dict[training_params["device"]]:
 
+        print(f"Running RaptGen model for child job {child_uuid}.")
         # get the database session
         session = get_db_session(database_url).__next__()
 
@@ -246,6 +267,10 @@ def run_job_raptgen(
 
         model.to(device_t)
         model.train()
+
+        print(
+            f"Training RaptGen model for task_id {self.request.id}. With abort flag {self.is_aborted()}."
+        )
 
         for epoch in range(current_epoch, training_params["epochs"]):
             if self.is_aborted():

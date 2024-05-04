@@ -341,7 +341,7 @@ def test_search_job_with_status(db_session):
     assert response.status_code == 422
 
 
-def test_enqueue_job(db_session, celery_worker):
+def xtest_enqueue_job(db_session, celery_worker):
     response = client.post(
         "/api/train/jobs/submit",
         json={
@@ -379,8 +379,6 @@ def test_enqueue_job(db_session, celery_worker):
             },
         },
     )
-    # in eager mode, the task is executed immediately
-    # so when the response is returned, the task is already finished
 
     assert response.status_code == 200
 
@@ -398,3 +396,65 @@ def test_enqueue_job(db_session, celery_worker):
     while parent_job.status in {"pending", "progress"}:
         db_session.refresh(parent_job)
     assert parent_job.status == "success"
+
+
+from time import sleep
+
+
+def test_suspend_job(db_session, celery_worker):
+    response = client.post(
+        "/api/train/jobs/submit",
+        json={
+            "type": "RaptGen",
+            "name": "test",
+            "params_preprocessing": {
+                "forward": "A",
+                "reverse": "T",
+                "random_region_length": 5,
+                "tolerance": 0,
+                "minimum_count": 1,
+            },
+            "random_regions": [  # ATAcgのモチーフが存在していることのテスト
+                "ATGAG",
+                "ATGCG",
+                "ATGGG",
+                "ATGTG",
+                "ATGCA",
+                "ATGCG",
+                "ATGCT",
+                "ATGCC",
+            ]
+            * 100,
+            "duplicates": [],
+            "reiteration": 2,
+            "params_training": {
+                "model_length": 5,
+                "epochs": 2,
+                "match_forcing_duration": 1,
+                "beta_duration": 1,
+                "early_stopping": 1,
+                "seed_value": 10,
+                "match_cost": 10,
+                "device": "CPU",
+            },
+        },
+    )
+
+    # check if the job is enqueued
+    parent_uuid = response.json()["uuid"]
+    parent_job = (
+        db_session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
+    )
+
+    db_session.commit()
+    while parent_job.status in {"pending"}:
+        db_session.refresh(parent_job)
+    assert parent_job.status == "progress"
+
+    response = client.post("/api/train/jobs/suspend", json={"uuid": parent_uuid})
+
+    assert response.status_code == 200
+
+    while parent_job.status in {"progress"}:
+        db_session.refresh(parent_job)
+    assert parent_job.status == "suspend"

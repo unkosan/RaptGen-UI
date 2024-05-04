@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from uuid import uuid4
 
 from typing import List, Any, Optional
+from tasks import celery
 
 
 from core.db import (
@@ -19,7 +20,8 @@ from core.db import (
     SequenceData,
     get_db_session,
 )
-from core.jobs import initialize_job_raptgen, run_job_raptgen
+from core.jobs import initialize_job_raptgen, run_job_raptgen, ChildJobTask
+from celery.contrib.abortable import AbortableAsyncResult
 
 
 router = APIRouter()
@@ -524,3 +526,66 @@ async def update_parent_job(
 
     # for future targets, raise an exception
     raise Exception(f"Not implemented target {request.target}")
+
+
+class OperationPayload(BaseModel):
+    uuid: str
+
+
+@router.post("/api/train/jobs/suspend")
+async def suspend_parent_job(
+    request: OperationPayload,
+    session: Session = Depends(get_db_session),
+):
+    """
+    Suspend a parent job based on its UUID.
+
+    Parameters
+    ----------
+    request : OperationPayload
+        The request body containing the UUID of the parent job.
+    session : Session, optional
+        The database session, by default uses dependency injection to get the session.
+
+    Returns
+    -------
+    None
+        The response is an empty dictionary.
+    """
+    parent_job = session.query(ParentJob).filter(ParentJob.uuid == request.uuid).first()
+    if parent_job is None:
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": "Job not found",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    if parent_job.status != "progress":  # type: ignore
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": "Job is not in progress",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    child_jobs = (
+        session.query(ChildJob).filter(ChildJob.parent_uuid == request.uuid).all()
+    )
+    session.commit()
+
+    for child_job in child_jobs:
+        if child_job.status in {"pending", "progress"}:
+            print(f"Aborting task_id {child_job.worker_uuid}")
+            uuid: str = child_job.worker_uuid  # type: ignore
+            AbortableAsyncResult(uuid, app=celery).abort()
+
+    return None
