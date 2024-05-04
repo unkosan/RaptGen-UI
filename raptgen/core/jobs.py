@@ -6,7 +6,11 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 from uuid import uuid4
 from io import BytesIO
-from celery.contrib.abortable import AbortableTask
+from celery.contrib.abortable import AbortableTask, AbortableAsyncResult
+from celery.result import allow_join_result
+
+from sqlalchemy.orm import Session, scoped_session
+from uuid import UUID
 
 from core.db import (
     ParentJob,
@@ -18,6 +22,7 @@ from core.db import (
 )
 from core.algorithms import profile_hmm_vae_loss, CNN_PHMM_VAE
 from core.preprocessing import ID_encode
+from core.schemas import RaptGenTrainingParams
 from tasks import celery
 
 
@@ -111,12 +116,18 @@ class ChildJobTask(AbortableTask):
         if session is None:
             raise ValueError("ChildJobTask: Database session is not found.")
 
-        job = session.query(ChildJob).filter(ChildJob.worker_uuid == task_id).first()
+        job = (
+            session.query(ChildJob)
+            .filter(ChildJob.uuid == kwargs["child_uuid"])
+            .first()
+        )
         if job is None:
             raise ValueError(
                 f"ChildJobTask: Task {task_id} does not exist on the database."
             )
         job.status = "progress"  # type: ignore
+        job.worker_uuid = task_id  # type: ignore
+
         parent = (
             session.query(ParentJob).filter(ParentJob.uuid == job.parent_uuid).first()
         )
@@ -124,61 +135,17 @@ class ChildJobTask(AbortableTask):
             raise ValueError(
                 f"ChildJobTask: Parent job {job.parent_uuid} does not exist on the database."
             )
-
         parent.status = "progress"  # type: ignore
-        session.commit()
-
-    def delay(self, *args, **kwargs):
-        database_url: str = kwargs["database_url"]
-        session = get_db_session(database_url).__next__()
-        if session is None:
-            raise ValueError("ChildJobTask: Database session is not found.")
-
-        task_id = str(uuid4())
-        if "resume_uuid" in kwargs and kwargs["resume_uuid"] is not None:
-            child = (
-                session.query(ChildJob)
-                .filter(ChildJob.uuid == kwargs["resume_uuid"])
-                .first()
-            )
-            child.worker_uuid = task_id  # type: ignore
-        else:
-            session.add(
-                ChildJob(
-                    id=kwargs["child_id"],
-                    uuid=task_id,
-                    parent_uuid=kwargs["parent_uuid"],
-                    worker_uuid=task_id,
-                    start=int(time.time()),
-                    duration=None,
-                    status="pending",
-                    epochs_total=kwargs["num_epochs"],
-                    epochs_current=0,
-                    minimum_NLL=float("inf"),
-                    is_added_viewer_dataset=False,
-                    current_checkpoint=None,
-                    optimal_checkpoint=None,
-                )
-            )
 
         session.commit()
-        return super().apply_async(task_id=task_id, args=args, kwargs=kwargs)
 
 
 @celery.task(bind=True, base=ChildJobTask)
-def job_raptgen(
+def run_job_raptgen(
     self: AbortableTask,
-    child_id: int,
-    model_length: int,
-    num_epochs: int,
-    beta_threshold: int,
-    force_matching_epochs: int,
-    match_cost: float,
-    early_stop_threshold: int,
-    seed: int,
-    device: str,
-    parent_uuid: str,
-    resume_uuid: Optional[str] = None,
+    child_uuid: str,
+    training_params: dict,
+    is_resume: bool = False,
     database_url: str = "postgresql+psycopg2://postgres:postgres@db:5432/raptgen",
 ):
     """
@@ -186,54 +153,31 @@ def job_raptgen(
 
     Parameters
     ----------
-    child_id : int
-        identifier of the child job
-    model_length : int
-        length of the pHMM model
-    num_epochs : int
-        max number of epochs for training
-    beta_threshold : int
-        beta value for the scheduled annealing
-    force_matching_epochs : int
-        number of epochs to force matching
-    match_cost : float
-        cost of the matching
-    early_stop_threshold : int
-        threshold for early stopping
-    seed : int
-        random seed
-    device : str
-        device to run the model
-    parent_uuid : str
-        parent job identifier
-    resume_uuid : str
-        if not None, resume training from this child job identifier
+    child_uuid : str
+        child job identifier to run or resume
+    training_params : dict
+        training parameters
+    is_resume : bool
+        flag to indicate if the job is resumed
     database_url : str
         database URL to connect
     """
-    device_t = torch.device(device.lower())
+    # test if the params are valid
+    # RaptGenTrainingParams(**training_params)
+
     # get the database session
     session = get_db_session(database_url).__next__()
 
-    # check if the child job exists
-    if resume_uuid is not None:
-        child_job = session.query(ChildJob).filter(ChildJob.uuid == resume_uuid).first()
-        if child_job is None:
-            raise ValueError(f"Child job {resume_uuid} does not exist.")
-    else:
-        child_job = (
-            session.query(ChildJob).filter(ChildJob.uuid == self.request.id).first()
+    child_job = session.query(ChildJob).filter(ChildJob.uuid == child_uuid).first()
+    if child_job is None:
+        raise ValueError(
+            f"Child job {child_uuid} does not exist. Initialize the job first."
         )
-        if child_job is None:
-            raise ValueError(
-                "Child job does not exist. Maybe adding the child job failed."
-            )
-    child_uuid = child_job.uuid
 
     # process the data from SequenceData
     sequence_records = (
         session.query(SequenceData)
-        .filter(SequenceData.parent_uuid == parent_uuid)
+        .filter(SequenceData.parent_uuid == child_job.parent_uuid)
         .all()
     )
 
@@ -249,7 +193,9 @@ def job_raptgen(
             for record in sequence_records
         ]
     )
-    sequence_records_df = sequence_records_df.sample(frac=1, random_state=seed)
+    sequence_records_df = sequence_records_df.sample(
+        frac=1, random_state=training_params["seed_value"]
+    )
     train_df = sequence_records_df[sequence_records_df["is_training_data"]]
     test_df = sequence_records_df[~sequence_records_df["is_training_data"]]
 
@@ -262,7 +208,7 @@ def job_raptgen(
 
     # prepare the model
     model = CNN_PHMM_VAE(
-        motif_len=model_length,
+        motif_len=training_params["model_length"],
         embed_size=2,
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
@@ -271,13 +217,15 @@ def job_raptgen(
     current_epoch: int = 0
     min_loss: float = float("inf")
 
+    device_t = torch.device(training_params["device"].lower())
+
     # if resume_uuid is not None, load the model and optimizer states from the checkpoint
-    if resume_uuid is not None:
+    if is_resume:
         current_epoch = child_job.epochs_current  # type: ignore
         if current_epoch != 0:  # type: ignore
             min_loss_record = (
                 session.query(TrainingLosses)
-                .filter(TrainingLosses.child_uuid == resume_uuid)
+                .filter(TrainingLosses.child_uuid == child_uuid)
                 .order_by(TrainingLosses.test_loss)
                 .first()
             )
@@ -294,17 +242,17 @@ def job_raptgen(
     model.to(device_t)
     model.train()
 
-    for epoch in range(current_epoch, num_epochs):
+    for epoch in range(current_epoch, training_params["epochs"]):
         if self.is_aborted():
             child_job.status = "suspend"  # type: ignore
             session.commit()
             return False
 
-        if epoch < beta_threshold:
-            beta = epoch / beta_threshold
+        if epoch < training_params["beta_duration"]:
+            beta = epoch / training_params["beta_duration"]
         else:
             beta = 1
-        use_force_matching = epoch < force_matching_epochs
+        use_force_matching = epoch < training_params["match_forcing_duration"]
 
         train_loss: float = 0
         test_kld: float = 0
@@ -325,7 +273,9 @@ def job_raptgen(
                 beta=beta,
                 force_matching=use_force_matching,
                 match_cost=(
-                    1 + match_cost * (1 - epoch / force_matching_epochs)
+                    1
+                    + training_params["match_cost"]
+                    * (1 - epoch / training_params["match_forcing_duration"])
                     if use_force_matching
                     else 1
                 ),
@@ -434,7 +384,7 @@ def job_raptgen(
         session.commit()
 
         # early stopping
-        if patience >= early_stop_threshold:
+        if patience >= training_params["early_stopping"]:
             break
 
     # update the child job entry
@@ -442,3 +392,107 @@ def job_raptgen(
     session.commit()
 
     return True
+
+
+def initialize_job_raptgen(
+    session: Session,
+    parent_uuid: str,
+    id: int,
+    params: RaptGenTrainingParams,
+) -> UUID:
+    """
+    Initialize the database entry for the RaptGen job.
+
+    Parameters
+    ----------
+        session : Session
+            database session
+        parent_uuid : str
+            parent job identifier
+        id : int
+            child job identifier
+        params : RaptGenTrainingParams
+            training parameters
+
+    Returns
+    -------
+        UUID
+            child job identifier
+    """
+    uuid = uuid4()
+    session.add(
+        ChildJob(
+            id=id,
+            uuid=str(uuid),
+            parent_uuid=parent_uuid,
+            worker_uuid=None,
+            start=int(time.time()),
+            duration=None,
+            status="pending",
+            epochs_total=params.epochs,
+            epochs_current=0,
+            minimum_NLL=float("inf"),
+            is_added_viewer_dataset=False,
+            current_checkpoint=None,
+            optimal_checkpoint=None,
+        )
+    )
+    session.commit()
+    return uuid
+
+
+# map/chunk does not invoke before_start and on_success/on_failure hooks
+# so we need to pack the tasks into a single task
+# c.f. https://github.com/celery/celery/issues/7585
+@celery.task(bind=True, base=AbortableTask)
+def manage_jobs_raptgen(
+    self: AbortableTask,
+    parent_uuid: str,
+    training_params: dict,
+    is_resume: bool = False,
+    database_url: str = "postgresql+psycopg2://postgres:postgres@db:5432/raptgen",
+):
+    """
+    Manage the RaptGen jobs.
+
+    Parameters
+    ----------
+    parent_uuid : str
+        parent job identifier
+    training_params : dict
+        training parameters
+    is_resume : bool
+        flag to indicate if the job is resumed
+    database_url : str
+        database URL to connect
+    """
+    session = get_db_session(database_url).__next__()
+
+    print(f"Managing RaptGen jobs for parent job {self.request.id}.")
+
+    # if the params are valid, the following line will not raise an error
+    training_params_t = RaptGenTrainingParams(**training_params)
+
+    parent_job = session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
+    if parent_job is None:
+        raise ValueError(f"Parent job {parent_uuid} does not exist.")
+
+    uuids = []
+    for i in range(parent_job.reiteration):  # type: ignore
+        uuid = initialize_job_raptgen(
+            session=session,  # type: ignore
+            parent_uuid=parent_uuid,
+            id=i,
+            params=training_params_t,
+        )
+        uuids.append(str(uuid))
+
+    for uuid in uuids:
+        res: AbortableAsyncResult = run_job_raptgen.delay(
+            child_uuid=uuid,
+            training_params=training_params,
+            is_resume=is_resume,
+            database_url=database_url,
+        )
+        with allow_join_result():
+            res.wait()

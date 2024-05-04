@@ -1,8 +1,7 @@
 from celery import Celery, current_task, Task
-from typing import List, Tuple, Dict, Any, OrderedDict, Optional
+from typing import List, Dict, Any, OrderedDict, Optional
 from core.algorithms import CNN_PHMM_VAE, embed_sequences
 
-import time
 import numpy as np
 import pickle
 import torch

@@ -16,6 +16,20 @@ mock_parents = [
             "pin_memory": True,
             "device": "CPU",
         },
+        #   params_preprocessing: {
+        #     forward: string,
+        #     reverse: string,
+        #     random_region_length: number,
+        #     tolerance: number,
+        #     minimum_count: number
+        #   },
+        "params_preprocessing": {
+            "forward": "ATG",
+            "reverse": "CAT",
+            "random_region_length": 100,
+            "tolerance": 2,
+            "minimum_count": 2,
+        },
     },
     {
         "uuid": "465e884b-7657-47fa-b624-ed752864ae7b",
@@ -33,6 +47,13 @@ mock_parents = [
             "num_workers": 4,
             "pin_memory": True,
             "device": "CPU",
+        },
+        "params_preprocessing": {
+            "forward": "ATG",
+            "reverse": "CAT",
+            "random_region_length": 100,
+            "tolerance": 2,
+            "minimum_count": 2,
         },
     },
     {
@@ -52,6 +73,13 @@ mock_parents = [
             "pin_memory": True,
             "device": "CPU",
         },
+        "params_preprocessing": {
+            "forward": "ATG",
+            "reverse": "CAT",
+            "random_region_length": 100,
+            "tolerance": 2,
+            "minimum_count": 2,
+        },
     },
     {
         "uuid": "465e884b-7657-47fa-b624-ed752864ae7d",
@@ -69,6 +97,13 @@ mock_parents = [
             "num_workers": 4,
             "pin_memory": True,
             "device": "CPU",
+        },
+        "params_preprocessing": {
+            "forward": "ATG",
+            "reverse": "CAT",
+            "random_region_length": 100,
+            "tolerance": 2,
+            "minimum_count": 2,
         },
     },
     {
@@ -88,6 +123,13 @@ mock_parents = [
             "pin_memory": True,
             "device": "CPU",
         },
+        "params_preprocessing": {
+            "forward": "ATG",
+            "reverse": "CAT",
+            "random_region_length": 100,
+            "tolerance": 2,
+            "minimum_count": 2,
+        },
     },
     {
         "uuid": "465e884b-7657-47fa-b624-ed752864ae80",
@@ -105,6 +147,13 @@ mock_parents = [
             "num_workers": 4,
             "pin_memory": True,
             "device": "CPU",
+        },
+        "params_preprocessing": {
+            "forward": "ATG",
+            "reverse": "CAT",
+            "random_region_length": 100,
+            "tolerance": 2,
+            "minimum_count": 2,
         },
     },
     {
@@ -124,6 +173,13 @@ mock_parents = [
             "pin_memory": True,
             "device": "CPU",
         },
+        "params_preprocessing": {
+            "forward": "ATG",
+            "reverse": "CAT",
+            "random_region_length": 100,
+            "tolerance": 2,
+            "minimum_count": 2,
+        },
     },
     {
         "uuid": "465e884b-7657-47fa-b624-ed752864ae82",
@@ -141,6 +197,13 @@ mock_parents = [
             "num_workers": 4,
             "pin_memory": True,
             "device": "CPU",
+        },
+        "params_preprocessing": {
+            "forward": "ATG",
+            "reverse": "CAT",
+            "random_region_length": 100,
+            "tolerance": 2,
+            "minimum_count": 2,
         },
     },
     {
@@ -160,6 +223,13 @@ mock_parents = [
             "pin_memory": True,
             "device": "CPU",
         },
+        "params_preprocessing": {
+            "forward": "ATG",
+            "reverse": "CAT",
+            "random_region_length": 100,
+            "tolerance": 2,
+            "minimum_count": 2,
+        },
     },
     {
         "uuid": "465e884b-7657-47fa-b624-ed752864ae84",
@@ -178,6 +248,13 @@ mock_parents = [
             "pin_memory": True,
             "device": "CPU",
             "test": "test",
+        },
+        "params_preprocessing": {
+            "forward": "ATG",
+            "reverse": "CAT",
+            "random_region_length": 100,
+            "tolerance": 2,
+            "minimum_count": 2,
         },
     },
 ]

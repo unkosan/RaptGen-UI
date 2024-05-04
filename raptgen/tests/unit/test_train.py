@@ -9,6 +9,7 @@ import pytest_postgresql.factories as factories
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from mocks import mock_children, mock_parents, mock_embeddings, mock_training_losses
+from tasks import celery
 
 from core.db import (
     BaseSchema,
@@ -60,6 +61,36 @@ postgresql_proc = factories.postgresql_proc(load=[load_database])
 postgresql = factories.postgresql(
     "postgresql_proc"
 )  # still need to check if this is actually needed or not
+
+
+@pytest.fixture(scope="session")
+def celery_config():
+    celery.conf.update(
+        broker_url="redis://localhost:6379/0",
+        result_backend="redis://localhost:6379/0",
+        task_serializer="json",
+        result_serializer="json",
+        accept_content=["pickle", "json"],
+        task_track_started=True,
+        result_persistent=True,
+    )
+    return {
+        "broker_url": "redis://localhost:6379/0",
+        "result_backend": "redis://localhost:6379/0",
+    }
+
+
+@pytest.fixture
+def eager_mode():
+    celery.conf.update(
+        task_always_eager=True,
+        task_eager_propagates=False,
+    )
+    yield None
+    celery.conf.update(
+        task_always_eager=False,
+        task_eager_propagates=False,
+    )
 
 
 @pytest.fixture
@@ -308,3 +339,57 @@ def test_search_job_with_status(db_session):
 
     response = client.post("/api/train/jobs/search", json={"type": ["AptGen"]})
     assert response.status_code == 422
+
+
+def test_enqueue_job(db_session, celery_worker, eager_mode):
+    response = client.post(
+        "/api/train/jobs/submit",
+        json={
+            "type": "RaptGen",
+            "name": "test",
+            "params_preprocessing": {
+                "forward": "A",
+                "reverse": "T",
+                "random_region_length": 5,
+                "tolerance": 0,
+                "minimum_count": 1,
+            },
+            "random_regions": [  # ATAcgのモチーフが存在していることのテスト
+                "ATGAG",
+                "ATGCG",
+                "ATGGG",
+                "ATGTG",
+                "ATGCA",
+                "ATGCG",
+                "ATGCT",
+                "ATGCC",
+            ]
+            * 100,
+            "duplicates": [],
+            "reiteration": 2,
+            "params_training": {
+                "model_length": 5,
+                "epochs": 2,
+                "match_forcing_duration": 1,
+                "beta_duration": 1,
+                "early_stopping": 1,
+                "seed_value": 10,
+                "match_cost": 10,
+                "device": "CPU",
+            },
+        },
+    )
+    # in eager mode, the task is executed immediately
+    # so when the response is returned, the task is already finished
+
+    assert response.status_code == 200
+
+    # check if the job is enqueued
+    parent_uuid = response.json()["uuid"]
+    parent_job = (
+        db_session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
+    )
+
+    assert parent_job.name == "test"
+    assert parent_job.type == "RaptGen"
+    assert parent_job.status == "success"

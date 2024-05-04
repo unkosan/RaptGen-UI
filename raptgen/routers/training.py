@@ -1,8 +1,12 @@
 import torch
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from core.schemas import RaptGenFreqModel, RaptGenModel
 from sqlalchemy.orm import Session
 import re
+from typing import List, Optional, Union
+from pydantic import BaseModel
+from uuid import uuid4
 
 from typing import List, Any, Optional
 
@@ -12,8 +16,10 @@ from core.db import (
     ChildJob,
     SequenceEmbeddings,
     TrainingLosses,
+    SequenceData,
     get_db_session,
 )
+from core.jobs import manage_jobs_raptgen
 
 router = APIRouter()
 
@@ -65,6 +71,7 @@ async def get_parent_job(
         - duration: The duration of the parent job.
         - reiteration: The reiteration count of the parent job.
         - params_training: The training parameters of the parent job.
+        - params_preprocessing: The preprocessing parameters of the parent job.
         - summary: A summary of all child jobs associated with the parent job.
 
     Raises
@@ -110,6 +117,7 @@ async def get_parent_job(
         "duration": parent_job.duration,
         "reiteration": parent_job.reiteration,
         "params_training": parent_job.params_training,
+        "params_preprocessing": parent_job.params_preprocessing,
         "summary": summary,
     }
     return response
@@ -344,6 +352,85 @@ async def search_jobs(
         )
 
     return response
+
+
+class JobSubmissionResponse(BaseModel):
+    uuid: str
+
+
+@router.post("/api/train/jobs/submit", response_model=JobSubmissionResponse)
+async def run_parent_job(
+    request_param: Union[RaptGenModel, RaptGenFreqModel],
+    session: Session = Depends(get_db_session),  # Use dependency injection for session
+):
+    # なんでget_db_session()を使わないんだっけ？
+    if isinstance(request_param, RaptGenModel):
+        parent_id = str(uuid4())
+        session.add(
+            ParentJob(
+                uuid=parent_id,
+                name=request_param.name,
+                type=request_param.type,
+                status="pending",
+                start=0,
+                duration=0,
+                reiteration=request_param.reiteration,
+                params_training=request_param.params_training.dict(),
+                params_preprocessing=request_param.params_preprocessing.dict(),
+                worker_uuid=parent_id,
+            )
+        )
+        num_entries = len(request_param.random_regions)
+        for i, seq in enumerate(request_param.random_regions):
+            session.add(
+                SequenceData(
+                    seq_id=i,
+                    parent_uuid=parent_id,
+                    random_region=seq,
+                    is_training_data=i < num_entries * 0.8,
+                    duplicate=1,
+                )
+            )
+        session.commit()
+
+        # database_url = session.bind.url.__to_string__(hide_password=False)  # type: ignore
+        database_url = session.get_bind().engine.url.render_as_string(
+            hide_password=False
+        )
+
+        manage_jobs_raptgen.apply_async(
+            kwargs={
+                "parent_uuid": parent_id,
+                "training_params": request_param.params_training.dict(),
+                "database_url": database_url,
+            },
+            task_id=parent_id,
+        )
+
+        return JobSubmissionResponse(uuid=parent_id)
+
+    elif isinstance(request_param, RaptGenFreqModel):
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "type"],
+                    "msg": "RaptGenFreqModel is not supported for now",
+                    "type": "value_error",
+                }
+            ],
+        )
+    else:
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "type"],
+                    "msg": "Invalid model type",
+                    "type": "value_error",
+                }
+            ],
+        )
 
 
 class UpdateParentJobPayload(BaseModel):
