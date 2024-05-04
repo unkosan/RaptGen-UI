@@ -55,6 +55,7 @@ class ParentJob(BaseSchema):
     params_preprocessing = Column(JSON)
     params_training = Column(JSON)
     child_jobs = relationship("ChildJob", backref="job")
+    worker_uuid = Column(String)
 
 
 class ChildJob(BaseSchema):

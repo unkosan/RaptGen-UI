@@ -6,8 +6,10 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 from uuid import uuid4
 from io import BytesIO
-from celery.contrib.abortable import AbortableTask
-from sqlalchemy.orm import Session
+from celery.contrib.abortable import AbortableTask, AbortableAsyncResult
+from celery.result import allow_join_result
+
+from sqlalchemy.orm import Session, scoped_session
 from uuid import UUID
 
 from core.db import (
@@ -437,3 +439,60 @@ def initialize_job_raptgen(
     )
     session.commit()
     return uuid
+
+
+# map/chunk does not invoke before_start and on_success/on_failure hooks
+# so we need to pack the tasks into a single task
+# c.f. https://github.com/celery/celery/issues/7585
+@celery.task(bind=True, base=AbortableTask)
+def manage_jobs_raptgen(
+    self: AbortableTask,
+    parent_uuid: str,
+    training_params: dict,
+    is_resume: bool = False,
+    database_url: str = "postgresql+psycopg2://postgres:postgres@db:5432/raptgen",
+):
+    """
+    Manage the RaptGen jobs.
+
+    Parameters
+    ----------
+    parent_uuid : str
+        parent job identifier
+    training_params : dict
+        training parameters
+    is_resume : bool
+        flag to indicate if the job is resumed
+    database_url : str
+        database URL to connect
+    """
+    session = get_db_session(database_url).__next__()
+
+    print(f"Managing RaptGen jobs for parent job {self.request.id}.")
+
+    # if the params are valid, the following line will not raise an error
+    training_params_t = RaptGenTrainingParams(**training_params)
+
+    parent_job = session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
+    if parent_job is None:
+        raise ValueError(f"Parent job {parent_uuid} does not exist.")
+
+    uuids = []
+    for i in range(parent_job.reiteration):  # type: ignore
+        uuid = initialize_job_raptgen(
+            session=session,  # type: ignore
+            parent_uuid=parent_uuid,
+            id=i,
+            params=training_params_t,
+        )
+        uuids.append(str(uuid))
+
+    for uuid in uuids:
+        res: AbortableAsyncResult = run_job_raptgen.delay(
+            child_uuid=uuid,
+            training_params=training_params,
+            is_resume=is_resume,
+            database_url=database_url,
+        )
+        with allow_join_result():
+            res.wait()
