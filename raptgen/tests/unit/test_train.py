@@ -341,7 +341,7 @@ def test_search_job_with_status(db_session):
     assert response.status_code == 422
 
 
-def test_enqueue_job(db_session, celery_worker, eager_mode):
+def test_enqueue_job(db_session, celery_worker):
     response = client.post(
         "/api/train/jobs/submit",
         json={
@@ -390,6 +390,11 @@ def test_enqueue_job(db_session, celery_worker, eager_mode):
         db_session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
     )
 
+    db_session.commit()
+
     assert parent_job.name == "test"
     assert parent_job.type == "RaptGen"
+
+    while parent_job.status in {"pending", "progress"}:
+        db_session.refresh(parent_job)
     assert parent_job.status == "success"

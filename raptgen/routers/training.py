@@ -19,7 +19,8 @@ from core.db import (
     SequenceData,
     get_db_session,
 )
-from core.jobs import manage_jobs_raptgen
+from core.jobs import initialize_job_raptgen, run_job_raptgen
+
 
 router = APIRouter()
 
@@ -398,14 +399,32 @@ async def run_parent_job(
             hide_password=False
         )
 
-        manage_jobs_raptgen.apply_async(
-            kwargs={
-                "parent_uuid": parent_id,
-                "training_params": request_param.params_training.dict(),
-                "database_url": database_url,
-            },
-            task_id=parent_id,
-        )
+        uuids: List[str] = []
+        for i in range(request_param.reiteration):
+            uuid = initialize_job_raptgen(
+                session=session,
+                parent_uuid=parent_id,
+                id=i,
+                params=request_param.params_training,
+            )
+            uuids.append(str(uuid))
+
+        for uuid in uuids:
+            run_job_raptgen.delay(
+                child_uuid=uuid,
+                training_params=request_param.params_training.dict(),
+                is_resume=False,
+                database_url=database_url,
+            )
+
+        # manage_jobs_raptgen.apply_async(
+        #     kwargs={
+        #         "parent_uuid": parent_id,
+        #         "training_params": request_param.params_training.dict(),
+        #         "database_url": database_url,
+        #     },
+        #     task_id=parent_id,
+        # )
 
         return JobSubmissionResponse(uuid=parent_id)
 
