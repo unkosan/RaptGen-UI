@@ -526,5 +526,6 @@ def test_delete_job(db_session, celery_worker):
         .filter(SequenceData.parent_uuid == parent_uuid)
         .all()
     )
+    assert len(res) == 0
 
     return None
