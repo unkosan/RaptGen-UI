@@ -399,9 +399,6 @@ def test_enqueue_job(db_session, celery_worker):
     assert parent_job.status == "success"
 
 
-from time import sleep
-
-
 def test_suspend_job(db_session, celery_worker):
     response = client.post(
         "/api/train/jobs/submit",
@@ -488,18 +485,11 @@ def test_resume_job(db_session, celery_worker):
             db_session.refresh(child_job)
     assert parent_job.status == "progress"
 
-    print(f"parent_job.status: {parent_job.status}")
-    for child_job in child_jobs:
-        print(f"child_job.status: {child_job.status}")
-
     while parent_job.status in {"progress"}:
         db_session.refresh(parent_job)
         for child_job in child_jobs:
             db_session.refresh(child_job)
 
-    print(f"parent_job.status: {parent_job.status}")
-    for child_job in child_jobs:
-        print(f"child_job.status: {child_job.status}")
     for child_job in child_jobs:
         assert child_job.status == "success"
     assert parent_job.status == "success"

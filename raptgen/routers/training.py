@@ -419,15 +419,6 @@ async def run_parent_job(
                 database_url=database_url,
             )
 
-        # manage_jobs_raptgen.apply_async(
-        #     kwargs={
-        #         "parent_uuid": parent_id,
-        #         "training_params": request_param.params_training.dict(),
-        #         "database_url": database_url,
-        #     },
-        #     task_id=parent_id,
-        # )
-
         return JobSubmissionResponse(uuid=parent_id)
 
     elif isinstance(request_param, RaptGenFreqModel):
@@ -489,7 +480,7 @@ async def update_parent_job(
             detail=[
                 {
                     "loc": ["path", "parent_uuid"],
-                    "msg": "Job not found",
+                    "msg": f"Job {parent_uuid} not found",
                     "type": "value_error",
                 }
             ],
@@ -559,7 +550,7 @@ async def suspend_parent_job(
             detail=[
                 {
                     "loc": ["body", "uuid"],
-                    "msg": "Job not found",
+                    "msg": f"Job {request.uuid} not found",
                     "type": "value_error",
                 }
             ],
@@ -618,7 +609,7 @@ async def resume_parent_job(
             detail=[
                 {
                     "loc": ["body", "uuid"],
-                    "msg": "Job not found",
+                    "msg": f"Job {request.uuid} not found",
                     "type": "value_error",
                 }
             ],
@@ -630,7 +621,7 @@ async def resume_parent_job(
             detail=[
                 {
                     "loc": ["body", "uuid"],
-                    "msg": "Job is not suspended",
+                    "msg": f"Job {request.uuid} is not suspended",
                     "type": "value_error",
                 }
             ],
@@ -681,7 +672,7 @@ async def delete_parent_job(
             detail=[
                 {
                     "loc": ["body", "uuid"],
-                    "msg": "Job not found",
+                    "msg": f"Job {parent_uuid} not found",
                     "type": "value_error",
                 }
             ],
@@ -698,11 +689,9 @@ async def delete_parent_job(
         session.query(TrainingLosses).filter(
             TrainingLosses.child_uuid == child_job.uuid
         ).delete()
-    session.commit()
 
     session.query(SequenceData).filter(SequenceData.parent_uuid == parent_uuid).delete()
     child_jobs.delete()
-    session.commit()
 
     session.delete(parent_job)
     session.commit()

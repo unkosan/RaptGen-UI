@@ -27,9 +27,14 @@ from tasks import celery
 from threading import Semaphore
 
 # Use a semaphore to limit the number of concurrent jobs
-semaphore_dict = {
-    "CPU": Semaphore(value=2),
-} | {f"CUDA:{i}": Semaphore(value=2) for i in range(torch.cuda.device_count())}
+if torch.cuda.is_available():
+    semaphore_dict = {
+        "CPU": Semaphore(value=2),
+    } | {f"CUDA:{i}": Semaphore(value=2) for i in range(torch.cuda.device_count())}
+else:
+    semaphore_dict = {
+        "CPU": Semaphore(value=2),
+    }
 
 
 class ChildJobTask(AbortableTask):
