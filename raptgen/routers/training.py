@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from uuid import uuid4
 
 from typing import List, Any, Optional
+from tasks import celery
 
 
 from core.db import (
@@ -19,7 +20,9 @@ from core.db import (
     SequenceData,
     get_db_session,
 )
-from core.jobs import manage_jobs_raptgen
+from core.jobs import initialize_job_raptgen, run_job_raptgen, ChildJobTask
+from celery.contrib.abortable import AbortableAsyncResult
+
 
 router = APIRouter()
 
@@ -398,14 +401,23 @@ async def run_parent_job(
             hide_password=False
         )
 
-        manage_jobs_raptgen.apply_async(
-            kwargs={
-                "parent_uuid": parent_id,
-                "training_params": request_param.params_training.dict(),
-                "database_url": database_url,
-            },
-            task_id=parent_id,
-        )
+        uuids: List[str] = []
+        for i in range(request_param.reiteration):
+            uuid = initialize_job_raptgen(
+                session=session,
+                parent_uuid=parent_id,
+                id=i,
+                params=request_param.params_training,
+            )
+            uuids.append(str(uuid))
+
+        for uuid in uuids:
+            run_job_raptgen.delay(
+                child_uuid=uuid,
+                training_params=request_param.params_training.dict(),
+                is_resume=False,
+                database_url=database_url,
+            )
 
         return JobSubmissionResponse(uuid=parent_id)
 
@@ -468,7 +480,7 @@ async def update_parent_job(
             detail=[
                 {
                     "loc": ["path", "parent_uuid"],
-                    "msg": "Job not found",
+                    "msg": f"Job {parent_uuid} not found",
                     "type": "value_error",
                 }
             ],
@@ -505,3 +517,183 @@ async def update_parent_job(
 
     # for future targets, raise an exception
     raise Exception(f"Not implemented target {request.target}")
+
+
+class OperationPayload(BaseModel):
+    uuid: str
+
+
+@router.post("/api/train/jobs/suspend")
+async def suspend_parent_job(
+    request: OperationPayload,
+    session: Session = Depends(get_db_session),
+):
+    """
+    Suspend a parent job based on its UUID.
+
+    Parameters
+    ----------
+    request : OperationPayload
+        The request body containing the UUID of the parent job.
+    session : Session, optional
+        The database session, by default uses dependency injection to get the session.
+
+    Returns
+    -------
+    None
+        The response is an empty dictionary.
+    """
+    parent_job = session.query(ParentJob).filter(ParentJob.uuid == request.uuid).first()
+    if parent_job is None:
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": f"Job {request.uuid} not found",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    if parent_job.status != "progress":  # type: ignore
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": "Job is not in progress",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    child_jobs = (
+        session.query(ChildJob).filter(ChildJob.parent_uuid == request.uuid).all()
+    )
+    session.commit()
+
+    for child_job in child_jobs:
+        if child_job.status in {"pending", "progress"}:
+            print(f"Aborting task_id {child_job.worker_uuid}")
+            uuid: str = child_job.worker_uuid  # type: ignore
+            AbortableAsyncResult(uuid, app=celery).abort()
+
+    return None
+
+
+@router.post("/api/train/jobs/resume")
+async def resume_parent_job(
+    request: OperationPayload,
+    session: Session = Depends(get_db_session),
+):
+    """
+    Resume a parent job based on its UUID.
+
+    Parameters
+    ----------
+    request : OperationPayload
+        The request body containing the UUID of the parent job.
+    session : Session, optional
+        The database session, by default uses dependency injection to get the session.
+
+    Returns
+    -------
+    None
+        The response is an empty dictionary.
+    """
+    parent_job = session.query(ParentJob).filter(ParentJob.uuid == request.uuid).first()
+    if parent_job is None:
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": f"Job {request.uuid} not found",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    if parent_job.status != "suspend":  # type: ignore
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": f"Job {request.uuid} is not suspended",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    child_jobs = (
+        session.query(ChildJob).filter(ChildJob.parent_uuid == request.uuid).all()
+    )
+
+    for child_job in child_jobs:
+        if child_job.status == "suspend":  # type: ignore
+            run_job_raptgen.delay(
+                child_uuid=child_job.uuid,
+                training_params=parent_job.params_training,
+                is_resume=True,
+                database_url=session.get_bind().engine.url.render_as_string(
+                    hide_password=False
+                ),
+            )
+
+    return None
+
+
+@router.delete("/api/train/jobs/items/{parent_uuid}")
+async def delete_parent_job(
+    parent_uuid: str,
+    session: Session = Depends(get_db_session),
+):
+    """
+    Delete a parent job based on its UUID.
+
+    Parameters
+    ----------
+    parent_uuid : str
+        The UUID of the parent job.
+    session : Session, optional
+        The database session, by default uses dependency injection to get the session.
+
+    Returns
+    -------
+    None
+        The response is an empty dictionary.
+    """
+    parent_job = session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
+    if parent_job is None:
+        raise HTTPException(
+            status_code=422,  # TODO: 404 is more appropriate than 422
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": f"Job {parent_uuid} not found",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    if parent_job.status == "progress":  # type: ignore
+        await suspend_parent_job(OperationPayload(uuid=parent_uuid), session=session)
+
+    child_jobs = session.query(ChildJob).filter(ChildJob.parent_uuid == parent_uuid)
+    for child_job in child_jobs:
+        session.query(SequenceEmbeddings).filter(
+            SequenceEmbeddings.child_uuid == child_job.uuid
+        ).delete()
+        session.query(TrainingLosses).filter(
+            TrainingLosses.child_uuid == child_job.uuid
+        ).delete()
+
+    session.query(SequenceData).filter(SequenceData.parent_uuid == parent_uuid).delete()
+    child_jobs.delete()
+
+    session.delete(parent_job)
+    session.commit()
+
+    return None
