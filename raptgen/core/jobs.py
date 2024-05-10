@@ -63,10 +63,21 @@ class ChildJobTask(AbortableTask):
                 f"ChildJobTask: Parent job {job.parent_uuid} does not have any child jobs."
             )
 
-        if any([subling.status == "pending" for subling in sublings]):
+        for subling in sublings:
+            print(
+                f"ChildJobTask: Child job {subling.uuid} has status {subling.status}."
+            )
+
+        if any([subling.status in {"pending", "progress"} for subling in sublings]):
             parent.status = "progress"  # type: ignore
-        elif any([subling.status == "suspend" for subling in sublings]):
-            parent.status = "suspend"  # type: ignore
+        elif any([subling.status in {"suspend"} for subling in sublings]):
+            # 2 cases:
+            if job.status == "suspend":  # type: ignore
+                # 1. aborted this task and others are already finished
+                parent.status = "suspend"  # type: ignore
+            else:
+                # 2. succeeded this task but other tasks remains in queue
+                parent.status = "progress"  # type: ignore
         else:
             parent.status = "success"  # type: ignore
 
@@ -103,11 +114,17 @@ class ChildJobTask(AbortableTask):
                 f"ChildJobTask: Parent job {job.parent_uuid} does not have any child jobs."
             )
 
-        if any([subling.status == "pending" for subling in sublings]):
+        if any([subling.status in {"pending", "progress"} for subling in sublings]):
             parent.status = "progress"  # type: ignore
-        elif any([subling.status == "suspend" for subling in sublings]):
-            parent.status = "suspend"  # type: ignore
-        elif any([subling.status == "success" for subling in sublings]):
+        elif any([subling.status in {"suspend"} for subling in sublings]):
+            # 2 cases:
+            if job.status == "suspend":  # type: ignore
+                # 1. aborted this task and others are already finished
+                parent.status = "suspend"  # type: ignore
+            else:
+                # 2. succeeded this task but other tasks remains in queue
+                parent.status = "progress"  # type: ignore
+        elif any([subling.status in {"success"} for subling in sublings]):
             parent.status = "success"  # type: ignore
         else:
             parent.status = "failure"  # type: ignore

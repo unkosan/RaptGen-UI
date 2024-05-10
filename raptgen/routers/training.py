@@ -589,3 +589,66 @@ async def suspend_parent_job(
             AbortableAsyncResult(uuid, app=celery).abort()
 
     return None
+
+
+@router.post("/api/train/jobs/resume")
+async def resume_parent_job(
+    request: OperationPayload,
+    session: Session = Depends(get_db_session),
+):
+    """
+    Resume a parent job based on its UUID.
+
+    Parameters
+    ----------
+    request : OperationPayload
+        The request body containing the UUID of the parent job.
+    session : Session, optional
+        The database session, by default uses dependency injection to get the session.
+
+    Returns
+    -------
+    None
+        The response is an empty dictionary.
+    """
+    parent_job = session.query(ParentJob).filter(ParentJob.uuid == request.uuid).first()
+    if parent_job is None:
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": "Job not found",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    if parent_job.status != "suspend":  # type: ignore
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": "Job is not suspended",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    child_jobs = (
+        session.query(ChildJob).filter(ChildJob.parent_uuid == request.uuid).all()
+    )
+
+    for child_job in child_jobs:
+        if child_job.status == "suspend":  # type: ignore
+            run_job_raptgen.delay(
+                child_uuid=child_job.uuid,
+                training_params=parent_job.params_training,
+                is_resume=True,
+                database_url=session.get_bind().engine.url.render_as_string(
+                    hide_password=False
+                ),
+            )
+
+    return None

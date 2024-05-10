@@ -341,7 +341,7 @@ def test_search_job_with_status(db_session):
     assert response.status_code == 422
 
 
-def xtest_enqueue_job(db_session, celery_worker):
+def test_enqueue_job(db_session, celery_worker):
     response = client.post(
         "/api/train/jobs/submit",
         json={
@@ -441,9 +441,12 @@ def test_suspend_job(db_session, celery_worker):
     )
 
     # check if the job is enqueued
-    parent_uuid = response.json()["uuid"]
+    parent_uuid: str = response.json()["uuid"]
     parent_job = (
         db_session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
+    )
+    child_jobs = (
+        db_session.query(ChildJob).filter(ChildJob.parent_uuid == parent_uuid).all()
     )
 
     db_session.commit()
@@ -457,4 +460,47 @@ def test_suspend_job(db_session, celery_worker):
 
     while parent_job.status in {"progress"}:
         db_session.refresh(parent_job)
+        for child_job in child_jobs:
+            db_session.refresh(child_job)
     assert parent_job.status == "suspend"
+    assert all([child_job.status == "suspend" for child_job in child_jobs])
+
+    return parent_uuid
+
+
+def test_resume_job(db_session, celery_worker):
+    parent_uuid = test_suspend_job(db_session, celery_worker)
+    parent_job = (
+        db_session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
+    )
+    child_jobs = (
+        db_session.query(ChildJob).filter(ChildJob.parent_uuid == parent_uuid).all()
+    )
+
+    response = client.post("/api/train/jobs/resume", json={"uuid": parent_uuid})
+
+    assert response.status_code == 200
+
+    while parent_job.status in {"suspend"}:
+        db_session.refresh(parent_job)
+        for child_job in child_jobs:
+            db_session.refresh(child_job)
+    assert parent_job.status == "progress"
+
+    print(f"parent_job.status: {parent_job.status}")
+    for child_job in child_jobs:
+        print(f"child_job.status: {child_job.status}")
+
+    while parent_job.status in {"progress"}:
+        db_session.refresh(parent_job)
+        for child_job in child_jobs:
+            db_session.refresh(child_job)
+
+    print(f"parent_job.status: {parent_job.status}")
+    for child_job in child_jobs:
+        print(f"child_job.status: {child_job.status}")
+    for child_job in child_jobs:
+        assert child_job.status == "success"
+    assert parent_job.status == "success"
+
+    return None
