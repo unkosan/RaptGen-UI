@@ -17,6 +17,7 @@ from core.db import (
     ChildJob,
     SequenceEmbeddings,
     TrainingLosses,
+    SequenceData,
     get_db_session,
 )
 
@@ -502,5 +503,28 @@ def test_resume_job(db_session, celery_worker):
     for child_job in child_jobs:
         assert child_job.status == "success"
     assert parent_job.status == "success"
+
+    return None
+
+
+def test_delete_job(db_session, celery_worker):
+    parent_uuid = test_suspend_job(db_session, celery_worker)
+    response = client.delete(f"/api/train/jobs/items/{parent_uuid}")
+
+    assert response.status_code == 200
+
+    db_session.commit()
+
+    res = db_session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
+    assert res is None
+
+    res = db_session.query(ChildJob).filter(ChildJob.parent_uuid == parent_uuid).all()
+    assert len(res) == 0
+
+    res = (
+        db_session.query(SequenceData)
+        .filter(SequenceData.parent_uuid == parent_uuid)
+        .all()
+    )
 
     return None

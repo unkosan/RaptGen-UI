@@ -652,3 +652,59 @@ async def resume_parent_job(
             )
 
     return None
+
+
+@router.delete("/api/train/jobs/items/{parent_uuid}")
+async def delete_parent_job(
+    parent_uuid: str,
+    session: Session = Depends(get_db_session),
+):
+    """
+    Delete a parent job based on its UUID.
+
+    Parameters
+    ----------
+    parent_uuid : str
+        The UUID of the parent job.
+    session : Session, optional
+        The database session, by default uses dependency injection to get the session.
+
+    Returns
+    -------
+    None
+        The response is an empty dictionary.
+    """
+    parent_job = session.query(ParentJob).filter(ParentJob.uuid == parent_uuid).first()
+    if parent_job is None:
+        raise HTTPException(
+            status_code=422,  # TODO: 404 is more appropriate than 422
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": "Job not found",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    if parent_job.status == "progress":  # type: ignore
+        await suspend_parent_job(OperationPayload(uuid=parent_uuid), session=session)
+
+    child_jobs = session.query(ChildJob).filter(ChildJob.parent_uuid == parent_uuid)
+    for child_job in child_jobs:
+        session.query(SequenceEmbeddings).filter(
+            SequenceEmbeddings.child_uuid == child_job.uuid
+        ).delete()
+        session.query(TrainingLosses).filter(
+            TrainingLosses.child_uuid == child_job.uuid
+        ).delete()
+    session.commit()
+
+    session.query(SequenceData).filter(SequenceData.parent_uuid == parent_uuid).delete()
+    child_jobs.delete()
+    session.commit()
+
+    session.delete(parent_job)
+    session.commit()
+
+    return None
