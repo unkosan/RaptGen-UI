@@ -8,8 +8,13 @@ from typing import List, Optional, Union
 from pydantic import BaseModel
 from uuid import uuid4
 
-from typing import List, Any, Optional
+from typing import List, Any, Optional, Tuple
 from tasks import celery
+import pandas as pd
+from sqlalchemy import func
+from io import BytesIO
+import pickle
+import os
 
 
 from core.db import (
@@ -23,6 +28,7 @@ from core.db import (
 from core.jobs import initialize_job_raptgen, run_job_raptgen, ChildJobTask
 from celery.contrib.abortable import AbortableAsyncResult
 
+DATA_PATH = "/app/data/"
 
 router = APIRouter()
 
@@ -695,5 +701,197 @@ async def delete_parent_job(
 
     session.delete(parent_job)
     session.commit()
+
+    return None
+
+
+# @router.post("/api/train/jobs/kill")
+# async def kill_parent_job(
+#     request: OperationPayload,
+#     session: Session = Depends(get_db_session),
+# ):
+#     """
+#     Kill a parent job based on its UUID.
+
+#     Parameters
+#     ----------
+#     request : OperationPayload
+#         The request body containing the UUID of the parent job.
+
+#     Returns
+#     -------
+#     None
+#         The response is an empty dictionary.
+#     """
+#     child_jobs = (
+#         session.query(ChildJob).filter(ChildJob.parent_uuid == request.uuid).all()
+#     )
+
+#     for child_job in child_jobs:
+#         uuid: str = child_job.worker_uuid  # type: ignore
+#         asyncres = AbortableAsyncResult(uuid, app=celery)
+#         asyncres.revoke(terminate=True)
+
+
+@router.post("/api/train/jobs/publish")
+async def publish_parent_job(
+    request: OperationPayload,
+    session: Session = Depends(get_db_session),
+    debug: bool = False,
+):
+    """
+    Publish a parent job based on its UUID.
+
+    Parameters
+    ----------
+    request : OperationPayload
+        The request body containing the UUID of the parent job.
+    is_debug: bool, optional
+        Debug mode. Disables the actual publishing of the job, by default False
+
+    Returns
+    -------
+    None
+        The response is an empty dictionary.
+    """
+    print("Publishing parent job")
+    parent_job = session.query(ParentJob).filter(ParentJob.uuid == request.uuid).first()
+    if parent_job is None:
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": "Job not found",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    if parent_job.status != "success":  # type: ignore
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": "Job is not successful",
+                    "type": "value_error",
+                }
+            ],
+        )
+
+    optimal_model_record = (
+        session.query(ChildJob)
+        .with_entities(
+            ChildJob.uuid.label("uuid"),
+            func.min(TrainingLosses.test_loss).label("score"),
+        )
+        .join(TrainingLosses)
+        .filter(ChildJob.parent_uuid == request.uuid)
+        .group_by(ChildJob.uuid)
+        .order_by("score")
+        .first()
+    )
+    if optimal_model_record is None:
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": "No optimal model found",
+                    "type": "value_error",
+                }
+            ],
+        )
+    uuid: str = optimal_model_record.uuid
+
+    df_profile: pd.DataFrame = pd.read_pickle(DATA_PATH + "profile_dataframe.pkl")
+    df_profile = pd.concat(
+        [
+            df_profile,
+            pd.DataFrame(
+                {
+                    "published_time": pd.Timestamp.now().strftime("%Y/%m/%d"),
+                    "name": str(parent_job.name),
+                    "round": None,
+                    "fwd_adapter": parent_job.params_preprocessing["forward"],
+                    "rev_adapter": parent_job.params_preprocessing["reverse"],
+                    "filtering_method": None,
+                    "minimum_count": parent_job.params_preprocessing["minimum_count"],
+                    "embedding_dim": 2,
+                    "epochs": parent_job.params_training["epochs"],
+                    "beta_weight_epochs": parent_job.params_training["beta_duration"],
+                    "match_forcing_epochs": parent_job.params_training[
+                        "match_forcing_duration"
+                    ],
+                    "match_cost": parent_job.params_training["match_cost"],
+                    "early_stopping_epochs": parent_job.params_training[
+                        "early_stopping"
+                    ],
+                    "CUDA_num_workers": None,
+                    "CUDA_pin_memory": None,
+                    "pHMM_VAE_model_length": parent_job.params_training["model_length"],
+                    "pHMM_VAE_seed": parent_job.params_training["seed_value"],
+                },
+                index=[len(df_profile)],
+            ),
+        ],
+        ignore_index=True,
+    )
+
+    fwd_adapter: str = parent_job.params_preprocessing["forward"]  # type: ignore
+    rev_adapter: str = parent_job.params_preprocessing["reverse"]  # type: ignore
+    df_embeddings: pd.DataFrame = pd.read_sql(
+        f"""
+        SELECT 
+            CONCAT('{fwd_adapter}', random_region, '{rev_adapter}') AS Sequence, 
+            duplicate AS Duplicates, 
+            random_region AS Without_Adapters, 
+            coord_x, 
+            coord_y 
+        FROM sequence_embeddings
+        WHERE child_uuid = '{uuid}';
+        """,
+        session.get_bind(),
+    )
+
+    model_binary: bytes = session.query(ChildJob).filter(ChildJob.uuid == uuid).first().optimal_checkpoint  # type: ignore
+    state_dict_map = torch.load(BytesIO(model_binary))
+    state_dict = state_dict_map["model"]
+
+    df_gmm = pd.DataFrame(
+        {
+            "GMM_num_components": [],
+            "GMM_seed": [],
+            "GMM_optimal_model": [],
+            "GMM_model_type": [],
+        },
+    ).astype(
+        {
+            "GMM_num_components": int,
+            "GMM_seed": int,
+            "GMM_model_type": str,
+            "GMM_optimal_model": "object",
+        }
+    )
+    df_gmm.index.name = "name"
+
+    if not debug:
+        os.makedirs(DATA_PATH + "items/" + str(parent_job.name), exist_ok=True)
+        # df_profile.to_pickle(DATA_PATH + "/profile_dataframe.pkl")
+        df_embeddings.to_pickle(
+            DATA_PATH + "items/" + str(parent_job.name) + "/unique_seq_dataframe.pkl"
+        )
+        df_gmm.to_pickle(
+            DATA_PATH + "items/" + str(parent_job.name) + "/best_gmm_dataframe.pkl"
+        )
+        pickle.dump(
+            state_dict,
+            open(DATA_PATH + "items/" + str(parent_job.name) + "/VAE_model.pkl", "wb"),
+        )
+    else:
+        print(df_profile)
+        print(df_embeddings)
+        print(df_gmm)
 
     return None
