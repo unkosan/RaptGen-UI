@@ -705,34 +705,6 @@ async def delete_parent_job(
     return None
 
 
-# @router.post("/api/train/jobs/kill")
-# async def kill_parent_job(
-#     request: OperationPayload,
-#     session: Session = Depends(get_db_session),
-# ):
-#     """
-#     Kill a parent job based on its UUID.
-
-#     Parameters
-#     ----------
-#     request : OperationPayload
-#         The request body containing the UUID of the parent job.
-
-#     Returns
-#     -------
-#     None
-#         The response is an empty dictionary.
-#     """
-#     child_jobs = (
-#         session.query(ChildJob).filter(ChildJob.parent_uuid == request.uuid).all()
-#     )
-
-#     for child_job in child_jobs:
-#         uuid: str = child_job.worker_uuid  # type: ignore
-#         asyncres = AbortableAsyncResult(uuid, app=celery)
-#         asyncres.revoke(terminate=True)
-
-
 @router.post("/api/train/jobs/publish")
 async def publish_parent_job(
     request: OperationPayload,
