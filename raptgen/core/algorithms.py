@@ -147,7 +147,7 @@ def profile_hmm_loss(
 
     # 各配列の長さ取得
     lengths = torch.sum(batch_input != NucleotideID.PAD, dim=1)
-    indeces = Tensor(range(batch_size))
+    indeces = torch.tensor(range(batch_size), device=batch_input.device)
     unique_lengths = set(lengths.tolist())
 
     result_list = list()
