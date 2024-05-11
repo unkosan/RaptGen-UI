@@ -398,6 +398,8 @@ def test_enqueue_job(db_session, celery_worker):
         db_session.refresh(parent_job)
     assert parent_job.status == "success"
 
+    return parent_uuid
+
 
 def test_suspend_job(db_session, celery_worker):
     response = client.post(
@@ -519,3 +521,12 @@ def test_delete_job(db_session, celery_worker):
     assert len(res) == 0
 
     return None
+
+
+def test_publish_parent_job(db_session, celery_worker):
+    parent_uuid = test_enqueue_job(db_session, celery_worker)
+    print(f"parent_uuid: {parent_uuid}")
+    response = client.post(
+        "/api/train/jobs/publish?debug=true", json={"uuid": parent_uuid}
+    )
+    assert response.status_code == 200
