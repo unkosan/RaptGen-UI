@@ -7,6 +7,7 @@ import re
 from typing import List, Optional, Union
 from pydantic import BaseModel
 from uuid import uuid4
+import numpy as np
 
 from typing import List, Any, Optional, Tuple
 from tasks import celery
@@ -115,7 +116,10 @@ async def get_parent_job(
         summary["indices"].append(child_job.id)
         summary["statuses"].append(child_job.status)
         summary["epochs_finished"].append(child_job.epochs_current)
-        summary["minimum_NLLs"].append(child_job.minimum_NLL)
+        if np.isnan(child_job.minimum_NLL):
+            summary["minimum_NLLs"].append(child_job.minimum_NLL)
+        else:
+            summary["minimum_NLLs"].append(None)
 
     response = {
         "uuid": parent_job.uuid,
@@ -188,6 +192,7 @@ async def get_child_job(
         "id": child_job.id,
         "status": child_job.status,
         "start": child_job.start,
+        "duration": child_job.duration,
         "is_added_viewer_dataset": child_job.is_added_viewer_dataset,
         "epochs_total": child_job.epochs_total,
     }

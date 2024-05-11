@@ -245,13 +245,19 @@ def run_job_raptgen(
         train_df = sequence_records_df[sequence_records_df["is_training_data"]]
         test_df = sequence_records_df[~sequence_records_df["is_training_data"]]
 
-        train_ids = torch.tensor(train_df["encoded_id"].tolist(), dtype=torch.long)
+        train_ids_ls = train_df["encoded_id"].to_list()
+        train_ids = torch.tensor(train_ids_ls)
         train_dataloader = DataLoader(
-            TensorDataset(train_ids), batch_size=512, shuffle=False
+            TensorDataset(train_ids),
+            batch_size=min(len(train_df), 512),
+            shuffle=False,
         )
-        test_ids = torch.tensor(test_df["encoded_id"].tolist(), dtype=torch.long)
+        test_ids_ls = test_df["encoded_id"].to_list()
+        test_ids = torch.tensor(test_ids_ls)
         test_dataloader = DataLoader(
-            TensorDataset(test_ids), batch_size=512, shuffle=False
+            TensorDataset(test_ids),
+            batch_size=min(len(train_df), 512),
+            shuffle=False,
         )
 
         # prepare the model
@@ -481,7 +487,7 @@ def initialize_job_raptgen(
             parent_uuid=parent_uuid,
             worker_uuid=None,
             start=int(time.time()),
-            duration=None,
+            duration=0,
             status="pending",
             epochs_total=params.epochs,
             epochs_current=0,
