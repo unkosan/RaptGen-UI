@@ -47,7 +47,9 @@ export const requestPostSubmitJob = z.union([
     params_training: z.record(z.string(), z.any()),
   }),
 ]);
-export const responsePostSubmitJob = z.null();
+export const responsePostSubmitJob = z.object({
+  uuid: z.string().uuid(),
+});
 
 // API POST /train/jobs/search
 export const requestPostSearchJobs = z.object({

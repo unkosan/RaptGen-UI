@@ -3,7 +3,7 @@ import { z } from "zod";
 
 // API POST /upload/estimate-target-length
 export const requestPostEstimateTargetLength = z.object({
-  sequences: z.array(z.string().regex(/^[AUTCG]+$/i)).nonempty(),
+  sequences: z.array(z.string().regex(/^[AUTCG]*$/i)).nonempty(),
 });
 export const responsePostEstimateTargetLength = z.union([
   z.object({
@@ -19,7 +19,7 @@ export const responsePostEstimateTargetLength = z.union([
 
 // API POST /upload/estimate-adapters
 export const requestPostEstimateAdapters = z.object({
-  sequences: z.array(z.string().regex(/^[AUTCG]+$/i)).nonempty(),
+  sequences: z.array(z.string().regex(/^[AUTCG]*$/i)).nonempty(),
   target_length: z.number().int().min(1),
 });
 export const responsePostEstimateAdapters = z.union([
