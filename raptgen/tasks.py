@@ -37,13 +37,14 @@ def _validate_pHMM_model(pickle_state_dict: BytesIO) -> Dict[str, Any]:
     }
 
 
+import core.jobs
+
+
 celery = Celery(
     __name__,
     broker="redis://redis:6379/0",
     backend="redis://redis:6379/0",
 )
-
-import core.jobs
 
 
 @celery.task(bind=True)
