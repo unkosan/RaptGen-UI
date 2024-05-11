@@ -8,7 +8,8 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_DB: raptgen
+      PGDATA: /var/lib/postgresql/data/pgdata
 
   visualizer:
     build:
@@ -64,7 +65,7 @@ services:
     environment:
       - PYTHONPATH=/app
     user: "${UID}:${GID}"
-    command: sh -c "celery --app=tasks.celery worker --loglevel=info"
+    command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"
     deploy:
       resources:
         reservations:
