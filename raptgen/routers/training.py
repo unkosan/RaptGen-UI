@@ -7,6 +7,7 @@ import re
 from typing import List, Optional, Union
 from pydantic import BaseModel
 from uuid import uuid4
+import numpy as np
 
 from typing import List, Any, Optional, Tuple
 from tasks import celery
@@ -115,7 +116,10 @@ async def get_parent_job(
         summary["indices"].append(child_job.id)
         summary["statuses"].append(child_job.status)
         summary["epochs_finished"].append(child_job.epochs_current)
-        summary["minimum_NLLs"].append(child_job.minimum_NLL)
+        if np.isnan(child_job.minimum_NLL):
+            summary["minimum_NLLs"].append(child_job.minimum_NLL)
+        else:
+            summary["minimum_NLLs"].append(None)
 
     response = {
         "uuid": parent_job.uuid,
@@ -188,6 +192,7 @@ async def get_child_job(
         "id": child_job.id,
         "status": child_job.status,
         "start": child_job.start,
+        "duration": child_job.duration,
         "is_added_viewer_dataset": child_job.is_added_viewer_dataset,
         "epochs_total": child_job.epochs_total,
     }
@@ -784,10 +789,19 @@ async def publish_parent_job(
             pd.DataFrame(
                 {
                     "published_time": pd.Timestamp.now().strftime("%Y/%m/%d"),
-                    "name": str(parent_job.name),
+                    "experiment": str(parent_job.name),
                     "round": None,
                     "fwd_adapter": parent_job.params_preprocessing["forward"],
                     "rev_adapter": parent_job.params_preprocessing["reverse"],
+                    "target_length": parent_job.params_preprocessing[
+                        "random_region_length"
+                    ]
+                    + len(parent_job.params_preprocessing["forward"])
+                    + len(parent_job.params_preprocessing["reverse"]),
+                    "filtering_standard_length": parent_job.params_preprocessing[
+                        "random_region_length"
+                    ],
+                    "filtering_tolerance": parent_job.params_preprocessing["tolerance"],
                     "filtering_method": None,
                     "minimum_count": parent_job.params_preprocessing["minimum_count"],
                     "embedding_dim": 2,
@@ -805,10 +819,9 @@ async def publish_parent_job(
                     "pHMM_VAE_model_length": parent_job.params_training["model_length"],
                     "pHMM_VAE_seed": parent_job.params_training["seed_value"],
                 },
-                index=[len(df_profile)],
+                index=[str(parent_job.name)],
             ),
         ],
-        ignore_index=True,
     )
 
     fwd_adapter: str = parent_job.params_preprocessing["forward"]  # type: ignore
@@ -825,6 +838,14 @@ async def publish_parent_job(
         WHERE child_uuid = '{uuid}';
         """,
         session.get_bind(),
+    )
+    df_embeddings.rename(
+        columns={
+            "sequence": "Sequence",
+            "duplicates": "Duplicates",
+            "without_adapters": "Without_Adapters",
+        },
+        inplace=True,
     )
 
     model_binary: bytes = session.query(ChildJob).filter(ChildJob.uuid == uuid).first().optimal_checkpoint  # type: ignore
@@ -850,7 +871,7 @@ async def publish_parent_job(
 
     if not debug:
         os.makedirs(DATA_PATH + "items/" + str(parent_job.name), exist_ok=True)
-        # df_profile.to_pickle(DATA_PATH + "/profile_dataframe.pkl")
+        df_profile.to_pickle(DATA_PATH + "/profile_dataframe.pkl")
         df_embeddings.to_pickle(
             DATA_PATH + "items/" + str(parent_job.name) + "/unique_seq_dataframe.pkl"
         )

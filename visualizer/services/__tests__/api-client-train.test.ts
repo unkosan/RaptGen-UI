@@ -59,7 +59,7 @@ describe("train service", () => {
         device: "cpu",
       },
     });
-    expect(result).toBe(null);
+    expect(result).toHaveProperty("uuid");
   });
 
   // wakaran

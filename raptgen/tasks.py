@@ -43,6 +43,8 @@ celery = Celery(
     backend="redis://redis:6379/0",
 )
 
+import core.jobs
+
 
 @celery.task(bind=True)
 def batch_encode(self: Task, seqs: List[str], state_dict_pkl: bytes):

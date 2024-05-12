@@ -32,6 +32,13 @@ const Pagenation: React.FC = () => {
         const dupsMask = selexData.duplicates.map((dup) => {
           return dup >= (preprocessingConfig.minCount as number);
         });
+        const randomRegionLength = (preprocessingConfig.targetLength ?? 0) -
+          (preprocessingConfig.forwardAdapter?.length ?? 0) -
+          (preprocessingConfig.reverseAdapter?.length ?? 0);
+        const lengthMask = selexData.randomRegions.map((seq) => {
+          return randomRegionLength - (preprocessingConfig.tolerance ?? 0) <= seq.length
+           && seq.length <= randomRegionLength + (preprocessingConfig.tolerance ?? 0);
+        })
         const parsed = requestPostSubmitJob.safeParse({
           type: modelType,
           name: experimentName,
@@ -46,10 +53,10 @@ const Pagenation: React.FC = () => {
             minimum_count: preprocessingConfig.minCount,
           },
           random_regions: selexData.randomRegions.filter((seq, index) => {
-            return dupsMask[index] && selexData.adapterMatched[index];
+            return dupsMask[index] && lengthMask[index] && selexData.adapterMatched[index];
           }),
           duplicates: selexData.duplicates.filter((dup, index) => {
-            return dupsMask[index] && selexData.adapterMatched[index];
+            return dupsMask[index] && lengthMask[index] && selexData.adapterMatched[index];
           }),
           reiteration: trainConfig.reiteration,
           params_training: {

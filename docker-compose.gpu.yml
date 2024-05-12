@@ -1,5 +1,16 @@
 version: "3"
 services:
+  db:
+    image: postgres
+    container_name: db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: raptgen
+      PGDATA: /var/lib/postgresql/data/pgdata
+
   visualizer:
     build:
       context: ./visualizer
@@ -26,6 +37,7 @@ services:
       - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
+    user: "${UID}:${GID}"
     command: sh -c "uvicorn --host 0.0.0.0 api:app"
     deploy:
       resources:
@@ -54,7 +66,7 @@ services:
     environment:
       - PYTHONPATH=/app
     user: "${UID}:${GID}"
-    command: sh -c "celery --app=tasks.celery worker --loglevel=info"
+    command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"
     deploy:
       resources:
         reservations:
