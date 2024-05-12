@@ -66,7 +66,9 @@ export const trainHandlers = [
 
   rest.post(mockURL("/train/jobs/submit"), async (req, res, ctx) => {
     if (trainZod.requestPostSubmitJob.safeParse(await req.json())) {
-      return res(ctx.status(200), ctx.json(null));
+      return res(ctx.status(200), ctx.json({
+        uuid: uuids.test1,
+      }));
     } else {
       return res(ctx.status(422), ctx.json(errorMsg));
     }
