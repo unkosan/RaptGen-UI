@@ -37,6 +37,7 @@ services:
       - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
+    user: "${UID}:${GID}"
     command: sh -c "uvicorn --host 0.0.0.0 api:app"
     deploy:
       resources:
