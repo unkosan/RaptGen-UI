@@ -246,14 +246,18 @@ def run_job_raptgen(
         test_df = sequence_records_df[~sequence_records_df["is_training_data"]]
 
         train_ids_ls = train_df["encoded_id"].to_list()
-        train_ids = torch.tensor(train_ids_ls)
+        train_ids = torch.tensor(
+            train_ids_ls, device="cpu"
+        )  # avoid deadlock on GPU by sending to CPU
         train_dataloader = DataLoader(
             TensorDataset(train_ids),
             batch_size=min(len(train_df), 512),
             shuffle=False,
         )
         test_ids_ls = test_df["encoded_id"].to_list()
-        test_ids = torch.tensor(test_ids_ls)
+        test_ids = torch.tensor(
+            test_ids_ls, device="cpu"
+        )  # avoid deadlock on GPU by sending to CPU
         test_dataloader = DataLoader(
             TensorDataset(test_ids),
             batch_size=min(len(train_df), 512),
