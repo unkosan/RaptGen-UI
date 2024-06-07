@@ -244,3 +244,5 @@ def get_db_session(
         yield session
     finally:
         session.close()
+
+    print("Database connection closed.")

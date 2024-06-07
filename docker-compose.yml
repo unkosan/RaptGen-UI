@@ -21,6 +21,7 @@ services:
       - 3000:3000
     volumes:
       - ./visualizer:/app
+      - /etc/localtime:/etc/localtime
     environment:
       - WATCHPACK_POLLING=true
     command: sh -c "yarn install; yarn run dev"

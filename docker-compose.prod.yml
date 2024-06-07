@@ -3,8 +3,8 @@ services:
   db:
     image: postgres
     container_name: db
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -21,6 +21,7 @@ services:
       - 3000:3000
     volumes:
       - ./visualizer:/app
+      - /etc/localtime:/etc/localtime
     environment:
       - WATCHPACK_POLLING=true
     command: sh -c "yarn install; yarn next build; yarn next start"

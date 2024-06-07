@@ -35,6 +35,7 @@ services:
       - 8000:8000
     volumes:
       - ./raptgen:/app
+      - /etc/localtime:/etc/localtime
     environment:
       - PYTHONPATH=/app
     user: "${UID}:${GID}"

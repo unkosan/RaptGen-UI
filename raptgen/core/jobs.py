@@ -300,6 +300,9 @@ def run_job_raptgen(
         model.to(device_t)
         model.train()
 
+        old_duration = int(child_job.duration)  # type: ignore
+        start_time = time.time()
+
         print(
             f"Training RaptGen model for task_id {self.request.id}. With abort flag {self.is_aborted()}."
         )
@@ -444,6 +447,9 @@ def run_job_raptgen(
 
             # update the child job entry
             child_job.epochs_current = epoch + 1  # type: ignore
+
+            # update duration
+            child_job.duration = old_duration + int(time.time() - start_time)  # type: ignore
 
             session.commit()
 

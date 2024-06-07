@@ -16,6 +16,7 @@ from sqlalchemy import func
 from io import BytesIO
 import pickle
 import os
+import time
 
 
 from core.db import (
@@ -386,7 +387,7 @@ async def run_parent_job(
                 name=request_param.name,
                 type=request_param.type,
                 status="pending",
-                start=0,
+                start=int(time.time()),
                 duration=0,
                 reiteration=request_param.reiteration,
                 params_training=request_param.params_training.dict(),
