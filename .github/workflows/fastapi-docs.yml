@@ -29,7 +29,7 @@ jobs:
           image: fastapi-image
           options: -v ${{ github.workspace }}/raptgen:/app
           run: |
-            python -c "from dev import print_spec; from pathlib import Path; Path('openapi_spec.json').write_text(print_spec())"
+            python -c "from api import print_spec; from pathlib import Path; Path('openapi_spec.json').write_text(print_spec())"
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
