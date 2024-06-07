@@ -1,5 +1,15 @@
-version: '3'
+version: "3"
 services:
+  db:
+    image: postgres
+    container_name: db
+    # ports:
+    #   - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: raptgen
+      PGDATA: /var/lib/postgresql/data/pgdata
 
   visualizer:
     build:
@@ -11,14 +21,15 @@ services:
       - 3000:3000
     volumes:
       - ./visualizer:/app
+      - /etc/localtime:/etc/localtime
     environment:
       - WATCHPACK_POLLING=true
-    command: sh -c "npm run dev"
+    command: sh -c "yarn install; yarn run dev"
 
   back:
     build:
       context: ./raptgen
-      dockerfile: Dockerfile
+      dockerfile: cpu.Dockerfile
     container_name: backend
     tty: true
     ports:
@@ -28,4 +39,42 @@ services:
     environment:
       - PYTHONPATH=/app
     command: sh
-    # command: sh -c "uvicorn api:app --host 0.0.0.0"
+    # command: sh -c "uvicorn --reload --host 0.0.0.0 api:app"
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - 8030:6379
+
+  worker:
+    build:
+      context: ./raptgen
+      dockerfile: cpu.Dockerfile
+    container_name: worker
+    tty: true
+    depends_on:
+      - redis
+    volumes:
+      - ./raptgen:/app
+    environment:
+      - PYTHONPATH=/app
+      - CUDA_LAUNCH_BLOCKING=1
+    user: "${UID}:${GID}"
+    command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"
+
+  flower:
+    build:
+      context: ./raptgen
+      dockerfile: cpu.Dockerfile
+    container_name: flower
+    tty: true
+    depends_on:
+      - redis
+    volumes:
+      - ./raptgen:/app
+    environment:
+      - PYTHONPATH=/app
+    command: sh -c "celery --app=tasks.celery flower --port=5555"
+    ports:
+      - 8010:5555

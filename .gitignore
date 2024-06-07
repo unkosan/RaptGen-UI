@@ -265,7 +265,7 @@ dist
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
 
 # Thumbnails
 ._*
@@ -285,3 +285,13 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# vscode config files
+.vscode/
+
+# ignore lock file of yarn
+**/yarn.lock
+
+# ignore database file
+raptgen/data/test_tasks.db
+raptgen/data/tasks.db
