@@ -27,7 +27,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: fastapi-image
-          options: -v ${{ github.workspace }}:/app
+          options: -v ${{ github.workspace }}:/app/raptgen
           run: |
             python -c "from dev import print_spec; from pathlib import Path; Path('openapi_spec.json').write_text(print_spec())"
 
