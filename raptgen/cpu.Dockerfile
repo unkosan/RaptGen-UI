@@ -1,7 +1,5 @@
 FROM --platform=amd64 condaforge/mambaforge
 
-RUN useradd -m devcontainer
-
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y git curl vim wget ghostscript redis-server
@@ -19,7 +17,6 @@ ENV CONDA_DEFAULT_ENV raptgen
 ENV PATH /opt/conda/envs/raptgen/bin:$PATH
 ENV PYTHONPATH /app
 
-USER devcontainer
 WORKDIR /app
 ENV PYTEST_PLUGINS=celery.contrib.pytest
 
