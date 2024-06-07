@@ -18,6 +18,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./raptgen
+          file: cpu.Dockerfile
           tags: fastapi-image
           push: false
 
