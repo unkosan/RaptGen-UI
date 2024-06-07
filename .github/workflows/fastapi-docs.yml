@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - bugfix/no-ref/github-workflow
   workflow_dispatch:
 
 jobs:
