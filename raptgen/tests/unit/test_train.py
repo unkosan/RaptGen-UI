@@ -204,7 +204,7 @@ def test_get_child_job_info(db_session):
     assert response.status_code == 200
     assert response.json()["uuid"] == child_uuid
     assert response.json()["status"] == "success"
-    assert response.json()["start"] == 1609459200
+    assert response.json()["datetime_start"] == 1609459200
     assert response.json()["epochs_total"] == 100
     assert response.json().get("epochs_current") is None
 

@@ -156,16 +156,21 @@ async def get_child_job(
     Returns
     -------
     dict
-        A dictionary containing detailed information about the parent job. This includes:
-        - uuid: The UUID of the parent job.
-        - name: The name of the parent job.
-        - type: The type of the parent job.
-        - status: The status of the parent job.
-        - start: The start time of the parent job.
-        - duration: The duration of the parent job.
-        - reiteration: The reiteration count of the parent job.
-        - params_training: The training parameters of the parent job.
-        - summary: A summary of all child jobs associated with the parent job.
+        # A dictionary containing detailed information about the parent job. This includes:
+        - uuid: The UUID of the child job
+        - id: The position of this chlid job on the parent job
+        - status: The status of the child job.
+        - datetime_start: The start time of the child job
+        - datetime_laststop: The UNIX time when the job suspended or finished for the last time
+        - duration_suspend: The duration of suspension
+
+        - latent?: the latent values of selex data
+        - losses?: the transit of training losses
+
+        - is_added_viewer_dataset: is this data registered to viewer dataset?
+        - error_msg?: exception message when failed
+        - epochs_total: maximum training epoch
+        - epochs_current?: current training epoch
 
     Raises
     ------
@@ -192,8 +197,9 @@ async def get_child_job(
         "uuid": child_job.uuid,
         "id": child_job.id,
         "status": child_job.status,
-        "start": child_job.datetime_start,
-        "duration": child_job.duration_suspend,
+        "datetime_start": child_job.datetime_start,
+        "datetime_laststop": child_job.datetime_laststop,
+        "duration_suspend": child_job.duration_suspend,
         "is_added_viewer_dataset": child_job.is_added_viewer_dataset,
         "epochs_total": child_job.epochs_total,
     }
@@ -345,8 +351,9 @@ async def search_jobs(
         for child_job in job.child_jobs:
             series_item = {
                 "item_id": child_job.id,
-                "item_start": child_job.datetime_start,
-                "item_duration": child_job.duration_suspend,
+                "item_datetime_start": child_job.datetime_start,
+                "item_duration_suspend": child_job.duration_suspend,
+                "item_datetime_laststop": child_job.datetime_laststop,
                 "item_status": child_job.status,
                 "item_epochs_total": child_job.epochs_total,
                 "item_epochs_current": child_job.epochs_current,
