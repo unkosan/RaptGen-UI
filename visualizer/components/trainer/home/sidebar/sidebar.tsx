@@ -27,7 +27,7 @@ const SideBar: React.FC = () => {
 
   // Update jobs per second
   useEffect(() => {
-    const interval = setInterval(() => {
+    const updateFunc = () => {
       apiClient
         .postSearchJobs({
           search_regex: searchQuery ? searchQuery : undefined,
@@ -36,10 +36,19 @@ const SideBar: React.FC = () => {
           // if (isEqual(newJobs, jobs)) return;
           setJobs(newJobs);
         });
-    }, 10000);
+    };
+    updateFunc();
+    const interval = setInterval(updateFunc, 5000);
 
     return () => clearInterval(interval);
   }, [searchQuery]);
+
+  // useSWR may be good for automatical update, but does not reflect current epochs
+  // const fetcher = (url: string) =>
+  //   apiClient.postSearchJobs({
+  //     search_regex: searchQuery ? searchQuery : undefined,
+  //   });
+  // const { jobs: data, error, isLoading } = useSWR("/api/train/jobs/search", fetcher);
 
   // Sort jobs
   useEffect(() => {
