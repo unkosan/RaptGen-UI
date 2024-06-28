@@ -1,4 +1,5 @@
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, scoped_session
+from sqlalchemy.pool import NullPool
 from sqlalchemy import (
     Column,
     Integer,
@@ -233,7 +234,7 @@ def get_db_session(
     print(f"Connecting to database: {url}")
 
     # create engine
-    engine = create_engine(url)
+    engine = create_engine(url, poolclass=NullPool)
 
     # create tables
     BaseSchema.metadata.create_all(engine)
@@ -244,5 +245,8 @@ def get_db_session(
         yield session
     finally:
         session.close()
+
+    # dispose engine
+    engine.dispose()
 
     print("Database connection closed.")
