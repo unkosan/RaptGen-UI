@@ -192,8 +192,8 @@ async def get_child_job(
         "uuid": child_job.uuid,
         "id": child_job.id,
         "status": child_job.status,
-        "start": child_job.start,
-        "duration": child_job.duration,
+        "start": child_job.datetime_start,
+        "duration": child_job.duration_suspend,
         "is_added_viewer_dataset": child_job.is_added_viewer_dataset,
         "epochs_total": child_job.epochs_total,
     }
@@ -345,8 +345,8 @@ async def search_jobs(
         for child_job in job.child_jobs:
             series_item = {
                 "item_id": child_job.id,
-                "item_start": child_job.start,
-                "item_duration": child_job.duration,
+                "item_start": child_job.datetime_start,
+                "item_duration": child_job.duration_suspend,
                 "item_status": child_job.status,
                 "item_epochs_total": child_job.epochs_total,
                 "item_epochs_current": child_job.epochs_current,
