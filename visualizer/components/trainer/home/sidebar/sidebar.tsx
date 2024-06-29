@@ -77,7 +77,6 @@ const SideBar: React.FC = () => {
             name={job.name}
             status={job.status}
             isSelected={job.uuid === selectedJobId}
-            duration={job.duration}
             onClick={() => {
               dispatch({
                 type: "pageConfig/set",
@@ -97,9 +96,21 @@ const SideBar: React.FC = () => {
               });
             }}
             series={job.series.map((childJob) => {
+              const net_duration =
+                childJob.item_status === "progress"
+                  ? Date.now() -
+                    (childJob.item_datetime_start -
+                      childJob.item_duration_suspend) *
+                      1000
+                  : childJob.item_status === "pending"
+                  ? 0
+                  : ((childJob.item_datetime_laststop as number) -
+                      childJob.item_datetime_start -
+                      childJob.item_duration_suspend) *
+                    1000;
               return {
                 id: childJob.item_id,
-                duration: childJob.item_duration,
+                duration: net_duration,
                 status: childJob.item_status,
                 epochsCurrent: childJob.item_epochs_current,
                 epochsTotal: childJob.item_epochs_total,
@@ -118,7 +129,6 @@ const SideBar: React.FC = () => {
             name={job.name}
             status={job.status}
             isSelected={job.uuid === selectedJobId}
-            duration={job.duration}
             onClick={() => {
               dispatch({
                 type: "pageConfig/set",
@@ -140,7 +150,11 @@ const SideBar: React.FC = () => {
             series={job.series.map((childJob) => {
               return {
                 id: childJob.item_id,
-                duration: childJob.item_duration,
+                duration: childJob.item_datetime_laststop
+                  ? childJob.item_datetime_laststop
+                  : Date.now() -
+                    childJob.item_datetime_start -
+                    childJob.item_duration_suspend,
                 status: childJob.item_status,
                 epochsCurrent: childJob.item_epochs_current,
                 epochsTotal: childJob.item_epochs_total,

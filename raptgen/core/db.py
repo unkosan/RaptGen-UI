@@ -74,10 +74,12 @@ class ChildJob(BaseSchema):
         identifier of the parent job
     worker_uuid : str
         identifier of the worker, needed for suspending/resuming the child job
-    start : int
-        start time of the child job
-    duration : int
-        duration of the child job, interval is not included
+    datetime_start : int
+        start UNIX time of the child job
+    datetime_laststop : int
+        UNIX time when the child job suspended or finished for the last time
+    duration_suspend : int
+        duration for model to be suspended
     status : str
         status of the child job, e.g. "success", "failure", "progress", etc.
     epochs_total : int
@@ -106,8 +108,9 @@ class ChildJob(BaseSchema):
     uuid = Column(String, unique=True, primary_key=True, nullable=False)
     parent_uuid = Column(String, ForeignKey("parent_jobs.uuid"), nullable=False)
     worker_uuid = Column(String)
-    start = Column(Integer)
-    duration = Column(Integer)
+    datetime_start = Column(Integer)
+    datetime_laststop = Column(Integer)
+    duration_suspend = Column(Integer)
     status = Column(String, nullable=False)
     epochs_total = Column(Integer, nullable=False)
     epochs_current = Column(Integer)

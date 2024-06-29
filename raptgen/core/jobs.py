@@ -73,6 +73,8 @@ class ChildJobTask(AbortableTask):
                 f"ChildJobTask: Child job {subling.uuid} has status {subling.status}."
             )
 
+        job.datetime_laststop = int(time.time())  # type: ignore
+
         if any([subling.status in {"pending", "progress"} for subling in sublings]):
             parent.status = "progress"  # type: ignore
         elif any([subling.status in {"suspend"} for subling in sublings]):
@@ -118,6 +120,8 @@ class ChildJobTask(AbortableTask):
             raise ValueError(
                 f"ChildJobTask: Parent job {job.parent_uuid} does not have any child jobs."
             )
+
+        job.datetime_laststop = int(time.time())  # type: ignore
 
         if any([subling.status in {"pending", "progress"} for subling in sublings]):
             parent.status = "progress"  # type: ignore
@@ -297,11 +301,14 @@ def run_job_raptgen(
                     model.load_state_dict(current_checkpoint["model"])
                     optimizer.load_state_dict(current_checkpoint["optimizer"])
 
+            child_job.duration_suspend = (  # type: ignore
+                child_job.duration_suspend
+                + int(time.time())
+                - child_job.datetime_laststop
+            )
+
         model.to(device_t)
         model.train()
-
-        old_duration = int(child_job.duration)  # type: ignore
-        start_time = time.time()
 
         print(
             f"Training RaptGen model for task_id {self.request.id}. With abort flag {self.is_aborted()}."
@@ -448,9 +455,6 @@ def run_job_raptgen(
             # update the child job entry
             child_job.epochs_current = epoch + 1  # type: ignore
 
-            # update duration
-            child_job.duration = old_duration + int(time.time() - start_time)  # type: ignore
-
             session.commit()
 
             # early stopping
@@ -496,8 +500,9 @@ def initialize_job_raptgen(
             uuid=str(uuid),
             parent_uuid=parent_uuid,
             worker_uuid=None,
-            start=int(time.time()),
-            duration=0,
+            datetime_start=int(time.time()),
+            datetime_laststop=None,
+            duration_suspend=0,
             status="pending",
             epochs_total=params.epochs,
             epochs_current=0,

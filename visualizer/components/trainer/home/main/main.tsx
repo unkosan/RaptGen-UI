@@ -59,12 +59,6 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
       </h2>
       <p>
         <div>Start time: {new Date(item.start * 1000).toLocaleString()}</div>
-        <div>
-          Total duration:{" "}
-          {formatDuration(
-            intervalToDuration({ start: 0, end: item.duration * 1000 })
-          )}
-        </div>
         <div>The number of models to train: {item.reiteration}</div>
       </p>
       <p className="d-flex align-items-center">
@@ -156,6 +150,22 @@ const ChildPane: React.FC<{
     title = `Model No. ${childItem.id}`;
   }
 
+  const net_duration =
+    childItem.status === "progress"
+      ? Date.now() -
+        (childItem.datetime_start - childItem.duration_suspend) * 1000
+      : childItem.status === "pending"
+      ? 0
+      : (childItem.datetime_laststop -
+          childItem.datetime_start -
+          childItem.duration_suspend) *
+        1000;
+  const suspend_duration =
+    childItem.status === "suspend"
+      ? Date.now() +
+        (childItem.duration_suspend - childItem.datetime_laststop) * 1000
+      : childItem.duration_suspend * 1000;
+
   const head = (
     <>
       <h3>{title}</h3>
@@ -166,10 +176,21 @@ const ChildPane: React.FC<{
             <br />
           </>
         ) : null}
-        Duration:{" "}
-        {formatDuration(
-          intervalToDuration({ start: 0, end: childItem.duration * 1000 })
-        )}
+        <>Duration: </>
+        {formatDuration(intervalToDuration({ start: 0, end: net_duration }))}
+        {suspend_duration ? (
+          <>
+            {" "}
+            (Suspended for{" "}
+            {formatDuration(
+              intervalToDuration({
+                start: 0,
+                end: suspend_duration,
+              })
+            )}
+            )
+          </>
+        ) : null}
       </p>
     </>
   );

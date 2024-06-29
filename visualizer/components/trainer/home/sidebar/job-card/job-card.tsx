@@ -22,7 +22,6 @@ type Props = {
     mixture: number,
     event: React.MouseEvent<HTMLElement, MouseEvent>
   ) => void;
-  duration: number;
   series: TypeChild[];
 };
 
@@ -38,15 +37,9 @@ const JobCard: React.FC<Props> = (props) => {
     } else {
       durationText = "Total Duration ";
     }
-    const duration = intervalToDuration({
-      start: 0,
-      end: props.duration * 1000,
-    });
-    durationText += formatDuration(duration);
     title = (
       <div className="d-flex justify-content-between">
         <span className="d-flex flex-column font-monospace">{name}</span>
-        <small className="fw-light">{durationText}</small>
       </div>
     );
   } else {

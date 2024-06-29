@@ -11,7 +11,7 @@ describe("ChildJobCard", () => {
         status={"progress"}
         totalEpoch={1000}
         currentEpoch={442}
-        duration={100}
+        duration={100 * 1000}
       />
     );
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
@@ -26,7 +26,7 @@ describe("ChildJobCard", () => {
         status={"progress"}
         totalEpoch={1000}
         currentEpoch={442}
-        duration={10000}
+        duration={10000 * 1000}
       />
     );
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
