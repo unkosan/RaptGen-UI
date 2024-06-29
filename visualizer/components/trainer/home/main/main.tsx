@@ -59,12 +59,6 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
       </h2>
       <p>
         <div>Start time: {new Date(item.start * 1000).toLocaleString()}</div>
-        <div>
-          Total duration:{" "}
-          {formatDuration(
-            intervalToDuration({ start: 0, end: item.duration * 1000 })
-          )}
-        </div>
         <div>The number of models to train: {item.reiteration}</div>
       </p>
       <p className="d-flex align-items-center">

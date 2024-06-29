@@ -77,7 +77,6 @@ const SideBar: React.FC = () => {
             name={job.name}
             status={job.status}
             isSelected={job.uuid === selectedJobId}
-            duration={job.duration}
             onClick={() => {
               dispatch({
                 type: "pageConfig/set",
@@ -130,7 +129,6 @@ const SideBar: React.FC = () => {
             name={job.name}
             status={job.status}
             isSelected={job.uuid === selectedJobId}
-            duration={job.duration}
             onClick={() => {
               dispatch({
                 type: "pageConfig/set",
