@@ -26,7 +26,7 @@ const ChildJobCard: React.FC<Props> = (props) => {
   if (status === "progress") {
     const duration = intervalToDuration({
       start: 0,
-      end: props.duration * 1000,
+      end: props.duration,
     });
     let durationText = "Running for ";
     durationText += formatDuration(duration);
