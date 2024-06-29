@@ -72,20 +72,26 @@ export const responsePostSearchJobs = z.array(
     duration: z.number().int().min(0),
     reiteration: z.number().int().min(1),
     series: z.array(
-      z.object({
-        item_id: z.number().int().min(0),
-        item_start: z.number().int().min(0),
-        item_duration: z.number().int().min(0),
-        item_status: z.enum([
-          "success",
-          "failure",
-          "progress",
-          "pending",
-          "suspend",
-        ]),
-        item_epochs_total: z.number().int().min(0),
-        item_epochs_current: z.number().int().min(0),
-      })
+      z.union([
+        z.object({
+          item_id: z.number().int().min(0),
+          item_datetime_start: z.number().int().min(0),
+          item_datetime_laststop: z.number().int().min(0),
+          item_duration_suspend: z.number().int().min(0),
+          item_status: z.enum(["success", "failure", "suspend"]),
+          item_epochs_total: z.number().int().min(0),
+          item_epochs_current: z.number().int().min(0),
+        }),
+        z.object({
+          item_id: z.number().int().min(0),
+          item_datetime_start: z.number().int().min(0),
+          item_datetime_laststop: z.number().int().min(0).nullable(),
+          item_duration_suspend: z.number().int().min(0),
+          item_status: z.enum(["progress", "pending"]),
+          item_epochs_total: z.number().int().min(0),
+          item_epochs_current: z.number().int().min(0),
+        }),
+      ])
     ),
   })
 );
@@ -121,8 +127,9 @@ export const responseGetItemChild = z.union([
     uuid: z.string().uuid(),
     id: z.number().int().min(0),
     status: z.enum(["success"]),
-    start: z.number().int().min(0),
-    duration: z.number().int().min(0),
+    datetime_start: z.number().int(),
+    datetime_laststop: z.number().int(),
+    duration_suspend: z.number().int(),
     latent: z.object({
       random_regions: z.array(z.string().nonempty()),
       coords_x: z.array(z.number()),
@@ -140,9 +147,30 @@ export const responseGetItemChild = z.union([
   z.object({
     uuid: z.string().uuid(),
     id: z.number().int().min(0),
-    status: z.enum(["progress", "suspend"]),
-    start: z.number().int().min(0),
-    duration: z.number().int().min(0),
+    status: z.enum(["progress"]),
+    datetime_start: z.number().int(),
+    datetime_laststop: z.number().int().nullable(),
+    duration_suspend: z.number().int(),
+    latent: z.object({
+      random_regions: z.array(z.string().nonempty()),
+      coords_x: z.array(z.number()),
+      coords_y: z.array(z.number()),
+      duplicates: z.array(z.number().int().min(1)),
+    }),
+    losses: z.object({
+      train_loss: z.array(z.number()),
+      test_loss: z.array(z.number()),
+      test_recon: z.array(z.number()),
+      test_kld: z.array(z.number()),
+    }),
+  }),
+  z.object({
+    uuid: z.string().uuid(),
+    id: z.number().int().min(0),
+    status: z.enum(["suspend"]),
+    datetime_start: z.number().int(),
+    datetime_laststop: z.number().int(),
+    duration_suspend: z.number().int(),
     latent: z.object({
       random_regions: z.array(z.string().nonempty()),
       coords_x: z.array(z.number()),
@@ -160,16 +188,18 @@ export const responseGetItemChild = z.union([
     uuid: z.string().uuid(),
     id: z.number().int().min(0),
     status: z.enum(["failure"]),
-    start: z.number().int().min(0),
-    duration: z.number().int().min(0),
+    datetime_start: z.number().int(),
+    datetime_laststop: z.number().int(),
+    duration_suspend: z.number().int(),
     error_msg: z.string(),
   }),
   z.object({
     uuid: z.string().uuid(),
     id: z.number().int().min(0),
     status: z.enum(["pending"]),
-    start: z.number().int().min(0),
-    duration: z.number().int().min(0),
+    datetime_start: z.number().int(),
+    datetime_laststop: z.number().int().nullable(),
+    duration_suspend: z.number().int(),
   }),
 ]);
 
