@@ -36,7 +36,7 @@ class NucleotideID(IntEnum):
 
 
 def one_hot_encode(
-    seq: str or Seq,
+    seq: str,
     left_padding: int = 0,
     right_padding: int = 0,
     padding_template: np.ndarray = np.array([0, 0, 0, 0]),
@@ -149,7 +149,7 @@ def one_hot_decode(
 
 
 def ID_encode(
-    seq: str or Seq,
+    seq: str,
     left_padding: int = 0,
     right_padding: int = 0,
 ) -> List[int]:
@@ -475,7 +475,7 @@ def unify_duplicates(
 
 
 def read_SELEX_data(
-    filepath: str or Path, filetype: str, is_biopython_format: bool = False
+    filepath: str, filetype: str, is_biopython_format: bool = False
 ) -> pd.DataFrame:
     """fasta ファイル，fastq ファイル形式などで用意した HT-SELEX データの単ラウンド情報を `pandas.DataFrame` にまとめる。
 
