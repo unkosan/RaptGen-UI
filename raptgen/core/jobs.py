@@ -18,6 +18,7 @@ from core.db import (
     SequenceEmbeddings,
     TrainingLosses,
     SequenceData,
+    RaptGenParams,
     get_db_session,
 )
 from core.algorithms import profile_hmm_vae_loss, CNN_PHMM_VAE
@@ -494,6 +495,7 @@ def initialize_job_raptgen(
             child job identifier
     """
     uuid = uuid4()
+
     session.add(
         ChildJob(
             id=id,
@@ -507,11 +509,14 @@ def initialize_job_raptgen(
             epochs_total=params.epochs,
             epochs_current=0,
             minimum_NLL=float("inf"),
+            jobtype="RaptGen",
             is_added_viewer_dataset=False,
             current_checkpoint=None,
             optimal_checkpoint=None,
         )
     )
+    session.add(RaptGenParams(**params.dict(), child_uuid=str(uuid)))
+
     session.commit()
     return uuid
 
