@@ -235,6 +235,8 @@ def run_job_raptgen(
             .all()
         )
 
+        max_length = max([len(record.random_region) for record in sequence_records])  # type: ignore
+
         sequence_records_df = pd.DataFrame(
             [
                 {
@@ -242,7 +244,10 @@ def run_job_raptgen(
                     "random_region": record.random_region,
                     "duplicate": record.duplicate,
                     "is_training_data": record.is_training_data,
-                    "encoded_id": ID_encode(record.random_region),
+                    "encoded_id": ID_encode(
+                        seq=record.random_region,  # type: ignore
+                        right_padding=max_length - len(record.random_region),  # type: ignore
+                    ),
                 }
                 for record in sequence_records
             ]
