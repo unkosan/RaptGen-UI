@@ -7,6 +7,7 @@ from celery.contrib.abortable import AbortableAsyncResult
 from time import sleep
 import pandas as pd
 import os
+import numpy as np
 
 from core.jobs import run_job_raptgen, ChildJobTask, initialize_job_raptgen
 from core.db import (
@@ -222,7 +223,6 @@ def test_job_raptgen_valid_train(db_session, celery_worker):
 
     asyncres: AbortableAsyncResult = run_job_raptgen.delay(
         child_uuid=uuid,
-        training_params=params.dict(),
         database_url=url,
     )
 
@@ -242,7 +242,7 @@ def test_job_raptgen_invalid_train(db_session, celery_worker, eager_mode):
     url = db_session.get_bind().url.render_as_string(hide_password=False)
 
     params = RaptGenTrainingParams(
-        model_length=10,
+        model_length=-1,
         epochs=2,
         match_forcing_duration=1,
         beta_duration=1,
@@ -260,17 +260,12 @@ def test_job_raptgen_invalid_train(db_session, celery_worker, eager_mode):
     )
     uuid = str(uuid)
 
-    kwargs = {
-        "child_uuid": uuid,
-        "training_params": {
-            **params.dict(),
-            "match_cost": "string",  # this must be an integer
-        },
-        "database_url": url,
-    }
-
     try:
-        asyncres: AbortableAsyncResult = run_job_raptgen.delay(**kwargs)
+        asyncres: AbortableAsyncResult = run_job_raptgen.delay(
+            child_uuid=uuid,
+            is_resume=False,
+            database_url=url,
+        )
         db_session.commit()
         task_id = str(asyncres.id)
         asyncres.wait()
@@ -281,7 +276,11 @@ def test_job_raptgen_invalid_train(db_session, celery_worker, eager_mode):
             exc=e,
             task_id=task_id,
             args=[],
-            kwargs=kwargs,
+            kwargs={
+                "child_uuid": uuid,
+                "database_url": url,
+                "is_resume": False,
+            },
             einfo=None,
         )
 
@@ -315,8 +314,8 @@ def test_job_raptgen_valid_retrain(db_session, celery_worker):
 
     asyncres: AbortableAsyncResult = run_job_raptgen.delay(
         child_uuid=uuid,
-        training_params=params.dict(),
         database_url=url,
+        is_resume=False,
     )
 
     # asyncres: AbortableAsyncResult = job_raptgen.delay(
@@ -372,9 +371,6 @@ def test_job_raptgen_valid_retrain(db_session, celery_worker):
 
     asyncres2: AbortableAsyncResult = run_job_raptgen.delay(
         child_uuid=uuid,
-        training_params={
-            **params.dict(),
-        },
         database_url=url,
         is_resume=True,
     )

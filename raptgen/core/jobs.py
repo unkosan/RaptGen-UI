@@ -189,7 +189,6 @@ class ChildJobTask(AbortableTask):
 def run_job_raptgen(
     self: ChildJobTask,
     child_uuid: str,
-    training_params: dict,
     is_resume: bool = False,
     database_url: str = "postgresql+psycopg2://postgres:postgres@db:5432/raptgen",
 ):
@@ -200,30 +199,34 @@ def run_job_raptgen(
     ----------
     child_uuid : str
         child job identifier to run or resume
-    training_params : dict
-        training parameters
     is_resume : bool
         flag to indicate if the job is resumed
     database_url : str
         database URL to connect
     """
-    # test if the params are valid
-    # RaptGenTrainingParams(**training_params)
+    # get the database session
+    session = get_db_session(database_url).__next__()
 
-    with semaphore_dict[training_params["device"]]:
+    child_job = session.query(ChildJob).filter(ChildJob.uuid == child_uuid).first()
+    if child_job is None:
+        raise ValueError(
+            f"Child job {child_uuid} does not exist. Initialize the job first."
+        )
+
+    training_params = (
+        session.query(RaptGenParams)
+        .filter(RaptGenParams.child_uuid == child_uuid)
+        .first()
+    )
+
+    print(f"Waiting for the semaphore for child job {child_uuid}.")
+
+    with semaphore_dict[training_params.device]:  # type: ignore
 
         print(f"Running RaptGen model for child job {child_uuid}.")
-        # get the database session
-        session = get_db_session(database_url).__next__()
 
         # update the status of the child job to progress
         ChildJobTask.update_status_to_progress(session, child_uuid, self.request.id)  # type: ignore
-
-        child_job = session.query(ChildJob).filter(ChildJob.uuid == child_uuid).first()
-        if child_job is None:
-            raise ValueError(
-                f"Child job {child_uuid} does not exist. Initialize the job first."
-            )
 
         # process the data from SequenceData
         sequence_records = (
@@ -245,7 +248,7 @@ def run_job_raptgen(
             ]
         )
         sequence_records_df = sequence_records_df.sample(
-            frac=1, random_state=training_params["seed_value"]
+            frac=1, random_state=training_params.seed_value  # type: ignore
         )
         train_df = sequence_records_df[sequence_records_df["is_training_data"]]
         test_df = sequence_records_df[~sequence_records_df["is_training_data"]]
@@ -271,7 +274,7 @@ def run_job_raptgen(
 
         # prepare the model
         model = CNN_PHMM_VAE(
-            motif_len=training_params["model_length"],
+            motif_len=training_params.model_length,  # type: ignore
             embed_size=2,
         )
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
@@ -280,7 +283,7 @@ def run_job_raptgen(
         current_epoch: int = 0
         min_loss: float = float("inf")
 
-        device_t = torch.device(training_params["device"].lower())
+        device_t = torch.device(training_params.device.lower())  # type: ignore
 
         # if resume_uuid is not None, load the model and optimizer states from the checkpoint
         if is_resume:
@@ -315,17 +318,17 @@ def run_job_raptgen(
             f"Training RaptGen model for task_id {self.request.id}. With abort flag {self.is_aborted()}."
         )
 
-        for epoch in range(current_epoch, training_params["epochs"]):
+        for epoch in range(current_epoch, training_params.epochs):  # type: ignore
             if self.is_aborted():
                 child_job.status = "suspend"  # type: ignore
                 session.commit()
                 return False
 
-            if epoch < training_params["beta_duration"]:
-                beta = epoch / training_params["beta_duration"]
+            if epoch < training_params.beta_duration:  # type: ignore
+                beta: float = epoch / training_params.beta_duration  # type: ignore
             else:
-                beta = 1
-            use_force_matching = epoch < training_params["match_forcing_duration"]
+                beta: float = 1
+            use_force_matching: bool = epoch < training_params.match_forcing_duration  # type: ignore
 
             train_loss: float = 0
             test_kld: float = 0
@@ -347,8 +350,8 @@ def run_job_raptgen(
                     force_matching=use_force_matching,
                     match_cost=(
                         1
-                        + training_params["match_cost"]
-                        * (1 - epoch / training_params["match_forcing_duration"])
+                        + training_params.match_cost  # type: ignore
+                        * (1 - epoch / training_params.match_forcing_duration)  # type: ignore
                         if use_force_matching
                         else 1
                     ),
@@ -459,7 +462,7 @@ def run_job_raptgen(
             session.commit()
 
             # early stopping
-            if patience >= training_params["early_stopping"]:
+            if patience >= training_params.early_stopping:  # type: ignore
                 break
 
         # update the child job entry
