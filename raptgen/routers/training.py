@@ -25,8 +25,6 @@ from core.db import (
     SequenceEmbeddings,
     TrainingLosses,
     SequenceData,
-    PreprocessingParams,
-    RaptGenParams,
     get_db_session,
 )
 from core.jobs import initialize_job_raptgen, run_job_raptgen, ChildJobTask
@@ -124,17 +122,6 @@ async def get_parent_job(
         else:
             summary["minimum_NLLs"].append(None)
 
-    params_preprocessing = (
-        session.query(PreprocessingParams)
-        .filter(PreprocessingParams.parent_uuid == parent_uuid)
-        .first()
-    )
-    params_training = (
-        session.query(RaptGenParams)
-        .filter(RaptGenParams.child_uuid == child_job.uuid)
-        .first()
-    )  # fix this: return the last child job's training params for now
-
     response = {
         "uuid": parent_job.uuid,
         "name": parent_job.name,
@@ -143,8 +130,8 @@ async def get_parent_job(
         "start": parent_job.start,
         "duration": parent_job.duration,
         "reiteration": parent_job.reiteration,
-        "params_training": params_training,
-        "params_preprocessing": params_preprocessing,
+        "params_training": parent_job.params_training,
+        "params_preprocessing": parent_job.params_preprocessing,
         "summary": summary,
     }
     return response
@@ -410,12 +397,12 @@ async def run_parent_job(
                 start=int(time.time()),
                 duration=0,
                 reiteration=request_param.reiteration,
+                params_training=request_param.params_training.dict(),
+                params_preprocessing=request_param.params_preprocessing.dict(),
                 worker_uuid=parent_id,
             )
         )
         num_entries = len(request_param.random_regions)
-        session.commit()
-
         for i, seq in enumerate(request_param.random_regions):
             session.add(
                 SequenceData(
@@ -426,12 +413,6 @@ async def run_parent_job(
                     duplicate=1,
                 )
             )
-        session.add(
-            PreprocessingParams(
-                parent_uuid=parent_id,
-                **request_param.params_preprocessing.dict(),
-            )
-        )
         session.commit()
 
         # database_url = session.bind.url.__to_string__(hide_password=False)  # type: ignore
@@ -669,38 +650,11 @@ async def resume_parent_job(
         session.query(ChildJob).filter(ChildJob.parent_uuid == request.uuid).all()
     )
 
-    params_training = (
-        session.query(RaptGenParams)
-        .filter(RaptGenParams.child_uuid == child_jobs[0].uuid)
-        .first()
-    )
-    if params_training is None:
-        raise HTTPException(
-            status_code=422,
-            detail=[
-                {
-                    "loc": ["body", "uuid"],
-                    "msg": f"Training parameters not found for job {request.uuid}",
-                    "type": "value_error",
-                }
-            ],
-        )
-    params_training = {
-        "epochs": params_training.epochs,
-        "model_length": params_training.model_length,
-        "match_forcing_duration": params_training.match_forcing_duration,
-        "beta_duration": params_training.beta_duration,
-        "early_stopping": params_training.early_stopping,
-        "seed_value": params_training.seed_value,
-        "match_cost": params_training.match_cost,
-        "device": params_training.device,
-    }
-
     for child_job in child_jobs:
         if child_job.status == "suspend":  # type: ignore
             run_job_raptgen.delay(
                 child_uuid=child_job.uuid,
-                training_params=params_training,
+                training_params=parent_job.params_training,
                 is_resume=True,
                 database_url=session.get_bind().engine.url.render_as_string(
                     hide_password=False
@@ -754,16 +708,10 @@ async def delete_parent_job(
         session.query(TrainingLosses).filter(
             TrainingLosses.child_uuid == child_job.uuid
         ).delete()
-        session.query(RaptGenParams).filter(
-            RaptGenParams.child_uuid == child_job.uuid
-        ).delete()
 
     session.query(SequenceData).filter(SequenceData.parent_uuid == parent_uuid).delete()
     child_jobs.delete()
 
-    session.query(PreprocessingParams).filter(
-        PreprocessingParams.parent_uuid == parent_uuid
-    ).delete()
     session.delete(parent_job)
     session.commit()
 

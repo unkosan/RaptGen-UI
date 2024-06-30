@@ -14,8 +14,6 @@ from core.db import (
     ParentJob,
     ChildJob,
     SequenceData,
-    PreprocessingParams,
-    RaptGenParams,
 )
 from core.schemas import RaptGenTrainingParams
 from tasks import celery
@@ -28,23 +26,15 @@ raptgen_parent_params = {
     "start": 1609459200,
     "duration": 0,
     "reiteration": 2,
-}
-raptgen_preprocessing_params = {
-    "forward": "TGGG",
-    "reverse": "CCCA",
-    "random_region_length": 10,
-    "tolerance": 1,
-    "minimum_count": 1,
-}
-raptgen_training_params = {
-    "model_length": 10,
-    "epochs": 2,
-    "match_forcing_duration": 1,
-    "beta_duration": 1,
-    "early_stopping": 1,
-    "match_cost": 4,
-    "seed_value": 1,
-    "device": "CPU",
+    "params_training": {
+        "model_length": 15,
+        "epochs": 2,
+        "match_forcing_duration": 1,
+        "beta_duration": 1,
+        "early_stop_threshold": 2,
+        "seed_value": 1,
+        "device": "CPU",
+    },
 }
 raptgen_child_params_1 = {
     "id": 0,
@@ -58,7 +48,6 @@ raptgen_child_params_1 = {
     "epochs_current": 0,
     "minimum_NLL": 5000,
     "is_added_viewer_dataset": False,
-    "jobtype": "RaptGen",
 }
 raptgen_child_params_2 = {
     "id": 1,
@@ -72,7 +61,6 @@ raptgen_child_params_2 = {
     "epochs_current": 0,
     "minimum_NLL": 5000,
     "is_added_viewer_dataset": False,
-    "jobtype": "RaptGen",
 }
 
 data_df = pd.read_csv(os.path.dirname(__file__) + "/mocks/test_train_mock_data.csv")
@@ -92,30 +80,6 @@ def load_database(**kwargs):
 
     for d in data:
         session.add(SequenceData(**d))
-
-    try:
-        session.commit()
-    except:
-        session.rollback()
-        raise
-    finally:
-        session.close()
-
-    session.add(
-        PreprocessingParams(
-            **raptgen_preprocessing_params, parent_uuid=raptgen_parent_params["uuid"]
-        )
-    )
-    session.add(
-        RaptGenParams(
-            **raptgen_training_params, child_uuid=raptgen_child_params_1["uuid"]
-        )
-    )
-    session.add(
-        RaptGenParams(
-            **raptgen_training_params, child_uuid=raptgen_child_params_2["uuid"]
-        )
-    )
 
     try:
         session.commit()
@@ -296,7 +260,7 @@ def test_job_raptgen_valid_retrain(db_session, celery_worker):
 
     params = RaptGenTrainingParams(
         model_length=10,
-        epochs=5,
+        epochs=20,
         match_forcing_duration=1,
         beta_duration=1,
         early_stopping=1,
@@ -374,6 +338,7 @@ def test_job_raptgen_valid_retrain(db_session, celery_worker):
         child_uuid=uuid,
         training_params={
             **params.dict(),
+            "epochs": 5,
         },
         database_url=url,
         is_resume=True,

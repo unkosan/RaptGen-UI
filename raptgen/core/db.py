@@ -1,4 +1,3 @@
-import enum
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 from sqlalchemy import (
@@ -6,20 +5,12 @@ from sqlalchemy import (
     Integer,
     String,
     Float,
+    JSON,
     Boolean,
     ForeignKey,
     LargeBinary,
-    Enum,
     create_engine,
 )
-
-
-class JobType(enum.Enum):
-    RaptGen = "RaptGen"
-    RaptGenFreq = "RaptGen-Freq"
-    RaptGenLogfreq = "RaptGen-Logfreq"
-    RfamGen = "RfamGen"
-
 
 # define schemas for the database
 BaseSchema = declarative_base()
@@ -45,6 +36,10 @@ class ParentJob(BaseSchema):
         overall duration of the parent job, interval is not included
     reiteration : int
         number of reiterations of the child jobs
+    params_training : dict
+        common parameters for training the child jobs
+    params_preprocessing : dict
+        parameters for preprocessing the data
     child_jobs : list
         list of child jobs
     """
@@ -58,6 +53,8 @@ class ParentJob(BaseSchema):
     start = Column(Integer)
     duration = Column(Integer)
     reiteration = Column(Integer)
+    params_preprocessing = Column(JSON)
+    params_training = Column(JSON)
     child_jobs = relationship("ChildJob", backref="job")
     worker_uuid = Column(String)
 
@@ -99,8 +96,6 @@ class ChildJob(BaseSchema):
         list of sequence embeddings for the child job, updated when the child job reaches the optimal NLL
     training_losses: list
         list of training losses for the child job
-    jobtype : str
-        type of job, e.g. "RaptGen", "RaptGen-Freq", etc.
     current_checkpoint: bytes
         the latest checkpoint of the child job, needed for resuming the training
     optimal_checkpoint: bytes
@@ -124,7 +119,6 @@ class ChildJob(BaseSchema):
     error_msg = Column(String)
     sequence_embeddings = relationship("SequenceEmbeddings", backref="child_job")
     training_losses = relationship("TrainingLosses", backref="child_job")
-    jobtype = Column(Enum(JobType), nullable=False)
     current_checkpoint = Column(LargeBinary)
     optimal_checkpoint = Column(LargeBinary)
 
@@ -221,81 +215,6 @@ class SequenceData(BaseSchema):
     random_region = Column(String, nullable=False)
     duplicate = Column(Integer, nullable=False)
     is_training_data = Column(Boolean, nullable=False)
-
-
-class PreprocessingParams(BaseSchema):
-    """
-    Inventory of preprocessing parameters. linked to parent jobs.
-
-    Attributes
-    ----------
-
-    parent_uuid : str
-        identifier of the parent job
-    forward : str
-        forward primer
-    reverse : str
-        reverse primer
-    random_region_length : int
-        length of the random region
-    tolerance : int
-        tolerance of the random region length
-    minimum_count : int
-        minimum count of the random region
-    """
-
-    __tablename__ = "preprocessing_params"
-
-    parent_uuid = Column(
-        String, ForeignKey("parent_jobs.uuid"), primary_key=True, nullable=False
-    )
-    forward = Column(String, nullable=False)
-    reverse = Column(String, nullable=False)
-    random_region_length = Column(Integer, nullable=False)
-    tolerance = Column(Integer, nullable=False)
-    minimum_count = Column(Integer, nullable=False)
-
-
-class RaptGenParams(BaseSchema):
-    """
-    Inventory of RaptGen parameters. linked to child jobs.
-
-    Attributes
-    ----------
-
-    child_uuid : str
-        identifier of the child job
-    model_length : int
-        length of the pHMM model
-    maximum_epochs : int
-        maximum number of epochs to train
-    match_forcing_duration : int
-        duration of the match forcing
-    beta_duration : int
-        duration of the beta annealing
-    early_stopping : int
-        early stopping threshold
-    match_cost : float
-        cost of the match forcing
-    seed : int
-        random seed
-    device : str
-        device to use for training
-    """
-
-    __tablename__ = "raptgen_params"
-
-    child_uuid = Column(
-        String, ForeignKey("child_jobs.uuid"), primary_key=True, nullable=False
-    )
-    model_length = Column(Integer, nullable=False)
-    epochs = Column(Integer, nullable=False)
-    match_forcing_duration = Column(Integer, nullable=False)
-    beta_duration = Column(Integer, nullable=False)
-    early_stopping = Column(Integer, nullable=False)
-    match_cost = Column(Float, nullable=False)
-    seed_value = Column(Integer, nullable=False)
-    device = Column(String, nullable=False)
 
 
 def get_db_session(
