@@ -5,14 +5,8 @@ import Head from "next/head";
 import Navigator from "~/components/common/navigator";
 import { Col, Container, Row, SSRProvider } from "react-bootstrap";
 import "@inovua/reactdatagrid-community/index.css";
-
-const SideBar: React.FC = () => {
-  return (
-    <div>
-      <legend>Hello</legend>
-    </div>
-  );
-};
+import SideBar from "~/components/bayesopt/sidebar/sidebar";
+import Main from "~/components/bayesopt/main/main";
 
 const Home: React.FC = () => {
   return (
@@ -32,7 +26,9 @@ const Home: React.FC = () => {
             <Col md={4}>
               <SideBar />
             </Col>
-            <Col>Hello world</Col>
+            <Col>
+              <Main />
+            </Col>
           </Row>
         </Container>
       </main>
