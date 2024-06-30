@@ -452,7 +452,6 @@ async def run_parent_job(
         for uuid in uuids:
             run_job_raptgen.delay(
                 child_uuid=uuid,
-                training_params=request_param.params_training.dict(),
                 is_resume=False,
                 database_url=database_url,
             )
@@ -669,38 +668,10 @@ async def resume_parent_job(
         session.query(ChildJob).filter(ChildJob.parent_uuid == request.uuid).all()
     )
 
-    params_training = (
-        session.query(RaptGenParams)
-        .filter(RaptGenParams.child_uuid == child_jobs[0].uuid)
-        .first()
-    )
-    if params_training is None:
-        raise HTTPException(
-            status_code=422,
-            detail=[
-                {
-                    "loc": ["body", "uuid"],
-                    "msg": f"Training parameters not found for job {request.uuid}",
-                    "type": "value_error",
-                }
-            ],
-        )
-    params_training = {
-        "epochs": params_training.epochs,
-        "model_length": params_training.model_length,
-        "match_forcing_duration": params_training.match_forcing_duration,
-        "beta_duration": params_training.beta_duration,
-        "early_stopping": params_training.early_stopping,
-        "seed_value": params_training.seed_value,
-        "match_cost": params_training.match_cost,
-        "device": params_training.device,
-    }
-
     for child_job in child_jobs:
         if child_job.status == "suspend":  # type: ignore
             run_job_raptgen.delay(
                 child_uuid=child_job.uuid,
-                training_params=params_training,
                 is_resume=True,
                 database_url=session.get_bind().engine.url.render_as_string(
                     hide_password=False
