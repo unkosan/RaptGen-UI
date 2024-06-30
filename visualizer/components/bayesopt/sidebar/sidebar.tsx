@@ -56,7 +56,10 @@ const Versions: React.FC = () => {
           </Form.Group>
         </Tab>
         <Tab eventKey="modelConfig" title="Config">
-          config
+          <Form.Group className="mb-3">
+            <Form.Label>Minimum count</Form.Label>
+            <Form.Control type="number" />
+          </Form.Group>
         </Tab>
       </Tabs>
 
