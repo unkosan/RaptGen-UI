@@ -1,3 +1,4 @@
+import enum
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 from sqlalchemy import (
@@ -11,6 +12,14 @@ from sqlalchemy import (
     Enum,
     create_engine,
 )
+
+
+class JobType(enum.Enum):
+    RaptGen = "RaptGen"
+    RaptGenFreq = "RaptGen-Freq"
+    RaptGenLogfreq = "RaptGen-Logfreq"
+    RfamGen = "RfamGen"
+
 
 # define schemas for the database
 BaseSchema = declarative_base()
@@ -115,7 +124,7 @@ class ChildJob(BaseSchema):
     error_msg = Column(String)
     sequence_embeddings = relationship("SequenceEmbeddings", backref="child_job")
     training_losses = relationship("TrainingLosses", backref="child_job")
-    jobtype = Column(Enum("RaptGen", "RaptGen-Freq", "RaptGen-Logfreq", "RfamGen"))
+    jobtype = Column(Enum(JobType), nullable=False)
     current_checkpoint = Column(LargeBinary)
     optimal_checkpoint = Column(LargeBinary)
 
@@ -280,12 +289,12 @@ class RaptGenParams(BaseSchema):
         String, ForeignKey("child_jobs.uuid"), primary_key=True, nullable=False
     )
     model_length = Column(Integer, nullable=False)
-    maximum_epochs = Column(Integer, nullable=False)
+    epochs = Column(Integer, nullable=False)
     match_forcing_duration = Column(Integer, nullable=False)
     beta_duration = Column(Integer, nullable=False)
     early_stopping = Column(Integer, nullable=False)
     match_cost = Column(Float, nullable=False)
-    seed = Column(Integer, nullable=False)
+    seed_value = Column(Integer, nullable=False)
     device = Column(String, nullable=False)
 
 
