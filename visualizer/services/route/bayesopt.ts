@@ -30,6 +30,15 @@ export const responsePostBayesoptRun = z.object({
   }),
 });
 
+// API GET /bayesopt/experiments/list
+export const responseExperimentList = z.array(
+  z.object({
+    uuid: z.string().uuid(),
+    name: z.string().nonempty(),
+    last_modified: z.number().int(),
+  })
+);
+
 // API GET /bayesopt/experiments/items/{uuid}
 // API POST /bayesopt/experiments/items/{uuid}
 // API POST /bayesopt/experiments/submit
@@ -85,6 +94,21 @@ export const apiBayesopt = makeApi([
       },
     ],
     response: responsePostBayesoptRun,
+  },
+  {
+    alias: "listExperiments",
+    method: "get",
+    path: "/bayesopt/experiments/list",
+    description: "List experiments for Bayesian optimization",
+    parameters: [
+      {
+        name: "uuid",
+        description: "Experiment UUID",
+        type: "Body",
+        schema: z.null(),
+      },
+    ],
+    response: responseExperimentList,
   },
   {
     alias: "getExperiment",
