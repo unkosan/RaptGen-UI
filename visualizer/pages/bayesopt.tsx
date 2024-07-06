@@ -7,6 +7,7 @@ import { Col, Container, Row, SSRProvider } from "react-bootstrap";
 import "@inovua/reactdatagrid-community/index.css";
 import SideBar from "~/components/bayesopt/sidebar/sidebar";
 import Main from "~/components/bayesopt/main/main";
+import { store } from "~/components/bayesopt/redux/store";
 
 const Home: React.FC = () => {
   return (
@@ -39,9 +40,9 @@ const Home: React.FC = () => {
 const PageRoot: NextPage = () => {
   return (
     <SSRProvider>
-      {/* <Provider store={store}> */}
-      <Home />
-      {/* </Provider> */}
+      <Provider store={store}>
+        <Home />
+      </Provider>
     </SSRProvider>
   );
 };
