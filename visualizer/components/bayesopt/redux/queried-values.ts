@@ -10,9 +10,15 @@ type QueriedValues = {
 
 const queriedValuesSlice = createSlice({
   name: "queriedValues",
-  initialState: [] as QueriedValues[],
+  initialState: {
+    randomRegion: [],
+    coordX: [],
+    coordY: [],
+    columnNames: [],
+    sequenceIndex: [],
+  } as QueriedValues,
   reducers: {
-    set: (state: QueriedValues[], action: PayloadAction<QueriedValues[]>) => {
+    set: (state: QueriedValues, action: PayloadAction<QueriedValues>) => {
       return action.payload;
     },
   },
