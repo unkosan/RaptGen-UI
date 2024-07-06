@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import { Layout } from "plotly.js";
-import { Button } from "react-bootstrap";
+import { Badge, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import CustomDataGrid from "~/components/common/custom-datagrid";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
@@ -71,12 +71,13 @@ const Main: React.FC = () => {
         dataSource={[]}
         style={gridStyle}
         rowStyle={{ fontFamily: "monospace" }}
+        checkboxColumn
         pagination
         downloadable
         copiable
       />
       <Button variant="primary" style={{ marginBottom: 10 }}>
-        Run Bayes-Opt
+        Run Bayes-Opt with checked data
       </Button>
 
       <legend>Query points by Bayesian Optimization</legend>
@@ -87,16 +88,73 @@ const Main: React.FC = () => {
           { name: "randomRegion", header: "Random Region", defaultFlex: 1 },
           { name: "coordX", header: "X" },
           { name: "coordY", header: "Y" },
+          {
+            name: "originalCoordX",
+            header: () => (
+              <>
+                Original X
+                <OverlayTrigger
+                  overlay={
+                    <Tooltip>
+                      <div style={{ textAlign: "left" }}>
+                        <span className="font-monospace">Original X</span>
+                        means the raw value of the X coordinate returned by the
+                        Bayesian optimization. This value is reembedded through
+                        the decoder and encoder of the VAE model to keep the
+                        consistency of the latent space.
+                      </div>
+                    </Tooltip>
+                  }
+                >
+                  <span className="ms-1">
+                    <Badge pill bg="secondary">
+                      ?
+                    </Badge>
+                  </span>
+                </OverlayTrigger>
+              </>
+            ),
+            defaultVisible: false,
+          },
+          {
+            name: "originalCoordY",
+            header: () => (
+              <>
+                Original Y
+                <OverlayTrigger
+                  overlay={
+                    <Tooltip>
+                      <div style={{ textAlign: "left" }}>
+                        <span className="font-monospace">Original Y</span>
+                        means the raw value of the Y coordinate returned by the
+                        Bayesian optimization. This value is reembedded through
+                        the decoder and encoder of the VAE model to keep the
+                        consistency of the latent space.
+                      </div>
+                    </Tooltip>
+                  }
+                >
+                  <span className="ms-1">
+                    <Badge pill bg="secondary">
+                      ?
+                    </Badge>
+                  </span>
+                </OverlayTrigger>
+              </>
+            ),
+            defaultVisible: false,
+          },
         ]}
         dataSource={[]}
         style={gridStyle}
         rowStyle={{ fontFamily: "monospace" }}
+        checkboxColumn
         pagination
         downloadable
         copiable
       />
       <Button variant="primary" style={{ marginBottom: 10 }}>
-        Add to the register
+        Add to the Register values table
       </Button>
     </div>
   );

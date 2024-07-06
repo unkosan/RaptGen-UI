@@ -1,4 +1,13 @@
-import { Button, Form, ListGroup, Stack, Tab, Tabs } from "react-bootstrap";
+import { Badge, Tooltip } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  ListGroup,
+  OverlayTrigger,
+  Stack,
+  Tab,
+  Tabs,
+} from "react-bootstrap";
 import { PlusLg } from "react-bootstrap-icons";
 
 const SideBar: React.FC = () => {
@@ -60,12 +69,34 @@ const Versions: React.FC = () => {
             <Form.Label>Minimum count</Form.Label>
             <Form.Control type="number" />
           </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Switch label="show SELEX dataset" />
+          </Form.Group>
         </Tab>
       </Tabs>
 
       <legend>Initial dataset</legend>
       <Form.Group className="mb-3">
-        <Form.Label>upload csv dataset</Form.Label>
+        <Form.Label>
+          upload csv dataset
+          <OverlayTrigger
+            overlay={
+              <Tooltip>
+                <div style={{ textAlign: "left" }}>
+                  Upload csv file with headers. The header must contain
+                  <span className="font-monospace"> random_regions </span>
+                  field.
+                </div>
+              </Tooltip>
+            }
+          >
+            <span className="ms-1">
+              <Badge pill bg="secondary">
+                ?
+              </Badge>
+            </span>
+          </OverlayTrigger>
+        </Form.Label>
         <Form.Control type="file" />
       </Form.Group>
       <Form.Group className="mb-3">
@@ -90,7 +121,7 @@ const Versions: React.FC = () => {
         </Form.Control>
       </Form.Group>
       <Form.Group className="mb-3">
-        <Form.Label>Query budget</Form.Label>
+        <Form.Label>Query budget (The number of proposal values)</Form.Label>
         <Form.Control type="number" />
       </Form.Group>
       <Form.Group className="mb-3">
