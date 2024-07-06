@@ -87,7 +87,7 @@ export const apiBayesopt = makeApi([
     description: "Run Bayesian optimization",
     parameters: [
       {
-        name: "request",
+        name: "body",
         description: "Request body",
         type: "Body",
         schema: requestPostBayesoptRun,
@@ -100,14 +100,6 @@ export const apiBayesopt = makeApi([
     method: "get",
     path: "/bayesopt/experiments/list",
     description: "List experiments for Bayesian optimization",
-    parameters: [
-      {
-        name: "uuid",
-        description: "Experiment UUID",
-        type: "Body",
-        schema: z.null(),
-      },
-    ],
     response: responseExperimentList,
   },
   {

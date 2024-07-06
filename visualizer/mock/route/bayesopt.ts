@@ -65,7 +65,7 @@ export const bayesoptHandlers = [
     );
   }),
 
-  rest.get(mockURL("/bayesopt/experiments/items/:uuid"), (req, res, ctx) => {
+  rest.get(mockURL("/bayesopt/experiments/list"), (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json([
