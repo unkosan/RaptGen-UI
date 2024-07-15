@@ -9,6 +9,7 @@ import { cloneDeep } from "lodash";
 import { useDispatch } from "react-redux";
 import { TypeEditInfo } from "@inovua/reactdatagrid-community/types";
 import { TypeOnSelectionChangeArg } from "@inovua/reactdatagrid-community/types/TypeDataGridProps";
+import { apiClient } from "~/services/api-client";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -300,6 +301,7 @@ const RegisteredTable: React.FC = () => {
         })}
         onSelectionChange={onSelectionChange}
         checkboxOnlyRowSelect
+        copiable
       />
       <RunBayesOptButton />
     </>
@@ -307,8 +309,134 @@ const RegisteredTable: React.FC = () => {
 };
 
 const RunBayesOptButton: React.FC = () => {
+  const dispatch = useDispatch();
+  const bayesoptConfig = useSelector(
+    (state: RootState) => state.bayesoptConfig
+  );
+  const registeredData = useSelector(
+    (state: RootState) => state.registeredValues
+  );
+  const sessionId = useSelector(
+    (state: RootState) => state.sessionConfig.sessionId
+  );
+
+  const validate = () => {
+    console.log(bayesoptConfig);
+    if (bayesoptConfig.targetColumn === "") {
+      alert("Please select the target column");
+      return false;
+    }
+    if (bayesoptConfig.queryBudget === 0) {
+      alert("Please set the query budget");
+      return false;
+    }
+    if (registeredData.staged.filter((value) => value).length === 0) {
+      alert("Please register at least one value");
+      return false;
+    }
+
+    for (let i = 0; i < registeredData.sequenceIndex.length; i++) {
+      const index = registeredData.sequenceIndex[i];
+      const column = registeredData.column[i];
+      const value = registeredData.value[i];
+
+      if (column !== bayesoptConfig.targetColumn) {
+        continue;
+      }
+      if (registeredData.staged[index] === false) {
+        continue;
+      }
+
+      if (typeof value !== "number") {
+        alert("Please fill all the values");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const onClick = async () => {
+    console.log("Run Bayes-Opt");
+
+    if (!validate()) return;
+
+    let values = [];
+    for (let i = 0; i < registeredData.sequenceIndex.length; i++) {
+      const index = registeredData.sequenceIndex[i];
+      const column = registeredData.column[i];
+      const value = registeredData.value[i];
+
+      if (
+        column === bayesoptConfig.targetColumn &&
+        registeredData.staged[index]
+      ) {
+        values.push(value);
+      }
+    }
+
+    let resBayesopt = await apiClient.runBayesopt({
+      coords_x: registeredData.coordX,
+      coords_y: registeredData.coordY,
+      optimization_params: {
+        method_name: "qEI",
+        query_budget: bayesoptConfig.queryBudget,
+      },
+      distribution_params: {
+        xlim_end: 3.5,
+        xlim_start: -3.5,
+        ylim_end: 3.5,
+        ylim_start: -3.5,
+      },
+      values: [values],
+    });
+
+    console.log(resBayesopt.acquisition_data);
+    console.log(resBayesopt.query_data);
+
+    let coords_original = [];
+    for (let i = 0; i < resBayesopt.query_data.coords_x.length; i++) {
+      coords_original.push({
+        coord_x: resBayesopt.query_data.coords_x[i],
+        coord_y: resBayesopt.query_data.coords_y[i],
+      });
+    }
+
+    let resDecode = await apiClient.decode({
+      session_id: sessionId,
+      coords: coords_original,
+    });
+
+    if (resDecode.status === "error") return;
+
+    let resEncode = await apiClient.encode({
+      session_id: sessionId,
+      sequences: resDecode.data,
+    });
+
+    if (resEncode.status === "error") return;
+
+    let coordX: number[] = [];
+    let coordY: number[] = [];
+    resEncode.data.forEach((value) => {
+      coordX.push(value.coord_x);
+      coordY.push(value.coord_y);
+    });
+
+    dispatch({
+      type: "queriedValues/set",
+      payload: {
+        randomRegion: resDecode.data,
+        coordX: coordX,
+        coordY: coordY,
+        coordOriginalX: resBayesopt.query_data.coords_x,
+        coordOriginalY: resBayesopt.query_data.coords_y,
+      },
+    });
+  };
+
   return (
-    <Button variant="primary" style={{ marginBottom: 10 }}>
+    <Button variant="primary" style={{ marginBottom: 10 }} onClick={onClick}>
       Run Bayes-Opt with checked data
     </Button>
   );

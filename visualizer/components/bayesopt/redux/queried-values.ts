@@ -4,8 +4,8 @@ type QueriedValues = {
   randomRegion: string[];
   coordX: number[];
   coordY: number[];
-  columnNames: string[];
-  sequenceIndex: number[];
+  coordOriginalX: number[];
+  coordOriginalY: number[];
 };
 
 const queriedValuesSlice = createSlice({
@@ -14,8 +14,8 @@ const queriedValuesSlice = createSlice({
     randomRegion: [],
     coordX: [],
     coordY: [],
-    columnNames: [],
-    sequenceIndex: [],
+    coordOriginalX: [],
+    coordOriginalY: [],
   } as QueriedValues,
   reducers: {
     set: (state: QueriedValues, action: PayloadAction<QueriedValues>) => {

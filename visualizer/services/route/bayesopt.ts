@@ -25,8 +25,8 @@ export const responsePostBayesoptRun = z.object({
     values: z.array(z.number()).nonempty(),
   }),
   query_data: z.object({
-    coords_x: z.number(),
-    coords_y: z.number(),
+    coords_x: z.array(z.number()),
+    coords_y: z.array(z.number()),
   }),
 });
 
