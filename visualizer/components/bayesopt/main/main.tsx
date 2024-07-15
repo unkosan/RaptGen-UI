@@ -1,7 +1,14 @@
 import dynamic from "next/dynamic";
-import { Layout } from "plotly.js";
+import { Layout, PlotData } from "plotly.js";
 import { Badge, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { useSelector } from "react-redux";
 import CustomDataGrid from "~/components/common/custom-datagrid";
+import { RootState } from "../redux/store";
+import { useCallback, useMemo } from "react";
+import { cloneDeep } from "lodash";
+import { useDispatch } from "react-redux";
+import { TypeEditInfo } from "@inovua/reactdatagrid-community/types";
+import { TypeOnSelectionChangeArg } from "@inovua/reactdatagrid-community/types/TypeDataGridProps";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -42,9 +49,125 @@ const returnLayout = (title: string): Partial<Layout> => {
 };
 
 const LatentGraph: React.FC = () => {
+  const vaeData = useSelector((state: RootState) => state.vaeData);
+  const registeredData = useSelector(
+    (state: RootState) => state.registeredValues
+  );
+  const queryData = useSelector((state: RootState) => state.queriedValues);
+  const graphConfig = useSelector((state: RootState) => state.graphConfig);
+
+  const vaeDataPlot: Partial<PlotData> = useMemo(() => {
+    let vaeDataPlot = cloneDeep(vaeData);
+
+    vaeDataPlot.forEach((value) => {
+      if (value.duplicates >= graphConfig.minCount) {
+        value.isShown = true;
+      } else {
+        value.isShown = false;
+      }
+    });
+
+    const filteredData = vaeDataPlot.filter((value) => value.isShown);
+    return {
+      name: "SELEX",
+      showlegend: true,
+      type: "scatter",
+      x: filteredData.map((value) => value.coordX),
+      y: filteredData.map((value) => value.coordY),
+      mode: "markers",
+      marker: {
+        size: filteredData.map((d) => Math.max(2, Math.sqrt(d.duplicates))),
+        color: "silver",
+        line: {
+          color: "silver",
+        },
+      },
+      customdata: filteredData.map((d) => [d.randomRegion, d.duplicates]),
+      hovertemplate:
+        "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
+        "<b>Seq</b>: %{customdata[0]}<br>" +
+        "<b>Duplicates</b>: %{customdata[1]}",
+    };
+  }, [vaeData, graphConfig]);
+
+  const registeredDataPlot: Partial<PlotData> = useMemo(() => {
+    return {
+      name: "Registered",
+      showlegend: true,
+      type: "scatter",
+      x: registeredData.coordX.filter((_, i) => registeredData.staged[i]),
+      y: registeredData.coordY.filter((_, i) => registeredData.staged[i]),
+      mode: "markers",
+      marker: {
+        size: 8,
+        color: "red",
+        line: {
+          color: "red",
+        },
+      },
+      customdata: registeredData.randomRegion
+        .filter((_, i) => registeredData.staged[i])
+        .map((d) => [d]),
+      hovertemplate:
+        "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
+        "<b>Seq</b>: %{customdata[0]}",
+    };
+  }, [registeredData]);
+
+  const unregisteredDataPlot: Partial<PlotData> = useMemo(() => {
+    return {
+      name: "Unregistered",
+      showlegend: true,
+      type: "scatter",
+      x: registeredData.coordX.filter((_, i) => !registeredData.staged[i]),
+      y: registeredData.coordY.filter((_, i) => !registeredData.staged[i]),
+      mode: "markers",
+      marker: {
+        size: 8,
+        color: "blue",
+        line: {
+          color: "blue",
+        },
+      },
+      customdata: registeredData.randomRegion
+        .filter((_, i) => !registeredData.staged[i])
+        .map((d) => [d]),
+      hovertemplate:
+        "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
+        "<b>Seq</b>: %{customdata[0]}",
+    };
+  }, [registeredData]);
+
+  const queryDataPlot: Partial<PlotData> = useMemo(() => {
+    return {
+      name: "Query",
+      showlegend: true,
+      type: "scatter",
+      x: queryData.coordX,
+      y: queryData.coordY,
+      mode: "markers",
+      marker: {
+        size: 8,
+        color: "green",
+        line: {
+          color: "green",
+        },
+      },
+      customdata: queryData.randomRegion.map((d) => [d]),
+      hovertemplate:
+        "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
+        "<b>Seq</b>: %{customdata[0]}",
+    };
+  }, [queryData]);
+
   return (
     <Plot
-      data={[]}
+      data={[
+        vaeDataPlot,
+        registeredDataPlot,
+        unregisteredDataPlot,
+        queryDataPlot,
+      ]}
       layout={returnLayout("Latent Space")}
       config={{ responsive: true }}
       style={{ width: "100%" }}
@@ -54,31 +177,149 @@ const LatentGraph: React.FC = () => {
 
 const gridStyle = { minHeight: 400, width: "100%", zIndex: 950 };
 
-const Main: React.FC = () => {
-  return (
-    <div>
-      <LatentGraph />
+const RegisteredTable: React.FC = () => {
+  const dispatch = useDispatch();
+  const registeredData = useSelector(
+    (state: RootState) => state.registeredValues
+  );
 
+  const onEditComplete = useCallback(
+    (e: TypeEditInfo) => {
+      let newData = cloneDeep(registeredData);
+      let index = -1;
+      for (let i = 0; i < newData.sequenceIndex.length; i++) {
+        if (
+          newData.sequenceIndex[i] === parseInt(e.rowId) &&
+          newData.column[i] === e.columnId
+        ) {
+          index = i;
+          break;
+        }
+      }
+      newData.value[index] = e.value;
+
+      dispatch({
+        type: "registeredValues/set",
+        payload: newData,
+      });
+    },
+    [registeredData]
+  );
+
+  const onSelectionChange = useCallback(
+    (e: TypeOnSelectionChangeArg) => {
+      let newData = cloneDeep(registeredData);
+      if (e.selected === true) {
+        const unselected =
+          e.unselected === null
+            ? []
+            : Object.keys(e.unselected as Object).map((value) =>
+                parseInt(value)
+              );
+        newData.staged = newData.staged.map((value, index) => {
+          return !unselected.includes(index);
+        });
+      } else {
+        const selected = Object.keys(e.selected as Object).map((value) =>
+          parseInt(value)
+        );
+        newData.staged = newData.staged.map((value, index) => {
+          return selected.includes(index);
+        });
+      }
+      console.log(e.selected);
+      console.log(e.unselected);
+
+      dispatch({
+        type: "registeredValues/set",
+        payload: newData,
+      });
+    },
+    [registeredData]
+  );
+
+  const columns = registeredData.columnNames;
+
+  let dataSource = registeredData.randomRegion.map((value, index) => {
+    let row: { [key: string]: string | number | null } = {
+      id: index,
+      randomRegion: value,
+      coordX: registeredData.coordX[index],
+      coordY: registeredData.coordY[index],
+    };
+    for (let i = 0; i < columns.length; i++) {
+      row[columns[i]] = null;
+    }
+    return row;
+  });
+
+  for (let i = 0; i < registeredData.sequenceIndex.length; i++) {
+    const index = registeredData.sequenceIndex[i];
+    const column = registeredData.column[i];
+    const value = registeredData.value[i];
+
+    if (typeof dataSource[index] === "object") {
+      dataSource[index][column] = value;
+    }
+  }
+
+  const displayColumns = columns.map((column) => {
+    return {
+      name: column,
+      header: column,
+      defaultVisible: true,
+    };
+  });
+
+  return (
+    <>
       <legend>Registered values</legend>
       <CustomDataGrid
         columns={[
-          { name: "hue", header: "Hue", defaultVisible: false },
-          { name: "id", header: "ID", defaultVisible: false },
-          { name: "randomRegion", header: "Random Region", defaultFlex: 1 },
-          { name: "coordX", header: "X" },
-          { name: "coordY", header: "Y" },
+          { name: "id", header: "ID", defaultVisible: false, editable: false },
+          {
+            name: "randomRegion",
+            header: "Random Region",
+            defaultFlex: 1,
+            editable: false,
+          },
+          ...displayColumns,
+          { name: "coordX", header: "X", editable: false },
+          { name: "coordY", header: "Y", editable: false },
         ]}
-        dataSource={[]}
+        dataSource={dataSource}
         style={gridStyle}
         rowStyle={{ fontFamily: "monospace" }}
         checkboxColumn
         pagination
         downloadable
-        copiable
+        editable
+        onEditComplete={onEditComplete}
+        defaultSelected={registeredData.staged.map((value, index) => {
+          return value ? index : -1;
+        })}
+        onSelectionChange={onSelectionChange}
+        checkboxOnlyRowSelect
       />
-      <Button variant="primary" style={{ marginBottom: 10 }}>
-        Run Bayes-Opt with checked data
-      </Button>
+      <RunBayesOptButton />
+    </>
+  );
+};
+
+const RunBayesOptButton: React.FC = () => {
+  return (
+    <Button variant="primary" style={{ marginBottom: 10 }}>
+      Run Bayes-Opt with checked data
+    </Button>
+  );
+};
+
+const Main: React.FC = () => {
+  return (
+    <div>
+      <LatentGraph />
+
+      <RegisteredTable />
 
       <legend>Query points by Bayesian Optimization</legend>
       <CustomDataGrid
