@@ -18,8 +18,8 @@ import { responseExperimentList } from "~/services/route/bayesopt";
 import { RootState } from "../redux/store";
 
 const parseCsv = (text: string) => {
-  const lines = text.split("\n");
-  const headers = lines[0].split(",");
+  const lines = text.split(/\r\n|\n|\r/);
+  let headers = lines[0].split(",");
   const randomRegionIndex = headers.indexOf("random_regions");
   if (randomRegionIndex === -1) {
     throw new Error("random_regions field is not found");
@@ -31,15 +31,17 @@ const parseCsv = (text: string) => {
   let randomRegion: string[] = [];
   for (let i = 1; i < lines.length; i++) {
     const data = lines[i].split(",");
-    randomRegion.push(data[randomRegionIndex]);
+    randomRegion.push(data[randomRegionIndex].trim());
 
     for (let j = 0; j < headers.length; j++) {
       if (j === randomRegionIndex) continue;
-      sequenceIndex.push(i);
+      sequenceIndex.push(i - 1);
       column.push(headers[j]);
       value.push(Number(data[j]));
     }
   }
+
+  headers.splice(randomRegionIndex, 1);
 
   return {
     columnNames: headers,
@@ -57,7 +59,6 @@ const InitialDataset: React.FC = () => {
   );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("file change");
     const file = e.target.files?.[0];
     if (!file) return;
 
