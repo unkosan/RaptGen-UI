@@ -1,20 +1,9 @@
 import { useEffect, useState } from "react";
 import { Badge, InputGroup, Tooltip } from "react-bootstrap";
-import {
-  Button,
-  Form,
-  ListGroup,
-  OverlayTrigger,
-  Stack,
-  Tab,
-  Tabs,
-} from "react-bootstrap";
-import { PlusLg } from "react-bootstrap-icons";
+import { Button, Form, OverlayTrigger } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { z } from "zod";
 import { apiClient } from "~/services/api-client";
-import { responseExperimentList } from "~/services/route/bayesopt";
 import { RootState } from "../redux/store";
 
 const parseCsv = (text: string) => {
@@ -57,6 +46,9 @@ const InitialDataset: React.FC = () => {
   const sessionId = useSelector(
     (state: RootState) => state.sessionConfig.sessionId
   );
+  const bayesoptConfig = useSelector(
+    (state: RootState) => state.bayesoptConfig
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -94,6 +86,18 @@ const InitialDataset: React.FC = () => {
           sequenceIndex,
           column,
           value,
+        },
+      });
+
+      if (columnNames.length === 0) return;
+
+      dispatch({
+        type: "bayesoptConfig/set",
+        payload: {
+          ...bayesoptConfig,
+          targetColumn: columnNames[0],
+          optimizationType: "qEI",
+          queryBudget: 3,
         },
       });
     };

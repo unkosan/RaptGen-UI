@@ -540,7 +540,6 @@ const RunBayesOptButton: React.FC = () => {
       }
 
       if (typeof value !== "number") {
-        console.log(index, column, value, typeof value);
         alert("Please fill all the values");
         return false;
       }

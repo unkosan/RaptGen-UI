@@ -37,7 +37,11 @@ const BayesOptConfig: React.FC = () => {
       <legend>Bayes-Opt Configuration</legend>
       <Form.Group className="mb-3">
         <Form.Label>Optimization method</Form.Label>
-        <Form.Control as="select" value={bayesoptConfig.optimizationType}>
+        <Form.Control
+          as="select"
+          value={bayesoptConfig.optimizationType}
+          onChange={() => {}}
+        >
           <option>qEI (multiple query)</option>
         </Form.Control>
       </Form.Group>

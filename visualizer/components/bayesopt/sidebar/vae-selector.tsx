@@ -1,20 +1,8 @@
 import { useEffect, useState } from "react";
-import { Badge, InputGroup, Tooltip } from "react-bootstrap";
-import {
-  Button,
-  Form,
-  ListGroup,
-  OverlayTrigger,
-  Stack,
-  Tab,
-  Tabs,
-} from "react-bootstrap";
-import { PlusLg } from "react-bootstrap-icons";
+import { Form, Tab, Tabs } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { z } from "zod";
 import { apiClient } from "~/services/api-client";
-import { responseExperimentList } from "~/services/route/bayesopt";
 import { RootState } from "../redux/store";
 
 const VaeSelector: React.FC = () => {
@@ -32,6 +20,10 @@ const VaeSelector: React.FC = () => {
       const res = await apiClient.getVAEModelNames();
       if (res.status === "error") return;
       setModels(res.data);
+
+      if (res.data.length > 0) {
+        setSelectedModel(res.data[0]);
+      }
     })();
   }, []);
 
