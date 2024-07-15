@@ -6,6 +6,7 @@ type QueriedValues = {
   coordY: number[];
   coordOriginalX: number[];
   coordOriginalY: number[];
+  staged: boolean[];
 };
 
 const queriedValuesSlice = createSlice({
@@ -16,6 +17,7 @@ const queriedValuesSlice = createSlice({
     coordY: [],
     coordOriginalX: [],
     coordOriginalY: [],
+    staged: [],
   } as QueriedValues,
   reducers: {
     set: (state: QueriedValues, action: PayloadAction<QueriedValues>) => {

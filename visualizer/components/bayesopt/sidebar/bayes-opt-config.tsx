@@ -13,7 +13,6 @@ const BayesOptConfig: React.FC = () => {
   );
 
   const onChangeColumnName = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log(event.target.value);
     dispatch({
       type: "bayesoptConfig/set",
       payload: {
@@ -38,10 +37,7 @@ const BayesOptConfig: React.FC = () => {
       <legend>Bayes-Opt Configuration</legend>
       <Form.Group className="mb-3">
         <Form.Label>Optimization method</Form.Label>
-        <Form.Control
-          as="select"
-          defaultValue={bayesoptConfig.optimizationType}
-        >
+        <Form.Control as="select" value={bayesoptConfig.optimizationType}>
           <option>qEI (multiple query)</option>
         </Form.Control>
       </Form.Group>
@@ -49,7 +45,7 @@ const BayesOptConfig: React.FC = () => {
         <Form.Label>The name of the value to optimize</Form.Label>
         <Form.Select
           onChange={onChangeColumnName}
-          defaultValue={bayesoptConfig.targetColumn}
+          value={bayesoptConfig.targetColumn}
         >
           {columns.map((column) => (
             <option key={column}>{column}</option>
@@ -61,7 +57,7 @@ const BayesOptConfig: React.FC = () => {
         <Form.Control
           type="number"
           onChange={onChangeBudget}
-          defaultValue={bayesoptConfig.queryBudget}
+          value={bayesoptConfig.queryBudget}
         />
       </Form.Group>
       <Form.Group className="mb-3">

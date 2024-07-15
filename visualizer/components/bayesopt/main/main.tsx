@@ -4,12 +4,13 @@ import { Badge, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import CustomDataGrid from "~/components/common/custom-datagrid";
 import { RootState } from "../redux/store";
-import { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { cloneDeep } from "lodash";
 import { useDispatch } from "react-redux";
 import { TypeEditInfo } from "@inovua/reactdatagrid-community/types";
 import { TypeOnSelectionChangeArg } from "@inovua/reactdatagrid-community/types/TypeDataGridProps";
 import { apiClient } from "~/services/api-client";
+import { QueriedValues } from "../redux/queried-values";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -197,7 +198,7 @@ const RegisteredTable: React.FC = () => {
           break;
         }
       }
-      newData.value[index] = e.value;
+      newData.value[index] = parseFloat(e.value);
 
       dispatch({
         type: "registeredValues/set",
@@ -308,151 +309,56 @@ const RegisteredTable: React.FC = () => {
   );
 };
 
-const RunBayesOptButton: React.FC = () => {
+const QueryTable: React.FC = () => {
   const dispatch = useDispatch();
-  const bayesoptConfig = useSelector(
-    (state: RootState) => state.bayesoptConfig
-  );
-  const registeredData = useSelector(
-    (state: RootState) => state.registeredValues
-  );
-  const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig.sessionId
-  );
+  const queryData = useSelector((state: RootState) => state.queriedValues);
 
-  const validate = () => {
-    console.log(bayesoptConfig);
-    if (bayesoptConfig.targetColumn === "") {
-      alert("Please select the target column");
-      return false;
-    }
-    if (bayesoptConfig.queryBudget === 0) {
-      alert("Please set the query budget");
-      return false;
-    }
-    if (registeredData.staged.filter((value) => value).length === 0) {
-      alert("Please register at least one value");
-      return false;
-    }
+  const dataSource = queryData.randomRegion.map((value, index) => {
+    return {
+      id: index,
+      randomRegion: value,
+      coordX: queryData.coordX[index],
+      coordY: queryData.coordY[index],
+      originalCoordX: queryData.coordOriginalX[index],
+      originalCoordY: queryData.coordOriginalY[index],
+    };
+  });
 
-    for (let i = 0; i < registeredData.sequenceIndex.length; i++) {
-      const index = registeredData.sequenceIndex[i];
-      const column = registeredData.column[i];
-      const value = registeredData.value[i];
-
-      if (column !== bayesoptConfig.targetColumn) {
-        continue;
-      }
-      if (registeredData.staged[index] === false) {
-        continue;
+  const onSelectionChange = useCallback(
+    (e: TypeOnSelectionChangeArg) => {
+      let newData = cloneDeep(queryData);
+      if (e.selected === true) {
+        const unselected =
+          e.unselected === null
+            ? []
+            : Object.keys(e.unselected as Object).map((value) =>
+                parseInt(value)
+              );
+        newData.staged = newData.staged.map((value, index) => {
+          return !unselected.includes(index);
+        });
+      } else {
+        const selected = Object.keys(e.selected as Object).map((value) =>
+          parseInt(value)
+        );
+        newData.staged = newData.staged.map((value, index) => {
+          return selected.includes(index);
+        });
       }
 
-      if (typeof value !== "number") {
-        alert("Please fill all the values");
-        return false;
-      }
-    }
-
-    return true;
-  };
-
-  const onClick = async () => {
-    console.log("Run Bayes-Opt");
-
-    if (!validate()) return;
-
-    let values = [];
-    for (let i = 0; i < registeredData.sequenceIndex.length; i++) {
-      const index = registeredData.sequenceIndex[i];
-      const column = registeredData.column[i];
-      const value = registeredData.value[i];
-
-      if (
-        column === bayesoptConfig.targetColumn &&
-        registeredData.staged[index]
-      ) {
-        values.push(value);
-      }
-    }
-
-    let resBayesopt = await apiClient.runBayesopt({
-      coords_x: registeredData.coordX,
-      coords_y: registeredData.coordY,
-      optimization_params: {
-        method_name: "qEI",
-        query_budget: bayesoptConfig.queryBudget,
-      },
-      distribution_params: {
-        xlim_end: 3.5,
-        xlim_start: -3.5,
-        ylim_end: 3.5,
-        ylim_start: -3.5,
-      },
-      values: [values],
-    });
-
-    console.log(resBayesopt.acquisition_data);
-    console.log(resBayesopt.query_data);
-
-    let coords_original = [];
-    for (let i = 0; i < resBayesopt.query_data.coords_x.length; i++) {
-      coords_original.push({
-        coord_x: resBayesopt.query_data.coords_x[i],
-        coord_y: resBayesopt.query_data.coords_y[i],
+      dispatch({
+        type: "queriedValues/set",
+        payload: newData,
       });
-    }
-
-    let resDecode = await apiClient.decode({
-      session_id: sessionId,
-      coords: coords_original,
-    });
-
-    if (resDecode.status === "error") return;
-
-    let resEncode = await apiClient.encode({
-      session_id: sessionId,
-      sequences: resDecode.data,
-    });
-
-    if (resEncode.status === "error") return;
-
-    let coordX: number[] = [];
-    let coordY: number[] = [];
-    resEncode.data.forEach((value) => {
-      coordX.push(value.coord_x);
-      coordY.push(value.coord_y);
-    });
-
-    dispatch({
-      type: "queriedValues/set",
-      payload: {
-        randomRegion: resDecode.data,
-        coordX: coordX,
-        coordY: coordY,
-        coordOriginalX: resBayesopt.query_data.coords_x,
-        coordOriginalY: resBayesopt.query_data.coords_y,
-      },
-    });
-  };
-
-  return (
-    <Button variant="primary" style={{ marginBottom: 10 }} onClick={onClick}>
-      Run Bayes-Opt with checked data
-    </Button>
+    },
+    [queryData]
   );
-};
 
-const Main: React.FC = () => {
   return (
-    <div>
-      <LatentGraph />
-
-      <RegisteredTable />
-
+    <>
       <legend>Query points by Bayesian Optimization</legend>
       <CustomDataGrid
         columns={[
-          { name: "hue", header: "Hue", defaultVisible: false },
           { name: "id", header: "ID", defaultVisible: false },
           { name: "randomRegion", header: "Random Region", defaultFlex: 1 },
           { name: "coordX", header: "X" },
@@ -514,17 +420,230 @@ const Main: React.FC = () => {
             defaultVisible: false,
           },
         ]}
-        dataSource={[]}
+        dataSource={dataSource}
         style={gridStyle}
         rowStyle={{ fontFamily: "monospace" }}
         checkboxColumn
         pagination
         downloadable
         copiable
+        defaultSelected={queryData.staged.map((value, index) => {
+          return value ? index : -1;
+        })}
+        onSelectionChange={onSelectionChange}
+        checkboxOnlyRowSelect
       />
-      <Button variant="primary" style={{ marginBottom: 10 }}>
-        Add to the Register values table
-      </Button>
+      <AddQueryButton />
+    </>
+  );
+};
+
+const AddQueryButton: React.FC = () => {
+  const dispatch = useDispatch();
+  const registeredData = useSelector(
+    (state: RootState) => state.registeredValues
+  );
+  const queryData = useSelector((state: RootState) => state.queriedValues);
+
+  const onClick = () => {
+    console.log("Add to the Register values table");
+    console.log(queryData);
+
+    let newRegisteredData = cloneDeep(registeredData);
+    let newQueryData: QueriedValues = {
+      randomRegion: [],
+      coordX: [],
+      coordY: [],
+      coordOriginalX: [],
+      coordOriginalY: [],
+      staged: [],
+    };
+
+    let currIndex = Math.max(...newRegisteredData.sequenceIndex);
+
+    for (let i = 0; i < queryData.staged.length; i++) {
+      if (queryData.staged[i] === true) {
+        currIndex += 1;
+        newRegisteredData.randomRegion.push(queryData.randomRegion[i]);
+        newRegisteredData.coordX.push(queryData.coordX[i]);
+        newRegisteredData.coordY.push(queryData.coordY[i]);
+        newRegisteredData.staged.push(false);
+        for (let j = 0; j < registeredData.columnNames.length; j++) {
+          newRegisteredData.sequenceIndex.push(currIndex);
+          newRegisteredData.column.push(registeredData.columnNames[j]);
+          newRegisteredData.value.push(null);
+        }
+      } else {
+        newQueryData.randomRegion.push(queryData.randomRegion[i]);
+        newQueryData.coordX.push(queryData.coordX[i]);
+        newQueryData.coordY.push(queryData.coordY[i]);
+        newQueryData.coordOriginalX.push(queryData.coordOriginalX[i]);
+        newQueryData.coordOriginalY.push(queryData.coordOriginalY[i]);
+        newQueryData.staged.push(false);
+      }
+    }
+
+    dispatch({
+      type: "registeredValues/set",
+      payload: newRegisteredData,
+    });
+    dispatch({
+      type: "queriedValues/set",
+      payload: newQueryData,
+    });
+  };
+
+  return (
+    <Button variant="primary" onClick={onClick} style={{ marginBottom: 10 }}>
+      Add to the Register values table
+    </Button>
+  );
+};
+
+const RunBayesOptButton: React.FC = () => {
+  const dispatch = useDispatch();
+  const bayesoptConfig = useSelector(
+    (state: RootState) => state.bayesoptConfig
+  );
+  const registeredData = useSelector(
+    (state: RootState) => state.registeredValues
+  );
+  const sessionId = useSelector(
+    (state: RootState) => state.sessionConfig.sessionId
+  );
+
+  const validate = () => {
+    console.log(bayesoptConfig);
+    if (bayesoptConfig.targetColumn === "") {
+      alert("Please select the target column");
+      return false;
+    }
+    if (bayesoptConfig.queryBudget === 0) {
+      alert("Please set the query budget");
+      return false;
+    }
+    if (registeredData.staged.filter((value) => value).length === 0) {
+      alert("Please register at least one value");
+      return false;
+    }
+
+    for (let i = 0; i < registeredData.sequenceIndex.length; i++) {
+      const index = registeredData.sequenceIndex[i];
+      const column = registeredData.column[i];
+      const value = registeredData.value[i];
+
+      if (column !== bayesoptConfig.targetColumn) {
+        continue;
+      }
+      if (registeredData.staged[index] === false) {
+        continue;
+      }
+
+      if (typeof value !== "number") {
+        console.log(index, column, value, typeof value);
+        alert("Please fill all the values");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const onClick = async () => {
+    console.log("Run Bayes-Opt");
+
+    if (!validate()) return;
+
+    let values: number[] = [];
+    for (let i = 0; i < registeredData.sequenceIndex.length; i++) {
+      const index = registeredData.sequenceIndex[i];
+      const column = registeredData.column[i];
+      const value = registeredData.value[i];
+
+      if (
+        column === bayesoptConfig.targetColumn &&
+        registeredData.staged[index]
+      ) {
+        if (typeof value === "number") values.push(value);
+      }
+    }
+
+    let resBayesopt = await apiClient.runBayesopt({
+      coords_x: registeredData.coordX,
+      coords_y: registeredData.coordY,
+      optimization_params: {
+        method_name: "qEI",
+        query_budget: bayesoptConfig.queryBudget,
+      },
+      distribution_params: {
+        xlim_end: 3.5,
+        xlim_start: -3.5,
+        ylim_end: 3.5,
+        ylim_start: -3.5,
+      },
+      values: [values],
+    });
+
+    console.log(resBayesopt.acquisition_data);
+    console.log(resBayesopt.query_data);
+
+    let coords_original = [];
+    for (let i = 0; i < resBayesopt.query_data.coords_x.length; i++) {
+      coords_original.push({
+        coord_x: resBayesopt.query_data.coords_x[i],
+        coord_y: resBayesopt.query_data.coords_y[i],
+      });
+    }
+
+    let resDecode = await apiClient.decode({
+      session_id: sessionId,
+      coords: coords_original,
+    });
+
+    if (resDecode.status === "error") return;
+
+    let resEncode = await apiClient.encode({
+      session_id: sessionId,
+      sequences: resDecode.data,
+    });
+
+    if (resEncode.status === "error") return;
+
+    let coordX: number[] = [];
+    let coordY: number[] = [];
+    resEncode.data.forEach((value) => {
+      coordX.push(value.coord_x);
+      coordY.push(value.coord_y);
+    });
+
+    dispatch({
+      type: "queriedValues/set",
+      payload: {
+        randomRegion: resDecode.data,
+        coordX: coordX,
+        coordY: coordY,
+        coordOriginalX: resBayesopt.query_data.coords_x,
+        coordOriginalY: resBayesopt.query_data.coords_y,
+        staged: new Array(resDecode.data.length).fill(false),
+      },
+    });
+  };
+
+  return (
+    <Button variant="primary" style={{ marginBottom: 10 }} onClick={onClick}>
+      Run Bayes-Opt with checked data
+    </Button>
+  );
+};
+
+const Main: React.FC = () => {
+  return (
+    <div>
+      <LatentGraph />
+
+      <RegisteredTable />
+
+      <QueryTable />
     </div>
   );
 };
