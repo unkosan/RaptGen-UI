@@ -2,18 +2,22 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type SessionConfig = {
   sessionId: number;
+  vaeName: string;
 };
 
 const sessionConfigSlice = createSlice({
   name: "sessionConfig",
   initialState: {
     sessionId: 0,
+    vaeName: "",
   },
   reducers: {
-    setSessionId: (state: SessionConfig, action: PayloadAction<number>) => {
+    set: (state: SessionConfig, action: PayloadAction<SessionConfig>) => {
+      console.log("set session id", action.payload);
       return {
         ...state,
-        sessionId: action.payload,
+        sessionId: action.payload.sessionId,
+        vaeName: action.payload.vaeName,
       };
     },
   },

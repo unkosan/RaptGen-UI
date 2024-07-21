@@ -55,8 +55,11 @@ const VaeSelector: React.FC = () => {
       if (res.status === "success") {
         const sessionId: number = res.data;
         dispatch({
-          type: "sessionConfig/setSessionId",
-          payload: sessionId,
+          type: "sessionConfig/set",
+          payload: {
+            sessionId,
+            vaeName: selectedModel,
+          },
         });
       }
     })();

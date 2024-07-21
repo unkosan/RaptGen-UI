@@ -49,6 +49,69 @@ const InitialDataset: React.FC = () => {
   const bayesoptConfig = useSelector(
     (state: RootState) => state.bayesoptConfig
   );
+  const selectedVAE = useSelector(
+    (statet: RootState) => statet.sessionConfig.vaeName
+  );
+  const [gmmNames, setGmmNames] = useState<string[]>([]);
+  const [selectedGMM, setSelectedGMM] = useState<string>("");
+
+  useEffect(() => {
+    (async () => {
+      if (selectedVAE === "") return;
+      const res = await apiClient.getGMMModelNames({
+        queries: {
+          VAE_model_name: selectedVAE,
+        },
+      });
+      if (res.status === "error") return;
+      setGmmNames(res.data);
+      if (res.data.length > 0) {
+        setSelectedGMM(res.data[0]);
+      }
+    })();
+  }, [selectedVAE]);
+
+  const retrieveGMM = async () => {
+    if (selectedVAE === "") return;
+    if (selectedGMM === "") return;
+
+    const resGMM = await apiClient.getGMMModel({
+      queries: {
+        VAE_model_name: selectedVAE,
+        GMM_model_name: selectedGMM,
+      },
+    });
+    if (resGMM.status === "error") return;
+
+    const resDecode = await apiClient.decode({
+      session_id: sessionId,
+      coords: resGMM.data.means.map((mean: number[]) => {
+        return { coord_x: mean[0], coord_y: mean[1] };
+      }),
+    });
+    if (resDecode.status === "error") return;
+
+    const randomRegion = resDecode.data;
+    const resEncode = await apiClient.encode({
+      session_id: sessionId,
+      sequences: randomRegion,
+    });
+    if (resEncode.status === "error") return;
+
+    dispatch({
+      type: "registeredValues/set",
+      payload: {
+        randomRegion,
+        coordX: resEncode.data.map((data) => data.coord_x),
+        coordY: resEncode.data.map((data) => data.coord_y),
+        staged: new Array(randomRegion.length).fill(false),
+        columnNames: ["value"],
+        sequenceIndex: resEncode.data.map((_, i) => i),
+        column: new Array(randomRegion.length).fill("value"),
+        value: new Array(randomRegion.length).fill(null),
+      },
+    });
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,7 +120,6 @@ const InitialDataset: React.FC = () => {
     const reader = new FileReader();
 
     reader.onload = async (e) => {
-      console.log("file loaded");
       const text = e.target?.result as string;
       const { columnNames, randomRegion, sequenceIndex, column, value } =
         parseCsv(text);
@@ -69,7 +131,6 @@ const InitialDataset: React.FC = () => {
       if (res.status === "error") return;
       let coordX: number[] = [];
       let coordY: number[] = [];
-      console.log(res.data);
       for (let i = 0; i < res.data.length; i++) {
         coordX.push(res.data[i].coord_x);
         coordY.push(res.data[i].coord_y);
@@ -131,13 +192,26 @@ const InitialDataset: React.FC = () => {
         <Form.Control type="file" onChange={handleFileChange} />
       </Form.Group>
       <Form.Group className="mb-3">
-        <Form.Label>Or get from registered GMM centers</Form.Label>
+        <Form.Label>or get from registered GMM centers</Form.Label>
         <InputGroup>
-          <Form.Control as="select">
-            <option>centers-1</option>
-            <option>centers-2</option>
+          <Form.Control
+            as="select"
+            onChange={(e) => {
+              setSelectedGMM(e.target.value);
+            }}
+          >
+            {gmmNames.map((name, i) => (
+              <option key={i}>{name}</option>
+            ))}
           </Form.Control>
-          <Button variant="outline-primary">Load</Button>
+          <Button
+            variant="outline-primary"
+            onClick={() => {
+              retrieveGMM();
+            }}
+          >
+            Load
+          </Button>
         </InputGroup>
       </Form.Group>
     </>

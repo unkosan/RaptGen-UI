@@ -92,30 +92,6 @@ const LatentGraph: React.FC = () => {
     };
   }, [vaeData, graphConfig]);
 
-  const registeredDataPlot: Partial<PlotData> = useMemo(() => {
-    return {
-      name: "Registered",
-      showlegend: true,
-      type: "scatter",
-      x: registeredData.coordX.filter((_, i) => registeredData.staged[i]),
-      y: registeredData.coordY.filter((_, i) => registeredData.staged[i]),
-      mode: "markers",
-      marker: {
-        size: 8,
-        color: "red",
-        line: {
-          color: "red",
-        },
-      },
-      customdata: registeredData.randomRegion
-        .filter((_, i) => registeredData.staged[i])
-        .map((d) => [d]),
-      hovertemplate:
-        "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
-        "<b>Seq</b>: %{customdata[0]}",
-    };
-  }, [registeredData]);
-
   const unregisteredDataPlot: Partial<PlotData> = useMemo(() => {
     return {
       name: "Unregistered",
@@ -127,12 +103,38 @@ const LatentGraph: React.FC = () => {
       marker: {
         size: 8,
         color: "blue",
+        opacity: 0.3,
         line: {
           color: "blue",
         },
       },
       customdata: registeredData.randomRegion
         .filter((_, i) => !registeredData.staged[i])
+        .map((d) => [d]),
+      hovertemplate:
+        "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
+        "<b>Seq</b>: %{customdata[0]}",
+    };
+  }, [registeredData]);
+
+  const registeredDataPlot: Partial<PlotData> = useMemo(() => {
+    return {
+      name: "Registered",
+      showlegend: true,
+      type: "scatter",
+      x: registeredData.coordX.filter((_, i) => registeredData.staged[i]),
+      y: registeredData.coordY.filter((_, i) => registeredData.staged[i]),
+      mode: "markers",
+      marker: {
+        size: 8,
+        color: "red",
+        opacity: 0.5,
+        line: {
+          color: "red",
+        },
+      },
+      customdata: registeredData.randomRegion
+        .filter((_, i) => registeredData.staged[i])
         .map((d) => [d]),
       hovertemplate:
         "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
