@@ -59,13 +59,11 @@ export const experimentState = z.object({
     ylim_start: z.number(),
     ylim_end: z.number(),
   }),
-  registered_values: z.array(
-    z.object({
-      sequences: z.array(z.string()),
-      target_column_names: z.array(z.string()),
-      target_values: z.array(z.array(z.number())),
-    })
-  ),
+  registered_values: z.object({
+    sequences: z.array(z.string()),
+    target_column_names: z.array(z.string()),
+    target_values: z.array(z.array(z.number())),
+  }),
   query_data: z.object({
     sequences: z.array(z.string()),
     coords_x_original: z.array(z.number()),

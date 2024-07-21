@@ -4,15 +4,24 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 import { RootState } from "../redux/store";
+import { useRouter } from "next/router";
 
 const VaeSelector: React.FC = () => {
   const [models, setModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [minimumCount, setMinimumCount] = useState<number>(5);
   const [showSelex, setShowSelex] = useState<boolean>(true);
+  const router = useRouter();
+  const uuid = router.query.uuid;
 
   const dispatch = useDispatch();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
+
+  // when loaded with uuid, sessionConfig is updated on the RestoreExperimentComponent
+  useEffect(() => {
+    setSelectedModel(sessionConfig.vaeName);
+  }, [sessionConfig.vaeName]);
 
   // retrieve VAE model names
   useEffect(() => {
@@ -20,6 +29,8 @@ const VaeSelector: React.FC = () => {
       const res = await apiClient.getVAEModelNames();
       if (res.status === "error") return;
       setModels(res.data);
+
+      if (typeof uuid !== "string") return;
 
       if (res.data.length > 0) {
         setSelectedModel(res.data[0]);

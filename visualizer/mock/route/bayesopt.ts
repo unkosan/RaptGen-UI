@@ -18,7 +18,7 @@ const experimentState = {
   },
   optimization_params: {
     method_name: "qEI",
-    target_column_name: "value",
+    target_column_name: "value2",
     query_budget: 3,
   },
   distribution_params: {
@@ -31,8 +31,9 @@ const experimentState = {
     sequences: ["AAUG", "GGUC", "CCGA"],
     target_column_names: ["value", "value2"],
     target_values: [
-      [1, 2, 3],
-      [4, 5, 6],
+      [1, 2],
+      [3, 4],
+      [5, 6],
     ],
   },
   query_data: {
@@ -40,9 +41,9 @@ const experimentState = {
     coords_x_original: [1, 0, -1],
     coords_y_original: [1, 0, -1],
   },
-  aquisition_data: {
-    coords_x: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
-    coords_y: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
+  acquisition_data: {
+    coords_x: [-3.5, -3.5, -3.5, 0, 0, 0, 3.5, 3.5, 3.5],
+    coords_y: [-3.5, 0, 3.5, -3.5, 0, 3.5, -3.5, 0, 3.5],
     values: [1, 0, 1, 0, 1, 0, 1, 0, 1],
   },
 };
@@ -71,12 +72,12 @@ export const bayesoptHandlers = [
       ctx.json([
         {
           uuid: "7df9fae4-245a-4cf2-8252-abcb649507df",
-          name: "Rapt1",
+          name: "RAPT1",
           last_modified: 1720137600,
         },
         {
           uuid: "9f9ad2e8-6b37-4677-8ad3-1f214c843baf",
-          name: "Rapt3",
+          name: "RAPT3",
           last_modified: 1720137600,
         },
       ])
@@ -88,9 +89,9 @@ export const bayesoptHandlers = [
     let vae_name: string;
 
     if (uuid === "7df9fae4-245a-4cf2-8252-abcb649507df") {
-      vae_name = "Rapt1";
+      vae_name = "RAPT1";
     } else {
-      vae_name = "Rapt3";
+      vae_name = "RAPT3";
     }
 
     return res(

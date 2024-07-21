@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { Button, ListGroup, Stack } from "react-bootstrap";
 import { PlusLg } from "react-bootstrap-icons";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
 import { z } from "zod";
 import { apiClient } from "~/services/api-client";
 import { responseExperimentList } from "~/services/route/bayesopt";
-import { RootState } from "../redux/store";
+import { useRouter } from "next/router";
 
 const Versions: React.FC = () => {
   const [list, setList] = useState<z.infer<typeof responseExperimentList>>([]);
+  const currentUUID = useRouter().query.uuid as string;
 
   // retrieve experiment data
   useEffect(() => {
@@ -31,7 +30,12 @@ const Versions: React.FC = () => {
       >
         <ListGroup variant="flush">
           {list.map((experiment, i) => (
-            <ListGroup.Item action href={`?uuid=${experiment.uuid}`} key={i}>
+            <ListGroup.Item
+              action
+              href={`?uuid=${experiment.uuid}`}
+              key={i}
+              active={currentUUID === experiment.uuid}
+            >
               <Stack direction="horizontal" gap={3}>
                 <span className="fs-5 me-2">{experiment.name}</span>
                 <span className="fs-6 fw-light ms-auto">
