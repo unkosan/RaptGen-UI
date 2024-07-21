@@ -57,6 +57,34 @@ const LatentGraph: React.FC = () => {
   );
   const queryData = useSelector((state: RootState) => state.queriedValues);
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
+  const acquisitionData = useSelector(
+    (state: RootState) => state.acquisitionValues
+  );
+
+  const acquisitionDataPlot: Partial<PlotData> = useMemo(() => {
+    let acquisitionDataPlot = cloneDeep(acquisitionData);
+
+    return {
+      name: "Acquisition",
+      showlegend: false,
+      type: "contour",
+      colorscale: "Viridis",
+
+      x: acquisitionDataPlot.coordX,
+      y: acquisitionDataPlot.coordY,
+      z: acquisitionDataPlot.acquisitionValues,
+      line: {
+        width: 2,
+      },
+      contours: {
+        coloring: "lines",
+        showlabels: true,
+      },
+      colorbar: {
+        title: "Acq. Value",
+      },
+    };
+  }, [acquisitionData]);
 
   const vaeDataPlot: Partial<PlotData> = useMemo(() => {
     let vaeDataPlot = cloneDeep(vaeData);
@@ -164,14 +192,17 @@ const LatentGraph: React.FC = () => {
     };
   }, [queryData]);
 
+  let plots = [registeredDataPlot, unregisteredDataPlot, queryDataPlot];
+  if (graphConfig.showSelex) {
+    plots = [vaeDataPlot, ...plots];
+  }
+  if (graphConfig.showAcquisition) {
+    plots = [acquisitionDataPlot, ...plots];
+  }
+
   return (
     <Plot
-      data={[
-        vaeDataPlot,
-        registeredDataPlot,
-        unregisteredDataPlot,
-        queryDataPlot,
-      ]}
+      data={plots}
       layout={returnLayout("Latent Space")}
       config={{ responsive: true }}
       style={{ width: "100%" }}
@@ -626,6 +657,15 @@ const RunBayesOptButton: React.FC = () => {
         coordOriginalX: resBayesopt.query_data.coords_x,
         coordOriginalY: resBayesopt.query_data.coords_y,
         staged: new Array(resDecode.data.length).fill(false),
+      },
+    });
+
+    dispatch({
+      type: "acquisitionValues/set",
+      payload: {
+        acquisitionValues: resBayesopt.acquisition_data.values,
+        coordX: resBayesopt.acquisition_data.coords_x,
+        coordY: resBayesopt.acquisition_data.coords_y,
       },
     });
   };

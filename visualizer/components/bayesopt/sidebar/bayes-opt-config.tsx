@@ -11,6 +11,7 @@ const BayesOptConfig: React.FC = () => {
   const bayesoptConfig = useSelector(
     (state: RootState) => state.bayesoptConfig
   );
+  const graphConfig = useSelector((state: RootState) => state.graphConfig);
 
   const onChangeColumnName = (event: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch({
@@ -28,6 +29,16 @@ const BayesOptConfig: React.FC = () => {
       payload: {
         ...bayesoptConfig,
         queryBudget: Number(e.target.value),
+      },
+    });
+  };
+
+  const onChangeShowContour = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch({
+      type: "graphConfig/set",
+      payload: {
+        ...graphConfig,
+        showAcquisition: e.target.checked,
       },
     });
   };
@@ -65,7 +76,11 @@ const BayesOptConfig: React.FC = () => {
         />
       </Form.Group>
       <Form.Group className="mb-3">
-        <Form.Switch label="show contour plot" />
+        <Form.Switch
+          onChange={onChangeShowContour}
+          checked={graphConfig.showAcquisition}
+          label="show contour plot"
+        />
       </Form.Group>
     </>
   );

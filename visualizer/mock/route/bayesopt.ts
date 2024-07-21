@@ -53,9 +53,9 @@ export const bayesoptHandlers = [
       ctx.status(200),
       ctx.json({
         acquisition_data: {
-          coords_x: [-1, -1, -1, 0, 0, 0, 1, 1, 1],
-          coords_y: [-1, 0, 1, -1, 0, 1, -1, 0, 1],
-          values: [1, 0, 1, 0, 1, 0, 1, 0, 1],
+          coords_x: [-3.5, -3.5, -3.5, 0, 0, 0, 3.5, 3.5, 3.5],
+          coords_y: [-3.5, 0, 3.5, -3.5, 0, 3.5, -3.5, 0, 3.5],
+          values: [3.5, 0, 3.5, 0, 3.5, 0, 3.5, 0, 3.5],
         },
         query_data: {
           coords_x: [-0.1, 0.0, 0.1],
