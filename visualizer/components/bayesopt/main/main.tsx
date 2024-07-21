@@ -73,6 +73,7 @@ const LatentGraph: React.FC = () => {
       x: acquisitionDataPlot.coordX,
       y: acquisitionDataPlot.coordY,
       z: acquisitionDataPlot.acquisitionValues,
+      hoverinfo: "skip",
       line: {
         width: 2,
       },
