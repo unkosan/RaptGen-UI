@@ -25,8 +25,8 @@ const Versions: React.FC = () => {
     (state: RootState) => state.acquisitionValues
   );
   const uuid = useRouter().query.uuid as string;
+  const isDirty = useSelector((state: RootState) => state.isDirty);
 
-  const dispatch = useDispatch();
   const router = useRouter();
 
   // retrieve experiment data
@@ -146,7 +146,12 @@ const Versions: React.FC = () => {
         <Button variant="outline-primary" onClick={onNew}>
           <PlusLg /> New
         </Button>
-        <Button variant="outline-primary" className="ms-auto" onClick={onSave}>
+        <Button
+          variant="outline-primary"
+          className="ms-auto"
+          onClick={onSave}
+          disabled={!isDirty}
+        >
           save
         </Button>
         <Button variant="outline-primary" onClick={onSaveAs}>

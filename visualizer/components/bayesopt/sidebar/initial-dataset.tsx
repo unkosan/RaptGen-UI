@@ -111,6 +111,10 @@ const InitialDataset: React.FC = () => {
         value: new Array(randomRegion.length).fill(null),
       },
     });
+    dispatch({
+      type: "isDirty/set",
+      payload: true,
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,6 +152,10 @@ const InitialDataset: React.FC = () => {
           column,
           value,
         },
+      });
+      dispatch({
+        type: "isDirty/set",
+        payload: true,
       });
 
       if (columnNames.length === 0) return;

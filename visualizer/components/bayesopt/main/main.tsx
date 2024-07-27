@@ -238,6 +238,10 @@ const RegisteredTable: React.FC = () => {
         type: "registeredValues/set",
         payload: newData,
       });
+      dispatch({
+        type: "isDirty/set",
+        payload: true,
+      });
     },
     [registeredData]
   );
@@ -269,6 +273,10 @@ const RegisteredTable: React.FC = () => {
       dispatch({
         type: "registeredValues/set",
         payload: newData,
+      });
+      dispatch({
+        type: "isDirty/set",
+        payload: true,
       });
     },
     [registeredData]
@@ -383,6 +391,10 @@ const QueryTable: React.FC = () => {
       dispatch({
         type: "queriedValues/set",
         payload: newData,
+      });
+      dispatch({
+        type: "isDirty/set",
+        payload: true,
       });
     },
     [queryData]
@@ -524,6 +536,10 @@ const AddQueryButton: React.FC = () => {
     dispatch({
       type: "queriedValues/set",
       payload: newQueryData,
+    });
+    dispatch({
+      type: "isDirty/set",
+      payload: true,
     });
   };
 
@@ -668,6 +684,11 @@ const RunBayesOptButton: React.FC = () => {
         coordX: resBayesopt.acquisition_data.coords_x,
         coordY: resBayesopt.acquisition_data.coords_y,
       },
+    });
+
+    dispatch({
+      type: "isDirty/set",
+      payload: true,
     });
   };
 

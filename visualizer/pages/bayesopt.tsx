@@ -196,6 +196,11 @@ const RestoreExperimentComponent: React.FC = () => {
         },
       });
 
+      dispatch({
+        type: "isDirty/set",
+        payload: false,
+      });
+
       console.log("done");
     })();
   }, [uuid]);

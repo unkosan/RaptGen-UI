@@ -8,6 +8,7 @@ import queriedValuesReducer from "./queried-values";
 import bayesoptConfigReducer from "./bayesopt-config";
 import experimentsListReducer from "./expeiments-list";
 import acquisitionValuesReducer from "./acquisition-values";
+import isDirtyReducer from "./is-dirty";
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     bayesoptConfig: bayesoptConfigReducer,
     experimentsData: experimentsListReducer,
     acquisitionValues: acquisitionValuesReducer,
+    isDirty: isDirtyReducer,
   },
 });
 

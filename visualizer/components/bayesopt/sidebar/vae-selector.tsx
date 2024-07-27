@@ -119,7 +119,13 @@ const VaeSelector: React.FC = () => {
             <Form.Control
               as="select"
               value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
+              onChange={(e) => {
+                dispatch({
+                  type: "isDirty/set",
+                  payload: true,
+                });
+                setSelectedModel(e.target.value);
+              }}
             >
               {models.map((model, i) => (
                 <option key={i}>{model}</option>
@@ -133,14 +139,26 @@ const VaeSelector: React.FC = () => {
             <Form.Control
               type="number"
               value={minimumCount}
-              onChange={(e) => setMinimumCount(parseInt(e.currentTarget.value))}
+              onChange={(e) => {
+                dispatch({
+                  type: "isDirty/set",
+                  payload: true,
+                });
+                setMinimumCount(parseInt(e.currentTarget.value));
+              }}
             />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Switch
               label="show SELEX dataset"
               checked={showSelex}
-              onChange={(e) => setShowSelex(e.currentTarget.checked)}
+              onChange={(e) => {
+                dispatch({
+                  type: "isDirty/set",
+                  payload: true,
+                });
+                setShowSelex(e.currentTarget.checked);
+              }}
             />
           </Form.Group>
         </Tab>

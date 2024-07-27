@@ -21,6 +21,10 @@ const BayesOptConfig: React.FC = () => {
         targetColumn: event.target.value,
       },
     });
+    dispatch({
+      type: "isDirty/set",
+      payload: true,
+    });
   };
 
   const onChangeBudget = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,6 +35,10 @@ const BayesOptConfig: React.FC = () => {
         queryBudget: Number(e.target.value),
       },
     });
+    dispatch({
+      type: "isDirty/set",
+      payload: true,
+    });
   };
 
   const onChangeShowContour = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,6 +48,10 @@ const BayesOptConfig: React.FC = () => {
         ...graphConfig,
         showAcquisition: e.target.checked,
       },
+    });
+    dispatch({
+      type: "isDirty/set",
+      payload: true,
     });
   };
 
