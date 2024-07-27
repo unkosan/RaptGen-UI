@@ -28,6 +28,7 @@ const Versions: React.FC = () => {
   const isDirty = useSelector((state: RootState) => state.isDirty);
 
   const router = useRouter();
+  const dispatch = useDispatch();
 
   // retrieve experiment data
   useEffect(() => {
@@ -99,15 +100,26 @@ const Versions: React.FC = () => {
       const res = await apiClient.submitExperiment(states);
       router.push(`?uuid=${res.uuid}`);
     }
+    dispatch({
+      type: "isDirty/set",
+      payload: false,
+    });
   };
 
   const onSaveAs = async () => {
     const states = getStates();
     const res = await apiClient.submitExperiment(states);
+    dispatch({
+      type: "isDirty/set",
+      payload: false,
+    });
     router.push(`?uuid=${res.uuid}`);
   };
 
   const onNew = async () => {
+    if (isDirty) {
+      if (!window.confirm("Discard changes?")) return;
+    }
     router.push(`?uuid=`);
   };
 

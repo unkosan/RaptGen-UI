@@ -7,7 +7,7 @@ import { Col, Container, Row, SSRProvider } from "react-bootstrap";
 import "@inovua/reactdatagrid-community/index.css";
 import SideBar from "~/components/bayesopt/sidebar/sidebar";
 import Main from "~/components/bayesopt/main/main";
-import { store } from "~/components/bayesopt/redux/store";
+import { RootState, store } from "~/components/bayesopt/redux/store";
 import { useRouter } from "next/router";
 import { apiClient } from "~/services/api-client";
 import { useEffect } from "react";
@@ -15,6 +15,7 @@ import { useDispatch } from "react-redux";
 import { responsePostEncode } from "~/services/route/session";
 import { experimentState } from "~/services/route/bayesopt";
 import { z } from "zod";
+import { useSelector } from "react-redux";
 
 const RestoreExperimentComponent: React.FC = () => {
   const router = useRouter();
@@ -209,6 +210,30 @@ const RestoreExperimentComponent: React.FC = () => {
 };
 
 const Home: React.FC = () => {
+  const router = useRouter();
+  const isDirty = useSelector((state: RootState) => state.isDirty);
+  const pageChangeHandler = () => {
+    if (isDirty) {
+      if (!confirm("Discard changes?")) {
+        throw "cancelled";
+      }
+    }
+  };
+  const beforeUnload = (e: BeforeUnloadEvent) => {
+    if (isDirty) {
+      e.preventDefault();
+    }
+  };
+
+  useEffect(() => {
+    router.events.on("routeChangeStart", pageChangeHandler);
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => {
+      router.events.off("routeChangeStart", pageChangeHandler);
+      window.removeEventListener("beforeunload", beforeUnload);
+    };
+  }, [isDirty]);
+
   return (
     <>
       <Head>
