@@ -12,6 +12,9 @@ import { useRouter } from "next/router";
 import { apiClient } from "~/services/api-client";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { responsePostEncode } from "~/services/route/session";
+import { experimentState } from "~/services/route/bayesopt";
+import { z } from "zod";
 
 const RestoreExperimentComponent: React.FC = () => {
   const router = useRouter();
@@ -24,10 +27,51 @@ const RestoreExperimentComponent: React.FC = () => {
         return;
       }
 
+      const vaeNames = await apiClient.getVAEModelNames();
+      if (vaeNames.status === "error") {
+        return;
+      }
+
       console.log("uuid", uuid);
-      const response = await apiClient.getExperiment({
-        params: { uuid: uuid },
-      });
+      let response = {
+        VAE_model: vaeNames.data[0] ? vaeNames.data[0] : "",
+        plot_config: {
+          minimum_count: 5,
+          show_training_data: true,
+        },
+        optimization_params: {
+          method_name: "qEI",
+          target_column_name: "target",
+          query_budget: 3,
+        },
+        distribution_params: {
+          xlim_start: -3.5,
+          xlim_end: 3.5,
+          ylim_start: -3.5,
+          ylim_end: 3.5,
+        },
+        registered_values: {
+          sequences: [],
+          target_column_names: [],
+          target_values: [],
+        },
+        query_data: {
+          sequences: [],
+          coords_x_original: [],
+          coords_y_original: [],
+        },
+        acquisition_data: {
+          coords_x: [],
+          coords_y: [],
+          values: [],
+        },
+      } as z.infer<typeof experimentState>;
+
+      if (uuid) {
+        response = await apiClient.getExperiment({
+          params: { uuid: uuid },
+        });
+      }
       console.log(response);
 
       const resSessionId = await apiClient.startSession({
@@ -72,16 +116,21 @@ const RestoreExperimentComponent: React.FC = () => {
           vaeName: response.VAE_model,
           minCount: response.plot_config.minimum_count,
           showSelex: response.plot_config.show_training_data,
-          // showAcquisition: response.plot_config.show_acquisition,
+          showAcquisition: true,
         },
       });
 
-      console.log("registered_values", response.registered_values);
-
-      const resCoords = await apiClient.encode({
-        session_id: sessionId,
-        sequences: response.registered_values.sequences,
-      });
+      // set registered values
+      let resCoords = {
+        status: "success",
+        data: [],
+      } as z.infer<typeof responsePostEncode>;
+      if (response.registered_values.sequences.length !== 0) {
+        resCoords = await apiClient.encode({
+          session_id: sessionId,
+          sequences: response.registered_values.sequences,
+        });
+      }
       if (resCoords.status === "error") {
         return;
       }
@@ -119,10 +168,17 @@ const RestoreExperimentComponent: React.FC = () => {
         },
       });
 
-      const resQueryCoords = await apiClient.encode({
-        session_id: sessionId,
-        sequences: response.query_data.sequences,
-      });
+      // set query values
+      let resQueryCoords = {
+        status: "success",
+        data: [],
+      } as z.infer<typeof responsePostEncode>;
+      if (response.query_data.sequences.length !== 0) {
+        resQueryCoords = await apiClient.encode({
+          session_id: sessionId,
+          sequences: response.query_data.sequences,
+        });
+      }
       if (resQueryCoords.status === "error") {
         return;
       }

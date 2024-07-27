@@ -62,7 +62,7 @@ export const experimentState = z.object({
   registered_values: z.object({
     sequences: z.array(z.string()),
     target_column_names: z.array(z.string()),
-    target_values: z.array(z.array(z.number())),
+    target_values: z.array(z.array(z.union([z.null(), z.number()]))),
   }),
   query_data: z.object({
     sequences: z.array(z.string()),
@@ -74,6 +74,10 @@ export const experimentState = z.object({
     coords_y: z.array(z.number()),
     values: z.array(z.number()),
   }),
+});
+
+export const responseSubmitExperiment = z.object({
+  uuid: z.string().uuid(),
 });
 
 // API
@@ -149,7 +153,7 @@ export const apiBayesopt = makeApi([
         schema: experimentState,
       },
     ],
-    response: z.string().uuid(),
+    response: responseSubmitExperiment,
   },
   {
     alias: "deleteExperiment",

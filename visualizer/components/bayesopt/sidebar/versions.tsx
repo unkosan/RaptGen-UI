@@ -5,10 +5,29 @@ import { z } from "zod";
 import { apiClient } from "~/services/api-client";
 import { responseExperimentList } from "~/services/route/bayesopt";
 import { useRouter } from "next/router";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+import { useDispatch } from "react-redux";
 
 const Versions: React.FC = () => {
   const [list, setList] = useState<z.infer<typeof responseExperimentList>>([]);
   const currentUUID = useRouter().query.uuid as string;
+
+  const graphConfig = useSelector((state: RootState) => state.graphConfig);
+  const bayesoptConfig = useSelector(
+    (state: RootState) => state.bayesoptConfig
+  );
+  const queriedValues = useSelector((state: RootState) => state.queriedValues);
+  const registeredValues = useSelector(
+    (state: RootState) => state.registeredValues
+  );
+  const acquisitionValues = useSelector(
+    (state: RootState) => state.acquisitionValues
+  );
+  const uuid = useRouter().query.uuid as string;
+
+  const dispatch = useDispatch();
+  const router = useRouter();
 
   // retrieve experiment data
   useEffect(() => {
@@ -17,6 +36,80 @@ const Versions: React.FC = () => {
       setList(res);
     })();
   }, []);
+
+  const getStates = () => {
+    // save experiment
+    let array = new Array(registeredValues.randomRegion.length).fill([]);
+    for (let i = 0; i < array.length; i++) {
+      array[i] = new Array(registeredValues.columnNames.length).fill(null);
+    }
+
+    for (let i = 0; i < registeredValues.value.length; i++) {
+      const seqIndex = registeredValues.sequenceIndex[i];
+      const colIndex = registeredValues.columnNames.indexOf(
+        registeredValues.column[i]
+      );
+      array[seqIndex][colIndex] = registeredValues.value[i];
+    }
+
+    const obj = {
+      VAE_model: graphConfig.vaeName,
+      plot_config: {
+        minimum_count: graphConfig.minCount,
+        show_training_data: graphConfig.showSelex,
+      },
+      optimization_params: {
+        method_name: "qEI" as const,
+        target_column_name: bayesoptConfig.targetColumn,
+        query_budget: bayesoptConfig.queryBudget,
+      },
+      distribution_params: {
+        xlim_start: -3.5,
+        xlim_end: 3.5,
+        ylim_start: -3.5,
+        ylim_end: 3.5,
+      },
+      registered_values: {
+        sequences: registeredValues.randomRegion,
+        target_column_names: registeredValues.columnNames,
+        target_values: array,
+      },
+      query_data: {
+        sequences: queriedValues.randomRegion,
+        coords_x_original: queriedValues.coordOriginalX,
+        coords_y_original: queriedValues.coordOriginalY,
+      },
+      acquisition_data: {
+        values: acquisitionValues.acquisitionValues,
+        coords_x: acquisitionValues.coordX,
+        coords_y: acquisitionValues.coordY,
+      },
+    };
+
+    return obj;
+  };
+
+  const onSave = async () => {
+    const states = getStates();
+    if (uuid) {
+      await apiClient.updateExperiment(states, {
+        params: { uuid },
+      });
+    } else {
+      const res = await apiClient.submitExperiment(states);
+      router.push(`?uuid=${res.uuid}`);
+    }
+  };
+
+  const onSaveAs = async () => {
+    const states = getStates();
+    const res = await apiClient.submitExperiment(states);
+    router.push(`?uuid=${res.uuid}`);
+  };
+
+  const onNew = async () => {
+    router.push(`?uuid=`);
+  };
 
   return (
     <>
@@ -32,9 +125,9 @@ const Versions: React.FC = () => {
           {list.map((experiment, i) => (
             <ListGroup.Item
               action
-              href={`?uuid=${experiment.uuid}`}
               key={i}
               active={currentUUID === experiment.uuid}
+              onClick={() => router.push(`?uuid=${experiment.uuid}`)}
             >
               <Stack direction="horizontal" gap={3}>
                 <span className="fs-5 me-2">{experiment.name}</span>
@@ -50,13 +143,15 @@ const Versions: React.FC = () => {
         </ListGroup>
       </div>
       <Stack direction="horizontal" className="mt-2" gap={3}>
-        <Button variant="outline-primary">
+        <Button variant="outline-primary" onClick={onNew}>
           <PlusLg /> New
         </Button>
-        <Button variant="outline-primary" className="ms-auto">
+        <Button variant="outline-primary" className="ms-auto" onClick={onSave}>
           save
         </Button>
-        <Button variant="outline-primary">save as...</Button>
+        <Button variant="outline-primary" onClick={onSaveAs}>
+          save as...
+        </Button>
       </Stack>
     </>
   );
