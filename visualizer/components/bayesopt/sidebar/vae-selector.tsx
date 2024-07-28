@@ -30,7 +30,7 @@ const VaeSelector: React.FC = () => {
       if (res.status === "error") return;
       setModels(res.data);
 
-      if (typeof uuid !== "string") return;
+      if (uuid) return;
 
       if (res.data.length > 0) {
         setSelectedModel(res.data[0]);
@@ -78,7 +78,8 @@ const VaeSelector: React.FC = () => {
 
   // if selectedModel is changed, upload the associated data to redux store
   useEffect(() => {
-    if (selectedModel === "") return;
+    console.log("selectedModel", selectedModel);
+    if (!selectedModel) return;
     (async () => {
       const res = await apiClient.getSelexData({
         queries: {
