@@ -32,12 +32,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          BASE_URL: ${{ secrets.BASE_URL }}
         with:
           debug: false
           review_simple_changes: false
           review_comment_lgtm: false
-          openai_light_model: gpt-4 # 好みで変更
-          openai_heavy_model: gpt-4 # 好みで変更
+          openai_light_model: gpt-4o # 好みで変更
+          openai_heavy_model: gpt-4o # 好みで変更
           openai_timeout_ms: 900000 # 15分.
           language: ja-JP
           path_filters: |
@@ -78,3 +79,4 @@ jobs:
             - New Feature: UIに統合ページが追加されました
             ```
             回答は50-100語以内にしてください。この回答はそのままリリースノートに使用されるので、追加のコメントは避けてください。
+          openai_base_url: ${{ env.BASE_URL }}
