@@ -8,7 +8,14 @@ import pytest_postgresql.factories as factories
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from mocks import mock_children, mock_parents, mock_embeddings, mock_training_losses
+from mocks import (
+    mock_children,
+    mock_parents,
+    mock_embeddings,
+    mock_training_losses,
+    mock_params_preprocessing,
+    mock_params_raptgen,
+)
 from tasks import celery
 
 from core.db import (
@@ -18,6 +25,8 @@ from core.db import (
     SequenceEmbeddings,
     TrainingLosses,
     SequenceData,
+    RaptGenParams,
+    PreprocessingParams,
     get_db_session,
 )
 
@@ -39,7 +48,7 @@ def load_database(**kwargs):
     # prepare the database
     parent_to_children = defaultdict(list)
     for child in mock_children:
-        child_job = ChildJob(**child)
+        child_job = ChildJob(**child, jobtype="RaptGen")
         parent_to_children[child["parent_uuid"]].append(child_job)
     for parent in mock_parents:
         parent_job = ParentJob(**parent)
@@ -49,6 +58,7 @@ def load_database(**kwargs):
         session.add(SequenceEmbeddings(**embeddings))
     for training_losses in mock_training_losses:
         session.add(TrainingLosses(**training_losses))
+
     try:
         session.commit()
     except Exception as e:
@@ -56,6 +66,16 @@ def load_database(**kwargs):
         raise e
     finally:
         session.close()
+
+    for parent in mock_parents:
+        session.add(
+            PreprocessingParams(
+                **mock_params_preprocessing, parent_uuid=parent.get("uuid")
+            )
+        )
+
+    for child in mock_children:
+        session.add(RaptGenParams(**mock_params_raptgen, child_uuid=child.get("uuid")))
 
 
 postgresql_proc = factories.postgresql_proc(load=[load_database])

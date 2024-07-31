@@ -28,16 +28,19 @@ jobs:
       (github.event_name == 'pull_request' && !contains(github.event.pull_request.title, 'release') && !contains(github.event.pull_request.title, 'Release'))
     timeout-minutes: 15
     steps:
-      - uses: coderabbitai/openai-pr-reviewer@latest
+      - uses: wisteria30/ai-pr-reviewer@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          AZURE_OPENAI_API_INSTANCE_NAME: ${{ secrets.AZURE_OPENAI_API_INSTANCE_NAME }}
+          AZURE_OPENAI_API_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_API_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_VERSION: '2023-03-15-preview'
         with:
           debug: false
           review_simple_changes: false
           review_comment_lgtm: false
-          openai_light_model: gpt-4 # 好みで変更
-          openai_heavy_model: gpt-4 # 好みで変更
+          openai_light_model: gpt-4
+          openai_heavy_model: gpt-4
           openai_timeout_ms: 900000 # 15分.
           language: ja-JP
           path_filters: |
