@@ -63,7 +63,13 @@ const Home: React.FC = () => {
                 url="/trainer"
               />
             </Col>
-            <Col></Col>
+            <Col>
+              <Cell
+                title="Bayesian Optimization"
+                content="Optimize objective function using Bayesian Optimization"
+                url="/bayesopt"
+              />
+            </Col>
           </Row>
         </Container>
       </main>
