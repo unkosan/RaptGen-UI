@@ -13,7 +13,6 @@ const sessionConfigSlice = createSlice({
   },
   reducers: {
     set: (state: SessionConfig, action: PayloadAction<SessionConfig>) => {
-      console.log("set session id", action.payload);
       return {
         ...state,
         sessionId: action.payload.sessionId,
