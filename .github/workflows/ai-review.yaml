@@ -28,11 +28,13 @@ jobs:
       (github.event_name == 'pull_request' && !contains(github.event.pull_request.title, 'release') && !contains(github.event.pull_request.title, 'Release'))
     timeout-minutes: 15
     steps:
-      - uses: coderabbitai/openai-pr-reviewer@latest
+      - uses: wisteria30/ai-pr-reviewer@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          BASE_URL: ${{ secrets.BASE_URL }}
+          AZURE_OPENAI_API_KEY: ${{ Secrets.AZURE_OPENAI_API_KEY }}
+          AZURE_OPENAI_API_INSTANCE_NAME: ${{ Secrets.AZURE_OPENAI_API_INSTANCE_NAME }}
+          AZURE_OPENAI_API_DEPLOYMENT_NAME: ${{ Secrets.AZURE_OPENAI_API_DEPLOYMENT_NAME }}
+          AZURE_OPENAI_API_VERSION: '2023-03-15-preview'
         with:
           debug: false
           review_simple_changes: false
@@ -79,4 +81,3 @@ jobs:
             - New Feature: UIに統合ページが追加されました
             ```
             回答は50-100語以内にしてください。この回答はそのままリリースノートに使用されるので、追加のコメントは避けてください。
-          openai_base_url: ${{ env.BASE_URL }}
