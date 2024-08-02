@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, Form, ListGroup, Modal, Stack } from "react-bootstrap";
-import { PlusLg } from "react-bootstrap-icons";
+import { PlusLg, Pencil, XLg } from "react-bootstrap-icons";
 import { z } from "zod";
 import { apiClient } from "~/services/api-client";
 import { responseGetBayesoptItems } from "~/services/route/bayesopt";
@@ -162,6 +162,38 @@ const Versions: React.FC = () => {
                     experiment.last_modified * 1000
                   ).toLocaleDateString()}
                 </span>
+                <Pencil
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    alert("hi");
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = "lightgreen";
+                  }}
+                  onMouseOut={(e) => {
+                    if (currentUUID === experiment.uuid) {
+                      e.currentTarget.style.color = "white";
+                    } else {
+                      e.currentTarget.style.color = "black";
+                    }
+                  }}
+                />
+                <XLg
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    alert("hi");
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = "red";
+                  }}
+                  onMouseOut={(e) => {
+                    if (currentUUID === experiment.uuid) {
+                      e.currentTarget.style.color = "white";
+                    } else {
+                      e.currentTarget.style.color = "black";
+                    }
+                  }}
+                />
               </Stack>
             </ListGroup.Item>
           ))}
