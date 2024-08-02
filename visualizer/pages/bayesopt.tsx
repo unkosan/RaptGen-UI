@@ -157,6 +157,7 @@ const RestoreExperimentComponent: React.FC = () => {
       dispatch({
         type: "registeredValues/set",
         payload: {
+          id: response.registered_values.ids,
           randomRegion: response.registered_values.sequences,
           coordX: coords.map((coord) => coord.coord_x),
           coordY: coords.map((coord) => coord.coord_y),
