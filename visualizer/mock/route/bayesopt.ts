@@ -11,6 +11,7 @@ const errorMsg = {
 };
 
 const experimentState = {
+  experiment_name: "",
   VAE_model: "",
   plot_config: {
     minimum_count: 2,
@@ -100,7 +101,7 @@ export const bayesoptHandlers = [
       ctx.status(200),
       ctx.json({
         ...experimentState,
-        expriment_name: "Exp: " + vae_name,
+        experiment_name: "Exp: " + vae_name,
         VAE_model: vae_name,
       })
     );
