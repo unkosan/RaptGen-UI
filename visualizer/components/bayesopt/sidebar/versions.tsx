@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, ListGroup, Stack } from "react-bootstrap";
+import { Button, Form, ListGroup, Modal, Stack } from "react-bootstrap";
 import { PlusLg } from "react-bootstrap-icons";
 import { z } from "zod";
 import { apiClient } from "~/services/api-client";
@@ -29,6 +29,9 @@ const Versions: React.FC = () => {
   const uuid = useRouter().query.uuid as string;
   const isDirty = useSelector((state: RootState) => state.isDirty);
 
+  const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+  const [saveAsTitle, setSaveAsTitle] = useState("");
+
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -56,6 +59,7 @@ const Versions: React.FC = () => {
     }
 
     const obj = {
+      experiment_name: "",
       VAE_model: graphConfig.vaeName,
       plot_config: {
         minimum_count: graphConfig.minCount,
@@ -95,15 +99,16 @@ const Versions: React.FC = () => {
   };
 
   const onSave = async () => {
-    const states = getStates();
-    if (uuid) {
-      await apiClient.updateExperiment(states, {
-        params: { uuid },
-      });
-    } else {
-      const res = await apiClient.submitExperiment(states);
-      router.push(`?uuid=${res.uuid}`);
+    if (!uuid) {
+      setIsSaveAsModalOpen(true);
+      return;
     }
+
+    const states = getStates();
+    await apiClient.updateExperiment(states, {
+      params: { uuid },
+    });
+
     dispatch({
       type: "isDirty/set",
       payload: false,
@@ -112,7 +117,11 @@ const Versions: React.FC = () => {
 
   const onSaveAs = async () => {
     const states = getStates();
-    const res = await apiClient.submitExperiment(states);
+    const res = await apiClient.submitExperiment({
+      ...states,
+      experiment_name: saveAsTitle,
+    });
+    setIsSaveAsModalOpen(false);
     dispatch({
       type: "isDirty/set",
       payload: false,
@@ -170,10 +179,43 @@ const Versions: React.FC = () => {
         >
           save
         </Button>
-        <Button variant="outline-primary" onClick={onSaveAs}>
+        <Button
+          variant="outline-primary"
+          onClick={() => setIsSaveAsModalOpen(true)}
+        >
           save as...
         </Button>
       </Stack>
+
+      <Modal show={isSaveAsModalOpen} backdrop="static">
+        <Modal.Header>
+          <Modal.Title>Save As</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Please enter the name of the experiment.
+          <Form.Group className="mt-3">
+            <Form.Control
+              type="text"
+              placeholder="Experiment name"
+              onChange={(e) => setSaveAsTitle(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setSaveAsTitle("");
+              setIsSaveAsModalOpen(false);
+            }}
+          >
+            Close
+          </Button>
+          <Button variant="primary" onClick={onSaveAs} disabled={!saveAsTitle}>
+            Save
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
