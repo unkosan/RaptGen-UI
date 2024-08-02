@@ -29,6 +29,7 @@ const experimentState = {
     ylim_end: 3.5,
   },
   registered_values: {
+    ids: ["no.1", "no.2", "no.3"],
     sequences: ["AAUG", "GGUC", "CCGA"],
     target_column_names: ["value", "value2"],
     target_values: [

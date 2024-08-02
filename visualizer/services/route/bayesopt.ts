@@ -21,6 +21,7 @@ export const experimentState = z.object({
     ylim_end: z.number(),
   }),
   registered_values: z.object({
+    ids: z.array(z.string()),
     sequences: z.array(z.string()),
     target_column_names: z.array(z.string()),
     target_values: z.array(z.array(z.union([z.null(), z.number()]))),

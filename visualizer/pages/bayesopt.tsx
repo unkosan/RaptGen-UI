@@ -53,6 +53,7 @@ const RestoreExperimentComponent: React.FC = () => {
           ylim_end: 3.5,
         },
         registered_values: {
+          ids: [],
           sequences: [],
           target_column_names: [],
           target_values: [],
