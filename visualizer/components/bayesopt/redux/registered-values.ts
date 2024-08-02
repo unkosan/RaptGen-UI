@@ -1,6 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type RegisteredValues = {
+  id: string[]; // id of the data (length m)
   randomRegion: string[]; // name of the region (length m)
   coordX: number[]; // x coordinate of the region (length m)
   coordY: number[]; // y coordinate of the region (length m)
@@ -14,6 +15,7 @@ type RegisteredValues = {
 const registeredValuesSlice = createSlice({
   name: "registeredValues",
   initialState: {
+    id: [],
     randomRegion: [],
     coordX: [],
     coordY: [],

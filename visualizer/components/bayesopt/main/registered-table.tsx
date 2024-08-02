@@ -20,17 +20,21 @@ export const RegisteredTable: React.FC = () => {
   const onEditComplete = useCallback(
     (e: TypeEditInfo) => {
       let newData = cloneDeep(registeredData);
-      let index = -1;
-      for (let i = 0; i < newData.sequenceIndex.length; i++) {
-        if (
-          newData.sequenceIndex[i] === parseInt(e.rowId) &&
-          newData.column[i] === e.columnId
-        ) {
-          index = i;
-          break;
+      if (e.columnId === "seq_id") {
+        newData.id[e.rowIndex] = e.value;
+      } else {
+        let meltedIndex = -1;
+        for (let i = 0; i < newData.sequenceIndex.length; i++) {
+          if (
+            newData.sequenceIndex[i] === e.rowIndex &&
+            newData.column[i] === e.columnId
+          ) {
+            meltedIndex = i;
+            break;
+          }
         }
+        newData.value[meltedIndex] = parseFloat(e.value);
       }
-      newData.value[index] = parseFloat(e.value);
 
       dispatch({
         type: "registeredValues/set",
@@ -82,12 +86,12 @@ export const RegisteredTable: React.FC = () => {
 
   const columns = registeredData.columnNames;
 
-  let dataSource = registeredData.randomRegion.map((value, index) => {
+  let dataSource = registeredData.id.map((value, index) => {
     let row: { [key: string]: string | number | null } = {
-      id: index,
-      randomRegion: value,
-      coordX: registeredData.coordX[index],
-      coordY: registeredData.coordY[index],
+      seq_id: value,
+      random_region: registeredData.randomRegion[index],
+      coord_X: registeredData.coordX[index],
+      coord_Y: registeredData.coordY[index],
     };
     for (let i = 0; i < columns.length; i++) {
       row[columns[i]] = null;
@@ -118,16 +122,21 @@ export const RegisteredTable: React.FC = () => {
       <legend>Registered values</legend>
       <CustomDataGrid
         columns={[
-          { name: "id", header: "ID", defaultVisible: false, editable: false },
           {
-            name: "randomRegion",
+            name: "seq_id",
+            header: "ID",
+            defaultVisible: true,
+            editable: true,
+          },
+          {
+            name: "random_region",
             header: "Random Region",
             defaultFlex: 1,
             editable: false,
           },
           ...displayColumns,
-          { name: "coordX", header: "X", editable: false },
-          { name: "coordY", header: "Y", editable: false },
+          { name: "coord_X", header: "X", editable: false },
+          { name: "coord_Y", header: "Y", editable: false },
         ]}
         dataSource={dataSource}
         style={gridStyle}

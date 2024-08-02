@@ -9,21 +9,30 @@ import { RootState } from "../redux/store";
 const parseCsv = (text: string) => {
   const lines = text.split(/\r\n|\n|\r/);
   let headers = lines[0].split(",");
+
   const randomRegionIndex = headers.indexOf("random_regions");
   if (randomRegionIndex === -1) {
     throw new Error("random_regions field is not found");
+  }
+  const seqIdIndex = headers.indexOf("seq_id");
+  if (seqIdIndex === -1) {
+    throw new Error("seq_id field is not found");
   }
 
   let sequenceIndex: number[] = [];
   let column: string[] = [];
   let value: number[] = [];
   let randomRegion: string[] = [];
+  let id: string[] = [];
   for (let i = 1; i < lines.length; i++) {
     const data = lines[i].split(",");
     randomRegion.push(data[randomRegionIndex].trim());
+    id.push(data[seqIdIndex].trim());
 
     for (let j = 0; j < headers.length; j++) {
       if (j === randomRegionIndex) continue;
+      if (j === seqIdIndex) continue;
+
       sequenceIndex.push(i - 1);
       column.push(headers[j]);
       value.push(Number(data[j]));
@@ -31,9 +40,11 @@ const parseCsv = (text: string) => {
   }
 
   headers.splice(randomRegionIndex, 1);
+  headers.splice(seqIdIndex, 1);
 
   return {
     columnNames: headers,
+    id,
     randomRegion,
     sequenceIndex,
     column,
@@ -101,6 +112,9 @@ const InitialDataset: React.FC = () => {
     dispatch({
       type: "registeredValues/set",
       payload: {
+        id: new Array(randomRegion.length).map(
+          (_, i) => `MoG center no.${i + 1}`
+        ),
         randomRegion,
         coordX: resEncode.data.map((data) => data.coord_x),
         coordY: resEncode.data.map((data) => data.coord_y),
@@ -125,7 +139,7 @@ const InitialDataset: React.FC = () => {
 
     reader.onload = async (e) => {
       const text = e.target?.result as string;
-      const { columnNames, randomRegion, sequenceIndex, column, value } =
+      const { columnNames, randomRegion, id, sequenceIndex, column, value } =
         parseCsv(text);
 
       const res = await apiClient.encode({
@@ -143,6 +157,7 @@ const InitialDataset: React.FC = () => {
       dispatch({
         type: "registeredValues/set",
         payload: {
+          id,
           randomRegion,
           coordX,
           coordY,
@@ -184,7 +199,10 @@ const InitialDataset: React.FC = () => {
               <Tooltip>
                 <div style={{ textAlign: "left" }}>
                   Upload csv file with headers. The header must contain
-                  <span className="font-monospace"> random_regions </span>
+                  <span className="font-monospace">
+                    {" "}
+                    random_regions{" "}
+                  </span> and <span className="font-monospace"> seq_id </span>
                   field.
                 </div>
               </Tooltip>

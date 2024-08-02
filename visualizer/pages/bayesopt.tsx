@@ -39,6 +39,7 @@ const RestoreExperimentComponent: React.FC = () => {
         plot_config: {
           minimum_count: 5,
           show_training_data: true,
+          show_bo_contour: true,
         },
         optimization_params: {
           method_name: "qEI",
@@ -52,6 +53,7 @@ const RestoreExperimentComponent: React.FC = () => {
           ylim_end: 3.5,
         },
         registered_values: {
+          ids: [],
           sequences: [],
           target_column_names: [],
           target_values: [],
@@ -155,6 +157,7 @@ const RestoreExperimentComponent: React.FC = () => {
       dispatch({
         type: "registeredValues/set",
         payload: {
+          id: response.registered_values.ids,
           randomRegion: response.registered_values.sequences,
           coordX: coords.map((coord) => coord.coord_x),
           coordY: coords.map((coord) => coord.coord_y),
