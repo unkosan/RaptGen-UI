@@ -74,9 +74,7 @@ const Versions: React.FC = () => {
         ylim_end: 3.5,
       },
       registered_values: {
-        ids: new Array(registeredValues.randomRegion.length)
-          .fill("")
-          .map((_, i) => `no.${i + 1}`),
+        ids: registeredValues.id,
         sequences: registeredValues.randomRegion,
         target_column_names: registeredValues.columnNames,
         target_values: array,

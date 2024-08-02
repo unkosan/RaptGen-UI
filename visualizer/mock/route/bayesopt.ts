@@ -118,7 +118,7 @@ export const bayesoptHandlers = [
     return res(ctx.status(200), ctx.json(null));
   }),
 
-  rest.post(mockURL("/bayesopt/experiments/submit"), (req, res, ctx) => {
+  rest.post(mockURL("/bayesopt/submit"), (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
