@@ -15,6 +15,7 @@ const experimentState = {
   plot_config: {
     minimum_count: 2,
     show_training_data: true,
+    show_bo_contour: true,
   },
   optimization_params: {
     method_name: "qEI",
@@ -66,7 +67,7 @@ export const bayesoptHandlers = [
     );
   }),
 
-  rest.get(mockURL("/bayesopt/experiments/list"), (req, res, ctx) => {
+  rest.get(mockURL("/bayesopt/items"), (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json([
@@ -84,7 +85,7 @@ export const bayesoptHandlers = [
     );
   }),
 
-  rest.get(mockURL("/bayesopt/experiments/items/:uuid"), (req, res, ctx) => {
+  rest.get(mockURL("/bayesopt/items/:uuid"), (req, res, ctx) => {
     let uuid = req.params.uuid;
     let vae_name: string;
 
@@ -98,12 +99,21 @@ export const bayesoptHandlers = [
       ctx.status(200),
       ctx.json({
         ...experimentState,
+        expriment_name: "Exp: " + vae_name,
         VAE_model: vae_name,
       })
     );
   }),
 
-  rest.post(mockURL("/bayesopt/experiments/items/:uuid"), (req, res, ctx) => {
+  rest.put(mockURL("/bayesopt/items/:uuid"), (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(null));
+  }),
+
+  rest.patch(mockURL("/bayesopt/items/:uuid"), (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(null));
+  }),
+
+  rest.delete(mockURL("/bayesopt/items/:uuid"), (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(null));
   }),
 

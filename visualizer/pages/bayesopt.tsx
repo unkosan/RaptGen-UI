@@ -39,6 +39,7 @@ const RestoreExperimentComponent: React.FC = () => {
         plot_config: {
           minimum_count: 5,
           show_training_data: true,
+          show_bo_contour: true,
         },
         optimization_params: {
           method_name: "qEI",

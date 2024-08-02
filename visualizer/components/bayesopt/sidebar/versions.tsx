@@ -3,14 +3,16 @@ import { Button, ListGroup, Stack } from "react-bootstrap";
 import { PlusLg } from "react-bootstrap-icons";
 import { z } from "zod";
 import { apiClient } from "~/services/api-client";
-import { responseExperimentList } from "~/services/route/bayesopt";
+import { responseGetBayesoptItems } from "~/services/route/bayesopt";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { useDispatch } from "react-redux";
 
 const Versions: React.FC = () => {
-  const [list, setList] = useState<z.infer<typeof responseExperimentList>>([]);
+  const [list, setList] = useState<z.infer<typeof responseGetBayesoptItems>>(
+    []
+  );
   const currentUUID = useRouter().query.uuid as string;
 
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
@@ -58,6 +60,7 @@ const Versions: React.FC = () => {
       plot_config: {
         minimum_count: graphConfig.minCount,
         show_training_data: graphConfig.showSelex,
+        show_bo_contour: graphConfig.showAcquisition,
       },
       optimization_params: {
         method_name: "qEI" as const,
