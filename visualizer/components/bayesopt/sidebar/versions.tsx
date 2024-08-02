@@ -31,16 +31,23 @@ const Versions: React.FC = () => {
 
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
   const [saveAsTitle, setSaveAsTitle] = useState("");
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [renameTitle, setRenameTitle] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedExperimentId, setSelectedExperimentId] = useState<string>("");
+  const [selectedExperimentName, setSelectedExperimentName] =
+    useState<string>("");
 
   const router = useRouter();
   const dispatch = useDispatch();
 
   // retrieve experiment data
+  const updateList = async () => {
+    const res = await apiClient.listExperiments();
+    setList(res);
+  };
   useEffect(() => {
-    (async () => {
-      const res = await apiClient.listExperiments();
-      setList(res);
-    })();
+    updateList();
   }, []);
 
   const getStates = () => {
@@ -136,6 +143,37 @@ const Versions: React.FC = () => {
     router.push(`?uuid=`);
   };
 
+  const onRename = async () => {
+    if (!selectedExperimentId) return;
+
+    await apiClient.patchExperiment(
+      {
+        target: "experiment_name",
+        value: renameTitle,
+      },
+      {
+        params: { uuid: selectedExperimentId },
+      }
+    );
+    updateList();
+    setIsRenameModalOpen(false);
+  };
+
+  const onDelete = async () => {
+    if (!selectedExperimentId) return;
+
+    await apiClient.deleteExperiment(undefined, {
+      params: { uuid: selectedExperimentId },
+    });
+
+    if (selectedExperimentId === currentUUID) {
+      router.push(`?uuid=`);
+    }
+
+    updateList();
+    setIsDeleteModalOpen(false);
+  };
+
   return (
     <>
       <legend>Bayes-Opt experiments</legend>
@@ -165,33 +203,29 @@ const Versions: React.FC = () => {
                 <Pencil
                   onClick={(e) => {
                     e.stopPropagation();
-                    alert("hi");
+                    setSelectedExperimentId(experiment.uuid);
+                    setSelectedExperimentName(experiment.name);
+                    setIsRenameModalOpen(true);
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.color = "lightgreen";
                   }}
                   onMouseOut={(e) => {
-                    if (currentUUID === experiment.uuid) {
-                      e.currentTarget.style.color = "white";
-                    } else {
-                      e.currentTarget.style.color = "black";
-                    }
+                    e.currentTarget.style.color = "inherit";
                   }}
                 />
                 <XLg
                   onClick={(e) => {
                     e.stopPropagation();
-                    alert("hi");
+                    setSelectedExperimentId(experiment.uuid);
+                    setSelectedExperimentName(experiment.name);
+                    setIsDeleteModalOpen(true);
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.color = "red";
                   }}
                   onMouseOut={(e) => {
-                    if (currentUUID === experiment.uuid) {
-                      e.currentTarget.style.color = "white";
-                    } else {
-                      e.currentTarget.style.color = "black";
-                    }
+                    e.currentTarget.style.color = "inherit";
                   }}
                 />
               </Stack>
@@ -245,6 +279,63 @@ const Versions: React.FC = () => {
           </Button>
           <Button variant="primary" onClick={onSaveAs} disabled={!saveAsTitle}>
             Save
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={isRenameModalOpen} backdrop="static">
+        <Modal.Header>
+          <Modal.Title>Rename</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Please enter the new name of the experiment.
+          <hr />
+          Before: <span className="fw-bold">{selectedExperimentName}</span>
+          <Form.Group className="mt-3">
+            <Form.Control
+              type="text"
+              placeholder="Experiment name"
+              onChange={(e) => setRenameTitle(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setRenameTitle("");
+              setIsRenameModalOpen(false);
+            }}
+          >
+            Close
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => onRename()}
+            disabled={!renameTitle}
+          >
+            Rename
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={isDeleteModalOpen} backdrop="static">
+        <Modal.Header>
+          <Modal.Title>Delete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to delete the experiment{" "}
+          <span className="fw-bold">{selectedExperimentName}</span>?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setIsDeleteModalOpen(false)}
+          >
+            Close
+          </Button>
+          <Button variant="primary" onClick={() => onDelete()}>
+            Delete
           </Button>
         </Modal.Footer>
       </Modal>
