@@ -55,16 +55,25 @@ const VaeSelector: React.FC = () => {
   // start session
   useEffect(() => {
     (async () => {
+      if (sessionConfig.sessionId !== 0) {
+        await apiClient.endSession({
+          queries: {
+            session_id: sessionConfig.sessionId,
+          },
+        });
+        console.log("session ended");
+      }
+
       if (selectedModel === "") return;
 
-      const res = await apiClient.startSession({
+      const resStart = await apiClient.startSession({
         queries: {
           VAE_name: selectedModel,
         },
       });
 
-      if (res.status === "success") {
-        const sessionId: number = res.data;
+      if (resStart.status === "success") {
+        const sessionId: number = resStart.data;
         dispatch({
           type: "sessionConfig/set",
           payload: {

@@ -66,8 +66,6 @@ export const RegisteredTable: React.FC = () => {
           return selected.includes(value);
         });
       }
-      console.log("selected", e.selected);
-      console.log("unselected", e.unselected);
 
       dispatch({
         type: "registeredValues/set",

@@ -33,7 +33,6 @@ const RestoreExperimentComponent: React.FC = () => {
         return;
       }
 
-      console.log("uuid", uuid);
       let response = {
         VAE_model: vaeNames.data[0] ? vaeNames.data[0] : "",
         plot_config: {
@@ -75,16 +74,13 @@ const RestoreExperimentComponent: React.FC = () => {
           params: { uuid: uuid },
         });
       }
-      console.log(response);
 
       const resSessionId = await apiClient.startSession({
         queries: { VAE_name: response.VAE_model },
       });
-      console.log(resSessionId);
       if (resSessionId.status === "error") {
         return;
       }
-      console.log("session_id", resSessionId.data);
       const sessionId = resSessionId.data;
 
       dispatch({
@@ -215,6 +211,10 @@ const RestoreExperimentComponent: React.FC = () => {
 const Home: React.FC = () => {
   const router = useRouter();
   const isDirty = useSelector((state: RootState) => state.isDirty);
+  const sessionId = useSelector(
+    (state: RootState) => state.sessionConfig.sessionId
+  );
+
   const pageChangeHandler = () => {
     if (isDirty) {
       if (!confirm("Discard changes?")) {
@@ -225,15 +225,28 @@ const Home: React.FC = () => {
   const beforeUnload = (e: BeforeUnloadEvent) => {
     if (isDirty) {
       e.preventDefault();
+      e.returnValue = "Discard changes?";
+    }
+  };
+  const unload = async () => {
+    console.log("unload");
+    if (sessionId !== 0) {
+      await apiClient.endSession({
+        queries: {
+          session_id: sessionId,
+        },
+      });
     }
   };
 
   useEffect(() => {
     router.events.on("routeChangeStart", pageChangeHandler);
     window.addEventListener("beforeunload", beforeUnload);
+    window.addEventListener("unload", unload);
     return () => {
       router.events.off("routeChangeStart", pageChangeHandler);
       window.removeEventListener("beforeunload", beforeUnload);
+      window.removeEventListener("unload", unload);
     };
   }, [isDirty]);
 
