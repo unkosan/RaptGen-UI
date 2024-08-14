@@ -2,6 +2,8 @@ import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../redux/store";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 const BayesOptConfig: React.FC = () => {
   const dispatch = useDispatch();
@@ -12,6 +14,8 @@ const BayesOptConfig: React.FC = () => {
     (state: RootState) => state.bayesoptConfig
   );
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
+  const router = useRouter();
+  const uuid = router.query.uuid;
 
   const onChangeColumnName = (event: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch({
@@ -54,6 +58,21 @@ const BayesOptConfig: React.FC = () => {
       payload: true,
     });
   };
+
+  useEffect(() => {
+    if (uuid) return;
+
+    if (columns.length > 0) {
+      dispatch({
+        type: "bayesoptConfig/set",
+        payload: {
+          ...bayesoptConfig,
+          optimizationType: "qEI",
+          targetColumn: columns[0],
+        },
+      });
+    }
+  }, [columns]);
 
   return (
     <>
