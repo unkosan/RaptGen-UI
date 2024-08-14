@@ -17,6 +17,10 @@ const VaeSelector: React.FC = () => {
   const dispatch = useDispatch();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
+  const registeredValues = useSelector(
+    (state: RootState) => state.registeredValues
+  );
+  const queriedValues = useSelector((state: RootState) => state.queriedValues);
 
   // when loaded with uuid, sessionConfig is updated on the RestoreExperimentComponent
   useEffect(() => {
@@ -118,6 +122,68 @@ const VaeSelector: React.FC = () => {
       });
     })();
   }, [selectedModel]);
+
+  // if sessionID is changed, upload updated data to redux store
+  useEffect(() => {
+    (async () => {
+      if (sessionConfig.sessionId === 0) return;
+      if (registeredValues.randomRegion.length === 0) return;
+
+      // update registered values
+      const resRegistered = await apiClient.encode({
+        session_id: sessionConfig.sessionId,
+        sequences: registeredValues.randomRegion,
+      });
+      if (resRegistered.status === "error") return;
+      dispatch({
+        type: "registeredValues/set",
+        payload: {
+          ...registeredValues,
+          coordX: resRegistered.data.map((data) => data.coord_x),
+          coordY: resRegistered.data.map((data) => data.coord_y),
+        },
+      });
+
+      // update query values
+      let coords_original = [];
+      for (let i = 0; i < queriedValues.randomRegion.length; i++) {
+        coords_original.push({
+          coord_x: queriedValues.coordOriginalX[i],
+          coord_y: queriedValues.coordOriginalY[i],
+        });
+      }
+      let resDecode = await apiClient.decode({
+        session_id: sessionConfig.sessionId,
+        coords: coords_original,
+      });
+      if (resDecode.status === "error") return;
+
+      let resEncode = await apiClient.encode({
+        session_id: sessionConfig.sessionId,
+        sequences: resDecode.data,
+      });
+      if (resEncode.status === "error") return;
+
+      let reembeddedCoordX: number[] = [];
+      let reembeddedCoordY: number[] = [];
+      resEncode.data.forEach((value) => {
+        reembeddedCoordX.push(value.coord_x);
+        reembeddedCoordY.push(value.coord_y);
+      });
+
+      dispatch({
+        type: "queriedValues/set",
+        payload: {
+          ...queriedValues,
+          randomRegion: resDecode.data,
+          coordX: reembeddedCoordX,
+          coordY: reembeddedCoordY,
+          coordOriginalX: queriedValues.coordOriginalX,
+          coordOriginalY: queriedValues.coordOriginalY,
+        },
+      });
+    })();
+  }, [sessionConfig.sessionId]);
 
   return (
     <>
