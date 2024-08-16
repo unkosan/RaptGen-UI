@@ -112,9 +112,9 @@ const InitialDataset: React.FC = () => {
     dispatch({
       type: "registeredValues/set",
       payload: {
-        id: new Array(randomRegion.length).map(
-          (_, i) => `MoG center no.${i + 1}`
-        ),
+        id: new Array(randomRegion.length)
+          .fill("")
+          .map((_, i) => `MoG No.${i + 1}`),
         randomRegion,
         coordX: resEncode.data.map((data) => data.coord_x),
         coordY: resEncode.data.map((data) => data.coord_y),

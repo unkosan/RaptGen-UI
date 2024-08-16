@@ -4,24 +4,21 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 import { RootState } from "../redux/store";
-import { useRouter } from "next/router";
 
 const VaeSelector: React.FC = () => {
   const [models, setModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [minimumCount, setMinimumCount] = useState<number>(5);
   const [showSelex, setShowSelex] = useState<boolean>(true);
-  const router = useRouter();
-  const uuid = router.query.uuid;
+  const isLoading = useSelector((state: RootState) => state.isLoading);
 
   const dispatch = useDispatch();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
-
-  // when loaded with uuid, sessionConfig is updated on the RestoreExperimentComponent
-  useEffect(() => {
-    setSelectedModel(sessionConfig.vaeName);
-  }, [sessionConfig.vaeName]);
+  const registeredValues = useSelector(
+    (state: RootState) => state.registeredValues
+  );
+  const queriedValues = useSelector((state: RootState) => state.queriedValues);
 
   // retrieve VAE model names
   useEffect(() => {
@@ -29,18 +26,14 @@ const VaeSelector: React.FC = () => {
       const res = await apiClient.getVAEModelNames();
       if (res.status === "error") return;
       setModels(res.data);
-
-      if (uuid) return;
-
-      if (res.data.length > 0) {
-        setSelectedModel(res.data[0]);
-      }
     })();
   }, []);
 
   // dispatch model names to redux store
   useEffect(() => {
+    if (isLoading) return;
     if (selectedModel === "") return;
+
     dispatch({
       type: "graphConfig/set",
       payload: {
@@ -52,38 +45,48 @@ const VaeSelector: React.FC = () => {
     });
   }, [selectedModel, minimumCount, showSelex]);
 
-  // start session
+  // restart session
   useEffect(() => {
     (async () => {
-      if (selectedModel === "") return;
+      if (isLoading) return;
 
-      const res = await apiClient.startSession({
+      if (sessionConfig.sessionId !== 0) {
+        await apiClient.endSession({
+          queries: {
+            session_id: sessionConfig.sessionId,
+          },
+        });
+        console.log("session ended");
+      }
+
+      if (graphConfig.vaeName === "") return;
+
+      const resStart = await apiClient.startSession({
         queries: {
-          VAE_name: selectedModel,
+          VAE_name: sessionConfig.vaeName,
         },
       });
 
-      if (res.status === "success") {
-        const sessionId: number = res.data;
+      if (resStart.status === "success") {
+        const sessionId: number = resStart.data;
         dispatch({
           type: "sessionConfig/set",
           payload: {
             sessionId,
-            vaeName: selectedModel,
+            vaeName: sessionConfig.vaeName,
           },
         });
       }
     })();
-  }, [selectedModel]);
+  }, [graphConfig.vaeName]);
 
   // if selectedModel is changed, upload the associated data to redux store
   useEffect(() => {
-    console.log("selectedModel", selectedModel);
-    if (!selectedModel) return;
+    if (!graphConfig.vaeName) return;
     (async () => {
       const res = await apiClient.getSelexData({
         queries: {
-          VAE_model_name: selectedModel,
+          VAE_model_name: graphConfig.vaeName,
         },
       });
 
@@ -108,7 +111,55 @@ const VaeSelector: React.FC = () => {
         payload: vaeData,
       });
     })();
-  }, [selectedModel]);
+  }, [graphConfig.vaeName]);
+
+  // if sessionID is changed, upload updated data to redux store
+  useEffect(() => {
+    (async () => {
+      if (isLoading) return;
+
+      if (sessionConfig.sessionId === 0) return;
+      if (registeredValues.randomRegion.length === 0) return;
+
+      // update registered values
+      const resRegistered = await apiClient.encode({
+        session_id: sessionConfig.sessionId,
+        sequences: registeredValues.randomRegion,
+      });
+      if (resRegistered.status === "error") return;
+      dispatch({
+        type: "registeredValues/set",
+        payload: {
+          ...registeredValues,
+          coordX: resRegistered.data.map((data) => data.coord_x),
+          coordY: resRegistered.data.map((data) => data.coord_y),
+        },
+      });
+
+      // update query values
+      dispatch({
+        type: "queriedValues/set",
+        payload: {
+          ...queriedValues,
+          randomRegion: [],
+          coordX: [],
+          coordY: [],
+          coordOriginalX: [],
+          coordOriginalY: [],
+        },
+      });
+
+      // update acquisition values
+      dispatch({
+        type: "acquisitionValues/set",
+        payload: {
+          acquisitionValues: [],
+          coordX: [],
+          coordY: [],
+        },
+      });
+    })();
+  }, [sessionConfig.sessionId]);
 
   return (
     <>

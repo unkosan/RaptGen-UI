@@ -169,6 +169,7 @@ const AddQueryButton: React.FC = () => {
     for (let i = 0; i < queryData.staged.length; i++) {
       if (queryData.staged[i] === true) {
         currIndex += 1;
+        newRegisteredData.id.push("untitled -- " + currIndex.toString());
         newRegisteredData.randomRegion.push(queryData.randomRegion[i]);
         newRegisteredData.coordX.push(queryData.coordX[i]);
         newRegisteredData.coordY.push(queryData.coordY[i]);

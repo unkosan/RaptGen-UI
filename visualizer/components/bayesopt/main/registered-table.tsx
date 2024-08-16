@@ -52,25 +52,20 @@ export const RegisteredTable: React.FC = () => {
     (e: TypeOnSelectionChangeArg) => {
       let newData = cloneDeep(registeredData);
       if (e.selected === true) {
+        // if selected all value by clicking the master checkbox
         const unselected =
-          e.unselected === null
+          e.unselected === null // and if there is no unselected value by clicking the per-row checkbox
             ? []
-            : Object.keys(e.unselected as Object).map((value) =>
-                parseInt(value)
-              );
-        newData.staged = newData.staged.map((value, index) => {
-          return !unselected.includes(index);
+            : Object.keys(e.unselected as Object);
+        newData.staged = newData.id.map((value, index) => {
+          return !unselected.includes(value);
         });
       } else {
-        const selected = Object.keys(e.selected as Object).map((value) =>
-          parseInt(value)
-        );
-        newData.staged = newData.staged.map((value, index) => {
-          return selected.includes(index);
+        const selected = Object.keys(e.selected as Object);
+        newData.staged = newData.id.map((value, index) => {
+          return selected.includes(value);
         });
       }
-      console.log(e.selected);
-      console.log(e.unselected);
 
       dispatch({
         type: "registeredValues/set",
@@ -138,6 +133,7 @@ export const RegisteredTable: React.FC = () => {
           { name: "coord_X", header: "X", editable: false },
           { name: "coord_Y", header: "Y", editable: false },
         ]}
+        idProperty="seq_id"
         dataSource={dataSource}
         style={gridStyle}
         rowStyle={{ fontFamily: "monospace" }}
@@ -201,6 +197,10 @@ const RunBayesOptButton: React.FC = () => {
         alert("Please fill all the values");
         return false;
       }
+      if (isNaN(value)) {
+        alert("Please fill all the values with valid numbers");
+        return false;
+      }
     }
 
     return true;
@@ -211,6 +211,8 @@ const RunBayesOptButton: React.FC = () => {
 
     if (!validate()) return;
 
+    let coordX: number[] = [];
+    let coordY: number[] = [];
     let values: number[] = [];
     for (let i = 0; i < registeredData.sequenceIndex.length; i++) {
       const index = registeredData.sequenceIndex[i];
@@ -218,16 +220,21 @@ const RunBayesOptButton: React.FC = () => {
       const value = registeredData.value[i];
 
       if (
-        column === bayesoptConfig.targetColumn &&
-        registeredData.staged[index]
+        column !== bayesoptConfig.targetColumn ||
+        registeredData.staged[index] === false ||
+        typeof value !== "number"
       ) {
-        if (typeof value === "number") values.push(value);
+        continue;
       }
+
+      values.push(value);
+      coordX.push(registeredData.coordX[index]);
+      coordY.push(registeredData.coordY[index]);
     }
 
     let resBayesopt = await apiClient.runBayesopt({
-      coords_x: registeredData.coordX,
-      coords_y: registeredData.coordY,
+      coords_x: coordX,
+      coords_y: coordY,
       optimization_params: {
         method_name: "qEI",
         query_budget: bayesoptConfig.queryBudget,
@@ -266,19 +273,19 @@ const RunBayesOptButton: React.FC = () => {
 
     if (resEncode.status === "error") return;
 
-    let coordX: number[] = [];
-    let coordY: number[] = [];
+    let reembeddedCoordX: number[] = [];
+    let reembeddedCoordY: number[] = [];
     resEncode.data.forEach((value) => {
-      coordX.push(value.coord_x);
-      coordY.push(value.coord_y);
+      reembeddedCoordX.push(value.coord_x);
+      reembeddedCoordY.push(value.coord_y);
     });
 
     dispatch({
       type: "queriedValues/set",
       payload: {
         randomRegion: resDecode.data,
-        coordX: coordX,
-        coordY: coordY,
+        coordX: reembeddedCoordX,
+        coordY: reembeddedCoordY,
         coordOriginalX: resBayesopt.query_data.coords_x,
         coordOriginalY: resBayesopt.query_data.coords_y,
         staged: new Array(resDecode.data.length).fill(false),
