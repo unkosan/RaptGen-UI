@@ -4,15 +4,13 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 import { RootState } from "../redux/store";
-import { useRouter } from "next/router";
 
 const VaeSelector: React.FC = () => {
   const [models, setModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [minimumCount, setMinimumCount] = useState<number>(5);
   const [showSelex, setShowSelex] = useState<boolean>(true);
-  const router = useRouter();
-  const uuid = router.query.uuid;
+  const isLoading = useSelector((state: RootState) => state.isLoading);
 
   const dispatch = useDispatch();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
@@ -22,29 +20,20 @@ const VaeSelector: React.FC = () => {
   );
   const queriedValues = useSelector((state: RootState) => state.queriedValues);
 
-  // when loaded with uuid, sessionConfig is updated on the RestoreExperimentComponent
-  useEffect(() => {
-    setSelectedModel(sessionConfig.vaeName);
-  }, [sessionConfig.vaeName]);
-
   // retrieve VAE model names
   useEffect(() => {
     (async () => {
       const res = await apiClient.getVAEModelNames();
       if (res.status === "error") return;
       setModels(res.data);
-
-      if (uuid) return;
-
-      if (res.data.length > 0) {
-        setSelectedModel(res.data[0]);
-      }
     })();
   }, []);
 
   // dispatch model names to redux store
   useEffect(() => {
+    if (isLoading) return;
     if (selectedModel === "") return;
+
     dispatch({
       type: "graphConfig/set",
       payload: {
@@ -56,9 +45,11 @@ const VaeSelector: React.FC = () => {
     });
   }, [selectedModel, minimumCount, showSelex]);
 
-  // start session
+  // restart session
   useEffect(() => {
     (async () => {
+      if (isLoading) return;
+
       if (sessionConfig.sessionId !== 0) {
         await apiClient.endSession({
           queries: {
@@ -68,11 +59,11 @@ const VaeSelector: React.FC = () => {
         console.log("session ended");
       }
 
-      if (selectedModel === "") return;
+      if (graphConfig.vaeName === "") return;
 
       const resStart = await apiClient.startSession({
         queries: {
-          VAE_name: selectedModel,
+          VAE_name: sessionConfig.vaeName,
         },
       });
 
@@ -82,21 +73,20 @@ const VaeSelector: React.FC = () => {
           type: "sessionConfig/set",
           payload: {
             sessionId,
-            vaeName: selectedModel,
+            vaeName: sessionConfig.vaeName,
           },
         });
       }
     })();
-  }, [selectedModel]);
+  }, [graphConfig.vaeName]);
 
   // if selectedModel is changed, upload the associated data to redux store
   useEffect(() => {
-    console.log("selectedModel", selectedModel);
-    if (!selectedModel) return;
+    if (!graphConfig.vaeName) return;
     (async () => {
       const res = await apiClient.getSelexData({
         queries: {
-          VAE_model_name: selectedModel,
+          VAE_model_name: graphConfig.vaeName,
         },
       });
 
@@ -121,11 +111,13 @@ const VaeSelector: React.FC = () => {
         payload: vaeData,
       });
     })();
-  }, [selectedModel]);
+  }, [graphConfig.vaeName]);
 
   // if sessionID is changed, upload updated data to redux store
   useEffect(() => {
     (async () => {
+      if (isLoading) return;
+
       if (sessionConfig.sessionId === 0) return;
       if (registeredValues.randomRegion.length === 0) return;
 
@@ -145,41 +137,25 @@ const VaeSelector: React.FC = () => {
       });
 
       // update query values
-      let coords_original = [];
-      for (let i = 0; i < queriedValues.randomRegion.length; i++) {
-        coords_original.push({
-          coord_x: queriedValues.coordOriginalX[i],
-          coord_y: queriedValues.coordOriginalY[i],
-        });
-      }
-      let resDecode = await apiClient.decode({
-        session_id: sessionConfig.sessionId,
-        coords: coords_original,
-      });
-      if (resDecode.status === "error") return;
-
-      let resEncode = await apiClient.encode({
-        session_id: sessionConfig.sessionId,
-        sequences: resDecode.data,
-      });
-      if (resEncode.status === "error") return;
-
-      let reembeddedCoordX: number[] = [];
-      let reembeddedCoordY: number[] = [];
-      resEncode.data.forEach((value) => {
-        reembeddedCoordX.push(value.coord_x);
-        reembeddedCoordY.push(value.coord_y);
-      });
-
       dispatch({
         type: "queriedValues/set",
         payload: {
           ...queriedValues,
-          randomRegion: resDecode.data,
-          coordX: reembeddedCoordX,
-          coordY: reembeddedCoordY,
-          coordOriginalX: queriedValues.coordOriginalX,
-          coordOriginalY: queriedValues.coordOriginalY,
+          randomRegion: [],
+          coordX: [],
+          coordY: [],
+          coordOriginalX: [],
+          coordOriginalY: [],
+        },
+      });
+
+      // update acquisition values
+      dispatch({
+        type: "acquisitionValues/set",
+        payload: {
+          acquisitionValues: [],
+          coordX: [],
+          coordY: [],
         },
       });
     })();
