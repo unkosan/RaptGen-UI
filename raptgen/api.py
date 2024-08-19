@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import session, test, data, upload, training
+from routers import session, test, data, upload, training, optimization
 
 app = FastAPI()
 
@@ -23,6 +23,7 @@ app.include_router(data.router)
 app.include_router(test.router)
 app.include_router(upload.router)
 app.include_router(training.router)
+app.include_router(optimization.router)
 
 
 def print_spec() -> str:

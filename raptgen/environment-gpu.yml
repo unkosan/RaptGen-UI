@@ -33,6 +33,7 @@ dependencies:
       - python-multipart
       - pytest-celery
       - pytest-postgresql
+      - botorch
   - postgresql
   - psycopg2
   - pytest
