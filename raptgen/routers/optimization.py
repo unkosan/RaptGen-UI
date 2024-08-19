@@ -76,7 +76,6 @@ async def run_bayesian_optimization(
     query_budget = request.optimization_params.query_budget[0]
     xlim_start = request.distribution_params.xlim_start
     xlim_end = request.distribution_params.xlim_end
-    xlim_end = request.distribution_params.xlim_end
     ylim_start = request.distribution_params.ylim_start
     ylim_end = request.distribution_params.ylim_end
     resolution = request.distribution_params.resolution
@@ -129,15 +128,15 @@ async def run_bayesian_optimization(
 
     # Prepare the response
     response = BayesOptResponse(
-        acquisition_data={
-            "coords_x": xvr[:, 0].tolist(),
-            "coords_y": yvr[:, 0].tolist(),
-            "values": acq_values.tolist(),
-        },
-        query_data={
-            "coords_x": candidates[:, 0].tolist(),
-            "coords_y": candidates[:, 1].tolist(),
-        },
+        acquisition_data=AquisitionData(
+            coords_x=xvr[:, 0].tolist(),
+            coords_y=yvr[:, 0].tolist(),
+            values=acq_values.tolist(),
+        ),
+        query_data=QueryData(
+            coords_x=candidates[:, 0].tolist(),
+            coords_y=candidates[:, 1].tolist(),
+        ),
     )
 
     return response
