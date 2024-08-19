@@ -23,9 +23,11 @@ from core.db import (
 
 router = APIRouter()
 
+
 class OptimizationParams(BaseModel):
     method_name: str  # e.g., 'qEI'
     query_budget: List[int]  # should be a list of numbers (>1)
+
 
 class DistributionParams(BaseModel):
     xlim_start: float
@@ -34,24 +36,30 @@ class DistributionParams(BaseModel):
     ylim_end: float
     resolution: Optional[float] = 0.1  # optional field
 
+
 class BayesOptPayload(BaseModel):
     coords_x: List[float]  # shape(l)
     coords_y: List[float]  # shape(l)
     values: List[List[float]]  # multiple objective: shape(n, l)
     optimization_params: OptimizationParams
     distribution_params: DistributionParams
+
+
 class AcquisitionData(BaseModel):
     coords_x: List[float]  # list of x-coordinates
     coords_y: List[float]  # list of y-coordinates
-    values: List[float]     # list of values corresponding to the acquisition function
+    values: List[float]  # list of values corresponding to the acquisition function
+
 
 class QueryData(BaseModel):
     coords_x: List[float]  # list of candidate x-coordinates
     coords_y: List[float]  # list of candidate y-coordinates
 
+
 class BayesOptResponse(BaseModel):
     acquisition_data: AcquisitionData
     query_data: QueryData
+
 
 @router.post("/api/bayesopt/run", response_model=BayesOptResponse)
 async def run_bayesian_optimization(
@@ -87,7 +95,9 @@ async def run_bayesian_optimization(
 
     # Combine coordinates into a single tensor
     train_X = torch.stack((coords_x, coords_y), dim=-1)
-    train_Y = values.mean(dim=0).unsqueeze(-1)  # Assuming single objective for simplicity
+    train_Y = values.mean(dim=0).unsqueeze(
+        -1
+    )  # Assuming single objective for simplicity
 
     # Fit a Gaussian Process model
     model = SingleTaskGP(train_X, train_Y)
@@ -132,14 +142,14 @@ async def run_bayesian_optimization(
     # Prepare the response
     response = BayesOptResponse(
         acquisition_data={
-            "coords_x": xvr[:,0].tolist(),
-            "coords_y": yvr[:,0].tolist(),
+            "coords_x": xvr[:, 0].tolist(),
+            "coords_y": yvr[:, 0].tolist(),
             "values": acq_values.tolist(),
         },
         query_data={
             "coords_x": candidates[:, 0].tolist(),
             "coords_y": candidates[:, 1].tolist(),
-        }
+        },
     )
 
     return response
