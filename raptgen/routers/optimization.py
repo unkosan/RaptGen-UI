@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 from typing import List, Optional
 import torch
 from botorch.models import SingleTaskGP
@@ -9,17 +8,6 @@ from botorch.acquisition import qExpectedImprovement
 from botorch.optim import optimize_acqf
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
-
-from core.db import (
-    ParentJob,
-    ChildJob,
-    SequenceEmbeddings,
-    TrainingLosses,
-    SequenceData,
-    PreprocessingParams,
-    RaptGenParams,
-    get_db_session,
-)
 
 router = APIRouter()
 
