@@ -26,7 +26,7 @@ export const requestPostSubmitJob = z.union([
       match_forcing_duration: z.number().int().min(1),
       beta_duration: z.number().int().min(1),
       early_stopping: z.number().int().min(1),
-      seed_value: z.number().int(),
+      seed_value: z.number().int().min(0),
       match_cost: z.number().min(0),
       device: z.string(),
     }),
