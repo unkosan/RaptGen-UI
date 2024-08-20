@@ -16,10 +16,8 @@ const SideBar: React.FC = () => {
   const [forwardAdapter, setForwardAdapter] = React.useState<string>("");
   const [reverseAdapter, setReverseAdapter] = React.useState<string>("");
   const [targetLength, setTargetLength] = React.useState<number>(NaN);
-  const [tolerance, setTolerance] = React.useState<number | undefined>(
-    undefined
-  );
-  const [minCount, setMinCount] = React.useState<number | undefined>(undefined);
+  const [tolerance, setTolerance] = React.useState<number | undefined>(0);
+  const [minCount, setMinCount] = React.useState<number | undefined>(2);
 
   const [isValidExperimentName, setIsValidExperimentName] =
     React.useState<boolean>(false);

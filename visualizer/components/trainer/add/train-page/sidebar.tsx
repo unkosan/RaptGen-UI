@@ -7,28 +7,27 @@ import { RootState } from "../redux/store";
 import { apiClient } from "~/services/api-client";
 
 const SideBar: React.FC = () => {
-  const [reiteration, setReiteration] = React.useState<number | undefined>(
-    undefined
+  const preprocessConfig = useSelector(
+    (state: RootState) => state.preprocessingConfig
   );
+  const [reiteration, setReiteration] = React.useState<number | undefined>(1);
   const [modelLength, setModelLength] = React.useState<number | undefined>(
     undefined
   );
-  const [epochs, setEpochs] = React.useState<number | undefined>(undefined);
+  const [epochs, setEpochs] = React.useState<number | undefined>(1000);
   const [matchForcingDuration, setMatchForcingDuration] = React.useState<
     number | undefined
-  >(undefined);
+  >(50);
   const [betaDuration, setBetaDuration] = React.useState<number | undefined>(
-    undefined
+    50
   );
   const [earlyStopping, setEarlyStopping] = React.useState<number | undefined>(
-    undefined
+    50
   );
   const [seedValue, setSeedValue] = React.useState<number | undefined>(
     undefined
   );
-  const [matchCost, setMatchCost] = React.useState<number | undefined>(
-    undefined
-  );
+  const [matchCost, setMatchCost] = React.useState<number | undefined>(4);
 
   const [isValidReiteration, setIsValidReiteration] =
     React.useState<boolean>(true);
@@ -49,6 +48,20 @@ const SideBar: React.FC = () => {
 
   const dispatch = useDispatch();
   const trainConfig = useSelector((state: RootState) => state.trainConfig);
+
+  useEffect(() => {
+    if (
+      preprocessConfig.forwardAdapter !== undefined &&
+      preprocessConfig.targetLength !== undefined &&
+      preprocessConfig.reverseAdapter !== undefined
+    ) {
+      setModelLength(
+        preprocessConfig.targetLength -
+          preprocessConfig.forwardAdapter.length -
+          preprocessConfig.reverseAdapter.length
+      );
+    }
+  }, [preprocessConfig]);
 
   useEffect(() => {
     // const response = ["cpu", "cuda:0", "cuda:1"];
