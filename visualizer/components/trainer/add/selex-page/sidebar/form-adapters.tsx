@@ -63,7 +63,8 @@ const FormAdapters: React.FC<Props> = (props) => {
         setIsLoading(false);
       });
     }
-  });
+  }, [isLoading]);
+
   return (
     <Form.Group className="mb-3">
       <Form.Label>Adapters</Form.Label>
@@ -80,7 +81,7 @@ const FormAdapters: React.FC<Props> = (props) => {
           placeholder="Reverse adapter"
           value={props.valueReverse}
           onChange={handleReverseChange}
-          isInvalid={!props.isValidForward && props.valueForward.length > 0}
+          isInvalid={!props.isValidReverse && props.valueReverse.length > 0}
         />
         <OverlayTrigger
           placement="top"
