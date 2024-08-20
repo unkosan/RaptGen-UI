@@ -98,7 +98,6 @@ const SideBar: React.FC = () => {
     <>
       <legend>Model Type</legend>
       <ModelTypeSelect />
-
       <legend>Experiment Name</legend>
       <TextForm
         placeholder="Please enter the name of the experiment."
@@ -108,7 +107,6 @@ const SideBar: React.FC = () => {
         setIsValid={setIsValidExperimentName}
         predicate={(value) => value.length > 0}
       />
-
       <legend>Preprocessing Parameters</legend>
       <FormForward
         value={forwardAdapter}
@@ -132,6 +130,10 @@ const SideBar: React.FC = () => {
         setValue={setTargetLength}
         setIsValid={setIsValidTargetLength}
       />
+      <div className="mb-3 text-muted">
+        This value is used to filter out sequences which lengths are not within
+        the target. Adapters are included in the length calculation.
+      </div>
       <IntegerForm
         label="Filtering Tolerance"
         placeholder="Allows a not-negative integer"
@@ -141,6 +143,10 @@ const SideBar: React.FC = () => {
         setIsValid={setIsValidTolerance}
         predicate={(value) => value >= 0}
       />
+      <div className="mb-3 text-muted">
+        Tolerance means the allowed maximum difference between the target length
+        and that of the sequences.
+      </div>
       <IntegerForm
         label="Minimum Count"
         placeholder="Allows a positive integer"
@@ -150,6 +156,10 @@ const SideBar: React.FC = () => {
         setIsValid={setIsValidMinCount}
         predicate={(value) => value > 0}
       />
+      <div className="mb-3 text-muted">
+        Minimum count is the minimum number of duplicates that are required to
+        pass the filtering.
+      </div>
     </>
   );
 };
