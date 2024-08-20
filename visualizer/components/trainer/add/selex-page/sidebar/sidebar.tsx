@@ -2,12 +2,11 @@ import React, { useEffect } from "react";
 import ModelTypeSelect from "./model-type-select";
 import TextForm from "~/components/uploader/sidebar-vae/optional-params/text-form";
 import IntegerForm from "~/components/uploader/sidebar-vae/optional-params/integer-form";
-import FormForward from "./form-forward";
-import FormReverse from "./form-reverse";
 import FormTargetLength from "./form-target-length";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useSelector } from "react-redux";
+import FormAdapters from "./form-adapters";
 
 const SideBar: React.FC = () => {
   const [experimentName, setExperimentName] = React.useState<
@@ -108,19 +107,15 @@ const SideBar: React.FC = () => {
         predicate={(value) => value.length > 0}
       />
       <legend>Preprocessing Parameters</legend>
-      <FormForward
-        value={forwardAdapter}
-        isValid={isValidForwardAdapter}
-        setValue={setForwardAdapter}
-        setIsValid={setIsValidForwardAdapter}
-        targetLength={targetLength}
-        targetLengthIsValid={isValidTargetLength}
-      />
-      <FormReverse
-        value={reverseAdapter}
-        isValid={isValidReverseAdapter}
-        setValue={setReverseAdapter}
-        setIsValid={setIsValidReverseAdapter}
+      <FormAdapters
+        valueForward={forwardAdapter}
+        valueReverse={reverseAdapter}
+        isValidForward={isValidForwardAdapter}
+        isValidReverse={isValidReverseAdapter}
+        setValueForward={setForwardAdapter}
+        setValueReverse={setReverseAdapter}
+        setIsValidForward={setIsValidForwardAdapter}
+        setIsValidReverse={setIsValidReverseAdapter}
         targetLength={targetLength}
         targetLengthIsValid={isValidTargetLength}
       />

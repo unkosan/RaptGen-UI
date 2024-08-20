@@ -71,7 +71,7 @@ const SeedValueForm: React.FC<Omit<Props, "predicate">> = (props) => {
           isInvalid={!props.isValid}
         />
         <Button
-          variant="outline-secondary"
+          variant="outline-primary"
           onClick={() => props.setValue(Math.floor(Math.random() * 1000000))}
         >
           Random
