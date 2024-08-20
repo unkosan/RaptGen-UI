@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
-import IntegerForm from "~/components/uploader/sidebar-vae/optional-params/integer-form";
+import IntegerForm, {
+  SeedValueForm,
+} from "~/components/uploader/sidebar-vae/optional-params/integer-form";
 import { useDispatch } from "react-redux";
 import { Button, Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
@@ -24,9 +26,7 @@ const SideBar: React.FC = () => {
   const [earlyStopping, setEarlyStopping] = React.useState<number | undefined>(
     50
   );
-  const [seedValue, setSeedValue] = React.useState<number | undefined>(
-    undefined
-  );
+  const [seedValue, setSeedValue] = React.useState<number | undefined>(0);
   const [matchCost, setMatchCost] = React.useState<number | undefined>(4);
 
   const [isValidReiteration, setIsValidReiteration] =
@@ -170,15 +170,18 @@ const SideBar: React.FC = () => {
           ))}
         </Form.Select>
       </Form.Group>
-      <IntegerForm
+      <SeedValueForm
         label="Seed Value"
         placeholder="An integer value for random seed"
-        predicate={(value: number) => value > 0}
         value={seedValue}
         setValue={setSeedValue}
         isValid={isValidSeedValue}
         setIsValid={setIsValidSeedValue}
       />
+      <div className="mb-3 text-muted">
+        The seed value is used to initialize the random number generator. If you
+        want to reproduce the same result, set the seed.
+      </div>
       <hr />
       <IntegerForm
         label="Maximum Number of Epochs"
