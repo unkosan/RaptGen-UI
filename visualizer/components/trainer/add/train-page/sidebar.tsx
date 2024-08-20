@@ -223,8 +223,9 @@ const SideBar: React.FC = () => {
       <div className="mb-3 text-muted">
         The match forcing term is added to the loss function during the first n
         epochs specified by this parameter. In these epochs, objective function
-        includes the sum of transitional probabilities of 'match' to 'match'
-        states throughout the pHMM model, then tries to maximize the value.
+        includes the sum of transitional probabilities of &apos;match&apos; to
+        &apos;match&apos; states throughout the pHMM model, then tries to
+        maximize the value.
       </div>
       <IntegerForm
         label="Match Cost"
@@ -238,7 +239,7 @@ const SideBar: React.FC = () => {
       <div className="mb-3 text-muted">
         The match cost is the cost of the match forcing term. The higher the
         value, the more the model tries to maximize the sum of transitional
-        probabilities of 'match' to 'match' states.
+        probabilities of &apos;match&apos; to &apos;match&apos; states.
       </div>
       <IntegerForm
         label="pHMM Model Length"
