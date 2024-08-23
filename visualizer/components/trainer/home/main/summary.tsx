@@ -1,10 +1,8 @@
 import { z } from "zod";
 import { responseGetItem } from "~/services/route/train";
 import Button from "@inovua/reactdatagrid-community/packages/Button";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
 import { CustomDataGrid } from "~/components/common/custom-datagrid";
+import { useRouter } from "next/router";
 
 type SummaryType = z.infer<typeof responseGetItem>["summary"];
 
@@ -20,19 +18,16 @@ type CellProps = {
 };
 
 const DetailButton: React.FC<CellProps> = (props) => {
-  const dispatch = useDispatch();
-  const pageConfig = useSelector((state: RootState) => state.pageConfig);
+  const router = useRouter();
 
   return (
     <Button
       onClick={() => {
-        dispatch({
-          type: "pageConfig/set",
-          payload: {
-            ...pageConfig,
-            childId: props.data.id,
-          },
-        });
+        router.push(
+          `?experiment=${router.query.experiment}&job=${props.data.id}`,
+          undefined,
+          { scroll: false }
+        );
       }}
     >
       Go Detail

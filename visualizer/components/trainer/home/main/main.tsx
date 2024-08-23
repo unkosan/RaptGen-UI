@@ -22,7 +22,6 @@ import {
   StopButton,
 } from "./action-buttons";
 import _ from "lodash";
-import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
@@ -45,7 +44,9 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
             e.currentTarget.style.color = "black";
           }}
           onClick={() => {
-            router.push(`?experiment=${item.uuid}`);
+            router.push(`?experiment=${item.uuid}`, undefined, {
+              scroll: false,
+            });
           }}
           style={{ cursor: "pointer", transition: "color 0.2s ease-in-out" }}
         >

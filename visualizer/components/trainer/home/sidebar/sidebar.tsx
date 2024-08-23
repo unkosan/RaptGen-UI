@@ -74,10 +74,14 @@ const SideBar: React.FC = () => {
             status={job.status}
             isSelected={job.uuid === experimentId}
             onClick={() => {
-              router.push(`?experiment=${job.uuid}`);
+              router.push(`?experiment=${job.uuid}`, undefined, {
+                scroll: false,
+              });
             }}
             onChildClick={(id) => {
-              router.push(`?experiment=${job.uuid}&job=${id}`);
+              router.push(`?experiment=${job.uuid}&job=${id}`, undefined, {
+                scroll: false,
+              });
             }}
             series={job.series.map((childJob) => {
               const net_duration =
@@ -114,10 +118,14 @@ const SideBar: React.FC = () => {
             status={job.status}
             isSelected={job.uuid === experimentId}
             onClick={() => {
-              router.push(`?experiment=${job.uuid}`);
+              router.push(`?experiment=${job.uuid}`, undefined, {
+                scroll: false,
+              });
             }}
             onChildClick={(id) => {
-              router.push(`?experiment=${job.uuid}&job=${id}`);
+              router.push(`?experiment=${job.uuid}&job=${id}`, undefined, {
+                scroll: false,
+              });
             }}
             series={job.series.map((childJob) => {
               return {
