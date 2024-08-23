@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { Button, Spinner } from "react-bootstrap";
 import { ChevronLeft } from "react-bootstrap-icons";
 import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useRouter } from "next/router";
 import { apiClient } from "~/services/api-client";
@@ -11,7 +10,6 @@ import { requestPostSubmitJob } from "~/services/route/train";
 const Pagenation: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
-  const dispatch = useDispatch();
   const trainConfig = useSelector((state: RootState) => state.trainConfig);
   const preprocessingConfig = useSelector(
     (state: RootState) => state.preprocessingConfig
@@ -32,13 +30,18 @@ const Pagenation: React.FC = () => {
         const dupsMask = selexData.duplicates.map((dup) => {
           return dup >= (preprocessingConfig.minCount as number);
         });
-        const randomRegionLength = (preprocessingConfig.targetLength ?? 0) -
+        const randomRegionLength =
+          (preprocessingConfig.targetLength ?? 0) -
           (preprocessingConfig.forwardAdapter?.length ?? 0) -
           (preprocessingConfig.reverseAdapter?.length ?? 0);
         const lengthMask = selexData.randomRegions.map((seq) => {
-          return randomRegionLength - (preprocessingConfig.tolerance ?? 0) <= seq.length
-           && seq.length <= randomRegionLength + (preprocessingConfig.tolerance ?? 0);
-        })
+          return (
+            randomRegionLength - (preprocessingConfig.tolerance ?? 0) <=
+              seq.length &&
+            seq.length <=
+              randomRegionLength + (preprocessingConfig.tolerance ?? 0)
+          );
+        });
         const parsed = requestPostSubmitJob.safeParse({
           type: modelType,
           name: experimentName,
@@ -53,10 +56,18 @@ const Pagenation: React.FC = () => {
             minimum_count: preprocessingConfig.minCount,
           },
           random_regions: selexData.randomRegions.filter((seq, index) => {
-            return dupsMask[index] && lengthMask[index] && selexData.adapterMatched[index];
+            return (
+              dupsMask[index] &&
+              lengthMask[index] &&
+              selexData.adapterMatched[index]
+            );
           }),
           duplicates: selexData.duplicates.filter((dup, index) => {
-            return dupsMask[index] && lengthMask[index] && selexData.adapterMatched[index];
+            return (
+              dupsMask[index] &&
+              lengthMask[index] &&
+              selexData.adapterMatched[index]
+            );
           }),
           reiteration: trainConfig.reiteration,
           params_training: {
@@ -83,10 +94,7 @@ const Pagenation: React.FC = () => {
   }, [isLoading]);
 
   const onClickBack = () => {
-    dispatch({
-      type: "pageConfig/setPseudoRoute",
-      payload: "/selex",
-    });
+    router.push("");
   };
 
   const onClickTrain = () => {

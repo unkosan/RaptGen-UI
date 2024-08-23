@@ -4,20 +4,16 @@ import JobCard from "./job-card/job-card";
 import { apiClient } from "~/services/api-client";
 import { responsePostSearchJobs } from "~/services/route/train";
 import { z } from "zod";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
 import { useDispatch } from "react-redux";
 import { Alert } from "react-bootstrap";
+import { useRouter } from "next/router";
 
 type Jobs = z.infer<typeof responsePostSearchJobs>;
 
 const SideBar: React.FC = () => {
-  const selectedJobId = useSelector(
-    (state: RootState) => state.pageConfig.parentId
-  );
-  const selectedChildJobId = useSelector(
-    (state: RootState) => state.pageConfig.childId
-  );
+  const router = useRouter();
+  const experimentId = router.query.experiment as string | undefined;
+
   const [jobs, setJobs] = useState<Jobs>([]);
   const [runningJobs, setRunningJobs] = useState<Jobs>([]);
   const [finishedJobs, setFinishedJobs] = useState<Jobs>([]);
@@ -76,23 +72,15 @@ const SideBar: React.FC = () => {
             key={job.uuid}
             name={job.name}
             status={job.status}
-            isSelected={job.uuid === selectedJobId}
+            isSelected={job.uuid === experimentId}
             onClick={() => {
-              dispatch({
-                type: "pageConfig/set",
-                payload: {
-                  parentId: job.uuid,
-                  childId: null,
-                },
+              router.push(`?experiment=${job.uuid}`, undefined, {
+                scroll: false,
               });
             }}
             onChildClick={(id) => {
-              dispatch({
-                type: "pageConfig/set",
-                payload: {
-                  parentId: job.uuid,
-                  childId: id,
-                },
+              router.push(`?experiment=${job.uuid}&job=${id}`, undefined, {
+                scroll: false,
               });
             }}
             series={job.series.map((childJob) => {
@@ -128,23 +116,15 @@ const SideBar: React.FC = () => {
             key={job.uuid}
             name={job.name}
             status={job.status}
-            isSelected={job.uuid === selectedJobId}
+            isSelected={job.uuid === experimentId}
             onClick={() => {
-              dispatch({
-                type: "pageConfig/set",
-                payload: {
-                  parentId: job.uuid,
-                  childId: null,
-                },
+              router.push(`?experiment=${job.uuid}`, undefined, {
+                scroll: false,
               });
             }}
             onChildClick={(id) => {
-              dispatch({
-                type: "pageConfig/set",
-                payload: {
-                  parentId: job.uuid,
-                  childId: id,
-                },
+              router.push(`?experiment=${job.uuid}&job=${id}`, undefined, {
+                scroll: false,
               });
             }}
             series={job.series.map((childJob) => {
