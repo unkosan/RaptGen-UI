@@ -7,7 +7,7 @@ import { formatDuration, intervalToDuration } from "date-fns";
 import { responseGetItemChild } from "~/services/route/train";
 import { responseGetItem } from "~/services/route/train";
 import { z } from "zod";
-import { Alert, Badge } from "react-bootstrap";
+import { Alert, Badge, Card, Form, InputGroup } from "react-bootstrap";
 import { Summary } from "./summary";
 import { LatentGraph } from "./latent-graph";
 import { LossesGraph } from "./losses-graph";
@@ -23,9 +23,47 @@ import {
 } from "./action-buttons";
 import _ from "lodash";
 import { useRouter } from "next/router";
+import { Item } from "react-bootstrap/lib/Breadcrumb";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type Item = z.infer<typeof responseGetItem>;
+
+const ParentPane2: React.FC<{ item: Item }> = ({ item }) => {
+  const router = useRouter();
+
+  return (
+    <>
+      <h2>Experiment: {item.name}</h2>
+      <p>
+        <div>Start time: {new Date(item.start * 1000).toLocaleString()}</div>
+        <div>The number of models to train: {item.reiteration}</div>
+      </p>
+      <p className="d-flex align-items-center">
+        <b className="me-2">Actions:</b>
+        {item.status === "progress" ? (
+          <StopButton uuid={item.uuid} />
+        ) : item.status === "suspend" ? (
+          <ResumeButton uuid={item.uuid} />
+        ) : null}
+
+        {item.status === "progress" || item.status === "suspend" ? (
+          <KillButton uuid={item.uuid} />
+        ) : null}
+
+        <DeleteButton uuid={item.uuid} />
+        <Badge pill bg="success" className="mx-1">
+          Rename
+        </Badge>
+      </p>
+
+      <legend>Current status of the experiment</legend>
+      <Summary value={item.summary} />
+
+      <legend>Training Parameters</legend>
+      <TrainingParams value={item.params_training} />
+    </>
+  );
+};
 
 const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
   item,
@@ -96,6 +134,155 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
       {parentHead}
       {childId === null && item.reiteration !== 1 ? summary : null}
       {paramsList}
+    </>
+  );
+};
+
+const ChildPane2: React.FC<{
+  childItem: ChildItem | null;
+  parentItem: Item;
+}> = ({ childItem, parentItem }) => {
+  const [published, setPublished] = useState<boolean>(false);
+  const router = useRouter();
+
+  if (childItem === null) {
+    return <div>Please select a model</div>;
+  }
+
+  const net_duration =
+    childItem.status === "progress"
+      ? Date.now() -
+        (childItem.datetime_start - childItem.duration_suspend) * 1000
+      : childItem.status === "pending"
+      ? 0
+      : (childItem.datetime_laststop -
+          childItem.datetime_start -
+          childItem.duration_suspend) *
+        1000;
+  const suspend_duration =
+    childItem.status === "suspend"
+      ? Date.now() +
+        (childItem.duration_suspend - childItem.datetime_laststop) * 1000
+      : childItem.duration_suspend * 1000;
+
+  return (
+    <>
+      <legend>Job information</legend>
+      <Form.Group>
+        <InputGroup className="mb-3">
+          <InputGroup.Text>Target model ID</InputGroup.Text>
+          <Form.Control
+            as="select"
+            onChange={(e) => {
+              router.push(
+                `?experiment=${parentItem.uuid}&job=${e.currentTarget.value}`,
+                undefined,
+                {
+                  scroll: false,
+                }
+              );
+            }}
+            value={childItem.id}
+          >
+            {parentItem.summary.indices.map((index) => {
+              return (
+                <option key={index} value={index}>
+                  {index}
+                </option>
+              );
+            })}
+          </Form.Control>
+          {childItem.status === "success" ? (
+            <ApplyViewerButton
+              uuid={parentItem.uuid}
+              childId={parseInt(router.query.job as string)}
+              disabled={childItem.is_added_viewer_dataset || published}
+              setDisabled={setPublished}
+            />
+          ) : null}
+        </InputGroup>
+      </Form.Group>
+
+      <p>
+        <>Duration for training: </>
+        {formatDuration(intervalToDuration({ start: 0, end: net_duration }))}
+        {suspend_duration ? (
+          <>
+            {" "}
+            (Suspended for{" "}
+            {formatDuration(
+              intervalToDuration({
+                start: 0,
+                end: suspend_duration,
+              })
+            )}
+            )
+          </>
+        ) : null}
+      </p>
+
+      {childItem.status === "failure" ? (
+        <div>
+          <Alert variant="danger">
+            <Alert.Heading>Runtime Error</Alert.Heading>
+            <div style={{ fontFamily: "monospace" }}>{childItem.error_msg}</div>
+          </Alert>
+        </div>
+      ) : childItem.status === "pending" ? null : (
+        <>
+          <Card className="mb-3">
+            <Card.Header className="d-flex justify-content-between">
+              <span>Latent Space</span>
+              <span>
+                <DownloadCurrentCodesButton
+                  randomRegions={childItem.latent.random_regions}
+                  duplicates={childItem.latent.duplicates}
+                  coordsX={childItem.latent.coords_x}
+                  coordsY={childItem.latent.coords_y}
+                />
+              </span>
+            </Card.Header>
+            <Card.Body>
+              <LatentGraph
+                title={""}
+                vaeData={{
+                  coordsX: childItem.latent.coords_x,
+                  coordsY: childItem.latent.coords_y,
+                  randomRegions: childItem.latent.random_regions,
+                  duplicates: childItem.latent.duplicates,
+                  minCount: 1,
+                }}
+              />
+            </Card.Body>
+          </Card>
+
+          <Card className="mb-3">
+            <Card.Header className="d-flex justify-content-between">
+              <span>Loss Transition</span>
+              <span>
+                <DownloadLossesButton
+                  trainLoss={childItem.losses.train_loss}
+                  testLoss={childItem.losses.test_loss}
+                  testReconLoss={childItem.losses.test_recon}
+                  testKldLoss={childItem.losses.test_kld}
+                />
+              </span>
+            </Card.Header>
+            <Card.Body>
+              <LossesGraph
+                title=""
+                lossData={{
+                  epochs: childItem.losses.train_loss.map((_, index) => index),
+                  trainLosses: childItem.losses.train_loss,
+                  testLosses: childItem.losses.test_loss,
+                  testRecons: childItem.losses.test_recon,
+                  testKlds: childItem.losses.test_kld,
+                }}
+              />
+            </Card.Body>
+          </Card>
+        </>
+      )}
     </>
   );
 };
@@ -408,14 +595,14 @@ const Main: React.FC = () => {
 
   return (
     <div>
-      <ParentPane
+      <ParentPane2
         item={item}
-        childId={typeof childId === "string" ? parseInt(childId) : null}
+        // childId={typeof childId === "string" ? parseInt(childId) : null}
       />
-      <ChildPane
+      <ChildPane2
         childItem={childItem}
         parentItem={item}
-        isRepresenter={childId === null}
+        // isRepresenter={childId === null}
       />
     </div>
   );
