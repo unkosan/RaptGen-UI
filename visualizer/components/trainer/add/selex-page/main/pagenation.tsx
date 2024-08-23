@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import React, { useEffect } from "react";
 import { sum } from "lodash";
+import { useRouter } from "next/router";
 
 const Pagination: React.FC = () => {
   const dispatch = useDispatch();
@@ -18,6 +19,7 @@ const Pagination: React.FC = () => {
   const isValidParams = useSelector(
     (state: RootState) => state.preprocessingConfig.isValidParams
   );
+  const router = useRouter();
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
@@ -71,10 +73,7 @@ const Pagination: React.FC = () => {
           },
         });
       }
-      dispatch({
-        type: "pageConfig/setPseudoRoute",
-        payload: "/train",
-      });
+      router.push("?page=raptgen");
     })().then(() => {
       setIsLoading(false);
     });

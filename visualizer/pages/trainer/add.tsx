@@ -4,14 +4,14 @@ import Head from "next/head";
 import { Container } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
 import { Provider } from "react-redux";
-import { RootState, store } from "~/components/trainer/add/redux/store";
-import { useSelector } from "react-redux";
+import { store } from "~/components/trainer/add/redux/store";
 import SelexPage from "~/components/trainer/add/selex-page/selex-page";
 import TrainPage from "~/components/trainer/add/train-page/train-page";
 import "@inovua/reactdatagrid-community/index.css";
+import { useRouter } from "next/router";
 
 const Home: React.FC = () => {
-  const route = useSelector((state: RootState) => state.pageConfig.pseudoRoute);
+  const router = useRouter();
 
   return (
     <>
@@ -26,10 +26,18 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>Trainer</h1>
           <hr />
-          <div style={{ display: route === "/selex" ? "block" : "none" }}>
+          <div
+            style={{
+              display: router.query.page === undefined ? "block" : "none",
+            }}
+          >
             <SelexPage />
           </div>
-          <div style={{ display: route === "/train" ? "block" : "none" }}>
+          <div
+            style={{
+              display: router.query.page === "raptgen" ? "block" : "none",
+            }}
+          >
             <TrainPage />
           </div>
         </Container>
