@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
 import { apiClient } from "~/services/api-client";
 import { formatDuration, intervalToDuration } from "date-fns";
 
@@ -36,9 +34,7 @@ import { Item } from "react-bootstrap/lib/Breadcrumb";
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type Item = z.infer<typeof responseGetItem>;
 
-const ParentPane2: React.FC<{ item: Item }> = ({ item }) => {
-  const router = useRouter();
-
+const ParentPane: React.FC<{ item: Item }> = ({ item }) => {
   return (
     <>
       <h2>Experiment: {item.name}</h2>
@@ -78,83 +74,12 @@ const ParentPane2: React.FC<{ item: Item }> = ({ item }) => {
   );
 };
 
-const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
-  item,
-  childId,
-}) => {
-  const router = useRouter();
-
-  const parentHead = (
-    <>
-      <h2>
-        <div
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "blue";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "black";
-          }}
-          onClick={() => {
-            router.push(`?experiment=${item.uuid}`, undefined, {
-              scroll: false,
-            });
-          }}
-          style={{ cursor: "pointer", transition: "color 0.2s ease-in-out" }}
-        >
-          {item.name}
-        </div>
-      </h2>
-      <p>
-        <div>Start time: {new Date(item.start * 1000).toLocaleString()}</div>
-        <div>The number of models to train: {item.reiteration}</div>
-      </p>
-      <p className="d-flex align-items-center">
-        <b className="me-2">Actions:</b>
-        {item.status === "progress" ? (
-          <StopButton uuid={item.uuid} />
-        ) : item.status === "suspend" ? (
-          <ResumeButton uuid={item.uuid} />
-        ) : null}
-
-        {item.status === "progress" || item.status === "suspend" ? (
-          <KillButton uuid={item.uuid} />
-        ) : null}
-
-        <DeleteButton uuid={item.uuid} />
-        <Badge pill bg="success" className="mx-1">
-          Rename
-        </Badge>
-      </p>
-    </>
-  );
-
-  const summary = (
-    <div>
-      <legend>Summary</legend>
-      <Summary value={item.summary} />
-    </div>
-  );
-
-  const paramsList = (
-    <div>
-      <legend>Training Parameters</legend>
-      <TrainingParams value={item.params_training} />
-    </div>
-  );
-
-  return (
-    <>
-      {parentHead}
-      {childId === null && item.reiteration !== 1 ? summary : null}
-      {paramsList}
-    </>
-  );
-};
-
-const ChildPane2: React.FC<{
+const ChildPane: React.FC<{
   childItem: ChildItem | null;
   parentItem: Item;
-}> = ({ childItem, parentItem }) => {
+  currentRunning: number[];
+  optimalModel: number | null;
+}> = ({ childItem, parentItem, currentRunning, optimalModel }) => {
   const [published, setPublished] = useState<boolean>(false);
   const router = useRouter();
 
@@ -198,11 +123,25 @@ const ChildPane2: React.FC<{
             value={childItem.id}
           >
             {parentItem.summary.indices.map((index) => {
-              return (
-                <option key={index} value={index}>
-                  {index}
-                </option>
-              );
+              if (currentRunning.includes(index)) {
+                return (
+                  <option key={index} value={index}>
+                    {index} (in progress)
+                  </option>
+                );
+              } else if (optimalModel === index) {
+                return (
+                  <option key={index} value={index}>
+                    {index} (optimal)
+                  </option>
+                );
+              } else {
+                return (
+                  <option key={index} value={index}>
+                    {index}
+                  </option>
+                );
+              }
             })}
           </Form.Control>
           {childItem.status === "success" ? (
@@ -300,172 +239,6 @@ const ChildPane2: React.FC<{
   );
 };
 
-const ChildPane: React.FC<{
-  childItem: ChildItem | null;
-  parentItem: Item | null;
-  // building the title partially dependent on the parentItem
-  isRepresenter?: boolean;
-  // whether the child is a representer of the parent model
-}> = ({ childItem, parentItem, isRepresenter }) => {
-  const [published, setPublished] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (childItem !== null) {
-      setPublished(false);
-    }
-  }, [childItem]);
-
-  if (parentItem === null) {
-    // do not show anything, instructions are shown in the parent pane
-    return <div></div>;
-  }
-
-  if (childItem === null) {
-    // this should not happen (cause childId is null, Representer will be filled as childItem)
-    return <div>Please select a model on the left</div>;
-  }
-
-  let title: string = "";
-  if (isRepresenter) {
-    switch (parentItem.status) {
-      case "progress":
-      case "suspend":
-        title = `Current training model`;
-        break;
-      case "success":
-        title = `Most optimal model`;
-        break;
-      case "failure":
-        title = `Training failed`;
-        break;
-      case "pending":
-        title = `Now pending...`;
-        break;
-    }
-  } else {
-    title = `Model No. ${childItem.id}`;
-  }
-
-  const net_duration =
-    childItem.status === "progress"
-      ? Date.now() -
-        (childItem.datetime_start - childItem.duration_suspend) * 1000
-      : childItem.status === "pending"
-      ? 0
-      : (childItem.datetime_laststop -
-          childItem.datetime_start -
-          childItem.duration_suspend) *
-        1000;
-  const suspend_duration =
-    childItem.status === "suspend"
-      ? Date.now() +
-        (childItem.duration_suspend - childItem.datetime_laststop) * 1000
-      : childItem.duration_suspend * 1000;
-
-  const head = (
-    <>
-      <h3>{title}</h3>
-      <p>
-        {isRepresenter ? (
-          <>
-            Model: No. {childItem.id}
-            <br />
-          </>
-        ) : null}
-        <>Duration: </>
-        {formatDuration(intervalToDuration({ start: 0, end: net_duration }))}
-        {suspend_duration ? (
-          <>
-            {" "}
-            (Suspended for{" "}
-            {formatDuration(
-              intervalToDuration({
-                start: 0,
-                end: suspend_duration,
-              })
-            )}
-            )
-          </>
-        ) : null}
-      </p>
-    </>
-  );
-
-  const actions = (
-    <>
-      <p className="align-center">
-        {childItem.status === "failure" ||
-        childItem.status === "pending" ? null : (
-          <div className="d-flex align-items-center">
-            <b className="me-2">Actions: </b>
-            <DownloadCurrentCodesButton
-              randomRegions={childItem.latent.random_regions}
-              duplicates={childItem.latent.duplicates}
-              coordsX={childItem.latent.coords_x}
-              coordsY={childItem.latent.coords_y}
-            />
-            <DownloadLossesButton
-              trainLoss={childItem.losses.train_loss}
-              testLoss={childItem.losses.test_loss}
-              testReconLoss={childItem.losses.test_recon}
-              testKldLoss={childItem.losses.test_kld}
-            />
-          </div>
-        )}
-      </p>
-      {childItem.status === "success" ? (
-        <ApplyViewerButton
-          uuid={parentItem.uuid}
-          childId={childItem.id}
-          disabled={childItem.is_added_viewer_dataset || published}
-          setDisabled={setPublished}
-        />
-      ) : null}
-    </>
-  );
-
-  const body =
-    childItem.status === "failure" ? (
-      <div>
-        <Alert variant="danger">
-          <Alert.Heading>Runtime Error</Alert.Heading>
-          <div style={{ fontFamily: "monospace" }}>{childItem.error_msg}</div>
-        </Alert>
-      </div>
-    ) : childItem.status === "pending" ? null : (
-      <>
-        <LatentGraph
-          title={`Latent Space`}
-          vaeData={{
-            coordsX: childItem.latent.coords_x,
-            coordsY: childItem.latent.coords_y,
-            randomRegions: childItem.latent.random_regions,
-            duplicates: childItem.latent.duplicates,
-            minCount: 1,
-          }}
-        />
-        <LossesGraph
-          title="Loss Transition"
-          lossData={{
-            epochs: childItem.losses.train_loss.map((_, index) => index),
-            trainLosses: childItem.losses.train_loss,
-            testLosses: childItem.losses.test_loss,
-            testRecons: childItem.losses.test_recon,
-            testKlds: childItem.losses.test_kld,
-          }}
-        />
-      </>
-    );
-
-  return (
-    <>
-      {parentItem.reiteration === 1 ? null : head}
-      {actions}
-      {body}
-    </>
-  );
-};
-
 const Main: React.FC = () => {
   // retrieved from page config in redux. not always available
   const router = useRouter();
@@ -475,6 +248,11 @@ const Main: React.FC = () => {
   // items shown on the page
   const [item, setItem] = React.useState<Item | null>(null);
   const [childItem, setChildItem] = React.useState<ChildItem | null>(null);
+
+  // current running model
+  const [currentModels, setCurrentModels] = React.useState<number[]>([]);
+  // most optimal model
+  const [optimalModel, setOptimalModel] = React.useState<number | null>(null);
 
   // Update information of the parent job if avaiable
   useEffect(() => {
@@ -498,26 +276,60 @@ const Main: React.FC = () => {
   useEffect(() => {
     if (parentId === undefined || item === null) return;
 
-    // when a parent is specified but the child is not
+    if (parentId !== item.uuid) return;
+
+    const summary = item.summary;
+    const status = item.status;
+
+    const runningIndices = summary.statuses.flatMap((value, index) => {
+      return value === "progress" || value === "suspend" ? [index] : [];
+    });
+    setCurrentModels(runningIndices);
+
+    const successIndices = summary.statuses.flatMap((value, index) => {
+      return value === "success" ? [index] : [];
+    });
+    const nlls = summary.minimum_NLLs.flatMap((value, index) => {
+      return value === null ? [Infinity] : [value];
+    });
+    const argmin =
+      successIndices.length > 1
+        ? successIndices.reduce((acc, index) => {
+            if (nlls[index] < nlls[acc]) {
+              return index;
+            } else {
+              return acc;
+            }
+          })
+        : successIndices.length === 1
+        ? successIndices[0]
+        : null;
+    setOptimalModel(argmin);
+
     if (childId === undefined) {
       (async () => {
-        const summary = item.summary;
-        const status = item.status;
         switch (status) {
           case "progress":
           case "suspend":
-            const progIndex = summary.statuses.findLastIndex(
-              (value) => value === "progress" || value === "suspend"
-            );
             setChildItem(
-              progIndex === -1
+              runningIndices.length === 0
                 ? null
                 : await apiClient.getChildItem({
                     params: {
                       parent_uuid: parentId,
-                      child_id: summary.indices[progIndex],
+                      child_id: summary.indices[runningIndices[0]],
                     },
                   })
+            );
+            break;
+          case "success":
+            setChildItem(
+              await apiClient.getChildItem({
+                params: {
+                  parent_uuid: parentId,
+                  child_id: summary.indices[argmin as number],
+                },
+              })
             );
             break;
           case "failure":
@@ -545,46 +357,12 @@ const Main: React.FC = () => {
                   })
             );
             break;
-          case "success":
-            // find the model with the minimum NLL but in the range that the model is "success"
-            const argmin = _.zip(summary.minimum_NLLs, summary.statuses)
-              .map(([nll, status]) =>
-                nll === null ? [Infinity, status] : [nll, status]
-              )
-              .reduce(
-                (acc, [nll, status], index) => {
-                  if (
-                    nll === undefined ||
-                    status === undefined ||
-                    acc[0] === undefined
-                  ) {
-                    return acc;
-                  }
-                  if (status === "success" && nll < acc[0]) {
-                    return [nll, index];
-                  } else {
-                    return acc;
-                  }
-                },
-                [Infinity, -1]
-              )[1] as number;
-
-            setChildItem(
-              await apiClient.getChildItem({
-                params: {
-                  parent_uuid: parentId,
-                  child_id: summary.indices[summary.indices[argmin]],
-                },
-              })
-            );
-            break;
-
           default:
             setChildItem(null);
         }
       })();
+    } else if (parseInt(childId) < item.reiteration) {
       // when a parent and a child is specified
-    } else {
       apiClient
         .getChildItem({
           params: {
@@ -599,8 +377,10 @@ const Main: React.FC = () => {
           console.log(err);
           setChildItem(null);
         });
+    } else {
+      setChildItem(null);
     }
-  }, [childId, item]);
+  }, [childId, item, parentId]);
 
   if (!item) {
     return <div>Please click the entry on the left</div>;
@@ -608,14 +388,12 @@ const Main: React.FC = () => {
 
   return (
     <div>
-      <ParentPane2
-        item={item}
-        // childId={typeof childId === "string" ? parseInt(childId) : null}
-      />
-      <ChildPane2
+      <ParentPane item={item} />
+      <ChildPane
         childItem={childItem}
         parentItem={item}
-        // isRepresenter={childId === null}
+        currentRunning={currentModels}
+        optimalModel={optimalModel}
       />
     </div>
   );
