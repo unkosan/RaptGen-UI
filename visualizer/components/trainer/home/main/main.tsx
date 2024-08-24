@@ -7,7 +7,15 @@ import { formatDuration, intervalToDuration } from "date-fns";
 import { responseGetItemChild } from "~/services/route/train";
 import { responseGetItem } from "~/services/route/train";
 import { z } from "zod";
-import { Alert, Badge, Card, Form, InputGroup } from "react-bootstrap";
+import {
+  Alert,
+  Badge,
+  Card,
+  Col,
+  Form,
+  InputGroup,
+  Row,
+} from "react-bootstrap";
 import { Summary } from "./summary";
 import { LatentGraph } from "./latent-graph";
 import { LossesGraph } from "./losses-graph";
@@ -56,11 +64,16 @@ const ParentPane2: React.FC<{ item: Item }> = ({ item }) => {
         </Badge>
       </p>
 
-      <legend>Current status of the experiment</legend>
-      <Summary value={item.summary} />
-
-      <legend>Training Parameters</legend>
-      <TrainingParams value={item.params_training} />
+      <Row>
+        <Col>
+          <legend>Current status of the experiment</legend>
+          <Summary value={item.summary} />
+        </Col>
+        <Col>
+          <legend>Training Parameters</legend>
+          <TrainingParams value={item.params_training} />
+        </Col>
+      </Row>
     </>
   );
 };
