@@ -8,6 +8,7 @@ import pytest_postgresql.factories as factories
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from mocks import mock_bo_db, BOTest, C
 from tasks import celery
 
 from core.db import (

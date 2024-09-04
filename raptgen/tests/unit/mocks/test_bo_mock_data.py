@@ -22,14 +22,21 @@ class C:  # as "Constants"
     ylim_end = "ylim_end"
     last_modified = "last_modified"
 
+    ## [DB] RegisteredValues
     RegisteredValues = "RegisteredValues"
     experiment_uuid = "experiment_uuid"
     id = "id"
     value_id = "value_id"
     sequence = "sequence"
     # target_column_name is already defined
-    target_value = "target_value"
 
+    ## [DB] TargetValues
+    TargetValues = "TargetValues"
+    # id is already defined
+    registered_values_id = "registered_values_id"
+    value = "value"
+
+    ## [DB] QueryData
     QueryData = "QueryData"
     # experiment_uuid is already defined
     # id is already defined
@@ -37,12 +44,13 @@ class C:  # as "Constants"
     coord_x_original = "coord_x_original"
     coord_y_original = "coord_y_original"
 
+    ## [DB] AcquisitionData
     AcquisitionData = "AcquisitionData"
     # experiment_uuid is already defined
     # id is already defined
     coord_x = "coord_x"
     coord_y = "coord_y"
-    value = "value"
+    # value is already defined
 
 
 class BOTest(Enum):
@@ -108,6 +116,7 @@ mock_bo_db = [
         "data": {
             C.Experiments: [],
             C.RegisteredValues: [],
+            C.TargetValues: [],
             C.QueryData: [],
             C.AcquisitionData: [],
         },
@@ -168,7 +177,6 @@ mock_bo_db = [
                     C.value_id: 0,
                     C.sequence: "AAAAAAAAAA",
                     C.target_column_name: "target",
-                    C.target_value: 0.1,
                 },
                 {
                     C.id: 1,
@@ -176,7 +184,6 @@ mock_bo_db = [
                     C.value_id: 1,
                     C.sequence: "AAAAAAAAAC",
                     C.target_column_name: "target",
-                    C.target_value: 0.2,
                 },
                 {
                     C.id: 2,
@@ -184,7 +191,6 @@ mock_bo_db = [
                     C.value_id: 0,
                     C.sequence: "AAAAAAAAAG",
                     C.target_column_name: "target",
-                    C.target_value: 0.1,
                 },
                 {
                     C.id: 3,
@@ -192,7 +198,28 @@ mock_bo_db = [
                     C.value_id: 1,
                     C.sequence: "AAAAAAAAAT",
                     C.target_column_name: "target",
-                    C.target_value: 0.2,
+                },
+            ],
+            C.TargetValues: [
+                {
+                    C.id: 0,
+                    C.registered_values_id: 0,
+                    C.value: 0.3,
+                },
+                {
+                    C.id: 1,
+                    C.registered_values_id: 1,
+                    C.value: 0.5,
+                },
+                {
+                    C.id: 2,
+                    C.registered_values_id: 2,
+                    C.value: 0.2,
+                },
+                {
+                    C.id: 3,
+                    C.registered_values_id: 3,
+                    C.value: 0.4,
                 },
             ],
             C.QueryData: [
@@ -285,7 +312,6 @@ mock_bo_db = [
                     C.value_id: 0,
                     C.sequence: "GAAAAAAAAG",
                     C.target_column_name: "target",
-                    C.target_value: 0.1,
                 },
                 {
                     C.id: 1,
@@ -293,7 +319,18 @@ mock_bo_db = [
                     C.value_id: 1,
                     C.sequence: "GAAAAAAAAT",
                     C.target_column_name: "target",
-                    C.target_value: 0.2,
+                },
+            ],
+            C.TargetValues: [
+                {
+                    C.id: 0,
+                    C.registered_values_id: 0,
+                    C.value: 0.3,
+                },
+                {
+                    C.id: 1,
+                    C.registered_values_id: 1,
+                    C.value: 0.5,
                 },
             ],
             C.QueryData: [
