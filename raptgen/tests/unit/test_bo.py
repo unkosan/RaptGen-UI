@@ -1,13 +1,13 @@
 import pytest
-from pytest import approx
-from collections import defaultdict
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 import pytest_postgresql.factories as factories
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.testclient import TestClient
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from mocks import mock_bo_db, BOTest, C
 from tasks import celery
 
@@ -28,12 +28,7 @@ test_app.include_router(optimization.router)
 client = TestClient(test_app)
 
 
-from fastapi import FastAPI, Request, status
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
-
-
-def handler(request: Request, exc: RequestValidationError):
+def handler(request: Request, exc: Exception):
     print(exc)
     return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
@@ -166,7 +161,7 @@ def test_submit_bo_result(db_session):
     #         show_training_data: boolean,
     #         show_bo_contour: boolean
     #     },
-    #     optimization_params: {
+    #     optimization_config: {
     #         method_name: string,x
     #         target_column_name: string,
     #         query_budget: number,

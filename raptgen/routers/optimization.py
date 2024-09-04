@@ -31,7 +31,7 @@ class DistributionParams(BaseModel):
     xlim_end: float
     ylim_start: float
     ylim_end: float
-    resolution: Optional[float]
+    resolution: Optional[float] = 0.1
 
 
 class BayesOptPayload(BaseModel):
