@@ -305,7 +305,7 @@ class OptimizationMethod(enum.Enum):
 class Experiments(BaseSchema):
     __tablename__ = "experiments"
     uuid = Column(String, unique=True, primary_key=True)
-    experiment_name = Column(String)
+    name = Column(String)
     VAE_model = Column(String)
     minimum_count = Column(Integer)
     show_training_data = Column(Boolean)
@@ -326,18 +326,31 @@ class Experiments(BaseSchema):
 
 class RegisteredValues(BaseSchema):
     __tablename__ = "registered_values"
-    uuid = Column(String, ForeignKey("experiments.uuid"), primary_key=True)
-    id = Column(Integer, primary_key=True)  # ID for each registered value
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each registered value
+    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
     value_id = Column(String)  # Registered value ID
     sequence = Column(String)  # Sequence information
     target_column_name = Column(String)  # Target column name
-    target_value = Column(Float)  # Target value
+    target_values = relationship("TargetValues", backref="registered_values")
+
+
+class TargetValues(BaseSchema):
+    __tablename__ = "target_values"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each target value
+    registered_values_id = Column(Integer, ForeignKey("registered_values.id"))
+    value = Column(Float)
 
 
 class QueryData(BaseSchema):
     __tablename__ = "query_data"
-    uuid = Column(String, ForeignKey("experiments.uuid"), primary_key=True)
-    id = Column(Integer, primary_key=True)  # ID for each query data entry
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each query data entry
+    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
     sequence = Column(String)  # Sequence information
     coord_x_original = Column(Float)  # Original X coordinate
     coord_y_original = Column(Float)  # Original Y coordinate
@@ -345,8 +358,10 @@ class QueryData(BaseSchema):
 
 class AcquisitionData(BaseSchema):
     __tablename__ = "acquisition_data"
-    uuid = Column(String, ForeignKey("experiments.uuid"), primary_key=True)
-    id = Column(Integer, primary_key=True)  # ID for each acquisition data entry
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each acquisition data entry
+    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
     coord_x = Column(Float)  # X coordinate
     coord_y = Column(Float)  # Y coordinate
     value = Column(Float)  # Value corresponding to the coordinates
