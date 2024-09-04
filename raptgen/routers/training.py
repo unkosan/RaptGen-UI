@@ -880,9 +880,7 @@ async def publish_parent_job(
         inplace=True,
     )
 
-    model_binary: bytes = (
-        session.query(ChildJob).filter(ChildJob.uuid == uuid).first().optimal_checkpoint
-    )  # type: ignore
+    model_binary: bytes = session.query(ChildJob).filter(ChildJob.uuid == uuid).first().optimal_checkpoint  # type: ignore
     state_dict_map = torch.load(BytesIO(model_binary))
     state_dict = state_dict_map["model"]
 
