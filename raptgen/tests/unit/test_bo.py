@@ -176,6 +176,8 @@ def mock_db(db_session, testcase: BOTest):
         db_session.add(AcquisitionData(**d))
 
     db_session.commit()
+
+
 def test_submit_bo_result(db_session):
     mock_db(db_session, BOTest.POST_submit_success)
 
