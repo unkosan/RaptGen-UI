@@ -13,14 +13,9 @@ from sqlalchemy import func, or_
 from uuid import uuid4
 import datetime
 
+from core import db
 from core.db import (
     get_db_session,
-    OptimizationMethod,
-    Experiments,
-    RegisteredValues,
-    TargetValues,
-    QueryData,
-    AcquisitionData,
 )
 
 router = APIRouter()
@@ -36,7 +31,7 @@ class DistributionParams(BaseModel):
     xlim_end: float
     ylim_start: float
     ylim_end: float
-    resolution: float = 0.1  # optional field
+    resolution: Optional[float]
 
 
 class BayesOptPayload(BaseModel):
@@ -47,20 +42,20 @@ class BayesOptPayload(BaseModel):
     distribution_params: DistributionParams
 
 
-class AcquisitionDataModel(BaseModel):
+class AcquisitionData(BaseModel):
     coords_x: List[float]  # list of x-coordinates
     coords_y: List[float]  # list of y-coordinates
     values: List[float]  # list of values corresponding to the acquisition function
 
 
-class QueryDataModel(BaseModel):
+class QueryData(BaseModel):
     coords_x: List[float]  # list of candidate x-coordinates
     coords_y: List[float]  # list of candidate y-coordinates
 
 
 class BayesOptResponse(BaseModel):
-    acquisition_data: AcquisitionDataModel
-    query_data: QueryDataModel
+    acquisition_data: AcquisitionData
+    query_data: QueryData
 
 
 @router.post("/api/bayesopt/run", response_model=BayesOptResponse)
@@ -92,7 +87,7 @@ async def run_bayesian_optimization(
     xlim_end = request.distribution_params.xlim_end
     ylim_start = request.distribution_params.ylim_start
     ylim_end = request.distribution_params.ylim_end
-    resolution = request.distribution_params.resolution
+    resolution = request.distribution_params.resolution or 0.1
 
     # Combine coordinates into a single tensor
     train_X = torch.stack((coords_x, coords_y), dim=-1)
@@ -142,12 +137,12 @@ async def run_bayesian_optimization(
 
     # Prepare the response
     response = BayesOptResponse(
-        acquisition_data=AcquisitionData(
+        acquisition_data=db.AcquisitionData(
             coords_x=xvr[:, 0].tolist(),
             coords_y=yvr[:, 0].tolist(),
             values=acq_values.tolist(),
         ),
-        query_data=QueryData(
+        query_data=db.QueryData(
             coords_x=candidates[:, 0].tolist(),
             coords_y=candidates[:, 1].tolist(),
         ),
@@ -280,7 +275,7 @@ async def submit_bayesian_optimization(
     last_modified = datetime.datetime.now().timestamp()
 
     session.add(
-        Experiments(
+        db.Experiments(
             uuid=optimization_id,
             name=experiment_name,
             VAE_model=request.VAE_model,
@@ -304,7 +299,7 @@ async def submit_bayesian_optimization(
 
     # get id of RegisteredValues
     registered_values_id: int = session.query(
-        func.coalesce(func.max(RegisteredValues.id) + 1, 0).label("id_max")
+        func.coalesce(func.max(db.RegisteredValues.id) + 1, 0).label("id_max")
     ).scalar()
 
     # regisger target values
@@ -324,7 +319,7 @@ async def submit_bayesian_optimization(
         request.registered_table.target_values,
     ):
         session.add(
-            RegisteredValues(
+            db.RegisteredValues(
                 id=registered_values_id,
                 value_id=sequence_id,
                 experiment_uuid=optimization_id,
@@ -336,7 +331,7 @@ async def submit_bayesian_optimization(
         # add target values
         for target_value in target_values:
             session.add(
-                TargetValues(
+                db.TargetValues(
                     registered_values_id=registered_values_id,
                     value=target_value,
                 )
@@ -354,7 +349,7 @@ async def submit_bayesian_optimization(
         request.query_table.coords_y_original,
     ):
         session.add(
-            QueryData(
+            db.QueryData(
                 experiment_uuid=optimization_id,
                 sequence=sequence,
                 coord_x_original=x,
@@ -372,7 +367,7 @@ async def submit_bayesian_optimization(
         request.acquisition_mesh.values,
     ):
         session.add(
-            AcquisitionData(
+            db.AcquisitionData(
                 experiment_uuid=optimization_id,
                 coord_x=x,
                 coord_y=y,

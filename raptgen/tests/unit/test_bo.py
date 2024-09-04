@@ -46,30 +46,6 @@ def load_database(**kwargs):
     engine = create_engine(connection)
     BaseSchema.metadata.create_all(engine)
     session = scoped_session(sessionmaker(bind=engine))
-    # add things to session
-
-    # prepare the database
-    # parent_to_children = defaultdict(list)
-    # for child in mock_children:
-    #     child_job = ChildJob(**child, jobtype="RaptGen")
-    #     parent_to_children[child["parent_uuid"]].append(child_job)
-    # for parent in mock_parents:
-    #     parent_job = ParentJob(**parent)
-    #     session.add(parent_job)
-    #     session.add_all(parent_to_children[parent["uuid"]])
-    # for embeddings in mock_embeddings:
-    #     session.add(SequenceEmbeddings(**embeddings))
-    # for training_losses in mock_training_losses:
-    #     session.add(TrainingLosses(**training_losses))
-    # for parent in mock_parents:
-    #     session.add(
-    #         PreprocessingParams(
-    #             **mock_params_preprocessing, parent_uuid=parent.get("uuid")
-    #         )
-    #     )
-
-    # for child in mock_children:
-    #     session.add(RaptGenParams(**mock_params_raptgen, child_uuid=child.get("uuid")))
 
     # commit the session
     try:
