@@ -298,6 +298,75 @@ class RaptGenParams(BaseSchema):
     device = Column(String, nullable=False)
 
 
+class OptimizationMethod(enum.Enum):
+    qEI = "qEI"
+
+
+class Experiments(BaseSchema):
+    __tablename__ = "experiments"
+    uuid = Column(String, unique=True, primary_key=True)
+    name = Column(String)
+    VAE_model = Column(String)
+    minimum_count = Column(Integer)
+    show_training_data = Column(Boolean)
+    show_bo_contour = Column(Boolean)
+    optimization_method_name = Column(Enum(OptimizationMethod), nullable=False)
+    target_column_name = Column(String)
+    query_budget = Column(Integer)
+    xlim_start = Column(Float)
+    xlim_end = Column(Float)
+    ylim_start = Column(Float)
+    ylim_end = Column(Float)
+    last_modified = Column(Integer)
+
+    registered_values = relationship("RegisteredValues", backref="experiment")
+    query_data = relationship("QueryData", backref="experiment")
+    acquisition_data = relationship("AcquisitionData", backref="experiment")
+
+
+class RegisteredValues(BaseSchema):
+    __tablename__ = "registered_values"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each registered value
+    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
+    value_id = Column(String)  # Registered value ID
+    sequence = Column(String)  # Sequence information
+    target_column_name = Column(String)  # Target column name
+    target_values = relationship("TargetValues", backref="registered_values")
+
+
+class TargetValues(BaseSchema):
+    __tablename__ = "target_values"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each target value
+    registered_values_id = Column(Integer, ForeignKey("registered_values.id"))
+    value = Column(Float)
+
+
+class QueryData(BaseSchema):
+    __tablename__ = "query_data"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each query data entry
+    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
+    sequence = Column(String)  # Sequence information
+    coord_x_original = Column(Float)  # Original X coordinate
+    coord_y_original = Column(Float)  # Original Y coordinate
+
+
+class AcquisitionData(BaseSchema):
+    __tablename__ = "acquisition_data"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each acquisition data entry
+    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
+    coord_x = Column(Float)  # X coordinate
+    coord_y = Column(Float)  # Y coordinate
+    value = Column(Float)  # Value corresponding to the coordinates
+
+
 def get_db_session(
     url: str = "postgresql+psycopg2://postgres:postgres@db:5432/raptgen",
 ):
