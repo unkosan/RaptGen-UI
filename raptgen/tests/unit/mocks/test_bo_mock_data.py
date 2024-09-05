@@ -30,10 +30,18 @@ class C:  # as "Constants"
     sequence = "sequence"
     # target_column_name is already defined
 
+    ## [DB] TargetColumns
+    TargetColumns = "TargetColumns"
+    # id is already defined
+    # experiment_uuid is already defined
+    column_name = "column_name"
+
     ## [DB] TargetValues
     TargetValues = "TargetValues"
     # id is already defined
+    # experiment_uuid is already defined
     registered_values_id = "registered_values_id"
+    target_column_id = "target_column_id"
     value = "value"
 
     ## [DB] QueryData
@@ -117,6 +125,7 @@ mock_bo_db = [
             C.Experiments: [],
             C.RegisteredValues: [],
             C.TargetValues: [],
+            C.TargetColumns: [],
             C.QueryData: [],
             C.AcquisitionData: [],
         },
@@ -139,7 +148,7 @@ mock_bo_db = [
             C.Experiments: [
                 {
                     C.uuid: "00000000-0000-0000-0000-000000000000",
-                    C.name: "multiple_test",
+                    C.name: "multiple_data",
                     C.VAE_model: "test_VAE",
                     C.minimum_count: 2,
                     C.show_training_data: True,
@@ -155,7 +164,7 @@ mock_bo_db = [
                 },
                 {
                     C.uuid: "00000000-0000-0000-0000-000000000001",
-                    C.name: "multiple_test_2",
+                    C.name: "multiple_data_2",
                     C.VAE_model: "test_VAE_2",
                     C.minimum_count: 2,
                     C.show_training_data: True,
@@ -176,49 +185,65 @@ mock_bo_db = [
                     C.experiment_uuid: "00000000-0000-0000-0000-000000000000",
                     C.value_id: 0,
                     C.sequence: "AAAAAAAAAA",
-                    C.target_column_name: "target",
                 },
                 {
                     C.id: 1,
                     C.experiment_uuid: "00000000-0000-0000-0000-000000000000",
                     C.value_id: 1,
                     C.sequence: "AAAAAAAAAC",
-                    C.target_column_name: "target",
                 },
                 {
                     C.id: 2,
                     C.experiment_uuid: "00000000-0000-0000-0000-000000000001",
                     C.value_id: 0,
                     C.sequence: "AAAAAAAAAG",
-                    C.target_column_name: "target",
                 },
                 {
                     C.id: 3,
                     C.experiment_uuid: "00000000-0000-0000-0000-000000000001",
                     C.value_id: 1,
                     C.sequence: "AAAAAAAAAT",
-                    C.target_column_name: "target",
+                },
+            ],
+            C.TargetColumns: [
+                {
+                    C.id: 0,
+                    C.experiment_uuid: "00000000-0000-0000-0000-000000000000",
+                    C.column_name: "target",
+                },
+                {
+                    C.id: 1,
+                    C.experiment_uuid: "00000000-0000-0000-0000-000000000001",
+                    C.column_name: "target",
                 },
             ],
             C.TargetValues: [
                 {
                     C.id: 0,
+                    C.experiment_uuid: "00000000-0000-0000-0000-000000000000",
                     C.registered_values_id: 0,
+                    C.target_column_id: 0,
                     C.value: 0.3,
                 },
                 {
                     C.id: 1,
+                    C.experiment_uuid: "00000000-0000-0000-0000-000000000000",
                     C.registered_values_id: 1,
+                    C.target_column_id: 0,
                     C.value: 0.5,
                 },
                 {
                     C.id: 2,
+                    C.experiment_uuid: "00000000-0000-0000-0000-000000000001",
                     C.registered_values_id: 2,
+                    C.target_column_id: 1,
                     C.value: 0.2,
                 },
                 {
                     C.id: 3,
+                    C.experiment_uuid: "00000000-0000-0000-0000-000000000001",
                     C.registered_values_id: 3,
+                    C.target_column_id: 1,
                     C.value: 0.4,
                 },
             ],
@@ -311,25 +336,32 @@ mock_bo_db = [
                     C.experiment_uuid: "00000000-0000-0000-0000-000000000002",
                     C.value_id: 0,
                     C.sequence: "GAAAAAAAAG",
-                    C.target_column_name: "target",
                 },
                 {
                     C.id: 1,
                     C.experiment_uuid: "00000000-0000-0000-0000-000000000002",
                     C.value_id: 1,
                     C.sequence: "GAAAAAAAAT",
-                    C.target_column_name: "target",
+                },
+            ],
+            C.TargetColumns: [
+                {
+                    C.id: 0,
+                    C.experiment_uuid: "00000000-0000-0000-0000-000000000002",
+                    C.column_name: "target",
                 },
             ],
             C.TargetValues: [
                 {
                     C.id: 0,
                     C.registered_values_id: 0,
+                    C.target_column_id: 0,
                     C.value: 0.3,
                 },
                 {
                     C.id: 1,
                     C.registered_values_id: 1,
+                    C.target_column_id: 0,
                     C.value: 0.5,
                 },
             ],

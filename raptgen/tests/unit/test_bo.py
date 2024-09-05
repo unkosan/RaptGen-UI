@@ -15,6 +15,8 @@ from core.db import (
     BaseSchema,
     Experiments,
     RegisteredValues,
+    TargetColumns,
+    TargetValues,
     QueryData,
     AcquisitionData,
     get_db_session,
@@ -140,6 +142,12 @@ def mock_db(db_session, testcase: BOTest):
     for d in data[C.RegisteredValues]:
         db_session.add(RegisteredValues(**d))
 
+    for d in data[C.TargetColumns]:
+        db_session.add(TargetColumns(**d))
+
+    for d in data[C.TargetValues]:
+        db_session.add(TargetValues(**d))
+
     for d in data[C.QueryData]:
         db_session.add(QueryData(**d))
 
@@ -147,6 +155,95 @@ def mock_db(db_session, testcase: BOTest):
         db_session.add(AcquisitionData(**d))
 
     db_session.commit()
+
+
+def test_get_items_all_success_single_data(db_session):
+    mock_db(db_session, BOTest.GET_items_all_success_single_data)
+
+    response = client.get("/api/bayesopt/items")
+
+    assert response.status_code == 200
+
+    # {
+    #     uuid: string,
+    #     name: string,
+    #     last_modified: integer (UNIX timestamp)
+    # }[]
+
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["uuid"] == "00000000-0000-0000-0000-000000000002"
+    assert data[0]["name"] == "single_data_test"
+    assert data[0]["last_modified"] == 1609459200
+
+
+def test_get_items_all_success_multiple_data(db_session):
+    mock_db(db_session, BOTest.GET_items_all_success_multiple_data)
+
+    response = client.get("/api/bayesopt/items")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    assert set(d["uuid"] for d in data) == {
+        "00000000-0000-0000-0000-000000000000",
+        "00000000-0000-0000-0000-000000000001",
+    }
+
+    assert set(d["name"] for d in data) == {"multiple_data", "multiple_data_2"}
+    assert set(d["last_modified"] for d in data) == {1609459200, 1609459300}
+
+
+def test_get_items_all_success_no_data(db_session):
+    mock_db(db_session, BOTest.GET_items_all_success_no_data)
+
+    response = client.get("/api/bayesopt/items")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_get_items_success_single_data(db_session):
+    mock_db(db_session, BOTest.GET_items_success)
+
+    response = client.get("/api/bayesopt/items/00000000-0000-0000-0000-000000000000")
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["experiment_name"] == "multiple_data"
+    assert data["VAE_model"] == "test_VAE"
+    assert data["plot_config"] == {
+        "minimum_count": 2,
+        "show_training_data": True,
+        "show_bo_contour": True,
+    }
+    assert data["optimization_config"] == {
+        "method_name": "qEI",
+        "target_column_name": "target",
+        "query_budget": 10,
+    }
+    assert data["distribution_params"] == {
+        "xlim_start": 0,
+        "xlim_end": 1,
+        "ylim_start": 0,
+        "ylim_end": 1,
+    }
+    assert data["registered_table"] == {
+        "ids": ["0", "1"],
+        "sequences": ["AAAAAAAAAA", "AAAAAAAAAC"],
+        "target_column_names": ["target"],
+        "target_values": [[0.3], [0.5]],
+    }
+
+
+def test_get_items_failure(db_session):
+    mock_db(db_session, BOTest.GET_items_failure)
+
+    response = client.get("/api/bayesopt/items/bad00000-0000-0000-0000-000000000000")
+
+    assert response.status_code == 404
+
 
 
 def test_submit_bo_result(db_session):
@@ -343,7 +440,7 @@ def test_submit_bo_result_multi_sequence(db_session):
     # check registered data
     assert experiment.registered_values is not None
     assert [r.sequence for r in experiment.registered_values] == ["CCC", "AAA"]
-    assert [r.target_column_name for r in experiment.registered_values] == [
+    assert [r.column_name for r in experiment.target_columns] == [
         "vsA",
         "vsB",
     ]
