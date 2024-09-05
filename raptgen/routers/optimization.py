@@ -540,10 +540,12 @@ async def update_experiment_item(
     if (
         session.query(db.Experiments)
         .filter(db.Experiments.uuid == experiment_uuid)
-        .count()
-        == 0
+        .one_or_none()
+        is None
     ):
-        raise ValueError(f"Experiment with uuid {experiment_uuid} does not exist.")
+        raise HTTPException(
+            status_code=404, detail=f"Experiment with uuid {experiment_uuid} not found"
+        )
 
     # call delete API then call submit API
     await delete_experiment_item(experiment_uuid, session)
@@ -551,10 +553,11 @@ async def update_experiment_item(
 
     new_uuid = response["uuid"]
 
-    # overwrite the uuid of new experiment
+    # Update Experiments
     session.query(db.Experiments).filter(db.Experiments.uuid == new_uuid).update(
         {db.Experiments.uuid: experiment_uuid}
     )
+
     session.commit()
 
 
@@ -584,29 +587,11 @@ async def delete_experiment_item(
     experiment_uuid: str,
     session: Session = Depends(get_db_session),
 ):
+    # delete Experiments
+    # ondelete="CASCADE" is set in the database schema,
+    # so the related rows in other tables will be deleted automatically
     session.query(db.Experiments).filter(
         db.Experiments.uuid == experiment_uuid
-    ).delete()
-
-    # formerly delete TargetValues which is related to RegisteredValues
-    session.query(db.TargetValues).filter(
-        db.TargetValues.registered_values_id.in_(
-            session.query(db.RegisteredValues.id).filter(
-                db.RegisteredValues.experiment_uuid == experiment_uuid
-            )
-        )
-    ).delete()
-
-    session.query(db.RegisteredValues).filter(
-        db.RegisteredValues.experiment_uuid == experiment_uuid
-    ).delete()
-
-    session.query(db.QueryData).filter(
-        db.QueryData.experiment_uuid == experiment_uuid
-    ).delete()
-
-    session.query(db.AcquisitionData).filter(
-        db.AcquisitionData.experiment_uuid == experiment_uuid
     ).delete()
 
     session.commit()

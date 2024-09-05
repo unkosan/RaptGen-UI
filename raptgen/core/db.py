@@ -331,7 +331,9 @@ class RegisteredValues(BaseSchema):
     id = Column(
         Integer, primary_key=True, unique=True, autoincrement=True
     )  # ID for each registered value
-    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
+    experiment_uuid = Column(
+        String, ForeignKey("experiments.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
     value_id = Column(String)  # Registered value ID
     sequence = Column(String)  # Sequence information
     target_values = relationship("TargetValues", backref="registered_values")
@@ -342,7 +344,9 @@ class TargetColumns(BaseSchema):
     id = Column(
         Integer, primary_key=True, unique=True, autoincrement=True
     )  # ID for each target column
-    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
+    experiment_uuid = Column(
+        String, ForeignKey("experiments.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
     column_name = Column(String)  # Target column name
     target_values = relationship("TargetValues", backref="target_columns")
 
@@ -352,7 +356,9 @@ class TargetValues(BaseSchema):
     id = Column(
         Integer, primary_key=True, unique=True, autoincrement=True
     )  # ID for each target value
-    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
+    experiment_uuid = Column(
+        String, ForeignKey("experiments.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
     registered_values_id = Column(Integer, ForeignKey("registered_values.id"))
     target_column_id = Column(Integer, ForeignKey("target_columns.id"))
     value = Column(Float)
@@ -363,7 +369,9 @@ class QueryData(BaseSchema):
     id = Column(
         Integer, primary_key=True, unique=True, autoincrement=True
     )  # ID for each query data entry
-    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
+    experiment_uuid = Column(
+        String, ForeignKey("experiments.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
     sequence = Column(String)  # Sequence information
     coord_x_original = Column(Float)  # Original X coordinate
     coord_y_original = Column(Float)  # Original Y coordinate
@@ -374,7 +382,9 @@ class AcquisitionData(BaseSchema):
     id = Column(
         Integer, primary_key=True, unique=True, autoincrement=True
     )  # ID for each acquisition data entry
-    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
+    experiment_uuid = Column(
+        String, ForeignKey("experiments.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
     coord_x = Column(Float)  # X coordinate
     coord_y = Column(Float)  # Y coordinate
     value = Column(Float)  # Value corresponding to the coordinates
