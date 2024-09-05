@@ -453,6 +453,65 @@ def test_patch_items_failure_invalid_value_type(db_session):
     assert response.status_code == 422
 
 
+def test_delete_items_success(db_session):
+    mock_db(db_session, BOTest.DELETE_items_success)
+    # check the initial data
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000000")
+        .first()
+    )
+    assert experiment is not None
+    assert experiment.name == "multiple_data"
+
+    response = client.delete("/api/bayesopt/items/00000000-0000-0000-0000-000000000000")
+
+    assert response.status_code == 200
+
+    # check if the experiment was deleted from the database
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000000")
+        .first()
+    )
+    db_session.commit()
+    assert experiment is None
+
+    # check the other data is safe and not effected
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000001")
+        .first()
+    )
+
+    assert experiment is not None
+
+
+def test_delete_items_failure(db_session):
+    mock_db(db_session, BOTest.DELETE_items_failure)
+    # check the initial data
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000000")
+        .first()
+    )
+    assert experiment is not None
+    assert experiment.name == "multiple_data"
+
+    response = client.delete("/api/bayesopt/items/bad00000-0000-0000-0000-000000000000")
+
+    assert response.status_code == 404
+
+    # check if the experiment was deleted from the database
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000000")
+        .first()
+    )
+    db_session.commit()
+    assert experiment is not None
+
+
 def test_submit_bo_result(db_session):
     mock_db(db_session, BOTest.POST_submit_success)
 
