@@ -245,6 +245,136 @@ def test_get_items_failure(db_session):
     assert response.status_code == 404
 
 
+def test_put_items_success(db_session):
+    mock_db(db_session, BOTest.PUT_items_success)
+
+    # check the initial data
+
+    # check if the experiment was added to the database
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000000")
+        .first()
+    )
+
+    db_session.commit()
+
+    assert experiment is not None
+    assert experiment.name == "multiple_data"
+
+    response = client.put(
+        "/api/bayesopt/items/00000000-0000-0000-0000-000000000000",
+        json={
+            "experiment_name": "test_experiment_updated",
+            "VAE_model": "test_model_updated",
+            "plot_config": {
+                "minimum_count": 3,
+                "show_training_data": False,
+                "show_bo_contour": False,
+            },
+            "optimization_config": {
+                "method_name": "qEI",
+                "target_column_name": "target_updated",
+                "query_budget": 9,
+            },
+            "distribution_params": {
+                "xlim_start": 2,
+                "xlim_end": 3,
+                "ylim_start": 2,
+                "ylim_end": 3,
+            },
+            "registered_table": {
+                "ids": ["1"],
+                "sequences": ["GGG"],
+                "target_column_names": ["target_updated"],
+                "target_values": [[0.6]],
+            },
+            "query_table": {
+                "sequences": ["AAG"],
+                "coords_x_original": [2],
+                "coords_y_original": [3],
+            },
+            "acquisition_mesh": {
+                "coords_x": [4],
+                "coords_y": [5],
+                "values": [6],
+            },
+        },
+    )
+
+    assert response.status_code == 200
+
+    # check if the experiment was updated in the database
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000000")
+        .first()
+    )
+
+    db_session.commit()
+
+    assert experiment is not None
+    assert experiment.name == "test_experiment_updated"
+
+
+def test_put_items_failure_uuid_invalid(db_session):
+    mock_db(db_session, BOTest.PUT_items_failure_uuid_invalid)
+
+    response = client.put(
+        "/api/bayesopt/items/bad00000-0000-0000-0000-000000000000",
+        json={
+            "experiment_name": "bad_test_experiment_updated",
+            "VAE_model": "bad_test_model_updated",
+            "plot_config": {
+                "minimum_count": 3,
+                "show_training_data": False,
+                "show_bo_contour": False,
+            },
+            "optimization_config": {
+                "method_name": "qEI",
+                "target_column_name": "target_updated",
+                "query_budget": 9,
+            },
+            "distribution_params": {
+                "xlim_start": 2,
+                "xlim_end": 3,
+                "ylim_start": 2,
+                "ylim_end": 3,
+            },
+            "registered_table": {
+                "ids": ["1"],
+                "sequences": ["GGG"],
+                "target_column_names": ["target_updated"],
+                "target_values": [[0.6]],
+            },
+            "query_table": {
+                "sequences": ["AAG"],
+                "coords_x_original": [2],
+                "coords_y_original": [3],
+            },
+            "acquisition_mesh": {
+                "coords_x": [4],
+                "coords_y": [5],
+                "values": [6],
+            },
+        },
+    )
+
+    assert response.status_code == 404
+
+
+def test_put_items_failure_payload_invalid(db_session):
+    mock_db(db_session, BOTest.PUT_items_failure_payload_invalid)
+
+    response = client.put(
+        "/api/bayesopt/items/00000000-0000-0000-0000-000000000000",
+        json={
+            "experiment_name": "only_experiment_name",
+        },
+    )
+
+    assert response.status_code == 422
+
 
 def test_submit_bo_result(db_session):
     mock_db(db_session, BOTest.POST_submit_success)
