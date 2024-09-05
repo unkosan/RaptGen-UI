@@ -376,6 +376,83 @@ def test_put_items_failure_payload_invalid(db_session):
     assert response.status_code == 422
 
 
+def test_patch_items_success(db_session):
+    mock_db(db_session, BOTest.PATCH_items_success)
+
+    # check the initial data
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000000")
+        .first()
+    )
+    assert experiment is not None
+    assert experiment.name == "multiple_data"
+
+    response = client.patch(
+        "/api/bayesopt/items/00000000-0000-0000-0000-000000000000",
+        json={
+            "target": "experiment_name",
+            "value": "patched_experiment_name",
+        },
+    )
+
+    assert response.status_code == 200
+
+    # check if the experiment was updated in the database
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000000")
+        .first()
+    )
+    db_session.commit()
+    assert experiment is not None
+    assert experiment.name == "patched_experiment_name"
+
+
+def test_patch_items_failure_invalid_target(db_session):
+    mock_db(db_session, BOTest.PATCH_items_failure_invalid_target)
+    # check the initial data
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000000")
+        .first()
+    )
+    assert experiment is not None
+    assert experiment.name == "multiple_data"
+
+    response = client.patch(
+        "/api/bayesopt/items/00000000-0000-0000-0000-000000000000",
+        json={
+            "target": "invalid_target",
+            "value": "valid_value",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_patch_items_failure_invalid_value_type(db_session):
+    mock_db(db_session, BOTest.PATCH_items_failure_invalid_target)
+    # check the initial data
+    experiment = (
+        db_session.query(Experiments)
+        .filter_by(uuid="00000000-0000-0000-0000-000000000000")
+        .first()
+    )
+    assert experiment is not None
+    assert experiment.name == "multiple_data"
+
+    response = client.patch(
+        "/api/bayesopt/items/00000000-0000-0000-0000-000000000000",
+        json={
+            "target": "experiment_name",
+            "value": 123,
+        },
+    )
+
+    assert response.status_code == 422
+
+
 def test_submit_bo_result(db_session):
     mock_db(db_session, BOTest.POST_submit_success)
 

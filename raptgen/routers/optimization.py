@@ -574,12 +574,21 @@ async def patch_experiment_item(
 ):
     # only target="experiment_name" is supported
     if request["target"] == "experiment_name":
+        # type-check
+        if db.Experiments.name.type.python_type is not type(request["value"]):
+            raise HTTPException(
+                status_code=422,
+                detail=f"Type mismatch: {type(request['value'])} != {db.Experiments.name.type.python_type}",
+            )
+
         session.query(db.Experiments).filter(
             db.Experiments.uuid == experiment_uuid
         ).update({db.Experiments.name: request["value"]})
         session.commit()
     else:
-        raise ValueError(f"Unknown target: {request['target']}")
+        raise HTTPException(
+            status_code=422, detail=f"Unknown target: {request['target']}"
+        )
 
 
 @router.delete("/api/bayesopt/items/{experiment_uuid}")
