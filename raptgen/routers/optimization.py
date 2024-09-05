@@ -410,7 +410,6 @@ async def get_experiment_items(
 ):
     # get all experiment
     experiments = session.query(db.Experiments).all()
-    session.commit()
 
     # return uuids, names, and last_modified
     return [

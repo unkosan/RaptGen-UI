@@ -334,7 +334,6 @@ class RegisteredValues(BaseSchema):
     experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
     value_id = Column(String)  # Registered value ID
     sequence = Column(String)  # Sequence information
-    # target_column_name = Column(String)  # Target column name
     target_values = relationship("TargetValues", backref="registered_values")
 
 
