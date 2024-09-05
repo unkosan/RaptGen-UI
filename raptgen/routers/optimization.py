@@ -596,7 +596,17 @@ async def delete_experiment_item(
     experiment_uuid: str,
     session: Session = Depends(get_db_session),
 ):
-    # delete Experiments
+    # check if the uuid exists
+    if (
+        session.query(db.Experiments)
+        .filter(db.Experiments.uuid == experiment_uuid)
+        .one_or_none()
+        is None
+    ):
+        raise HTTPException(
+            status_code=404, detail=f"Experiment with uuid {experiment_uuid} not found"
+        )
+
     # ondelete="CASCADE" is set in the database schema,
     # so the related rows in other tables will be deleted automatically
     session.query(db.Experiments).filter(
