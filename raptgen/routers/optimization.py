@@ -1,5 +1,5 @@
 from collections import defaultdict
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Union
 import torch
@@ -443,8 +443,12 @@ async def get_experiment_item(
     experiment = (
         session.query(db.Experiments)
         .filter(db.Experiments.uuid == experiment_uuid)
-        .one()
+        .one_or_none()
     )
+    if experiment is None:
+        raise HTTPException(
+            status_code=404, detail=f"Experiment with uuid {experiment_uuid} not found"
+        )
 
     # get registered values
     registered_values = (

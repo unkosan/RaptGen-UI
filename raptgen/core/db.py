@@ -319,11 +319,11 @@ class Experiments(BaseSchema):
     ylim_end = Column(Float)
     last_modified = Column(Integer)
 
-    registered_values = relationship("RegisteredValues", backref="experiment")
-    target_columns = relationship("TargetColumns", backref="experiment")
-    target_values = relationship("TargetValues", backref="experiment")
-    query_data = relationship("QueryData", backref="experiment")
-    acquisition_data = relationship("AcquisitionData", backref="experiment")
+    registered_values = relationship("RegisteredValues", backref="experiments")
+    target_columns = relationship("TargetColumns", backref="experiments")
+    target_values = relationship("TargetValues", backref="experiments")
+    query_data = relationship("QueryData", backref="experiments")
+    acquisition_data = relationship("AcquisitionData", backref="experiments")
 
 
 class RegisteredValues(BaseSchema):

@@ -237,6 +237,15 @@ def test_get_items_success_single_data(db_session):
     }
 
 
+def test_get_items_failure(db_session):
+    mock_db(db_session, BOTest.GET_items_failure)
+
+    response = client.get("/api/bayesopt/items/bad00000-0000-0000-0000-000000000000")
+
+    assert response.status_code == 404
+
+
+
 def test_submit_bo_result(db_session):
     mock_db(db_session, BOTest.POST_submit_success)
 
