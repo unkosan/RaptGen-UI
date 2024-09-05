@@ -119,7 +119,8 @@ async def get_parent_job(
         summary["indices"].append(child_job.id)
         summary["statuses"].append(child_job.status)
         summary["epochs_finished"].append(child_job.epochs_current)
-        if np.isnan(child_job.minimum_NLL):
+
+        if child_job.minimum_NLL is not None and not np.isnan(child_job.minimum_NLL):
             summary["minimum_NLLs"].append(child_job.minimum_NLL)
         else:
             summary["minimum_NLLs"].append(None)
