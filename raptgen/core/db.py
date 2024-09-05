@@ -320,6 +320,8 @@ class Experiments(BaseSchema):
     last_modified = Column(Integer)
 
     registered_values = relationship("RegisteredValues", backref="experiment")
+    target_columns = relationship("TargetColumns", backref="experiment")
+    target_values = relationship("TargetValues", backref="experiment")
     query_data = relationship("QueryData", backref="experiment")
     acquisition_data = relationship("AcquisitionData", backref="experiment")
 
@@ -332,8 +334,18 @@ class RegisteredValues(BaseSchema):
     experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
     value_id = Column(String)  # Registered value ID
     sequence = Column(String)  # Sequence information
-    target_column_name = Column(String)  # Target column name
+    # target_column_name = Column(String)  # Target column name
     target_values = relationship("TargetValues", backref="registered_values")
+
+
+class TargetColumns(BaseSchema):
+    __tablename__ = "target_columns"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each target column
+    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
+    column_name = Column(String)  # Target column name
+    target_values = relationship("TargetValues", backref="target_columns")
 
 
 class TargetValues(BaseSchema):
@@ -341,7 +353,9 @@ class TargetValues(BaseSchema):
     id = Column(
         Integer, primary_key=True, unique=True, autoincrement=True
     )  # ID for each target value
+    experiment_uuid = Column(String, ForeignKey("experiments.uuid"))
     registered_values_id = Column(Integer, ForeignKey("registered_values.id"))
+    target_column_id = Column(Integer, ForeignKey("target_columns.id"))
     value = Column(Float)
 
 
