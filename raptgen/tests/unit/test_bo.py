@@ -157,6 +157,85 @@ def mock_db(db_session, testcase: BOTest):
     db_session.commit()
 
 
+def test_run_success(db_session):
+    mock_db(db_session, BOTest.POST_run_success)
+
+    # PAYLOAD
+    # {
+    #     coords_x: number[], (shape(l))
+    #     coords_y: number[], (shape(l))
+    #     values: number[][], (multiple objective: shape(n, l)
+    #     optimization_params: {
+    #         method_name: 'qEI', (Another option may be added in the future)
+    #         query_budget: number[], (>1)
+    #     },
+    #     distribution_params: {
+    #         xlim_start: number,
+    #         xlim_end: number,
+    #         ylim_start: number,
+    #         ylim_end: number,
+    #         resolution?: number,
+    #     }
+    # }
+
+    response = client.post(
+        "/api/bayesopt/run",
+        json={
+            "coords_x": [0, 1, 2],
+            "coords_y": [0, -1, -0.5],
+            "values": [[0, 1, -1]],
+            "optimization_params": {
+                "method_name": "qEI",
+                "query_budget": 3,
+            },
+            "distribution_params": {
+                "xlim_start": 0,
+                "xlim_end": 2,
+                "ylim_start": -2,
+                "ylim_end": 0,
+            },
+        },
+    )
+
+    # RESPONSE 200
+    # {
+    #     acquisition_data: {
+    #         coords_x: number[],
+    #         coords_y: number[], (x,y) 点に value の獲得関数の値 values が返却される。
+    #         values: number[],
+    #     },
+    #     query_data: {
+    #         coords_x: number[], BO の候補点が (x, y) として帰ってくる。
+    #         coords_y: number[],
+    #     }
+    # }
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["query_data"]["coords_x"]) == 3
+    assert len(data["query_data"]["coords_y"]) == 3
+
+    assert min(data["acquisition_data"]["coords_x"]) >= 0
+    assert max(data["acquisition_data"]["coords_x"]) <= 2
+
+    assert min(data["acquisition_data"]["coords_y"]) >= -2
+    assert max(data["acquisition_data"]["coords_y"]) <= 0
+
+
+def test_run_failure(db_session):
+    mock_db(db_session, BOTest.POST_run_failure)
+
+    response = client.post(
+        "/api/bayesopt/run",
+        json={
+            "coords_x": [0, 1, 2],
+            # missing parameters
+        },
+    )
+
+    assert response.status_code == 422
+
+
 def test_get_items_all_success_single_data(db_session):
     mock_db(db_session, BOTest.GET_items_all_success_single_data)
 
@@ -721,3 +800,16 @@ def test_submit_bo_result_multi_sequence(db_session):
     assert experiment.acquisition_data is not None
     assert 1.99 < experiment.acquisition_data[0].coord_x < 2.01
     assert 2.99 < experiment.acquisition_data[0].coord_y < 3.01
+
+
+def test_submit_failure(db_session):
+    mock_db(db_session, BOTest.POST_submit_failure)
+
+    response = client.post(
+        "/api/bayesopt/submit",
+        json={
+            "experiment_name": "payload_invalid",
+        },
+    )
+
+    assert response.status_code == 422

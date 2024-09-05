@@ -24,7 +24,7 @@ router = APIRouter()
 
 class OptimizationParams(BaseModel):
     method_name: str  # e.g., 'qEI'
-    query_budget: List[int]  # should be a list of numbers (>1)
+    query_budget: int  # (>1)
 
 
 class DistributionParams(BaseModel):
@@ -90,7 +90,7 @@ async def run_bayesian_optimization(
     coords_y = torch.tensor(request.coords_y)
     values = torch.tensor(request.values)
     method_name = request.optimization_params.method_name
-    query_budget = request.optimization_params.query_budget[0]
+    query_budget = request.optimization_params.query_budget
     xlim_start = request.distribution_params.xlim_start
     xlim_end = request.distribution_params.xlim_end
     ylim_start = request.distribution_params.ylim_start
@@ -145,12 +145,12 @@ async def run_bayesian_optimization(
 
     # Prepare the response
     response = BayesOptResponse(
-        acquisition_data=db.AcquisitionData(
+        acquisition_data=AcquisitionData(
             coords_x=xvr[:, 0].tolist(),
             coords_y=yvr[:, 0].tolist(),
             values=acq_values.tolist(),
         ),
-        query_data=db.QueryData(
+        query_data=QueryData(
             coords_x=candidates[:, 0].tolist(),
             coords_y=candidates[:, 1].tolist(),
         ),
