@@ -18,18 +18,18 @@ const experimentState = {
     show_training_data: true,
     show_bo_contour: true,
   },
-  optimization_params: {
+  optimization_config: {
     method_name: "qEI",
     target_column_name: "value2",
     query_budget: 3,
   },
-  distribution_params: {
-    xlim_start: -3.5,
-    xlim_end: 3.5,
-    ylim_start: -3.5,
-    ylim_end: 3.5,
+  distribution_config: {
+    xlim_min: -3.5,
+    xlim_max: 3.5,
+    ylim_min: -3.5,
+    ylim_max: 3.5,
   },
-  registered_values: {
+  registered_values_table: {
     ids: ["no.1", "no.2", "no.3"],
     sequences: ["AAUG", "GGUC", "CCGA"],
     target_column_names: ["value", "value2"],
@@ -39,12 +39,12 @@ const experimentState = {
       [5, 6],
     ],
   },
-  query_data: {
+  query_table: {
     sequences: ["AAUG", "GGUC", "CCGA"],
     coords_x_original: [1, 0, -1],
     coords_y_original: [1, 0, -1],
   },
-  acquisition_data: {
+  acquisition_mesh: {
     coords_x: [-3.5, -3.5, -3.5, 0, 0, 0, 3.5, 3.5, 3.5],
     coords_y: [-3.5, 0, 3.5, -3.5, 0, 3.5, -3.5, 0, 3.5],
     values: [1, 0, 1, 0, 1, 0, 1, 0, 1],

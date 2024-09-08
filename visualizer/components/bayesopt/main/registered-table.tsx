@@ -235,15 +235,15 @@ const RunBayesOptButton: React.FC = () => {
     let resBayesopt = await apiClient.runBayesopt({
       coords_x: coordX,
       coords_y: coordY,
-      optimization_params: {
+      optimization_args: {
         method_name: "qEI",
         query_budget: bayesoptConfig.queryBudget,
       },
-      distribution_params: {
-        xlim_end: 3.5,
-        xlim_start: -3.5,
-        ylim_end: 3.5,
-        ylim_start: -3.5,
+      distribution_args: {
+        xlim_max: 3.5,
+        xlim_min: -3.5,
+        ylim_max: 3.5,
+        ylim_min: -3.5,
       },
       values: [values],
     });
