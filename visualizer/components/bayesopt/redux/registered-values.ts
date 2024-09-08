@@ -1,6 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type RegisteredValues = {
+  wholeSelected: boolean; // whether all values are selected by master checkbox
   id: string[]; // id of the data (length m)
   randomRegion: string[]; // name of the region (length m)
   coordX: number[]; // x coordinate of the region (length m)
@@ -15,6 +16,7 @@ type RegisteredValues = {
 const registeredValuesSlice = createSlice({
   name: "registeredValues",
   initialState: {
+    wholeSelected: false,
     id: [],
     randomRegion: [],
     coordX: [],
