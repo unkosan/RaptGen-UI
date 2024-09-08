@@ -73,29 +73,29 @@ const Versions: React.FC = () => {
         show_training_data: graphConfig.showSelex,
         show_bo_contour: graphConfig.showAcquisition,
       },
-      optimization_params: {
+      optimization_config: {
         method_name: "qEI" as const,
         target_column_name: bayesoptConfig.targetColumn,
         query_budget: bayesoptConfig.queryBudget,
       },
-      distribution_params: {
-        xlim_start: -3.5,
-        xlim_end: 3.5,
-        ylim_start: -3.5,
-        ylim_end: 3.5,
+      distribution_config: {
+        xlim_min: -3.5,
+        xlim_max: 3.5,
+        ylim_min: -3.5,
+        ylim_max: 3.5,
       },
-      registered_values: {
+      registered_values_table: {
         ids: registeredValues.id,
         sequences: registeredValues.randomRegion,
         target_column_names: registeredValues.columnNames,
         target_values: array,
       },
-      query_data: {
+      query_table: {
         sequences: queriedValues.randomRegion,
         coords_x_original: queriedValues.coordOriginalX,
         coords_y_original: queriedValues.coordOriginalY,
       },
-      acquisition_data: {
+      acquisition_mesh: {
         values: acquisitionValues.acquisitionValues,
         coords_x: acquisitionValues.coordX,
         coords_y: acquisitionValues.coordY,

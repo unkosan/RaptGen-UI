@@ -9,29 +9,29 @@ export const experimentState = z.object({
     show_training_data: z.boolean(),
     show_bo_contour: z.boolean(),
   }),
-  optimization_params: z.object({
+  optimization_config: z.object({
     method_name: z.literal("qEI"),
     target_column_name: z.string(),
     query_budget: z.number().int().min(1),
   }),
-  distribution_params: z.object({
-    xlim_start: z.number(),
-    xlim_end: z.number(),
-    ylim_start: z.number(),
-    ylim_end: z.number(),
+  distribution_config: z.object({
+    xlim_min: z.number(),
+    xlim_max: z.number(),
+    ylim_min: z.number(),
+    ylim_max: z.number(),
   }),
-  registered_values: z.object({
+  registered_values_table: z.object({
     ids: z.array(z.string()),
     sequences: z.array(z.string()),
     target_column_names: z.array(z.string()),
     target_values: z.array(z.array(z.union([z.null(), z.number()]))),
   }),
-  query_data: z.object({
+  query_table: z.object({
     sequences: z.array(z.string()),
     coords_x_original: z.array(z.number()),
     coords_y_original: z.array(z.number()),
   }),
-  acquisition_data: z.object({
+  acquisition_mesh: z.object({
     coords_x: z.array(z.number()),
     coords_y: z.array(z.number()),
     values: z.array(z.number()),
@@ -43,15 +43,15 @@ export const requestPostBayesoptRun = z.object({
   coords_x: z.array(z.number()).nonempty(),
   coords_y: z.array(z.number()).nonempty(),
   values: z.array(z.array(z.number()).nonempty()).nonempty(),
-  optimization_params: z.object({
+  optimization_args: z.object({
     method_name: z.literal("qEI"),
     query_budget: z.number().int().min(1),
   }),
-  distribution_params: z.object({
-    xlim_start: z.number(),
-    xlim_end: z.number(),
-    ylim_start: z.number(),
-    ylim_end: z.number(),
+  distribution_args: z.object({
+    xlim_min: z.number(),
+    xlim_max: z.number(),
+    ylim_min: z.number(),
+    ylim_max: z.number(),
     resolution: z.number().int().min(1).optional(),
   }),
 });

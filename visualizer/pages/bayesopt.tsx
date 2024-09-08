@@ -72,29 +72,29 @@ const InitializeExperimentComponent: React.FC = () => {
         show_training_data: true,
         show_bo_contour: true,
       },
-      optimization_params: {
+      optimization_config: {
         method_name: "qEI",
         target_column_name: "target",
         query_budget: 3,
       },
-      distribution_params: {
-        xlim_start: -3.5,
-        xlim_end: 3.5,
-        ylim_start: -3.5,
-        ylim_end: 3.5,
+      distribution_config: {
+        xlim_min: -3.5,
+        xlim_max: 3.5,
+        ylim_min: -3.5,
+        ylim_max: 3.5,
       },
-      registered_values: {
+      registered_values_table: {
         ids: [],
         sequences: [],
         target_column_names: [],
         target_values: [],
       },
-      query_data: {
+      query_table: {
         sequences: [],
         coords_x_original: [],
         coords_y_original: [],
       },
-      acquisition_data: {
+      acquisition_mesh: {
         coords_x: [],
         coords_y: [],
         values: [],
@@ -120,18 +120,18 @@ const InitializeExperimentComponent: React.FC = () => {
     dispatch({
       type: "bayesoptConfig/set",
       payload: {
-        targetColumn: response.optimization_params.target_column_name,
-        queryBudget: response.optimization_params.query_budget,
-        optimizationType: response.optimization_params.method_name,
+        targetColumn: response.optimization_config.target_column_name,
+        queryBudget: response.optimization_config.query_budget,
+        optimizationType: response.optimization_config.method_name,
       },
     });
 
     dispatch({
       type: "acquisitionValues/set",
       payload: {
-        acquisitionValues: response.acquisition_data.values,
-        coordX: response.acquisition_data.coords_x,
-        coordY: response.acquisition_data.coords_y,
+        acquisitionValues: response.acquisition_mesh.values,
+        coordX: response.acquisition_mesh.coords_x,
+        coordY: response.acquisition_mesh.coords_y,
       },
     });
 
@@ -148,14 +148,14 @@ const InitializeExperimentComponent: React.FC = () => {
     dispatch({
       type: "registeredValues/set",
       payload: {
-        id: response.registered_values.ids,
-        randomRegion: response.registered_values.sequences,
+        id: response.registered_values_table.ids,
+        randomRegion: response.registered_values_table.sequences,
         coordX: [],
         coordY: [],
-        staged: new Array(response.registered_values.sequences.length).fill(
-          false
-        ),
-        columnNames: response.registered_values.target_column_names,
+        staged: new Array(
+          response.registered_values_table.sequences.length
+        ).fill(false),
+        columnNames: response.registered_values_table.target_column_names,
         sequenceIndex: [],
         column: [],
         value: [],
@@ -165,12 +165,12 @@ const InitializeExperimentComponent: React.FC = () => {
     dispatch({
       type: "queriedValues/set",
       payload: {
-        randomRegion: response.query_data.sequences,
+        randomRegion: response.query_table.sequences,
         coordX: [],
         coordY: [],
-        coordOriginalX: response.query_data.coords_x_original,
-        coordOriginalY: response.query_data.coords_y_original,
-        staged: new Array(response.query_data.sequences.length).fill(false),
+        coordOriginalX: response.query_table.coords_x_original,
+        coordOriginalY: response.query_table.coords_y_original,
+        staged: new Array(response.query_table.sequences.length).fill(false),
       },
     });
   };
@@ -189,29 +189,29 @@ const InitializeExperimentComponent: React.FC = () => {
         show_training_data: true,
         show_bo_contour: true,
       },
-      optimization_params: {
+      optimization_config: {
         method_name: "qEI",
         target_column_name: "target",
         query_budget: 3,
       },
-      distribution_params: {
-        xlim_start: -3.5,
-        xlim_end: 3.5,
-        ylim_start: -3.5,
-        ylim_end: 3.5,
+      distribution_config: {
+        xlim_min: -3.5,
+        xlim_max: 3.5,
+        ylim_min: -3.5,
+        ylim_max: 3.5,
       },
-      registered_values: {
+      registered_values_table: {
         ids: [],
         sequences: [],
         target_column_names: [],
         target_values: [],
       },
-      query_data: {
+      query_table: {
         sequences: [],
         coords_x_original: [],
         coords_y_original: [],
       },
-      acquisition_data: {
+      acquisition_mesh: {
         coords_x: [],
         coords_y: [],
         values: [],
@@ -243,18 +243,18 @@ const InitializeExperimentComponent: React.FC = () => {
     dispatch({
       type: "bayesoptConfig/set",
       payload: {
-        targetColumn: response.optimization_params.target_column_name,
-        queryBudget: response.optimization_params.query_budget,
-        optimizationType: response.optimization_params.method_name,
+        targetColumn: response.optimization_config.target_column_name,
+        queryBudget: response.optimization_config.query_budget,
+        optimizationType: response.optimization_config.method_name,
       },
     });
 
     dispatch({
       type: "acquisitionValues/set",
       payload: {
-        acquisitionValues: response.acquisition_data.values,
-        coordX: response.acquisition_data.coords_x,
-        coordY: response.acquisition_data.coords_y,
+        acquisitionValues: response.acquisition_mesh.values,
+        coordX: response.acquisition_mesh.coords_x,
+        coordY: response.acquisition_mesh.coords_y,
       },
     });
 
@@ -273,10 +273,10 @@ const InitializeExperimentComponent: React.FC = () => {
       status: "success",
       data: [],
     } as z.infer<typeof responsePostEncode>;
-    if (response.registered_values.sequences.length !== 0) {
+    if (response.registered_values_table.sequences.length !== 0) {
       resCoords = await apiClient.encode({
         session_id: sessionId,
-        sequences: response.registered_values.sequences,
+        sequences: response.registered_values_table.sequences,
       });
     }
     if (resCoords.status === "error") {
@@ -288,29 +288,33 @@ const InitializeExperimentComponent: React.FC = () => {
     let values: (number | null)[] = [];
     let sequenceIds: number[] = [];
 
-    for (let i = 0; i < response.registered_values.sequences.length; i++) {
+    for (
+      let i = 0;
+      i < response.registered_values_table.sequences.length;
+      i++
+    ) {
       for (
         let j = 0;
-        j < response.registered_values.target_column_names.length;
+        j < response.registered_values_table.target_column_names.length;
         j++
       ) {
-        columns.push(response.registered_values.target_column_names[j]);
-        values.push(response.registered_values.target_values[i][j]);
+        columns.push(response.registered_values_table.target_column_names[j]);
+        values.push(response.registered_values_table.target_values[i][j]);
         sequenceIds.push(i);
       }
     }
     dispatch({
       type: "registeredValues/set",
       payload: {
-        id: response.registered_values.ids,
-        randomRegion: response.registered_values.sequences,
+        id: response.registered_values_table.ids,
+        randomRegion: response.registered_values_table.sequences,
         coordX: coords.map((coord) => coord.coord_x),
         coordY: coords.map((coord) => coord.coord_y),
         // staged: response.registered_values[0].staged,
-        staged: new Array(response.registered_values.sequences.length).fill(
-          false
-        ),
-        columnNames: response.registered_values.target_column_names,
+        staged: new Array(
+          response.registered_values_table.sequences.length
+        ).fill(false),
+        columnNames: response.registered_values_table.target_column_names,
         sequenceIndex: sequenceIds,
         column: columns,
         value: values,
@@ -322,10 +326,10 @@ const InitializeExperimentComponent: React.FC = () => {
       status: "success",
       data: [],
     } as z.infer<typeof responsePostEncode>;
-    if (response.query_data.sequences.length !== 0) {
+    if (response.query_table.sequences.length !== 0) {
       resQueryCoords = await apiClient.encode({
         session_id: sessionId,
-        sequences: response.query_data.sequences,
+        sequences: response.query_table.sequences,
       });
     }
     if (resQueryCoords.status === "error") {
@@ -336,12 +340,12 @@ const InitializeExperimentComponent: React.FC = () => {
     dispatch({
       type: "queriedValues/set",
       payload: {
-        randomRegion: response.query_data.sequences,
+        randomRegion: response.query_table.sequences,
         coordX: queryCoords.map((coord) => coord.coord_x),
         coordY: queryCoords.map((coord) => coord.coord_y),
-        coordOriginalX: response.query_data.coords_x_original,
-        coordOriginalY: response.query_data.coords_y_original,
-        staged: new Array(response.query_data.sequences.length).fill(false),
+        coordOriginalX: response.query_table.coords_x_original,
+        coordOriginalY: response.query_table.coords_y_original,
+        staged: new Array(response.query_table.sequences.length).fill(false),
       },
     });
   };
