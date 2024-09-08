@@ -29,6 +29,7 @@ export const QueryTable: React.FC = () => {
     (e: TypeOnSelectionChangeArg) => {
       let newData = cloneDeep(queryData);
       if (e.selected === true) {
+        newData.wholeSelected = true;
         const unselected =
           e.unselected === null
             ? []
@@ -39,6 +40,7 @@ export const QueryTable: React.FC = () => {
           return !unselected.includes(index);
         });
       } else {
+        newData.wholeSelected = false;
         const selected = Object.keys(e.selected as Object).map((value) =>
           parseInt(value)
         );
@@ -156,6 +158,7 @@ const AddQueryButton: React.FC = () => {
 
     let newRegisteredData = cloneDeep(registeredData);
     let newQueryData: QueriedValues = {
+      wholeSelected: queryData.wholeSelected,
       randomRegion: [],
       coordX: [],
       coordY: [],
@@ -173,7 +176,11 @@ const AddQueryButton: React.FC = () => {
         newRegisteredData.randomRegion.push(queryData.randomRegion[i]);
         newRegisteredData.coordX.push(queryData.coordX[i]);
         newRegisteredData.coordY.push(queryData.coordY[i]);
-        newRegisteredData.staged.push(false);
+        if (registeredData.wholeSelected) {
+          newRegisteredData.staged.push(true);
+        } else {
+          newRegisteredData.staged.push(false);
+        }
         for (let j = 0; j < registeredData.columnNames.length; j++) {
           newRegisteredData.sequenceIndex.push(currIndex);
           newRegisteredData.column.push(registeredData.columnNames[j]);
@@ -185,7 +192,11 @@ const AddQueryButton: React.FC = () => {
         newQueryData.coordY.push(queryData.coordY[i]);
         newQueryData.coordOriginalX.push(queryData.coordOriginalX[i]);
         newQueryData.coordOriginalY.push(queryData.coordOriginalY[i]);
-        newQueryData.staged.push(false);
+        if (queryData.wholeSelected) {
+          newQueryData.staged.push(true);
+        } else {
+          newQueryData.staged.push(false);
+        }
       }
     }
 
