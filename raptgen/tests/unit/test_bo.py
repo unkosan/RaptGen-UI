@@ -165,15 +165,15 @@ def test_run_success(db_session):
     #     coords_x: number[], (shape(l))
     #     coords_y: number[], (shape(l))
     #     values: number[][], (multiple objective: shape(n, l)
-    #     optimization_params: {
+    #     optimization_args: {
     #         method_name: 'qEI', (Another option may be added in the future)
     #         query_budget: number[], (>1)
     #     },
-    #     distribution_params: {
-    #         xlim_start: number,
-    #         xlim_end: number,
-    #         ylim_start: number,
-    #         ylim_end: number,
+    #     distribution_config: {
+    #         xlim_min: number,
+    #         xlim_max: number,
+    #         ylim_min: number,
+    #         ylim_max: number,
     #         resolution?: number,
     #     }
     # }
@@ -184,15 +184,15 @@ def test_run_success(db_session):
             "coords_x": [0, 1, 2],
             "coords_y": [0, -1, -0.5],
             "values": [[0, 1, -1]],
-            "optimization_params": {
+            "optimization_args": {
                 "method_name": "qEI",
                 "query_budget": 3,
             },
-            "distribution_params": {
-                "xlim_start": 0,
-                "xlim_end": 2,
-                "ylim_start": -2,
-                "ylim_end": 0,
+            "distribution_args": {
+                "xlim_min": 0,
+                "xlim_max": 2,
+                "ylim_min": -2,
+                "ylim_max": 0,
             },
         },
     )
@@ -302,13 +302,13 @@ def test_get_items_success_single_data(db_session):
         "target_column_name": "target",
         "query_budget": 10,
     }
-    assert data["distribution_params"] == {
-        "xlim_start": 0,
-        "xlim_end": 1,
-        "ylim_start": 0,
-        "ylim_end": 1,
+    assert data["distribution_config"] == {
+        "xlim_min": 0,
+        "xlim_max": 1,
+        "ylim_min": 0,
+        "ylim_max": 1,
     }
-    assert data["registered_table"] == {
+    assert data["registered_values_table"] == {
         "ids": ["0", "1"],
         "sequences": ["AAAAAAAAAA", "AAAAAAAAAC"],
         "target_column_names": ["target"],
@@ -356,13 +356,13 @@ def test_put_items_success(db_session):
                 "target_column_name": "target_updated",
                 "query_budget": 9,
             },
-            "distribution_params": {
-                "xlim_start": 2,
-                "xlim_end": 3,
-                "ylim_start": 2,
-                "ylim_end": 3,
+            "distribution_config": {
+                "xlim_min": 2,
+                "xlim_max": 3,
+                "ylim_min": 2,
+                "ylim_max": 3,
             },
-            "registered_table": {
+            "registered_values_table": {
                 "ids": ["1"],
                 "sequences": ["GGG"],
                 "target_column_names": ["target_updated"],
@@ -414,13 +414,13 @@ def test_put_items_failure_uuid_invalid(db_session):
                 "target_column_name": "target_updated",
                 "query_budget": 9,
             },
-            "distribution_params": {
-                "xlim_start": 2,
-                "xlim_end": 3,
-                "ylim_start": 2,
-                "ylim_end": 3,
+            "distribution_config": {
+                "xlim_min": 2,
+                "xlim_max": 3,
+                "ylim_min": 2,
+                "ylim_max": 3,
             },
-            "registered_table": {
+            "registered_values_table": {
                 "ids": ["1"],
                 "sequences": ["GGG"],
                 "target_column_names": ["target_updated"],
@@ -608,11 +608,11 @@ def test_submit_bo_result(db_session):
     #         target_column_name: string,
     #         query_budget: number,
     #     },
-    #     distribution_params: {
-    #         xlim_start: number,
-    #         xlim_end: number,
-    #         ylim_start: number,
-    #         ylim_end: number
+    #     distribution_config: {
+    #         xlim_min: number,
+    #         xlim_max: number,
+    #         ylim_min: number,
+    #         ylim_max: number
     #     },
     #     registered_values: {
     #         ids: string[],
@@ -646,13 +646,13 @@ def test_submit_bo_result(db_session):
                 "target_column_name": "target",
                 "query_budget": 10,
             },
-            "distribution_params": {
-                "xlim_start": 0,
-                "xlim_end": 1,
-                "ylim_start": 0,
-                "ylim_end": 1,
+            "distribution_config": {
+                "xlim_min": 0,
+                "xlim_max": 1,
+                "ylim_min": 0,
+                "ylim_max": 1,
             },
-            "registered_table": {
+            "registered_values_table": {
                 "ids": ["0"],
                 "sequences": ["CCC"],
                 "target_column_names": ["target"],
@@ -703,16 +703,16 @@ def test_submit_bo_result_multi_sequence(db_session):
     #         show_training_data: boolean,
     #         show_bo_contour: boolean
     #     },
-    #     optimization_params: {
+    #     optimization_args: {
     #         method_name: string,x
     #         target_column_name: string,
     #         query_budget: number,
     #     },
-    #     distribution_params: {
-    #         xlim_start: number,
-    #         xlim_end: number,
-    #         ylim_start: number,
-    #         ylim_end: number
+    #     distribution_config: {
+    #         xlim_min: number,
+    #         xlim_max: number,
+    #         ylim_min: number,
+    #         ylim_max: number
     #     },
     #     registered_values: {
     #         ids: string[],
@@ -746,13 +746,13 @@ def test_submit_bo_result_multi_sequence(db_session):
                 "target_column_name": "target",
                 "query_budget": 10,
             },
-            "distribution_params": {
-                "xlim_start": 0,
-                "xlim_end": 1,
-                "ylim_start": 0,
-                "ylim_end": 1,
+            "distribution_config": {
+                "xlim_min": 0,
+                "xlim_max": 1,
+                "ylim_min": 0,
+                "ylim_max": 1,
             },
-            "registered_table": {
+            "registered_values_table": {
                 "ids": ["0", "1"],
                 "sequences": ["CCC", "AAA"],
                 "target_column_names": ["vsA", "vsB"],
