@@ -22,32 +22,32 @@ from core.db import (
 router = APIRouter()
 
 
-class OptimizationParams(BaseModel):
+class OptimizationArgs(BaseModel):
     method_name: str  # e.g., 'qEI'
     query_budget: int  # (>1)
 
 
-class DistributionParams(BaseModel):
-    xlim_start: float
-    xlim_end: float
-    ylim_start: float
-    ylim_end: float
+class DistributionArgs(BaseModel):
+    xlim_min: float
+    xlim_max: float
+    ylim_min: float
+    ylim_max: float
     resolution: Optional[float] = 0.1
 
 
-class DistributionParamsNoResolution(BaseModel):
-    xlim_start: float
-    xlim_end: float
-    ylim_start: float
-    ylim_end: float
+class DistributionConfig(BaseModel):
+    xlim_min: float
+    xlim_max: float
+    ylim_min: float
+    ylim_max: float
 
 
 class BayesOptPayload(BaseModel):
     coords_x: List[float]  # shape(l)
     coords_y: List[float]  # shape(l)
     values: List[List[float]]  # multiple objective: shape(n, l)
-    optimization_params: OptimizationParams
-    distribution_params: DistributionParams
+    optimization_args: OptimizationArgs
+    distribution_args: DistributionArgs
 
 
 class AcquisitionData(BaseModel):
@@ -89,13 +89,13 @@ async def run_bayesian_optimization(
     coords_x = torch.tensor(request.coords_x)
     coords_y = torch.tensor(request.coords_y)
     values = torch.tensor(request.values)
-    method_name = request.optimization_params.method_name
-    query_budget = request.optimization_params.query_budget
-    xlim_start = request.distribution_params.xlim_start
-    xlim_end = request.distribution_params.xlim_end
-    ylim_start = request.distribution_params.ylim_start
-    ylim_end = request.distribution_params.ylim_end
-    resolution = request.distribution_params.resolution or 0.1
+    method_name = request.optimization_args.method_name
+    query_budget = request.optimization_args.query_budget
+    xlim_min = request.distribution_args.xlim_min
+    xlim_max = request.distribution_args.xlim_max
+    ylim_min = request.distribution_args.ylim_min
+    ylim_max = request.distribution_args.ylim_max
+    resolution = request.distribution_args.resolution or 0.1
 
     # Combine coordinates into a single tensor
     train_X = torch.stack((coords_x, coords_y), dim=-1)
@@ -115,7 +115,7 @@ async def run_bayesian_optimization(
         raise ValueError(f"Unknown method name: {method_name}")
 
     # Define the bounds for optimization
-    bounds = torch.tensor([[xlim_start, ylim_start], [xlim_end, ylim_end]])
+    bounds = torch.tensor([[xlim_min, ylim_min], [xlim_max, ylim_max]])
 
     # Optimize the acquisition function
     candidates, _ = optimize_acqf(
@@ -128,12 +128,12 @@ async def run_bayesian_optimization(
     )
 
     # Generate the acquisition data
-    xn = int((xlim_end - xlim_start) / resolution)
-    yn = int((ylim_end - ylim_start) / resolution)
+    xn = int((xlim_max - xlim_min) / resolution)
+    yn = int((ylim_max - ylim_min) / resolution)
 
     xv, yv = torch.meshgrid(
-        torch.linspace(xlim_start, xlim_end, xn),
-        torch.linspace(ylim_start, ylim_end, yn),
+        torch.linspace(xlim_min, xlim_max, xn),
+        torch.linspace(ylim_min, ylim_max, yn),
         indexing="xy",
     )
     xvr = xv.reshape(xn * yn, 1)
@@ -171,7 +171,7 @@ class OptimizationConfig(BaseModel):
     query_budget: int
 
 
-class RegisteredTable(BaseModel):
+class RegisteredValuesTable(BaseModel):
     #         ids: string[],
     #         sequences: string[],
     #         target_column_names: string[],
@@ -213,18 +213,18 @@ class SubmitBayesianOptimization(BaseModel):
     #         show_training_data: boolean,
     #         show_bo_contour: boolean
     #     },
-    #     optimization_params: {
+    #     optimization_args: {
     #         method_name: string,
     #         target_column_name: string,
     #         query_budget: number,
     #     },
-    #     distribution_params: {
-    #         xlim_start: number,
-    #         xlim_end: number,
-    #         ylim_start: number,
-    #         ylim_end: number
+    #     distribution_config: {
+    #         xlim_min: number,
+    #         xlim_max: number,
+    #         ylim_min: number,
+    #         ylim_max: number
     #     },
-    #     registered_table: {
+    #     registered_values_table: {
     #         ids: string[],　-> value_idと対応させる
     #         sequences: string[],
     #         target_column_names: string[],
@@ -245,8 +245,8 @@ class SubmitBayesianOptimization(BaseModel):
     VAE_model: str
     plot_config: PlotConfig
     optimization_config: OptimizationConfig
-    distribution_params: DistributionParams
-    registered_table: RegisteredTable
+    distribution_config: DistributionConfig
+    registered_values_table: RegisteredValuesTable
     query_table: QueryTable
     acquisition_mesh: AcquisitionMesh
 
@@ -293,10 +293,10 @@ async def submit_bayesian_optimization(
             optimization_method_name=request.optimization_config.method_name,
             target_column_name=request.optimization_config.target_column_name,
             query_budget=request.optimization_config.query_budget,
-            xlim_start=request.distribution_params.xlim_start,
-            xlim_end=request.distribution_params.xlim_end,
-            ylim_start=request.distribution_params.ylim_start,
-            ylim_end=request.distribution_params.ylim_end,
+            xlim_min=request.distribution_config.xlim_min,
+            xlim_max=request.distribution_config.xlim_max,
+            ylim_min=request.distribution_config.ylim_min,
+            ylim_max=request.distribution_config.ylim_max,
             last_modified=last_modified,
         )
     )
@@ -311,7 +311,7 @@ async def submit_bayesian_optimization(
     ).scalar()
     registered_values_ids = []
     # regisger target values
-    #     registered_table: {
+    #     registered_values_table: {
     #         ids: string[],
     #         sequences: string[],
     #         target_column_names: string[],
@@ -321,8 +321,8 @@ async def submit_bayesian_optimization(
     # get id for target values
 
     for sequence_id, squence in zip(
-        request.registered_table.ids,
-        request.registered_table.sequences,
+        request.registered_values_table.ids,
+        request.registered_values_table.sequences,
     ):
         registered_values_ids.append(registered_values_id)
         session.add(
@@ -341,7 +341,7 @@ async def submit_bayesian_optimization(
     ).scalar()
     target_column_ids = []
 
-    for column_name in request.registered_table.target_column_names:
+    for column_name in request.registered_values_table.target_column_names:
         target_column_ids.append(target_column_id)
         session.add(
             db.TargetColumns(
@@ -359,7 +359,7 @@ async def submit_bayesian_optimization(
                 db.TargetValues(
                     registered_values_id=registered_values_id,
                     target_column_id=target_column_id,
-                    value=request.registered_table.target_values[rv_i][tc_i],
+                    value=request.registered_values_table.target_values[rv_i][tc_i],
                 )
             )
 
@@ -427,8 +427,8 @@ class ExperimentItem(BaseModel):
     VAE_model: str
     plot_config: PlotConfig
     optimization_config: OptimizationConfig
-    distribution_params: DistributionParamsNoResolution
-    registered_table: RegisteredTable
+    distribution_config: DistributionConfig
+    registered_values_table: RegisteredValuesTable
     query_table: QueryTable
     acquisition_mesh: AcquisitionMesh
 
@@ -505,13 +505,13 @@ async def get_experiment_item(
             target_column_name=experiment.target_column_name,  # type: ignore
             query_budget=experiment.query_budget,  # type: ignore
         ),
-        distribution_params=DistributionParamsNoResolution(
-            xlim_start=experiment.xlim_start,  # type: ignore
-            xlim_end=experiment.xlim_end,  # type: ignore
-            ylim_start=experiment.ylim_start,  # type: ignore
-            ylim_end=experiment.ylim_end,  # type: ignore
+        distribution_config=DistributionConfig(
+            xlim_min=experiment.xlim_min,  # type: ignore
+            xlim_max=experiment.xlim_max,  # type: ignore
+            ylim_min=experiment.ylim_min,  # type: ignore
+            ylim_max=experiment.ylim_max,  # type: ignore
         ),
-        registered_table=RegisteredTable(
+        registered_values_table=RegisteredValuesTable(
             ids=[rv.value_id for rv in registered_values],  # type: ignore
             sequences=[rv.sequence for rv in registered_values],  # type: ignore
             target_column_names=[tc.column_name for tc in target_columns],  # type: ignore

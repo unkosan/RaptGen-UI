@@ -16,10 +16,10 @@ class C:  # as "Constants"
     optimization_method_name = "optimization_method_name"
     target_column_name = "target_column_name"
     query_budget = "query_budget"
-    xlim_start = "xlim_start"
-    xlim_end = "xlim_end"
-    ylim_start = "ylim_start"
-    ylim_end = "ylim_end"
+    xlim_min = "xlim_min"
+    xlim_max = "xlim_max"
+    ylim_min = "ylim_min"
+    ylim_max = "ylim_max"
     last_modified = "last_modified"
 
     ## [DB] RegisteredValues
@@ -156,10 +156,10 @@ mock_bo_db = [
                     C.optimization_method_name: "qEI",
                     C.target_column_name: "target",
                     C.query_budget: 10,
-                    C.xlim_start: 0,
-                    C.xlim_end: 1,
-                    C.ylim_start: 0,
-                    C.ylim_end: 1,
+                    C.xlim_min: 0,
+                    C.xlim_max: 1,
+                    C.ylim_min: 0,
+                    C.ylim_max: 1,
                     C.last_modified: 1609459200,  # 2021-01-01 00:00:00
                 },
                 {
@@ -172,10 +172,10 @@ mock_bo_db = [
                     C.optimization_method_name: "qEI",
                     C.target_column_name: "target",
                     C.query_budget: 10,
-                    C.xlim_start: 0,
-                    C.xlim_end: 1,
-                    C.ylim_start: 0,
-                    C.ylim_end: 1,
+                    C.xlim_min: 0,
+                    C.xlim_max: 1,
+                    C.ylim_min: 0,
+                    C.ylim_max: 1,
                     C.last_modified: 1609459300,  # 2021-01-01 00:15:00
                 },
             ],
@@ -323,10 +323,10 @@ mock_bo_db = [
                     C.optimization_method_name: "qEI",
                     C.target_column_name: "target",
                     C.query_budget: 10,
-                    C.xlim_start: 0,
-                    C.xlim_end: 1,
-                    C.ylim_start: 0,
-                    C.ylim_end: 1,
+                    C.xlim_min: 0,
+                    C.xlim_max: 1,
+                    C.ylim_min: 0,
+                    C.ylim_max: 1,
                     C.last_modified: 1609459200,  # 2021-01-01 00:00:00
                 },
             ],
