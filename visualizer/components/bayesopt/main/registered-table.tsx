@@ -269,9 +269,15 @@ const RunBayesOptButton: React.FC = () => {
 
     if (resDecode.status === "error") return;
 
+    const randomRegion = resDecode.data.map((seq) => {
+      seq = seq.replaceAll("_", "");
+      seq = seq.replaceAll("N", "");
+      return seq;
+    });
+
     let resEncode = await apiClient.encode({
       session_id: sessionId,
-      sequences: resDecode.data,
+      sequences: randomRegion,
     });
 
     if (resEncode.status === "error") return;
