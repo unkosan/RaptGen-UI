@@ -501,7 +501,7 @@ async def get_experiment_item(
             show_bo_contour=experiment.show_bo_contour,  # type: ignore
         ),
         optimization_config=OptimizationConfig(
-            method_name=experiment.optimization_method_name,  # type: ignore
+            method_name=experiment.optimization_method_name.value,  # type: ignore
             target_column_name=experiment.target_column_name,  # type: ignore
             query_budget=experiment.query_budget,  # type: ignore
         ),
