@@ -134,6 +134,14 @@ const InitialDataset: React.FC = () => {
       type: "isDirty/set",
       payload: true,
     });
+
+    dispatch({
+      type: "bayesoptConfig/set",
+      payload: {
+        ...bayesoptConfig,
+        targetColumn: "value",
+      },
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
