@@ -175,11 +175,11 @@ class RegisteredValuesTable(BaseModel):
     #         ids: string[],
     #         sequences: string[],
     #         target_column_names: string[],
-    #         target_values: number[][],
+    #         target_values: (number | null)[][],
     ids: List[str]
     sequences: List[str]
     target_column_names: List[str]
-    target_values: List[List[float]]
+    target_values: List[List[Union[float, None]]]
 
 
 class QueryTable(BaseModel):
@@ -228,7 +228,7 @@ class SubmitBayesianOptimization(BaseModel):
     #         ids: string[],　-> value_idと対応させる
     #         sequences: string[],
     #         target_column_names: string[],
-    #         target_values: number[][],
+    #         target_values: (number | null)[][],
     #     },
     #     query_data: {
     #         sequences: string[],

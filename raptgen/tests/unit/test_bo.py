@@ -618,7 +618,7 @@ def test_submit_bo_result(db_session):
     #         ids: string[],
     #         sequences: string[],
     #         target_column_names: string[],
-    #         target_values: number[][],
+    #         target_values: (number | null)[][],
     #     },
     #     query_data: {
     #         sequences: string[],
