@@ -1,15 +1,25 @@
+import enum
 from sqlalchemy.orm import relationship, declarative_base, sessionmaker, scoped_session
+from sqlalchemy.pool import NullPool
 from sqlalchemy import (
     Column,
     Integer,
     String,
     Float,
-    JSON,
     Boolean,
     ForeignKey,
     LargeBinary,
+    Enum,
     create_engine,
 )
+
+
+class JobType(enum.Enum):
+    RaptGen = "RaptGen"
+    RaptGenFreq = "RaptGen-Freq"
+    RaptGenLogfreq = "RaptGen-Logfreq"
+    RfamGen = "RfamGen"
+
 
 # define schemas for the database
 BaseSchema = declarative_base()
@@ -35,10 +45,6 @@ class ParentJob(BaseSchema):
         overall duration of the parent job, interval is not included
     reiteration : int
         number of reiterations of the child jobs
-    params_training : dict
-        common parameters for training the child jobs
-    params_preprocessing : dict
-        parameters for preprocessing the data
     child_jobs : list
         list of child jobs
     """
@@ -52,8 +58,6 @@ class ParentJob(BaseSchema):
     start = Column(Integer)
     duration = Column(Integer)
     reiteration = Column(Integer)
-    params_preprocessing = Column(JSON)
-    params_training = Column(JSON)
     child_jobs = relationship("ChildJob", backref="job")
     worker_uuid = Column(String)
 
@@ -73,10 +77,12 @@ class ChildJob(BaseSchema):
         identifier of the parent job
     worker_uuid : str
         identifier of the worker, needed for suspending/resuming the child job
-    start : int
-        start time of the child job
-    duration : int
-        duration of the child job, interval is not included
+    datetime_start : int
+        start UNIX time of the child job
+    datetime_laststop : int
+        UNIX time when the child job suspended or finished for the last time
+    duration_suspend : int
+        duration for model to be suspended
     status : str
         status of the child job, e.g. "success", "failure", "progress", etc.
     epochs_total : int
@@ -93,6 +99,8 @@ class ChildJob(BaseSchema):
         list of sequence embeddings for the child job, updated when the child job reaches the optimal NLL
     training_losses: list
         list of training losses for the child job
+    jobtype : str
+        type of job, e.g. "RaptGen", "RaptGen-Freq", etc.
     current_checkpoint: bytes
         the latest checkpoint of the child job, needed for resuming the training
     optimal_checkpoint: bytes
@@ -105,8 +113,9 @@ class ChildJob(BaseSchema):
     uuid = Column(String, unique=True, primary_key=True, nullable=False)
     parent_uuid = Column(String, ForeignKey("parent_jobs.uuid"), nullable=False)
     worker_uuid = Column(String)
-    start = Column(Integer)
-    duration = Column(Integer)
+    datetime_start = Column(Integer)
+    datetime_laststop = Column(Integer)
+    duration_suspend = Column(Integer)
     status = Column(String, nullable=False)
     epochs_total = Column(Integer, nullable=False)
     epochs_current = Column(Integer)
@@ -115,6 +124,7 @@ class ChildJob(BaseSchema):
     error_msg = Column(String)
     sequence_embeddings = relationship("SequenceEmbeddings", backref="child_job")
     training_losses = relationship("TrainingLosses", backref="child_job")
+    jobtype = Column(Enum(JobType), nullable=False)
     current_checkpoint = Column(LargeBinary)
     optimal_checkpoint = Column(LargeBinary)
 
@@ -213,6 +223,173 @@ class SequenceData(BaseSchema):
     is_training_data = Column(Boolean, nullable=False)
 
 
+class PreprocessingParams(BaseSchema):
+    """
+    Inventory of preprocessing parameters. linked to parent jobs.
+
+    Attributes
+    ----------
+
+    parent_uuid : str
+        identifier of the parent job
+    forward : str
+        forward primer
+    reverse : str
+        reverse primer
+    random_region_length : int
+        length of the random region
+    tolerance : int
+        tolerance of the random region length
+    minimum_count : int
+        minimum count of the random region
+    """
+
+    __tablename__ = "preprocessing_params"
+
+    parent_uuid = Column(
+        String, ForeignKey("parent_jobs.uuid"), primary_key=True, nullable=False
+    )
+    forward = Column(String, nullable=False)
+    reverse = Column(String, nullable=False)
+    random_region_length = Column(Integer, nullable=False)
+    tolerance = Column(Integer, nullable=False)
+    minimum_count = Column(Integer, nullable=False)
+
+
+class RaptGenParams(BaseSchema):
+    """
+    Inventory of RaptGen parameters. linked to child jobs.
+
+    Attributes
+    ----------
+
+    child_uuid : str
+        identifier of the child job
+    model_length : int
+        length of the pHMM model
+    maximum_epochs : int
+        maximum number of epochs to train
+    match_forcing_duration : int
+        duration of the match forcing
+    beta_duration : int
+        duration of the beta annealing
+    early_stopping : int
+        early stopping threshold
+    match_cost : float
+        cost of the match forcing
+    seed : int
+        random seed
+    device : str
+        device to use for training
+    """
+
+    __tablename__ = "raptgen_params"
+
+    child_uuid = Column(
+        String, ForeignKey("child_jobs.uuid"), primary_key=True, nullable=False
+    )
+    model_length = Column(Integer, nullable=False)
+    epochs = Column(Integer, nullable=False)
+    match_forcing_duration = Column(Integer, nullable=False)
+    beta_duration = Column(Integer, nullable=False)
+    early_stopping = Column(Integer, nullable=False)
+    match_cost = Column(Float, nullable=False)
+    seed_value = Column(Integer, nullable=False)
+    device = Column(String, nullable=False)
+
+
+class OptimizationMethod(enum.Enum):
+    qEI = "qEI"
+
+
+class Experiments(BaseSchema):
+    __tablename__ = "experiments"
+    uuid = Column(String, unique=True, primary_key=True)
+    name = Column(String)
+    VAE_model = Column(String)
+    minimum_count = Column(Integer)
+    show_training_data = Column(Boolean)
+    show_bo_contour = Column(Boolean)
+    optimization_method_name = Column(Enum(OptimizationMethod), nullable=False)
+    target_column_name = Column(String)
+    query_budget = Column(Integer)
+    xlim_min = Column(Float)
+    xlim_max = Column(Float)
+    ylim_min = Column(Float)
+    ylim_max = Column(Float)
+    last_modified = Column(Integer)
+
+    registered_values = relationship("RegisteredValues", backref="experiments")
+    target_columns = relationship("TargetColumns", backref="experiments")
+    target_values = relationship("TargetValues", backref="experiments")
+    query_data = relationship("QueryData", backref="experiments")
+    acquisition_data = relationship("AcquisitionData", backref="experiments")
+
+
+class RegisteredValues(BaseSchema):
+    __tablename__ = "registered_values"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each registered value
+    experiment_uuid = Column(
+        String, ForeignKey("experiments.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
+    value_id = Column(String)  # Registered value ID
+    sequence = Column(String)  # Sequence information
+    target_values = relationship("TargetValues", backref="registered_values")
+
+
+class TargetColumns(BaseSchema):
+    __tablename__ = "target_columns"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each target column
+    experiment_uuid = Column(
+        String, ForeignKey("experiments.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
+    column_name = Column(String)  # Target column name
+    target_values = relationship("TargetValues", backref="target_columns")
+
+
+class TargetValues(BaseSchema):
+    __tablename__ = "target_values"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each target value
+    experiment_uuid = Column(
+        String, ForeignKey("experiments.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
+    registered_values_id = Column(Integer, ForeignKey("registered_values.id"))
+    target_column_id = Column(Integer, ForeignKey("target_columns.id"))
+    value = Column(Float, nullable=True)
+
+
+class QueryData(BaseSchema):
+    __tablename__ = "query_data"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each query data entry
+    experiment_uuid = Column(
+        String, ForeignKey("experiments.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
+    sequence = Column(String)  # Sequence information
+    coord_x_original = Column(Float)  # Original X coordinate
+    coord_y_original = Column(Float)  # Original Y coordinate
+
+
+class AcquisitionData(BaseSchema):
+    __tablename__ = "acquisition_data"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each acquisition data entry
+    experiment_uuid = Column(
+        String, ForeignKey("experiments.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
+    coord_x = Column(Float)  # X coordinate
+    coord_y = Column(Float)  # Y coordinate
+    value = Column(Float)  # Value corresponding to the coordinates
+
+
 def get_db_session(
     url: str = "postgresql+psycopg2://postgres:postgres@db:5432/raptgen",
 ):
@@ -233,7 +410,7 @@ def get_db_session(
     print(f"Connecting to database: {url}")
 
     # create engine
-    engine = create_engine(url)
+    engine = create_engine(url, poolclass=NullPool)
 
     # create tables
     BaseSchema.metadata.create_all(engine)
@@ -244,5 +421,8 @@ def get_db_session(
         yield session
     finally:
         session.close()
+
+    # dispose engine
+    engine.dispose()
 
     print("Database connection closed.")

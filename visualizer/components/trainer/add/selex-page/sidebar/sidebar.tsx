@@ -2,12 +2,11 @@ import React, { useEffect } from "react";
 import ModelTypeSelect from "./model-type-select";
 import TextForm from "~/components/uploader/sidebar-vae/optional-params/text-form";
 import IntegerForm from "~/components/uploader/sidebar-vae/optional-params/integer-form";
-import FormForward from "./form-forward";
-import FormReverse from "./form-reverse";
 import FormTargetLength from "./form-target-length";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useSelector } from "react-redux";
+import FormAdapters from "./form-adapters";
 
 const SideBar: React.FC = () => {
   const [experimentName, setExperimentName] = React.useState<
@@ -16,10 +15,8 @@ const SideBar: React.FC = () => {
   const [forwardAdapter, setForwardAdapter] = React.useState<string>("");
   const [reverseAdapter, setReverseAdapter] = React.useState<string>("");
   const [targetLength, setTargetLength] = React.useState<number>(NaN);
-  const [tolerance, setTolerance] = React.useState<number | undefined>(
-    undefined
-  );
-  const [minCount, setMinCount] = React.useState<number | undefined>(undefined);
+  const [tolerance, setTolerance] = React.useState<number | undefined>(0);
+  const [minCount, setMinCount] = React.useState<number | undefined>(2);
 
   const [isValidExperimentName, setIsValidExperimentName] =
     React.useState<boolean>(false);
@@ -100,7 +97,6 @@ const SideBar: React.FC = () => {
     <>
       <legend>Model Type</legend>
       <ModelTypeSelect />
-
       <legend>Experiment Name</legend>
       <TextForm
         placeholder="Please enter the name of the experiment."
@@ -110,21 +106,16 @@ const SideBar: React.FC = () => {
         setIsValid={setIsValidExperimentName}
         predicate={(value) => value.length > 0}
       />
-
       <legend>Preprocessing Parameters</legend>
-      <FormForward
-        value={forwardAdapter}
-        isValid={isValidForwardAdapter}
-        setValue={setForwardAdapter}
-        setIsValid={setIsValidForwardAdapter}
-        targetLength={targetLength}
-        targetLengthIsValid={isValidTargetLength}
-      />
-      <FormReverse
-        value={reverseAdapter}
-        isValid={isValidReverseAdapter}
-        setValue={setReverseAdapter}
-        setIsValid={setIsValidReverseAdapter}
+      <FormAdapters
+        valueForward={forwardAdapter}
+        valueReverse={reverseAdapter}
+        isValidForward={isValidForwardAdapter}
+        isValidReverse={isValidReverseAdapter}
+        setValueForward={setForwardAdapter}
+        setValueReverse={setReverseAdapter}
+        setIsValidForward={setIsValidForwardAdapter}
+        setIsValidReverse={setIsValidReverseAdapter}
         targetLength={targetLength}
         targetLengthIsValid={isValidTargetLength}
       />
@@ -134,6 +125,10 @@ const SideBar: React.FC = () => {
         setValue={setTargetLength}
         setIsValid={setIsValidTargetLength}
       />
+      <div className="mb-3 text-muted">
+        This value is used to filter out sequences which lengths are not within
+        the target. Adapters are included in the length calculation.
+      </div>
       <IntegerForm
         label="Filtering Tolerance"
         placeholder="Allows a not-negative integer"
@@ -143,6 +138,10 @@ const SideBar: React.FC = () => {
         setIsValid={setIsValidTolerance}
         predicate={(value) => value >= 0}
       />
+      <div className="mb-3 text-muted">
+        Tolerance means the allowed maximum difference between the target length
+        and that of the sequences.
+      </div>
       <IntegerForm
         label="Minimum Count"
         placeholder="Allows a positive integer"
@@ -152,6 +151,10 @@ const SideBar: React.FC = () => {
         setIsValid={setIsValidMinCount}
         predicate={(value) => value > 0}
       />
+      <div className="mb-3 text-muted">
+        Minimum count is the minimum number of duplicates that are required to
+        pass the filtering.
+      </div>
     </>
   );
 };

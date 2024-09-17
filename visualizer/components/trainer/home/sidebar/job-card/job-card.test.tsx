@@ -10,7 +10,6 @@ describe("JobCard for running entries", () => {
         name={"test"}
         isSelected={false}
         status={"progress"}
-        duration={990}
         series={[
           {
             id: 0,
@@ -25,7 +24,6 @@ describe("JobCard for running entries", () => {
     expect(screen.getByText("test")).toBeInTheDocument();
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
     expect(screen.getByText("492 / 1000"));
-    expect(screen.getByText("Running for 16 minutes 30 seconds"));
     expect(screen.queryAllByTestId("child-job-card")).toHaveLength(0);
   });
 
@@ -35,7 +33,6 @@ describe("JobCard for running entries", () => {
         name={"test"}
         isSelected={false}
         status={"progress"}
-        duration={2000}
         series={[
           {
             id: 0,
@@ -55,13 +52,9 @@ describe("JobCard for running entries", () => {
       />
     );
     expect(screen.getByText("test")).toBeInTheDocument();
-    expect(screen.getByText("Total Duration 33 minutes 20 seconds"));
     expect(screen.queryAllByTestId("child-job-card")).toHaveLength(1);
     expect(screen.queryAllByTestId("child-job-card")[0]).toHaveTextContent(
       "492 / 1000"
-    );
-    expect(screen.queryAllByTestId("child-job-card")[0]).toHaveTextContent(
-      "Running for 16 minutes 40 seconds"
     );
   });
 
@@ -71,7 +64,6 @@ describe("JobCard for running entries", () => {
         name={"test"}
         isSelected={true}
         status={"progress"}
-        duration={2000}
         series={[
           {
             id: 0,
@@ -91,19 +83,12 @@ describe("JobCard for running entries", () => {
       />
     );
     expect(screen.getByText("test")).toBeInTheDocument();
-    expect(screen.getByText("Total Duration 33 minutes 20 seconds"));
     expect(screen.queryAllByTestId("child-job-card")).toHaveLength(2);
     expect(screen.queryAllByTestId("child-job-card")[0]).toHaveTextContent(
       "success"
     );
-    expect(screen.queryAllByTestId("child-job-card")[0]).not.toHaveTextContent(
-      "Running for 16 minutes 40 seconds"
-    );
     expect(screen.queryAllByTestId("child-job-card")[1]).toHaveTextContent(
       "492 / 1000"
-    );
-    expect(screen.queryAllByTestId("child-job-card")[1]).toHaveTextContent(
-      "Running for 16 minutes 40 seconds"
     );
   });
 
@@ -113,7 +98,6 @@ describe("JobCard for running entries", () => {
         name={"test"}
         isSelected={false}
         status={"pending"}
-        duration={1000}
         series={[
           {
             id: 0,
@@ -136,7 +120,6 @@ describe("JobCard for running entries", () => {
         name={"test"}
         isSelected={false}
         status={"pending"}
-        duration={2000}
         series={[
           {
             id: 0,
@@ -157,9 +140,6 @@ describe("JobCard for running entries", () => {
     );
     expect(screen.getByText("test")).toBeInTheDocument();
     expect(screen.getByText("pending")).toBeInTheDocument();
-    expect(
-      screen.queryByText("Total Duration 33 minutes 20 seconds")
-    ).not.toBeInTheDocument();
     expect(screen.queryAllByTestId("child-job-card")).toHaveLength(0);
   });
 
@@ -169,7 +149,6 @@ describe("JobCard for running entries", () => {
         name={"test"}
         isSelected={true}
         status={"pending"}
-        duration={2000}
         series={[
           {
             id: 0,
@@ -190,9 +169,6 @@ describe("JobCard for running entries", () => {
     );
     expect(screen.getByText("test")).toBeInTheDocument();
     expect(screen.queryAllByText("pending")).toHaveLength(3);
-    expect(
-      screen.queryByText("Total Duration 33 minutes 20 seconds")
-    ).not.toBeInTheDocument();
     expect(screen.queryAllByTestId("child-job-card")).toHaveLength(2);
     expect(screen.queryAllByTestId("child-job-card")[0]).toHaveTextContent(
       "pending"
@@ -208,7 +184,6 @@ describe("JobCard for running entries", () => {
         name={"test"}
         isSelected={false}
         status={"suspend"}
-        duration={1000}
         series={[
           {
             id: 0,
@@ -231,7 +206,6 @@ describe("JobCard for running entries", () => {
         name={"test"}
         isSelected={false}
         status={"suspend"}
-        duration={2000}
         series={[
           {
             id: 0,
@@ -264,7 +238,6 @@ describe("JobCard for running entries", () => {
         name={"test"}
         isSelected={true}
         status={"suspend"}
-        duration={2000}
         series={[
           {
             id: 0,
@@ -302,7 +275,6 @@ describe("JobCard for finished entries", () => {
         name={"test"}
         isSelected={false}
         status={"success"}
-        duration={1000}
         series={[
           {
             id: 0,
@@ -324,7 +296,6 @@ describe("JobCard for finished entries", () => {
         name={"test"}
         isSelected={false}
         status={"success"}
-        duration={2000}
         series={[
           {
             id: 0,
@@ -354,7 +325,6 @@ describe("JobCard for finished entries", () => {
         name={"test"}
         isSelected={true}
         status={"success"}
-        duration={2000}
         series={[
           {
             id: 0,

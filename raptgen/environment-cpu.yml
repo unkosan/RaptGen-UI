@@ -3,6 +3,7 @@ name: raptgen
 channels:
   - bioconda
   - conda-forge
+  - pytorch
 
 dependencies:
   - gcc=12.1.0
@@ -29,11 +30,13 @@ dependencies:
       - python-multipart
       - pytest-celery
       - pytest-postgresql
+  - botorch=0.10.0
   - postgresql
   - psycopg2
   - pytest
   - pre-commit
   - sqlalchemy
+  - gpytorch
 
 variables:
   PYTHONPATH: /app

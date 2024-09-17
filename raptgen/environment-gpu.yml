@@ -33,11 +33,13 @@ dependencies:
       - python-multipart
       - pytest-celery
       - pytest-postgresql
+  - botorch=0.10.0
   - postgresql
   - psycopg2
   - pytest
   - pre-commit
   - sqlalchemy
+  - gpytorch
 
 variables:
   PYTHONPATH: /app

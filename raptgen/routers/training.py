@@ -25,6 +25,8 @@ from core.db import (
     SequenceEmbeddings,
     TrainingLosses,
     SequenceData,
+    PreprocessingParams,
+    RaptGenParams,
     get_db_session,
 )
 from core.jobs import initialize_job_raptgen, run_job_raptgen, ChildJobTask
@@ -117,10 +119,22 @@ async def get_parent_job(
         summary["indices"].append(child_job.id)
         summary["statuses"].append(child_job.status)
         summary["epochs_finished"].append(child_job.epochs_current)
-        if np.isnan(child_job.minimum_NLL):
+
+        if child_job.minimum_NLL is not None and not np.isnan(child_job.minimum_NLL):
             summary["minimum_NLLs"].append(child_job.minimum_NLL)
         else:
             summary["minimum_NLLs"].append(None)
+
+    params_preprocessing = (
+        session.query(PreprocessingParams)
+        .filter(PreprocessingParams.parent_uuid == parent_uuid)
+        .first()
+    )
+    params_training = (
+        session.query(RaptGenParams)
+        .filter(RaptGenParams.child_uuid == child_job.uuid)
+        .first()
+    )  # fix this: return the last child job's training params for now
 
     response = {
         "uuid": parent_job.uuid,
@@ -130,8 +144,8 @@ async def get_parent_job(
         "start": parent_job.start,
         "duration": parent_job.duration,
         "reiteration": parent_job.reiteration,
-        "params_training": parent_job.params_training,
-        "params_preprocessing": parent_job.params_preprocessing,
+        "params_training": params_training,
+        "params_preprocessing": params_preprocessing,
         "summary": summary,
     }
     return response
@@ -156,16 +170,21 @@ async def get_child_job(
     Returns
     -------
     dict
-        A dictionary containing detailed information about the parent job. This includes:
-        - uuid: The UUID of the parent job.
-        - name: The name of the parent job.
-        - type: The type of the parent job.
-        - status: The status of the parent job.
-        - start: The start time of the parent job.
-        - duration: The duration of the parent job.
-        - reiteration: The reiteration count of the parent job.
-        - params_training: The training parameters of the parent job.
-        - summary: A summary of all child jobs associated with the parent job.
+        # A dictionary containing detailed information about the parent job. This includes:
+        - uuid: The UUID of the child job
+        - id: The position of this chlid job on the parent job
+        - status: The status of the child job.
+        - datetime_start: The start time of the child job
+        - datetime_laststop: The UNIX time when the job suspended or finished for the last time
+        - duration_suspend: The duration of suspension
+
+        - latent?: the latent values of selex data
+        - losses?: the transit of training losses
+
+        - is_added_viewer_dataset: is this data registered to viewer dataset?
+        - error_msg?: exception message when failed
+        - epochs_total: maximum training epoch
+        - epochs_current?: current training epoch
 
     Raises
     ------
@@ -192,8 +211,9 @@ async def get_child_job(
         "uuid": child_job.uuid,
         "id": child_job.id,
         "status": child_job.status,
-        "start": child_job.start,
-        "duration": child_job.duration,
+        "datetime_start": child_job.datetime_start,
+        "datetime_laststop": child_job.datetime_laststop,
+        "duration_suspend": child_job.duration_suspend,
         "is_added_viewer_dataset": child_job.is_added_viewer_dataset,
         "epochs_total": child_job.epochs_total,
     }
@@ -345,8 +365,9 @@ async def search_jobs(
         for child_job in job.child_jobs:
             series_item = {
                 "item_id": child_job.id,
-                "item_start": child_job.start,
-                "item_duration": child_job.duration,
+                "item_datetime_start": child_job.datetime_start,
+                "item_duration_suspend": child_job.duration_suspend,
+                "item_datetime_laststop": child_job.datetime_laststop,
                 "item_status": child_job.status,
                 "item_epochs_total": child_job.epochs_total,
                 "item_epochs_current": child_job.epochs_current,
@@ -390,12 +411,12 @@ async def run_parent_job(
                 start=int(time.time()),
                 duration=0,
                 reiteration=request_param.reiteration,
-                params_training=request_param.params_training.dict(),
-                params_preprocessing=request_param.params_preprocessing.dict(),
                 worker_uuid=parent_id,
             )
         )
         num_entries = len(request_param.random_regions)
+        session.commit()
+
         for i, seq in enumerate(request_param.random_regions):
             session.add(
                 SequenceData(
@@ -406,6 +427,12 @@ async def run_parent_job(
                     duplicate=1,
                 )
             )
+        session.add(
+            PreprocessingParams(
+                parent_uuid=parent_id,
+                **request_param.params_preprocessing.dict(),
+            )
+        )
         session.commit()
 
         # database_url = session.bind.url.__to_string__(hide_password=False)  # type: ignore
@@ -426,7 +453,6 @@ async def run_parent_job(
         for uuid in uuids:
             run_job_raptgen.delay(
                 child_uuid=uuid,
-                training_params=request_param.params_training.dict(),
                 is_resume=False,
                 database_url=database_url,
             )
@@ -647,7 +673,6 @@ async def resume_parent_job(
         if child_job.status == "suspend":  # type: ignore
             run_job_raptgen.delay(
                 child_uuid=child_job.uuid,
-                training_params=parent_job.params_training,
                 is_resume=True,
                 database_url=session.get_bind().engine.url.render_as_string(
                     hide_password=False
@@ -701,10 +726,16 @@ async def delete_parent_job(
         session.query(TrainingLosses).filter(
             TrainingLosses.child_uuid == child_job.uuid
         ).delete()
+        session.query(RaptGenParams).filter(
+            RaptGenParams.child_uuid == child_job.uuid
+        ).delete()
 
     session.query(SequenceData).filter(SequenceData.parent_uuid == parent_uuid).delete()
     child_jobs.delete()
 
+    session.query(PreprocessingParams).filter(
+        PreprocessingParams.parent_uuid == parent_uuid
+    ).delete()
     session.delete(parent_job)
     session.commit()
 

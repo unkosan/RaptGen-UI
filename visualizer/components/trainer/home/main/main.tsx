@@ -22,7 +22,7 @@ import {
   StopButton,
 } from "./action-buttons";
 import _ from "lodash";
-import { useDispatch } from "react-redux";
+import { useRouter } from "next/router";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type Item = z.infer<typeof responseGetItem>;
@@ -31,7 +31,7 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
   item,
   childId,
 }) => {
-  const dispatch = useDispatch();
+  const router = useRouter();
 
   const parentHead = (
     <>
@@ -44,12 +44,8 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
             e.currentTarget.style.color = "black";
           }}
           onClick={() => {
-            dispatch({
-              type: "pageConfig/set",
-              payload: {
-                parentId: item.uuid,
-                childId: null,
-              },
+            router.push(`?experiment=${item.uuid}`, undefined, {
+              scroll: false,
             });
           }}
           style={{ cursor: "pointer", transition: "color 0.2s ease-in-out" }}
@@ -59,12 +55,6 @@ const ParentPane: React.FC<{ item: Item; childId: number | null }> = ({
       </h2>
       <p>
         <div>Start time: {new Date(item.start * 1000).toLocaleString()}</div>
-        <div>
-          Total duration:{" "}
-          {formatDuration(
-            intervalToDuration({ start: 0, end: item.duration * 1000 })
-          )}
-        </div>
         <div>The number of models to train: {item.reiteration}</div>
       </p>
       <p className="d-flex align-items-center">
@@ -156,6 +146,22 @@ const ChildPane: React.FC<{
     title = `Model No. ${childItem.id}`;
   }
 
+  const net_duration =
+    childItem.status === "progress"
+      ? Date.now() -
+        (childItem.datetime_start - childItem.duration_suspend) * 1000
+      : childItem.status === "pending"
+      ? 0
+      : (childItem.datetime_laststop -
+          childItem.datetime_start -
+          childItem.duration_suspend) *
+        1000;
+  const suspend_duration =
+    childItem.status === "suspend"
+      ? Date.now() +
+        (childItem.duration_suspend - childItem.datetime_laststop) * 1000
+      : childItem.duration_suspend * 1000;
+
   const head = (
     <>
       <h3>{title}</h3>
@@ -166,10 +172,21 @@ const ChildPane: React.FC<{
             <br />
           </>
         ) : null}
-        Duration:{" "}
-        {formatDuration(
-          intervalToDuration({ start: 0, end: childItem.duration * 1000 })
-        )}
+        <>Duration: </>
+        {formatDuration(intervalToDuration({ start: 0, end: net_duration }))}
+        {suspend_duration ? (
+          <>
+            {" "}
+            (Suspended for{" "}
+            {formatDuration(
+              intervalToDuration({
+                start: 0,
+                end: suspend_duration,
+              })
+            )}
+            )
+          </>
+        ) : null}
       </p>
     </>
   );
@@ -251,8 +268,9 @@ const ChildPane: React.FC<{
 
 const Main: React.FC = () => {
   // retrieved from page config in redux. not always available
-  const parentId = useSelector((state: RootState) => state.pageConfig.parentId);
-  const childId = useSelector((state: RootState) => state.pageConfig.childId);
+  const router = useRouter();
+  const parentId = router.query.experiment as string | undefined;
+  const childId = router.query.job as string | undefined;
 
   // items shown on the page
   const [item, setItem] = React.useState<Item | null>(null);
@@ -278,8 +296,10 @@ const Main: React.FC = () => {
 
   // Update information of the child job
   useEffect(() => {
+    if (parentId === undefined || item === null) return;
+
     // when a parent is specified but the child is not
-    if (item !== null && childId === null) {
+    if (childId === undefined) {
       (async () => {
         const summary = item.summary;
         const status = item.status;
@@ -363,12 +383,13 @@ const Main: React.FC = () => {
             setChildItem(null);
         }
       })();
-    } else if (item !== null && childId !== null) {
+      // when a parent and a child is specified
+    } else {
       apiClient
         .getChildItem({
           params: {
             parent_uuid: parentId,
-            child_id: childId,
+            child_id: parseInt(childId),
           },
         })
         .then((childItem) => {
@@ -387,7 +408,10 @@ const Main: React.FC = () => {
 
   return (
     <div>
-      <ParentPane item={item} childId={childId} />
+      <ParentPane
+        item={item}
+        childId={typeof childId === "string" ? parseInt(childId) : null}
+      />
       <ChildPane
         childItem={childItem}
         parentItem={item}
