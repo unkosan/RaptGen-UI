@@ -212,7 +212,8 @@ const InitialDataset: React.FC = () => {
               <Tooltip>
                 <div style={{ textAlign: "left" }}>
                   Upload csv file with headers. The header must contain
-                  <code>'random_regions'</code> and <code>'seq_id'</code>
+                  <code>&apos;random_regions&apos;</code> and{" "}
+                  <code>&apos;seq_id&apos;</code>
                   field.
                 </div>
               </Tooltip>
@@ -235,8 +236,8 @@ const InitialDataset: React.FC = () => {
               <Tooltip>
                 <div style={{ textAlign: "left" }}>
                   Decode sequences from GMM centers and reembed them for initial
-                  dataset. If a decoded sequence has <code>'N'</code> token, it
-                  will be removed and then reembedded.
+                  dataset. If a decoded sequence has <code>&apos;N&apos;</code>{" "}
+                  token, it will be removed and then reembedded.
                 </div>
               </Tooltip>
             }

@@ -293,7 +293,7 @@ const RunBayesOptButton: React.FC = () => {
       type: "queriedValues/set",
       payload: {
         wholeSelected: queryData.wholeSelected,
-        randomRegion: resDecode.data,
+        randomRegion: randomRegion,
         coordX: reembeddedCoordX,
         coordY: reembeddedCoordY,
         coordOriginalX: resBayesopt.query_data.coords_x,
