@@ -175,11 +175,11 @@ class RegisteredValuesTable(BaseModel):
     #         ids: string[],
     #         sequences: string[],
     #         target_column_names: string[],
-    #         target_values: number[][],
+    #         target_values: (number | null)[][],
     ids: List[str]
     sequences: List[str]
     target_column_names: List[str]
-    target_values: List[List[float]]
+    target_values: List[List[Union[float, None]]]
 
 
 class QueryTable(BaseModel):
@@ -228,7 +228,7 @@ class SubmitBayesianOptimization(BaseModel):
     #         ids: string[],　-> value_idと対応させる
     #         sequences: string[],
     #         target_column_names: string[],
-    #         target_values: number[][],
+    #         target_values: (number | null)[][],
     #     },
     #     query_data: {
     #         sequences: string[],
@@ -357,6 +357,7 @@ async def submit_bayesian_optimization(
         for rv_i, registered_values_id in enumerate(registered_values_ids):
             session.add(
                 db.TargetValues(
+                    experiment_uuid=optimization_id,
                     registered_values_id=registered_values_id,
                     target_column_id=target_column_id,
                     value=request.registered_values_table.target_values[rv_i][tc_i],
@@ -501,7 +502,7 @@ async def get_experiment_item(
             show_bo_contour=experiment.show_bo_contour,  # type: ignore
         ),
         optimization_config=OptimizationConfig(
-            method_name=experiment.optimization_method_name,  # type: ignore
+            method_name=experiment.optimization_method_name.value,  # type: ignore
             target_column_name=experiment.target_column_name,  # type: ignore
             query_budget=experiment.query_budget,  # type: ignore
         ),

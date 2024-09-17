@@ -269,9 +269,15 @@ const RunBayesOptButton: React.FC = () => {
 
     if (resDecode.status === "error") return;
 
+    const randomRegion = resDecode.data.map((seq) => {
+      seq = seq.replaceAll("_", "");
+      seq = seq.replaceAll("N", "");
+      return seq;
+    });
+
     let resEncode = await apiClient.encode({
       session_id: sessionId,
-      sequences: resDecode.data,
+      sequences: randomRegion,
     });
 
     if (resEncode.status === "error") return;
@@ -287,7 +293,7 @@ const RunBayesOptButton: React.FC = () => {
       type: "queriedValues/set",
       payload: {
         wholeSelected: queryData.wholeSelected,
-        randomRegion: resDecode.data,
+        randomRegion: randomRegion,
         coordX: reembeddedCoordX,
         coordY: reembeddedCoordY,
         coordOriginalX: resBayesopt.query_data.coords_x,

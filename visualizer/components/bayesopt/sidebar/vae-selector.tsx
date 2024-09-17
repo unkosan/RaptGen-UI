@@ -63,7 +63,7 @@ const VaeSelector: React.FC = () => {
 
       const resStart = await apiClient.startSession({
         queries: {
-          VAE_name: sessionConfig.vaeName,
+          VAE_name: graphConfig.vaeName,
         },
       });
 
@@ -73,7 +73,7 @@ const VaeSelector: React.FC = () => {
           type: "sessionConfig/set",
           payload: {
             sessionId,
-            vaeName: sessionConfig.vaeName,
+            vaeName: graphConfig.vaeName,
           },
         });
       }

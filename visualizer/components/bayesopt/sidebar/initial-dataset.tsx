@@ -61,7 +61,7 @@ const InitialDataset: React.FC = () => {
     (state: RootState) => state.bayesoptConfig
   );
   const selectedVAE = useSelector(
-    (statet: RootState) => statet.sessionConfig.vaeName
+    (state: RootState) => state.sessionConfig.vaeName
   );
   const [gmmNames, setGmmNames] = useState<string[]>([]);
   const [selectedGMM, setSelectedGMM] = useState<string>("");
@@ -102,7 +102,12 @@ const InitialDataset: React.FC = () => {
     });
     if (resDecode.status === "error") return;
 
-    const randomRegion = resDecode.data;
+    const randomRegion = resDecode.data.map((seq) => {
+      seq = seq.replaceAll("_", "");
+      seq = seq.replaceAll("N", "");
+      return seq;
+    });
+    console.log(randomRegion);
     const resEncode = await apiClient.encode({
       session_id: sessionId,
       sequences: randomRegion,
@@ -128,6 +133,14 @@ const InitialDataset: React.FC = () => {
     dispatch({
       type: "isDirty/set",
       payload: true,
+    });
+
+    dispatch({
+      type: "bayesoptConfig/set",
+      payload: {
+        ...bayesoptConfig,
+        targetColumn: "value",
+      },
     });
   };
 
@@ -199,10 +212,8 @@ const InitialDataset: React.FC = () => {
               <Tooltip>
                 <div style={{ textAlign: "left" }}>
                   Upload csv file with headers. The header must contain
-                  <span className="font-monospace">
-                    {" "}
-                    random_regions{" "}
-                  </span> and <span className="font-monospace"> seq_id </span>
+                  <code>&apos;random_regions&apos;</code> and{" "}
+                  <code>&apos;seq_id&apos;</code>
                   field.
                 </div>
               </Tooltip>
@@ -218,7 +229,26 @@ const InitialDataset: React.FC = () => {
         <Form.Control type="file" onChange={handleFileChange} />
       </Form.Group>
       <Form.Group className="mb-3">
-        <Form.Label>or get from registered GMM centers</Form.Label>
+        <Form.Label>
+          or get from registered GMM centers
+          <OverlayTrigger
+            overlay={
+              <Tooltip>
+                <div style={{ textAlign: "left" }}>
+                  Decode sequences from GMM centers and reembed them for initial
+                  dataset. If a decoded sequence has <code>&apos;N&apos;</code>{" "}
+                  token, it will be removed and then reembedded.
+                </div>
+              </Tooltip>
+            }
+          >
+            <span className="ms-1">
+              <Badge pill bg="secondary">
+                ?
+              </Badge>
+            </span>
+          </OverlayTrigger>
+        </Form.Label>
         <InputGroup>
           <Form.Control
             as="select"

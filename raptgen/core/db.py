@@ -361,7 +361,7 @@ class TargetValues(BaseSchema):
     )
     registered_values_id = Column(Integer, ForeignKey("registered_values.id"))
     target_column_id = Column(Integer, ForeignKey("target_columns.id"))
-    value = Column(Float)
+    value = Column(Float, nullable=True)
 
 
 class QueryData(BaseSchema):

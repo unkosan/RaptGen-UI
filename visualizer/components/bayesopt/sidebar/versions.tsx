@@ -48,7 +48,7 @@ const Versions: React.FC = () => {
   };
   useEffect(() => {
     updateList();
-  }, []);
+  }, [router.query.uuid]);
 
   const getStates = () => {
     // save experiment
