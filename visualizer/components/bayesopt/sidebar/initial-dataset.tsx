@@ -61,7 +61,7 @@ const InitialDataset: React.FC = () => {
     (state: RootState) => state.bayesoptConfig
   );
   const selectedVAE = useSelector(
-    (statet: RootState) => statet.sessionConfig.vaeName
+    (state: RootState) => state.sessionConfig.vaeName
   );
   const [gmmNames, setGmmNames] = useState<string[]>([]);
   const [selectedGMM, setSelectedGMM] = useState<string>("");
