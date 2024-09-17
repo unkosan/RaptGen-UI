@@ -22,9 +22,9 @@ const Home: React.FC = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <Navigator currentPage="uploader" />
+        <Navigator currentPage="vae-trainer" />
         <Container>
-          <h1 style={{ marginTop: "1rem" }}>Trainer</h1>
+          <h1 style={{ marginTop: "1rem" }}>VAE Trainer</h1>
           <hr />
           <div
             style={{
