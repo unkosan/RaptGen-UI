@@ -357,6 +357,7 @@ async def submit_bayesian_optimization(
         for rv_i, registered_values_id in enumerate(registered_values_ids):
             session.add(
                 db.TargetValues(
+                    experiment_uuid=optimization_id,
                     registered_values_id=registered_values_id,
                     target_column_id=target_column_id,
                     value=request.registered_values_table.target_values[rv_i][tc_i],
