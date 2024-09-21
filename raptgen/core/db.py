@@ -12,6 +12,7 @@ from sqlalchemy import (
     Enum,
     create_engine,
 )
+from sqlalchemy.dialects import postgresql
 
 
 class JobType(enum.Enum):
@@ -388,6 +389,52 @@ class AcquisitionData(BaseSchema):
     coord_x = Column(Float)  # X coordinate
     coord_y = Column(Float)  # Y coordinate
     value = Column(Float)  # Value corresponding to the coordinates
+
+
+class Trial(BaseSchema):
+    __tablename__ = "trials"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each trial
+    gmm_job_id = Column(
+        String, ForeignKey("gmm_jobs.uuid", ondelete="CASCADE", onupdate="CASCADE")
+    )
+    trials_total = Column(Integer)  # Number of trials
+    current_trial_id = Column(Integer)  # Current trial ID
+    current_trial_id_per_component = Column(Integer)  # Current trial ID per component
+    n_components = Column(Integer)  # Number of components
+    means = Column(postgresql.ARRAY(Float, dimensions=2))  # Means of the GMM
+    covariances = Column(postgresql.ARRAY(Float, dimensions=3))  # Covariance of the GMM
+    BIC = Column(Float)  # Bayesian Information Criterion (BIC)
+    is_optimal = Column(Boolean)  # Flag to indicate if the trial is optimal
+
+
+class GMMJob(BaseSchema):
+    __tablename__ = "gmm_jobs"
+    id = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )  # ID for each GMM job
+    uuid = Column(String, unique=True)  # UUID for each GMM job
+    target_VAE_model = Column(String)  # Target VAE model
+    minimum_n_components = Column(Integer)  # Minimum number of components
+    maximum_n_components = Column(Integer)  # Maximum number of components
+    step_size = Column(Integer)  # Step size
+    n_trials_per_component = Column(Integer)  # Number of trials per component
+    status = Column(String)  # Status of the GMM job
+    name = Column(String)  # Name of the GMM job
+    start = Column(Integer)  # Start time of the GMM job
+    duration = Column(Integer)  # Duration of the GMM job
+    trials_total = Column(Integer)  # Total number of trials
+    trials_current = Column(Integer)  # Current number of trials
+
+    optimal_trial_id = Column(Integer)  # Optimal trial ID
+    current_trial_id = Column(Integer)  # Current trial ID
+
+    # Relationships to Trial
+    trials = relationship(
+        "Trial",
+        backref="gmm_jobs",
+    )
 
 
 def get_db_session(
