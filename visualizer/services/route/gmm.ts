@@ -126,8 +126,8 @@ export const responseGetGMMJobsItems = z.union([
       duplicates: z.array(z.number()),
     }),
     bic: z.object({
-      hue: z.number(),
-      bic: z.number(),
+      hue: z.array(z.number()),
+      bic: z.array(z.number()),
     }),
   }),
 ]);

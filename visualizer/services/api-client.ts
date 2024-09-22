@@ -5,6 +5,7 @@ import { apiTool } from "./route/tool";
 import { apiTrain } from "./route/train";
 import { apiUpload } from "./route/upload";
 import { apiBayesopt } from "./route/bayesopt";
+import { apiGMM } from "./route/gmm";
 
 export const apiClient = new Zodios("http://localhost:3000/api", [
   ...apiData,
@@ -13,4 +14,5 @@ export const apiClient = new Zodios("http://localhost:3000/api", [
   ...apiTrain,
   ...apiUpload,
   ...apiBayesopt,
+  ...apiGMM,
 ]);

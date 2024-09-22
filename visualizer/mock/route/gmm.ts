@@ -12,11 +12,11 @@ const errorMsg = {
 };
 
 const uuids = {
-  test1: "00000000-0000-0000-0000-000000000001",
-  test2: "00000000-0000-0000-0000-000000000002",
-  test3: "00000000-0000-0000-0000-000000000003",
-  test4: "00000000-0000-0000-0000-000000000004",
-  test5: "00000000-0000-0000-0000-000000000005",
+  test1: "ef9aa8c6-7892-11ef-a40f-325096b39f47",
+  test2: "46adadc0-7893-11ef-ac99-325096b39f47",
+  test3: "5202262e-7893-11ef-9ee6-325096b39f47",
+  test4: "58581c5e-7893-11ef-9efc-325096b39f47",
+  test5: "60a20334-7893-11ef-afba-325096b39f47",
 };
 
 const latent = {
@@ -143,7 +143,7 @@ export const gmmHandlers = [
           start: Math.floor(Date.now() / 1000) - 100,
           duration: 100,
           trials_total: 15,
-          trials_current: 5,
+          trials_current: Math.floor(Math.random() * 15),
         },
         {
           uuid: uuids.test3,
@@ -152,7 +152,7 @@ export const gmmHandlers = [
           start: Math.floor(Date.now() / 1000) - 100,
           duration: 100,
           trials_total: 15,
-          trials_current: -1,
+          trials_current: Math.floor(Math.random() * 15),
         },
         {
           uuid: uuids.test4,
@@ -220,8 +220,8 @@ export const gmmHandlers = [
             target: "test2",
             params: params,
             current_states: {
-              n_components: 3,
-              trial: 2,
+              n_components: [1, 3, 5][Math.floor(Math.random() * 3)],
+              trial: Math.floor(Math.random() * 5),
             },
             gmm: gmm,
             latent: latent,
@@ -240,8 +240,8 @@ export const gmmHandlers = [
             target: "test3",
             params: params,
             current_states: {
-              n_components: 3,
-              trial: 2,
+              n_components: [1, 3, 5][Math.floor(Math.random() * 3)],
+              trial: Math.floor(Math.random() * 5),
             },
             gmm: gmm,
             latent: latent,
@@ -259,7 +259,7 @@ export const gmmHandlers = [
             duration: 100,
             target: "test4",
             params: params,
-            error_msg: errorMsg,
+            error_msg: "error message",
           })
         );
       case uuids.test5:
