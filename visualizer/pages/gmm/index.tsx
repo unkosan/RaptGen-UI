@@ -6,6 +6,8 @@ import Navigator from "~/components/common/navigator";
 import { Provider } from "react-redux";
 import { store } from "~/components/gmm/home/redux/store";
 import "@inovua/reactdatagrid-community/index.css";
+import SideBar from "~/components/gmm/home/sidebar/sidebar";
+import Main from "~/components/gmm/home/main/main";
 
 const Home: React.FC = () => {
   return (
@@ -21,6 +23,14 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>GMM Trainer</h1>
           <hr />
+          <Row>
+            <Col md={4}>
+              <SideBar />
+            </Col>
+            <Col>
+              <Main />
+            </Col>
+          </Row>
         </Container>
       </main>
     </>
