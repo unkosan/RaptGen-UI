@@ -134,7 +134,7 @@ export const responseGetGMMJobsItems = z.union([
 
 // API PATCH /gmm/jobs/items/{uuid}
 export const requestPatchGMMJobsItems = z.object({
-  target: z.enum(["target"]),
+  target: z.enum(["name"]),
   value: z.string().nonempty(),
 });
 export const responsePatchGMMJobsItems = z.null();
