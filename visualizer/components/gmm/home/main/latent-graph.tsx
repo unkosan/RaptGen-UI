@@ -57,7 +57,7 @@ type Props = {
   };
 };
 
-const LatentGraph: React.FC<Props> = ({ title, vaeData, gmmData }) => {
+const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
   const vaeDataPlot: Partial<PlotData> = useMemo(() => {
     const { coordsX, coordsY, randomRegions, duplicates, minCount } = vaeData;
     const mask = duplicates.map((value) => value >= minCount);
@@ -66,11 +66,13 @@ const LatentGraph: React.FC<Props> = ({ title, vaeData, gmmData }) => {
       y: coordsY.filter((_, index) => mask[index]),
       type: "scattergl",
       mode: "markers",
+      name: "SELEX",
       marker: {
         size: duplicates.map((d) => Math.max(2, Math.sqrt(d))),
-        color: "black",
+        color: "silver",
+        opacity: 0.5,
         line: {
-          color: "black",
+          color: "silver",
         },
       },
       customdata: randomRegions.filter((_, index) => mask[index]),
@@ -133,7 +135,7 @@ const LatentGraph: React.FC<Props> = ({ title, vaeData, gmmData }) => {
           `<b>Coval:</b> ${covalStr}<br>`, // +
         // `<b>Sequence:</b> ${gmmData.decodedSequences[i]}<br>`,
       };
-      gmmDataPlot.push(plotData, plotLabel);
+      gmmDataPlot.push(...[plotData, plotLabel]);
     }
 
     return gmmDataPlot;
@@ -143,7 +145,7 @@ const LatentGraph: React.FC<Props> = ({ title, vaeData, gmmData }) => {
     <Plot
       data={[vaeDataPlot, ...gmmDataPlot]}
       useResizeHandler={true}
-      layout={returnLayout(title)}
+      layout={returnLayout("")}
       config={{ responsive: true }}
       style={{ width: "100%" }}
     />
