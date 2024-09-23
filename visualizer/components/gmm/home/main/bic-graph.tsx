@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { Layout, PlotData } from "plotly.js";
+import { Layout, ViolinData } from "plotly.js";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 type BicProps = {
@@ -9,7 +9,8 @@ type BicProps = {
 
 const BicGraph: React.FC<BicProps> = (props) => {
   const hues = new Set(props.n_components);
-  const bicData: Partial<PlotData> = {
+
+  const bicData: Partial<ViolinData> = {
     type: "violin",
     x: props.values,
     y: props.n_components,
@@ -17,10 +18,6 @@ const BicGraph: React.FC<BicProps> = (props) => {
       color: "black",
     },
     opacity: 0.5,
-    colorscale: [
-      [0, "rgb(255,255,255)"],
-      [1, "rgb(255,0,0)"],
-    ],
     side: "positive",
     orientation: "h",
   };
@@ -37,7 +34,6 @@ const BicGraph: React.FC<BicProps> = (props) => {
         Math.max(...props.n_components) + 1,
       ],
     },
-    violinmode: "overlay",
     height: hues.size * 100,
     margin: {
       l: 100,
