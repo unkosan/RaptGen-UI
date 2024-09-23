@@ -26,7 +26,6 @@ const LatentGraph: React.FC = () => {
   );
 
   useEffect(() => {
-    console.log(params);
     if (!params?.vaeModelName) {
       return;
     }
