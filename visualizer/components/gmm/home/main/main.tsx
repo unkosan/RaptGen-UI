@@ -3,7 +3,7 @@ import { formatDuration, intervalToDuration } from "date-fns";
 import { range } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Badge, Button, Form, InputGroup, Modal } from "react-bootstrap";
+import { Alert, Badge, Button, Form, InputGroup, Modal } from "react-bootstrap";
 import { z } from "zod";
 import { apiClient } from "~/services/api-client";
 import { responseGetGMMJobsItems } from "~/services/route/gmm";
@@ -308,6 +308,12 @@ const Main: React.FC = () => {
       )}
       <legend>Parameters</legend>
       <ParamsTable params={jobItem.params} />
+      {jobItem.status === "failure" && (
+        <Alert variant="danger">
+          <Alert.Heading>Runtime Error</Alert.Heading>
+          <div style={{ fontFamily: "monospace" }}>{jobItem.error_msg}</div>
+        </Alert>
+      )}
     </div>
   );
 };
