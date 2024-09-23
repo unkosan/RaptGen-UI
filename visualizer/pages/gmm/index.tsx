@@ -3,8 +3,6 @@ import { NextPage } from "next";
 import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
-import { Provider } from "react-redux";
-import { store } from "~/components/gmm/home/redux/store";
 import "@inovua/reactdatagrid-community/index.css";
 import SideBar from "~/components/gmm/home/sidebar/sidebar";
 import Main from "~/components/gmm/home/main/main";
@@ -38,11 +36,7 @@ const Home: React.FC = () => {
 };
 
 const PageRoot: NextPage = () => {
-  return (
-    <Provider store={store}>
-      <Home />
-    </Provider>
-  );
+  return <Home />;
 };
 
 export default PageRoot;
