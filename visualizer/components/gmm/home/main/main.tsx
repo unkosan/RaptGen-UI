@@ -3,7 +3,7 @@ import { formatDuration, intervalToDuration } from "date-fns";
 import { range } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Badge, Button, Form, InputGroup } from "react-bootstrap";
+import { Badge, Button, Form, InputGroup, Modal } from "react-bootstrap";
 import { z } from "zod";
 import { apiClient } from "~/services/api-client";
 import { responseGetGMMJobsItems } from "~/services/route/gmm";
@@ -18,24 +18,30 @@ const Main: React.FC = () => {
   const currentUUID = router.query.experiment as string | undefined;
   const currentNumComponents = router.query.n_components as string | undefined;
   const [jobItem, setJobItem] = useState<JobItem | null>(null);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
+  const [renameName, setRenameName] = useState<string>("");
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState<boolean>(false);
+  const [publishName, setPublishName] = useState<string>("");
+
+  const reload = async () => {
+    if (!currentUUID) {
+      return;
+    }
+
+    const res = await apiClient.getGMMJobs({
+      queries: {
+        n_components:
+          currentNumComponents === undefined
+            ? undefined
+            : parseInt(currentNumComponents),
+      },
+      params: { uuid: currentUUID },
+    });
+    setJobItem(res);
+  };
 
   useEffect(() => {
-    (async () => {
-      if (!currentUUID) {
-        return;
-      }
-
-      const res = await apiClient.getGMMJobs({
-        queries: {
-          n_components:
-            currentNumComponents === undefined
-              ? undefined
-              : parseInt(currentNumComponents),
-        },
-        params: { uuid: currentUUID },
-      });
-      setJobItem(res);
-    })();
+    reload();
   }, [currentUUID, currentNumComponents]);
 
   if (!currentUUID) {
@@ -52,7 +58,6 @@ const Main: React.FC = () => {
     jobItem.params.step_size
   );
 
-  console.log(jobItem.status);
   return (
     <div>
       <h3>Experiment: {jobItem.name}</h3>
@@ -68,21 +73,162 @@ const Main: React.FC = () => {
       <p className="d-flex align-items-center">
         Actions:
         {jobItem.status === "progress" && (
-          <Badge pill bg="primary" className="align-self-center mx-1">
+          <Badge
+            pill
+            bg="primary"
+            className="align-self-center mx-1"
+            onClick={async () => {
+              await apiClient.suspendGMMJobs({
+                uuid: currentUUID,
+              });
+              await reload();
+            }}
+            style={{ cursor: "pointer" }}
+          >
             Stop
           </Badge>
         )}
         {jobItem.status === "suspend" && (
-          <Badge pill bg="primary" className="align-self-center mx-1">
+          <Badge
+            pill
+            bg="primary"
+            className="align-self-center mx-1"
+            onClick={async () => {
+              await apiClient.resumeGMMJobs({
+                uuid: currentUUID,
+              });
+              await reload();
+            }}
+            style={{ cursor: "pointer" }}
+          >
             Resume
           </Badge>
         )}
-        <Badge pill bg="primary" className="align-self-center mx-1">
+        <Badge
+          pill
+          bg="primary"
+          className="align-self-center mx-1"
+          onClick={() => {
+            setIsRenameModalOpen(true);
+          }}
+          style={{ cursor: "pointer" }}
+        >
           Rename
         </Badge>
-        <Badge pill bg="danger" className="align-self-center mx-1">
+        <Badge
+          pill
+          bg="danger"
+          className="align-self-center mx-1"
+          onClick={async () => {
+            await apiClient.deleteGMMJobs(undefined, {
+              params: { uuid: currentUUID },
+            });
+            router.push("/gmm");
+          }}
+          style={{ cursor: "pointer" }}
+        >
           Delete
         </Badge>
+        <Modal
+          show={isRenameModalOpen}
+          onHide={() => {
+            setIsRenameModalOpen(false);
+            setRenameName("");
+          }}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Rename</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Please enter the new name of the job.
+            <hr />
+            <Form.Control
+              type="text"
+              placeholder="New name"
+              value={renameName}
+              onChange={(e) => {
+                setRenameName(e.target.value);
+              }}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsRenameModalOpen(false);
+                setRenameName("");
+              }}
+            >
+              Close
+            </Button>
+            <Button
+              variant="primary"
+              disabled={!renameName}
+              onClick={async () => {
+                await apiClient.updateGMMJobs(
+                  {
+                    target: "name",
+                    value: renameName,
+                  },
+                  {
+                    params: { uuid: currentUUID },
+                  }
+                );
+                setIsRenameModalOpen(false);
+                await reload();
+              }}
+            >
+              Save changes
+            </Button>
+          </Modal.Footer>
+        </Modal>
+        <Modal
+          show={isPublishModalOpen}
+          onHide={() => {
+            setIsPublishModalOpen(false);
+            setPublishName("");
+          }}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Publish</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Please enter the name for publishing this experiment.
+            <hr />
+            <Form.Control
+              type="text"
+              placeholder="Publish name"
+              value={publishName}
+              onChange={(e) => {
+                setPublishName(e.target.value);
+              }}
+            />
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsPublishModalOpen(false);
+                  setPublishName("");
+                }}
+              >
+                Close
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!publishName}
+                onClick={async () => {
+                  await apiClient.publishGMMJobs({
+                    name: publishName,
+                    uuid: currentUUID,
+                  });
+                  setIsPublishModalOpen(false);
+                }}
+              >
+                Publish
+              </Button>
+            </Modal.Footer>
+          </Modal.Body>
+        </Modal>
       </p>
       {jobItem.status !== "failure" &&
         jobItem.status !== "pending" &&
@@ -131,7 +277,12 @@ const Main: React.FC = () => {
               ))}
             </Form.Select>
             {jobItem.status === "success" && (
-              <Button variant="primary">Add to viewer dataset</Button>
+              <Button
+                variant="primary"
+                onClick={() => setIsPublishModalOpen(true)}
+              >
+                Add to viewer dataset
+              </Button>
             )}
           </InputGroup>
           <LatentGraph
