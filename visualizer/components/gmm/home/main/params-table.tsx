@@ -37,7 +37,7 @@ const ParamsTable: React.FC<{ params: JobItem["params"] }> = ({ params }) => {
           value: params.maximum_n_components,
         },
         { item: "Step size", value: params.step_size },
-        { item: "Number of trials", value: params.n_trials },
+        { item: "Number of trials", value: params.n_trials_per_component },
       ]}
       downloadable
       style={{ minHeight: 255 }}
