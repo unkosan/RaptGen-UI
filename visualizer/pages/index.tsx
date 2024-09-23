@@ -58,11 +58,20 @@ const Home: React.FC = () => {
           <Row className="my-3">
             <Col>
               <Cell
-                title="Trainer"
+                title="VAE Trainer"
                 content="Train a RaptGen model"
                 url="/trainer"
               />
             </Col>
+            <Col>
+              <Cell
+                title="GMM Trainer"
+                content="Run a GMM on the latent space"
+                url="/gmm"
+              />
+            </Col>
+          </Row>
+          <Row className="my-3">
             <Col>
               <Cell
                 title="Bayesian Optimization"
@@ -70,6 +79,7 @@ const Home: React.FC = () => {
                 url="/bayesopt"
               />
             </Col>
+            <Col></Col>
           </Row>
         </Container>
       </main>
