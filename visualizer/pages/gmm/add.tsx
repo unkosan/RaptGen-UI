@@ -4,8 +4,10 @@ import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
 import { Provider } from "react-redux";
-import { store } from "~/components/gmm/home/redux/store";
+import { store } from "~/components/gmm/add/redux/store";
 import "@inovua/reactdatagrid-community/index.css";
+import SideBar from "~/components/gmm/add/sidebar/sidebar";
+import Main from "~/components/gmm/add/main/main";
 
 const Home: React.FC = () => {
   return (
@@ -21,6 +23,14 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>GMM Trainer</h1>
           <hr />
+          <Row>
+            <Col md={4}>
+              <SideBar />
+            </Col>
+            <Col>
+              <Main />
+            </Col>
+          </Row>
         </Container>
       </main>
     </>
