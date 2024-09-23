@@ -30,12 +30,12 @@ const params = {
   minimum_n_components: 1,
   maximum_n_components: 5,
   step_size: 2,
-  n_trials: 5,
+  n_trials_per_component: 5,
 };
 
 const bics = {
-  hue: [1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5],
-  bic: [
+  n_components: [1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5],
+  bics: [
     0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5,
   ],
 };

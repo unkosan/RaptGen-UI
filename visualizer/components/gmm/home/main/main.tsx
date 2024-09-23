@@ -300,7 +300,10 @@ const Main: React.FC = () => {
             }}
           />
           <legend>BIC distribution</legend>
-          <BicGraph n_components={jobItem.bic.hue} values={jobItem.bic.bic} />
+          <BicGraph
+            n_components={jobItem.bic.n_components}
+            values={jobItem.bic.bics}
+          />
         </>
       )}
       <legend>Parameters</legend>

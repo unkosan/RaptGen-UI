@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type ParamsValid = {
   vaeModelName: boolean;
+  gmmName: boolean;
   minNumComponents: boolean;
   maxNumComponents: boolean;
   stepSize: boolean;
@@ -12,6 +13,7 @@ const paramsValidSlice = createSlice({
   name: "paramsValid",
   initialState: {
     vaeModelName: true,
+    gmmName: false,
     minNumComponents: true,
     maxNumComponents: true,
     stepSize: true,

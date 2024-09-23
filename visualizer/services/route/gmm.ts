@@ -4,11 +4,12 @@ import { z } from "zod";
 // API POST /gmm/jobs/submit
 export const requestPostGMMJobsSubmit = z.object({
   target: z.string(),
+  name: z.string(),
   params: z.object({
     minimum_n_components: z.number().int().min(1),
     maximum_n_components: z.number().int().min(1),
     step_size: z.number().int().min(1),
-    n_trials: z.number().int().min(1),
+    n_trials_per_component: z.number().int().min(1),
   }),
 });
 export const responsePostGMMJobsSubmit = z.object({
@@ -48,7 +49,7 @@ export const responseGetGMMJobsItems = z.union([
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
       step_size: z.number().int(),
-      n_trials: z.number().int(),
+      n_trials_per_component: z.number().int(),
     }),
   }),
   z.object({
@@ -62,7 +63,7 @@ export const responseGetGMMJobsItems = z.union([
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
       step_size: z.number().int(),
-      n_trials: z.number().int(),
+      n_trials_per_component: z.number().int(),
     }),
     error_msg: z.string(),
   }),
@@ -77,7 +78,7 @@ export const responseGetGMMJobsItems = z.union([
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
       step_size: z.number().int(),
-      n_trials: z.number().int(),
+      n_trials_per_component: z.number().int(),
     }),
     gmm: z.object({
       current_n_components: z.number().int(),
@@ -92,8 +93,8 @@ export const responseGetGMMJobsItems = z.union([
       duplicates: z.array(z.number()),
     }),
     bic: z.object({
-      hue: z.array(z.number()),
-      bic: z.array(z.number()),
+      n_components: z.array(z.number()),
+      bics: z.array(z.number()),
     }),
   }),
   z.object({
@@ -107,7 +108,7 @@ export const responseGetGMMJobsItems = z.union([
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
       step_size: z.number().int(),
-      n_trials: z.number().int(),
+      n_trials_per_component: z.number().int(),
     }),
     current_states: z.object({
       n_components: z.number().int(),
@@ -126,8 +127,8 @@ export const responseGetGMMJobsItems = z.union([
       duplicates: z.array(z.number()),
     }),
     bic: z.object({
-      hue: z.array(z.number()),
-      bic: z.array(z.number()),
+      n_components: z.array(z.number()),
+      bics: z.array(z.number()),
     }),
   }),
 ]);

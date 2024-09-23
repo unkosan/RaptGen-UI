@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { apiClient } from "~/services/api-client";
 import IntegerForm from "~/components/uploader/sidebar-vae/optional-params/integer-form";
+import TextForm from "~/components/uploader/sidebar-vae/optional-params/text-form";
 
 const SideBar: React.FC = () => {
   const params = useSelector((state: RootState) => state.params);
@@ -76,6 +77,32 @@ const SideBar: React.FC = () => {
           ))}
         </Form.Control>
       </Form.Group>
+      <TextForm
+        label="GMM name"
+        placeholder="Please enter the name of the GMM."
+        value={params.gmmName}
+        setValue={(name) =>
+          dispatch({
+            type: "params/set",
+            payload: {
+              ...params,
+              gmmName: name,
+            },
+          })
+        }
+        isValid={paramsValid.gmmName}
+        setIsValid={(isValid) =>
+          dispatch({
+            type: "paramsValid/set",
+            payload: {
+              ...paramsValid,
+              gmmName: isValid,
+            },
+          })
+        }
+        predicate={(value) => value.length > 0}
+      />
+
       <legend>Parameters</legend>
       <IntegerForm
         label="Minimum number of GMM components"

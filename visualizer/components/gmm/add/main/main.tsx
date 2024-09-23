@@ -97,9 +97,10 @@ const PagenationNav: React.FC = () => {
           minimum_n_components: params.minNumComponents,
           maximum_n_components: params.maxNumComponents,
           step_size: params.stepSize,
-          n_trials: params.numTrials,
+          n_trials_per_component: params.numTrials,
         },
         target: params.vaeModelName,
+        name: "GMM",
       });
       setIsLoading(false);
       router.push(`/gmm?experimentName=${res.uuid}`);
@@ -123,6 +124,8 @@ const PagenationNav: React.FC = () => {
         }}
         disabled={
           !(
+            paramsValid.vaeModelName &&
+            paramsValid.gmmName &&
             paramsValid.minNumComponents &&
             paramsValid.maxNumComponents &&
             paramsValid.stepSize &&
