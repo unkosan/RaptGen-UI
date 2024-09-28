@@ -127,6 +127,7 @@ describe("train service", () => {
     const result = await apiClient.postPublish({
       uuid: uuids.test1,
       multi: 0,
+      name: "test",
     });
     expect(result).toBe(null);
   });
