@@ -1,67 +1,132 @@
-import { Badge, Button } from "react-bootstrap";
+import { useState } from "react";
+import { Badge, Button, Form, Modal } from "react-bootstrap";
 import { apiClient } from "~/services/api-client";
 
 export const StopButton: React.FC<{ uuid: string }> = ({ uuid }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
-    <Badge
-      pill
-      bg="warning"
-      className="mx-1"
-      onClick={() => {
-        apiClient.postSuspend({ uuid });
-      }}
-      style={{ cursor: "pointer" }}
-    >
-      Stop
-    </Badge>
+    <>
+      <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Stop Experiment</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Are you sure you want to stop this experiment?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="warning"
+            onClick={() => {
+              apiClient.postSuspend({ uuid });
+              setIsModalOpen(false);
+            }}
+          >
+            Stop
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Badge
+        pill
+        bg="warning"
+        className="mx-1"
+        onClick={() => {
+          setIsModalOpen(true);
+        }}
+        style={{ cursor: "pointer" }}
+      >
+        Stop
+      </Badge>
+    </>
   );
 };
 
 export const ResumeButton: React.FC<{ uuid: string }> = ({ uuid }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
-    <Badge
-      pill
-      bg="success"
-      className="mx-1"
-      onClick={() => {
-        apiClient.postResume({ uuid });
-      }}
-      style={{ cursor: "pointer" }}
-    >
-      Resume
-    </Badge>
+    <>
+      <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Resume Experiment</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Are you sure you want to resume this experiment?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="success"
+            onClick={() => {
+              apiClient.postResume({ uuid });
+              setIsModalOpen(false);
+            }}
+          >
+            Resume
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Badge
+        pill
+        bg="success"
+        className="mx-1"
+        onClick={() => {
+          setIsModalOpen(true);
+        }}
+        style={{ cursor: "pointer" }}
+      >
+        Resume
+      </Badge>
+    </>
   );
 };
 
 export const DeleteButton: React.FC<{ uuid: string }> = ({ uuid }) => {
-  return (
-    <Badge
-      pill
-      bg="danger"
-      className="mx-1"
-      onClick={() => {
-        apiClient.deleteItem(undefined, { params: { parent_uuid: uuid } });
-      }}
-      style={{ cursor: "pointer" }}
-    >
-      Delete
-    </Badge>
-  );
-};
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-export const KillButton: React.FC<{ uuid: string }> = ({ uuid }) => {
   return (
-    <Badge
-      pill
-      bg="danger"
-      className="mx-1"
-      onClick={() => {
-        apiClient.postKill({ uuid });
-      }}
-      style={{ cursor: "pointer" }}
-    >
-      Kill
-    </Badge>
+    <>
+      <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Delete Experiment</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Are you sure you want to delete this experiment?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => {
+              apiClient.deleteItem(undefined, {
+                params: { parent_uuid: uuid },
+              });
+              setIsModalOpen(false);
+            }}
+          >
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Badge
+        pill
+        bg="danger"
+        className="mx-1"
+        onClick={() => {
+          setIsModalOpen(true);
+        }}
+        style={{ cursor: "pointer" }}
+      >
+        Delete
+      </Badge>
+    </>
   );
 };
 
@@ -167,19 +232,50 @@ export const ApplyViewerButton: React.FC<{
   disabled: boolean;
   setDisabled: React.Dispatch<React.SetStateAction<boolean>>;
 }> = ({ uuid, childId, disabled, setDisabled }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [name, setName] = useState("");
+
   return (
-    <div className="d-grid gap-2">
+    <>
+      <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Apply to Viewer Dataset</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>
+            Enter the name of the experiment to apply to the viewer dataset.
+          </p>
+          <Form.Control
+            type="text"
+            placeholder="Experiment Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              apiClient.postPublish({ uuid, multi: childId, name });
+              setDisabled(!disabled);
+              setIsModalOpen(false);
+            }}
+            disabled={name === ""}
+          >
+            Add to Viewer Dataset
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <Button
         variant="primary"
-        className="mx-1"
-        onClick={() => {
-          apiClient.postPublish({ uuid, multi: childId });
-          setDisabled(!disabled);
-        }}
+        onClick={() => setIsModalOpen(true)}
         disabled={disabled}
       >
         {disabled ? "Added" : "Add to Viewer Dataset"}
       </Button>
-    </div>
+    </>
   );
 };

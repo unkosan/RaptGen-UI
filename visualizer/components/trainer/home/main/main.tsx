@@ -23,7 +23,6 @@ import {
   DeleteButton,
   DownloadCurrentCodesButton,
   DownloadLossesButton,
-  KillButton,
   ResumeButton,
   StopButton,
 } from "./action-buttons";
@@ -48,10 +47,6 @@ const ParentPane: React.FC<{ item: Item }> = ({ item }) => {
           <StopButton uuid={item.uuid} />
         ) : item.status === "suspend" ? (
           <ResumeButton uuid={item.uuid} />
-        ) : null}
-
-        {item.status === "progress" || item.status === "suspend" ? (
-          <KillButton uuid={item.uuid} />
         ) : null}
 
         <DeleteButton uuid={item.uuid} />
