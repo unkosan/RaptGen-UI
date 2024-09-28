@@ -36,6 +36,13 @@ const returnLayout = (title: string): Partial<Layout> => {
       },
     },
     clickmode: "event+select",
+    margin: {
+      l: 20,
+      r: 20,
+      b: 20,
+      t: 20,
+      pad: 4,
+    },
   };
 };
 

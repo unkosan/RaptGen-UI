@@ -27,6 +27,7 @@ export const TrainingParams: React.FC<{
         value: String(v),
       }))}
       rowStyle={{ fontFamily: "monospace" }}
+      rowHeight={35}
       style={gridStyle}
       downloadable
       copiable

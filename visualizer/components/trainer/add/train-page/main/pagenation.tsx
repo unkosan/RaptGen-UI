@@ -83,7 +83,7 @@ const Pagenation: React.FC = () => {
         });
         if (parsed.success) {
           const res = await apiClient.postSubmitJob(parsed.data);
-          router.push("/trainer");
+          router.push(`/trainer?experiment=${res.uuid}`);
         } else {
           alert(`Failed to submit a job: ${parsed.error.message};`);
           setIsLoading(false);
