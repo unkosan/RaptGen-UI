@@ -142,7 +142,11 @@ const ChildPane: React.FC<{
           {childItem.status === "success" ? (
             <ApplyViewerButton
               uuid={parentItem.uuid}
-              childId={parseInt(router.query.job as string)}
+              childId={
+                isNaN(parseInt(router.query.job as string))
+                  ? undefined
+                  : parseInt(router.query.job as string)
+              }
               disabled={childItem.is_added_viewer_dataset || published}
               setDisabled={setPublished}
             />
