@@ -742,28 +742,36 @@ async def delete_parent_job(
     return None
 
 
+class PublishPayload(BaseModel):
+    uuid: str
+    multi: Optional[int] = None
+    name: str = "default"
+    debug: Optional[bool] = False
+
+
 @router.post("/api/train/jobs/publish")
-async def publish_parent_job(
-    request: OperationPayload,
+async def publish_job(
+    request: PublishPayload,
     session: Session = Depends(get_db_session),
-    debug: bool = False,
-):
+) -> None:
     """
-    Publish a parent job based on its UUID.
+    Publish a child job based on its parent UUID and child ID.
 
     Parameters
     ----------
-    request : OperationPayload
-        The request body containing the UUID of the parent job.
-    is_debug: bool, optional
+    request: PublishPayload
+        The request body containing the UUID of the parent job and the ID of the child job.
+    session: Session, optional
+        The database session, by default uses dependency injection to get the session.
+    debug: bool, optional
         Debug mode. Disables the actual publishing of the job, by default False
 
     Returns
     -------
     None
-        The response is an empty dictionary.
+        The response is null.
     """
-    print("Publishing parent job")
+    print("Publishing job")
     parent_job = session.query(ParentJob).filter(ParentJob.uuid == request.uuid).first()
     if parent_job is None:
         raise HTTPException(
@@ -771,48 +779,73 @@ async def publish_parent_job(
             detail=[
                 {
                     "loc": ["body", "uuid"],
-                    "msg": "Job not found",
+                    "msg": "Experiment not found",
                     "type": "value_error",
                 }
             ],
         )
 
-    if parent_job.status != "success":  # type: ignore
+    if request.multi is None:
+        child_job = (
+            session.query(ChildJob)
+            .join(TrainingLosses)
+            .filter(ChildJob.parent_uuid == request.uuid)
+            .group_by(ChildJob.uuid)
+            .order_by(func.min(TrainingLosses.test_loss))
+            .first()
+        )  # get the optimal model
+    else:
+        # job_id: int = request.multi
+        child_job = (
+            session.query(ChildJob)
+            .filter(ChildJob.parent_uuid == request.uuid, ChildJob.id == request.multi)
+            .first()
+        )
+    if child_job is None:
         raise HTTPException(
             status_code=422,
             detail=[
                 {
-                    "loc": ["body", "uuid"],
-                    "msg": "Job is not successful",
+                    "loc": ["body", "multi"],
+                    "msg": "Child job not found",
                     "type": "value_error",
                 }
             ],
         )
 
-    optimal_model_record = (
-        session.query(ChildJob)
-        .with_entities(
-            ChildJob.uuid.label("uuid"),
-            func.min(TrainingLosses.test_loss).label("score"),
-        )
-        .join(TrainingLosses)
-        .filter(ChildJob.parent_uuid == request.uuid)
-        .group_by(ChildJob.uuid)
-        .order_by("score")
+    params_preprocessing = (
+        session.query(PreprocessingParams)
+        .filter(PreprocessingParams.parent_uuid == request.uuid)
         .first()
     )
-    if optimal_model_record is None:
+    if params_preprocessing is None:
         raise HTTPException(
             status_code=422,
             detail=[
                 {
                     "loc": ["body", "uuid"],
-                    "msg": "No optimal model found",
+                    "msg": "Preprocessing parameters not found",
                     "type": "value_error",
                 }
             ],
         )
-    uuid: str = optimal_model_record.uuid
+
+    params_training = (
+        session.query(RaptGenParams)
+        .filter(RaptGenParams.child_uuid == child_job.uuid)
+        .first()
+    )
+    if params_training is None:
+        raise HTTPException(
+            status_code=422,
+            detail=[
+                {
+                    "loc": ["body", "uuid"],
+                    "msg": "Training parameters not found",
+                    "type": "value_error",
+                }
+            ],
+        )
 
     df_profile: pd.DataFrame = pd.read_pickle(DATA_PATH + "profile_dataframe.pkl")
     df_profile = pd.concat(
@@ -821,53 +854,43 @@ async def publish_parent_job(
             pd.DataFrame(
                 {
                     "published_time": pd.Timestamp.now().strftime("%Y/%m/%d"),
-                    "experiment": str(parent_job.name),
+                    "experiment": request.name,
                     "round": None,
-                    "fwd_adapter": parent_job.params_preprocessing["forward"],
-                    "rev_adapter": parent_job.params_preprocessing["reverse"],
-                    "target_length": parent_job.params_preprocessing[
-                        "random_region_length"
-                    ]
-                    + len(parent_job.params_preprocessing["forward"])
-                    + len(parent_job.params_preprocessing["reverse"]),
-                    "filtering_standard_length": parent_job.params_preprocessing[
-                        "random_region_length"
-                    ],
-                    "filtering_tolerance": parent_job.params_preprocessing["tolerance"],
+                    "fwd_adapter": params_preprocessing.forward,
+                    "rev_adapter": params_preprocessing.reverse,
+                    "target_length": params_preprocessing.random_region_length
+                    + len(params_preprocessing.forward)  # type: ignore
+                    + len(params_preprocessing.reverse),  # type: ignore
+                    "filtering_standard_length": params_preprocessing.random_region_length,
+                    "filtering_tolerance": params_preprocessing.tolerance,
                     "filtering_method": None,
-                    "minimum_count": parent_job.params_preprocessing["minimum_count"],
+                    "minimum_count": params_preprocessing.minimum_count,
                     "embedding_dim": 2,
-                    "epochs": parent_job.params_training["epochs"],
-                    "beta_weight_epochs": parent_job.params_training["beta_duration"],
-                    "match_forcing_epochs": parent_job.params_training[
-                        "match_forcing_duration"
-                    ],
-                    "match_cost": parent_job.params_training["match_cost"],
-                    "early_stopping_epochs": parent_job.params_training[
-                        "early_stopping"
-                    ],
+                    "epochs": params_training.epochs,
+                    "beta_weight_epochs": params_training.beta_duration,
+                    "match_forcing_epochs": params_training.match_forcing_duration,
+                    "match_cost": params_training.match_cost,
+                    "early_stopping_epochs": params_training.early_stopping,
                     "CUDA_num_workers": None,
                     "CUDA_pin_memory": None,
-                    "pHMM_VAE_model_length": parent_job.params_training["model_length"],
-                    "pHMM_VAE_seed": parent_job.params_training["seed_value"],
+                    "pHMM_VAE_model_length": params_training.model_length,
+                    "pHMM_VAE_seed": params_training.seed_value,
                 },
-                index=[str(parent_job.name)],
+                index=[str(request.name)],
             ),
         ],
     )
 
-    fwd_adapter: str = parent_job.params_preprocessing["forward"]  # type: ignore
-    rev_adapter: str = parent_job.params_preprocessing["reverse"]  # type: ignore
     df_embeddings: pd.DataFrame = pd.read_sql(
         f"""
         SELECT 
-            CONCAT('{fwd_adapter}', random_region, '{rev_adapter}') AS Sequence, 
+            CONCAT('{params_preprocessing.forward}', random_region, '{params_preprocessing.reverse}') AS Sequence, 
             duplicate AS Duplicates, 
             random_region AS Without_Adapters, 
             coord_x, 
             coord_y 
         FROM sequence_embeddings
-        WHERE child_uuid = '{uuid}';
+        WHERE child_uuid = '{child_job.uuid}';
         """,
         session.get_bind(),
     )
@@ -880,7 +903,7 @@ async def publish_parent_job(
         inplace=True,
     )
 
-    model_binary: bytes = session.query(ChildJob).filter(ChildJob.uuid == uuid).first().optimal_checkpoint  # type: ignore
+    model_binary: bytes = child_job.optimal_checkpoint  # type: ignore
     state_dict_map = torch.load(BytesIO(model_binary))
     state_dict = state_dict_map["model"]
 
@@ -901,18 +924,18 @@ async def publish_parent_job(
     )
     df_gmm.index.name = "name"
 
-    if not debug:
-        os.makedirs(DATA_PATH + "items/" + str(parent_job.name), exist_ok=True)
+    if not request.debug:
+        os.makedirs(DATA_PATH + "items/" + str(request.name), exist_ok=True)
         df_profile.to_pickle(DATA_PATH + "/profile_dataframe.pkl")
         df_embeddings.to_pickle(
-            DATA_PATH + "items/" + str(parent_job.name) + "/unique_seq_dataframe.pkl"
+            DATA_PATH + "items/" + str(request.name) + "/unique_seq_dataframe.pkl"
         )
         df_gmm.to_pickle(
-            DATA_PATH + "items/" + str(parent_job.name) + "/best_gmm_dataframe.pkl"
+            DATA_PATH + "items/" + str(request.name) + "/best_gmm_dataframe.pkl"
         )
         pickle.dump(
             state_dict,
-            open(DATA_PATH + "items/" + str(parent_job.name) + "/VAE_model.pkl", "wb"),
+            open(DATA_PATH + "items/" + str(request.name) + "/VAE_model.pkl", "wb"),
         )
     else:
         print(df_profile)

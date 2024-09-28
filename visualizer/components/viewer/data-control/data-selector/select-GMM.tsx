@@ -7,11 +7,9 @@ import { apiClient } from "~/services/api-client";
 
 const SelectGMM: React.FC = () => {
   const [value, setValue] = useState<string>("");
-  // const [nameList, setNameList] = useState<string[]>([""]);
   const [nameList, setNameList] = useState<string[]>([]);
 
   const dispatch = useDispatch();
-  // const nameVAE = useSelector((state: RootState) => state.graphConfig.vaeName);
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const sessionId = useSelector(
     (state: RootState) => state.sessionConfig.sessionId
@@ -40,6 +38,8 @@ const SelectGMM: React.FC = () => {
   useEffect(() => {
     if (nameList.length > 0) {
       setValue(nameList[0]);
+    } else {
+      setValue("");
     }
   }, [nameList]);
 
@@ -57,9 +57,24 @@ const SelectGMM: React.FC = () => {
   // retrieve GMM data and dispatch to redux store
   useEffect(() => {
     (async () => {
-      if (value === "" || sessionId === 0) {
+      if (sessionId === 0) {
         return;
       }
+
+      if (value === "") {
+        dispatch({
+          type: "gmmData/set",
+          payload: {
+            weights: [],
+            means: [],
+            covariances: [],
+            decodedSequences: [],
+            isShown: [],
+          },
+        });
+        return;
+      }
+
       const res = await apiClient.getGMMModel({
         queries: {
           VAE_model_name: graphConfig.vaeName,
@@ -72,11 +87,10 @@ const SelectGMM: React.FC = () => {
       }
 
       const gmm = res.data;
-      const { weights, means, covariances } = gmm;
 
       const resDecode = await apiClient.decode({
         session_id: sessionId,
-        coords: means.map((value) => {
+        coords: gmm.means.map((value) => {
           return { coord_x: value[0], coord_y: value[1] };
         }),
       });
@@ -91,11 +105,11 @@ const SelectGMM: React.FC = () => {
       dispatch({
         type: "gmmData/set",
         payload: {
-          weights: weights,
-          means: means,
-          covariances: covariances,
+          weights: gmm.weights,
+          means: gmm.means,
+          covariances: gmm.covariances,
           decodedSequences: decoded,
-          isShown: Array(weights.length).fill(true),
+          isShown: Array(gmm.weights.length).fill(true),
         },
       });
     })();

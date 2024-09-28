@@ -236,6 +236,7 @@ export const responsePostResume = z.null();
 export const requestPostPublish = z.object({
   uuid: z.string().uuid(),
   multi: z.optional(z.number().int().min(0)),
+  name: z.string().nonempty(),
 });
 export const responsePostPublish = z.null();
 
