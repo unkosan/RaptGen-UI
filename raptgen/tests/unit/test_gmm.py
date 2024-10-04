@@ -260,3 +260,70 @@ def test_mock_db(db_session):
     assert db_session.query(OptimalTrial).first().n_components == 3
     assert db_session.query(OptimalTrial).first().n_trials_completed == 3
     assert db_session.query(OptimalTrial).first().n_trials_total == 3
+
+
+# test list
+## post api/gmm/jobs/submit
+def test_enqueue_job(db_session, celery_worker):
+    mock_db(db_session, GMMTest.POST_submit_success)
+    with mock_latent_df_data(GMMTest.POST_submit_success) as temp_dir:
+        response = client.post(
+            "/api/gmm/jobs/submit",
+            json={
+                "target": "VAE_model_1",
+                "name": "GMM Job n",
+                "params": {
+                    "minimum_n_components": 3,
+                    "maximum_n_components": 5,
+                    "step_size": 1,
+                    "n_trials_per_component": 10,
+                },
+            },
+            params={
+                "datapath_prefix": temp_dir + "/",
+            },
+        )
+        assert response.status_code == 200
+
+        uuid = response.json()["uuid"]
+
+        # check if the data is in the database
+        assert db_session.query(GMMJob).count() == 1
+
+        job = db_session.query(GMMJob).first()
+        assert job.uuid == uuid
+        assert job.target_VAE_model == "VAE_model_1"
+        assert job.name == "GMM Job n"
+        assert job.status.value == "pending"
+
+        while job.status.value == "pending":
+            db_session.refresh(job)
+        assert job.status.value == "progress"
+        while job.status.value == "progress":
+            db_session.refresh(job)
+        assert job.status.value == "success"
+
+        ## check if right data is in the database
+        assert db_session.query(OptimalTrial).count() == 3
+        n_components = {3, 4, 5}
+        for trial in db_session.query(OptimalTrial).all():
+            assert trial.n_trials_completed == 10
+            assert trial.n_trials_total == 10
+            n_components.remove(trial.n_components)
+        assert len(n_components) == 0
+        assert db_session.query(BIC).count() == 30
+
+
+## post api/gmm/jobs/search
+
+## get api/gmm/jobs/items/{uuid}
+
+## patch  api/gmm/jobs/items/{uuid}
+
+## delete api/gmm/jobs/items/{uuid}
+
+## post   api/gmm/jobs/suspend
+
+## post   api/gmm/jobs/resume
+
+## post   api/gmm/jobs/publish

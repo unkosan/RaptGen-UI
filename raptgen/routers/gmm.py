@@ -1,8 +1,11 @@
+from typing import Optional
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from routers.data import DATA_PATH
 
+from core.gmmjobs import initialize_job_gmm, run_job_gmm
 from core.db import (
     get_db_session,
 )
@@ -10,15 +13,47 @@ from core.db import (
 router = APIRouter()
 
 
+class GMMParams(BaseModel):
+    minimum_n_components: int
+    maximum_n_components: int
+    step_size: int
+    n_trials_per_component: int
+
+
 class SubmitGMMJobPayload(BaseModel):
-    pass
+    target: str
+    name: str
+    params: GMMParams
 
 
 @router.post("/api/gmm/jobs/submit")
 async def submit_gmm_job(
-    request: SubmitGMMJobPayload, db: Session = Depends(get_db_session)
+    request: SubmitGMMJobPayload,
+    datapath_prefix: Optional[str] = DATA_PATH,
+    db: Session = Depends(get_db_session),
 ):
-    pass
+    job_uuid = initialize_job_gmm(
+        session=db,
+        name=request.name,
+        target_VAE_model=request.target,
+        minimum_n_components=request.params.minimum_n_components,
+        maximum_n_components=request.params.maximum_n_components,
+        step_size=request.params.step_size,
+        n_trials_per_component=request.params.n_trials_per_component,
+    )
+
+    database_url = db.get_bind().engine.url.render_as_string(hide_password=False)
+
+    run_job_gmm.delay(
+        uuid=job_uuid,
+        is_resume=False,
+        datapath_prefix=datapath_prefix,
+        database_url=database_url,
+    )
+
+    return {
+        "uuid": job_uuid,
+    }
 
 
 class SearchGMMJobsPayload(BaseModel):
