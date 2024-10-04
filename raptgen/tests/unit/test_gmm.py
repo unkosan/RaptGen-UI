@@ -20,11 +20,13 @@ from mocks import (
 )
 from tasks import celery
 import pandas as pd
+import numpy as np
 
 from core.db import (
     BaseSchema,
     GMMJob,
-    Trial,
+    OptimalTrial,
+    BIC,
     get_db_session,
 )
 
@@ -120,13 +122,18 @@ def mock_db(db_session, testcase: GMMTest):
     # DB data is written in the following format:
 
     # get the data
-    data = [d for d in mock_gmm_db if testcase in d["tests"]][0]["data"]
+    mockgroups = [d for d in mock_gmm_db if testcase in d["tests"]]
 
     # add the data to the database
-    for d in data[GMM_C.GMMJob]:
-        db_session.add(GMMJob(**d))
-    for d in data[GMM_C.Trial]:
-        db_session.add(Trial(**d))
+    for group in mockgroups:
+        for d in group["data"][GMM_C.GMMJob]:
+            db_session.add(GMMJob(**d))
+        db_session.commit()
+
+        for d in group["data"][GMM_C.OptimalTrial]:
+            db_session.add(OptimalTrial(**d))
+        for d in group["data"][GMM_C.BIC]:
+            db_session.add(BIC(**d))
 
     db_session.commit()
 
@@ -177,11 +184,33 @@ def mock_latent_df_data(testcase: GMMTest):
 
                 df = pd.concat([df, new_row.to_frame().T], ignore_index=True)
 
-            if not Path(temp_dir + f"/{df_data.name}").exists():
-                Path(temp_dir + f"/{df_data.name}").mkdir(parents=True, exist_ok=True)
+            if not Path(temp_dir + f"/items/{df_data.name}").exists():
+                Path(temp_dir + f"/items/{df_data.name}").mkdir(
+                    parents=True, exist_ok=True
+                )
 
             df.to_pickle(
-                temp_dir + f"/{df_data.name}/unique_seq_dataframe.pkl",
+                temp_dir + f"/items/{df_data.name}/unique_seq_dataframe.pkl",
+            )
+
+            df_gmm = pd.DataFrame(
+                {
+                    "GMM_num_components": [],
+                    "GMM_seed": [],
+                    "GMM_optimal_model": [],
+                    "GMM_model_type": [],
+                },
+            ).astype(
+                {
+                    "GMM_num_components": int,
+                    "GMM_seed": int,
+                    "GMM_model_type": str,
+                    "GMM_optimal_model": "object",
+                }
+            )
+            df_gmm.index.name = "name"
+            df_gmm.to_pickle(
+                temp_dir + f"/items/{df_data.name}/best_gmm_dataframe.pkl",
             )
 
         yield temp_dir
@@ -191,20 +220,26 @@ def test_mock_df(db_session):
     with mock_latent_df_data(GMMTest.DATA_INSERT_SUCCESS) as mock_data_path:
         assert mock_data_path is not None
         assert Path(mock_data_path).exists()
-        assert Path(mock_data_path + "/VAE_model_1/unique_seq_dataframe.pkl").exists()
-        assert Path(mock_data_path + "/VAE_model_1/unique_seq_dataframe.pkl").is_file()
+        assert Path(
+            mock_data_path + "/items/VAE_model_1/unique_seq_dataframe.pkl"
+        ).exists()
+        assert Path(
+            mock_data_path + "/items/VAE_model_1/unique_seq_dataframe.pkl"
+        ).is_file()
         assert (
-            Path(mock_data_path + "/VAE_model_1/unique_seq_dataframe.pkl")
+            Path(mock_data_path + "/items/VAE_model_1/unique_seq_dataframe.pkl")
             .stat()
             .st_size
             > 0
         )
 
         # read mock data
-        df = pd.read_pickle(mock_data_path + "/VAE_model_1/unique_seq_dataframe.pkl")
+        df = pd.read_pickle(
+            mock_data_path + "/items/VAE_model_1/unique_seq_dataframe.pkl"
+        )
         assert df is not None
         assert isinstance(df, pd.DataFrame)
-        assert df.shape[0] == 3
+        assert df.shape[0] == 10000
         assert df.shape[1] == 5
         assert df.columns.tolist() == [
             "Sequence",
@@ -220,10 +255,8 @@ def test_mock_db(db_session):
 
     # check if the data is in the database
     assert db_session.query(GMMJob).count() == 1
-    assert db_session.query(GMMJob).first().start == 1609459200
-    assert db_session.query(Trial).count() == 2
-    assert db_session.query(Trial).first().trial_id == 1
-    assert db_session.query(Trial).first().n_components == 3
-    assert db_session.query(Trial).first().current_trial_id == 1
-    assert db_session.query(Trial).first().current_trial_id_per_component == 1
-    assert db_session.query(Trial).first().trials_total == 50
+    assert db_session.query(GMMJob).first().datetime_start == 1609459200
+    assert db_session.query(OptimalTrial).count() == 3
+    assert db_session.query(OptimalTrial).first().n_components == 3
+    assert db_session.query(OptimalTrial).first().n_trials_completed == 3
+    assert db_session.query(OptimalTrial).first().n_trials_total == 3
