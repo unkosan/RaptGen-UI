@@ -22,6 +22,14 @@ class JobType(enum.Enum):
     RfamGen = "RfamGen"
 
 
+class JobStatus(enum.Enum):
+    success = "success"
+    failure = "failure"
+    progress = "progress"
+    suspend = "suspend"
+    pending = "pending"
+
+
 # define schemas for the database
 BaseSchema = declarative_base()
 
@@ -391,50 +399,60 @@ class AcquisitionData(BaseSchema):
     value = Column(Float)  # Value corresponding to the coordinates
 
 
-class Trial(BaseSchema):
-    __tablename__ = "trials"
-    id = Column(
-        Integer, primary_key=True, unique=True, autoincrement=True
-    )  # ID for each trial
-    gmm_job_id = Column(
-        String, ForeignKey("gmm_jobs.uuid", ondelete="CASCADE", onupdate="CASCADE")
-    )
-    trials_total = Column(Integer)  # Number of trials
-    current_trial_id = Column(Integer)  # Current trial ID
-    current_trial_id_per_component = Column(Integer)  # Current trial ID per component
-    n_components = Column(Integer)  # Number of components
-    means = Column(postgresql.ARRAY(Float, dimensions=2))  # Means of the GMM
-    covariances = Column(postgresql.ARRAY(Float, dimensions=3))  # Covariance of the GMM
-    BIC = Column(Float)  # Bayesian Information Criterion (BIC)
-    is_optimal = Column(Boolean)  # Flag to indicate if the trial is optimal
-
-
 class GMMJob(BaseSchema):
     __tablename__ = "gmm_jobs"
-    id = Column(
-        Integer, primary_key=True, unique=True, autoincrement=True
-    )  # ID for each GMM job
-    uuid = Column(String, unique=True)  # UUID for each GMM job
+    uuid = Column(
+        String, unique=True, primary_key=True, nullable=False
+    )  # UUID for each GMM job
+    name = Column(String)  # Name of the GMM job
+    status = Column(Enum(JobStatus), nullable=False)
+
     target_VAE_model = Column(String)  # Target VAE model
     minimum_n_components = Column(Integer)  # Minimum number of components
     maximum_n_components = Column(Integer)  # Maximum number of components
     step_size = Column(Integer)  # Step size
     n_trials_per_component = Column(Integer)  # Number of trials per component
-    status = Column(String)  # Status of the GMM job
-    name = Column(String)  # Name of the GMM job
-    start = Column(Integer)  # Start time of the GMM job
-    duration = Column(Integer)  # Duration of the GMM job
-    trials_total = Column(Integer)  # Total number of trials
-    trials_current = Column(Integer)  # Current number of trials
 
-    optimal_trial_id = Column(Integer)  # Optimal trial ID
-    current_trial_id = Column(Integer)  # Current trial ID
+    datetime_start = Column(Integer)
+    datetime_laststop = Column(Integer)
+    duration_suspend = Column(Integer)
+
+    n_component_current = Column(Integer)
+
+    worker_uuid = Column(String)  # Worker UUID
+    error_msg = Column(String)  # Error message
 
     # Relationships to Trial
     trials = relationship(
-        "Trial",
+        "OptimalTrial",
         backref="gmm_jobs",
     )
+
+
+class OptimalTrial(BaseSchema):
+    __tablename__ = "optimal_trials"
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    gmm_job_id = Column(
+        String, ForeignKey(GMMJob.uuid, ondelete="CASCADE", onupdate="CASCADE")
+    )
+
+    n_trials_completed = Column(Integer)  # Number of trials completed
+    n_trials_total = Column(Integer)  # Number of trials
+
+    n_components = Column(Integer)  # Number of components
+    means = Column(postgresql.ARRAY(Float, dimensions=2))  # Means of the GMM
+    covariances = Column(postgresql.ARRAY(Float, dimensions=3))  # Covariance of the GMM
+    BIC = Column(Float)  # Bayesian Information Criterion (BIC)
+
+
+class BIC(BaseSchema):
+    __tablename__ = "bics"
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    gmm_job_id = Column(
+        String, ForeignKey(GMMJob.uuid, ondelete="CASCADE", onupdate="CASCADE")
+    )
+    n_components = Column(Integer, nullable=False)
+    BIC = Column(Float, nullable=False)
 
 
 def get_db_session(
