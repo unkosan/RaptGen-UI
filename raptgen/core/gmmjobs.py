@@ -175,7 +175,7 @@ def initialize_job_gmm(
 ) -> str:
     """
     Initialize the GMM job.
-    This function adds entries for tthe jobs and the optimal trials to the database.
+    This function adds entries for the jobs and the optimal trials to the database.
 
     Parameters
     ----------
