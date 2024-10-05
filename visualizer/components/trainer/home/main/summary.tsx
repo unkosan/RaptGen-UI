@@ -3,6 +3,7 @@ import { responseGetItem } from "~/services/route/train";
 import Button from "@inovua/reactdatagrid-community/packages/Button";
 import { CustomDataGrid } from "~/components/common/custom-datagrid";
 import { useRouter } from "next/router";
+import { Badge } from "react-bootstrap";
 
 type SummaryType = z.infer<typeof responseGetItem>["summary"];
 
@@ -36,17 +37,50 @@ const DetailButton: React.FC<CellProps> = (props) => {
 };
 
 const columns = [
-  { name: "id", type: "number", header: "ID" },
-  { name: "status", header: "Status" },
-  { name: "total_epochs", header: "Total Epochs" },
-  { name: "nlls", header: "Minimum negative log ELBO", defaultFlex: 1 },
+  { name: "id", type: "number", header: "ID", width: 60 },
   {
-    name: "buttons",
-    header: "",
+    name: "status",
+    header: "Status",
+    width: 90,
     render: (props: CellProps) => {
-      return <DetailButton data={props.data} />;
+      switch (props.data.status) {
+        case "success":
+          return (
+            <center>
+              <Badge pill bg="success">
+                {props.data.status}
+              </Badge>
+            </center>
+          );
+        case "progress":
+          return (
+            <center>
+              <Badge pill bg="primary">
+                {props.data.status}
+              </Badge>
+            </center>
+          );
+        case "failure":
+          return (
+            <center>
+              <Badge pill bg="danger">
+                {props.data.status}
+              </Badge>
+            </center>
+          );
+        default:
+          return (
+            <center>
+              <Badge pill bg="warning">
+                {props.data.status}
+              </Badge>
+            </center>
+          );
+      }
     },
   },
+  { name: "total_epochs", header: "Total Epochs", defaultFlex: 1 },
+  { name: "nlls", header: "log ELBO", defaultFlex: 1 },
 ];
 
 export const Summary: React.FC<{
@@ -67,10 +101,9 @@ export const Summary: React.FC<{
       columns={columns}
       dataSource={data}
       rowStyle={{ fontFamily: "monospace" }}
-      pagination
       defaultLimit={20}
       rowHeight={35}
-      style={{ minHeight: 250, width: "100%", zIndex: 1000 }}
+      style={{ minHeight: 300, width: "100%", zIndex: 1000 }}
       downloadable
       copiable
     />

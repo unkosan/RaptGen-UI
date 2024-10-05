@@ -547,6 +547,10 @@ def test_publish_parent_job(db_session, celery_worker):
     parent_uuid = test_enqueue_job(db_session, celery_worker)
     print(f"parent_uuid: {parent_uuid}")
     response = client.post(
-        "/api/train/jobs/publish?debug=true", json={"uuid": parent_uuid}
+        "/api/train/jobs/publish?debug=true",
+        json={
+            "uuid": parent_uuid,
+            "name": "test",
+        },
     )
     assert response.status_code == 200
