@@ -44,6 +44,7 @@ celery = Celery(
 )
 
 import core.jobs
+import core.gmmjobs
 
 
 @celery.task(bind=True)
