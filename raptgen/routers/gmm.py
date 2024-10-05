@@ -119,7 +119,9 @@ async def search_gmm_jobs(
         if optimal_trial is None:
             raise Exception("This should not happen")
 
-        if job.status == "progress":  # type: ignore
+        if job.status.value == "pending":
+            duration = 0
+        elif job.status.value == "progress":
             duration = int(time()) - job.datetime_start - job.duration_suspend
         else:
             duration = job.datetime_laststop - job.datetime_start - job.duration_suspend
@@ -154,6 +156,13 @@ async def get_gmm_job(
     job = db.query(GMMJob).filter(GMMJob.uuid == uuid).first()
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
+
+    if job.status.value == "pending":
+        duration = 0
+    elif job.status.value == "progress":
+        duration = int(time()) - job.datetime_start - job.duration_suspend
+    else:
+        duration = job.datetime_laststop - job.datetime_start - job.duration_suspend
 
     response = {
         "uuid": job.uuid,

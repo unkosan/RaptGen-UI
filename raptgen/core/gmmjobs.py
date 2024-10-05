@@ -28,6 +28,18 @@ class GMMJobTask(AbortableTask):
 
     def on_success(self, retval, task_id, args, kwargs):
         super().on_success(retval, task_id, args, kwargs)
+        database_url: str = kwargs["database_url"]
+        session = get_db_session(database_url).__next__()
+        if session is None:
+            raise ValueError("GMMJobTask: Could not get database session")
+
+        job = session.query(GMMJob).filter(GMMJob.worker_uuid == task_id).first()
+        if job is None:
+            raise ValueError(f"GMMJobTask: Task {task_id} not found in database")
+
+        job.datetime_laststop = int(time.time())  # type: ignore
+
+        session.commit()
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         super().on_failure(exc, task_id, args, kwargs, einfo)
@@ -42,6 +54,7 @@ class GMMJobTask(AbortableTask):
 
         job.status = "failure"  # type: ignore
         job.error_msg = str(exc)  # type: ignore
+        job.datetime_laststop = int(time.time())  # type: ignore
 
         session.commit()
 
@@ -116,6 +129,11 @@ def run_job_gmm(
         x = df["coord_x"].to_numpy()
         y = df["coord_y"].to_numpy()
         coords = np.array([x, y]).T
+
+        if is_resume:
+            job_db.duration_suspend = (  # type: ignore
+                job_db.duration_suspend + int(time.time()) - job_db.datetime_laststop
+            )
 
         for optimal_trial_db in optimal_trial_dbs:
             if optimal_trial_db.n_trials_completed >= optimal_trial_db.n_trials_total:  # type: ignore
