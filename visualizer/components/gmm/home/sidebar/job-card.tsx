@@ -38,8 +38,10 @@ const JobCard: React.FC<Props> = (props) => {
         <div className="d-flex">
           {props.status === "progress" && (
             <small className="fw-light">
-              {"Running for" +
-                formatDuration(intervalToDuration({ start: 0, end: 1000 }))}
+              {"Running for " +
+                formatDuration(
+                  intervalToDuration({ start: 0, end: props.duration * 1000 })
+                )}
             </small>
           )}
           {props.status === "success" && (

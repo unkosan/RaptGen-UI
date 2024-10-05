@@ -101,23 +101,16 @@ async def search_gmm_jobs(
 
     response = []
     for job in results:
-        total_n_components = (
-            job.maximum_n_components - job.minimum_n_components
-        ) // job.step_size
-        current_n_components = (
-            job.n_component_current - job.minimum_n_components
-        ) // job.step_size
-
-        optimal_trial = (
-            db.query(OptimalTrial)
-            .filter(
-                OptimalTrial.gmm_job_id == job.uuid,
-                OptimalTrial.n_components == job.n_component_current,
-            )
-            .first()
+        trials = (
+            db.query(OptimalTrial).filter(OptimalTrial.gmm_job_id == job.uuid).all()
         )
-        if optimal_trial is None:
-            raise Exception("This should not happen")
+
+        trials_total = 0
+        trials_current = 0
+
+        for trial in trials:
+            trials_total += trial.n_trials_total
+            trials_current += trial.n_trials_completed
 
         if job.status.value == "pending":
             duration = 0
@@ -133,9 +126,8 @@ async def search_gmm_jobs(
                 "status": job.status,
                 "start": job.datetime_start,
                 "duration": duration,
-                "trials_total": job.n_trials_per_component * total_n_components,
-                "trials_current": job.n_trials_per_component * current_n_components
-                + optimal_trial.n_trials_completed,
+                "trials_total": trials_total,
+                "trials_current": trials_current,
             }
         )
 
