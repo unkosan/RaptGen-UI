@@ -142,14 +142,10 @@ async def search_gmm_jobs(
     return response
 
 
-class GetGMMJobPayload(BaseModel):
-    n_components: Optional[int] = None
-
-
 @router.get("/api/gmm/jobs/items/{uuid}")
 async def get_gmm_job(
     uuid: str,
-    n_components: Optional[int],
+    n_components: Optional[int] = None,
     datapath_prefix: Optional[str] = DATA_PATH,
     db: Session = Depends(get_db_session),
 ):
@@ -181,10 +177,8 @@ async def get_gmm_job(
 
     optimal_trial = (
         db.query(OptimalTrial)
-        .filter(
-            OptimalTrial.gmm_job_id == job.uuid,
-            OptimalTrial.n_components == n_components,
-        )
+        .filter(OptimalTrial.gmm_job_id == job.uuid)
+        .order_by(OptimalTrial.BIC.asc())
         .first()
     )
     if n_components is None:
@@ -192,8 +186,10 @@ async def get_gmm_job(
     else:
         requested_trial = (
             db.query(OptimalTrial)
-            .filter(OptimalTrial.gmm_job_id == job.uuid)
-            .order_by(OptimalTrial.BIC.asc())
+            .filter(
+                OptimalTrial.gmm_job_id == job.uuid,
+                OptimalTrial.n_components == n_components,
+            )
             .first()
         )
 
@@ -205,7 +201,7 @@ async def get_gmm_job(
     if job.status in [JobStatus.suspend, JobStatus.progress]:
         response["current_states"] = {
             "n_components": job.n_component_current,
-            "trials_completed": requested_trial.n_trials_completed,
+            "trials": requested_trial.n_trials_completed,
         }
 
     if job.status in [JobStatus.suspend, JobStatus.progress, JobStatus.success]:
@@ -217,19 +213,13 @@ async def get_gmm_job(
         coords_y = df["coord_y"].to_list()
         random_regions = df["Without_Adapters"].to_list()
 
-        bics_entries = (
-            db.query(BIC.BIC)
-            .filter(
-                BIC.gmm_job_id == job.uuid,
-                BIC.n_components == requested_trial.n_components,
-            )
-            .all()
-        )
-        bics: List[float] = [entry.BIC for entry in bics_entries]
+        bics_entries = db.query(BIC).filter(BIC.gmm_job_id == job.uuid).all()
+        bics: List[float] = [entry.BIC for entry in bics_entries]  # type: ignore
+        hues: List[int] = [entry.n_components for entry in bics_entries]  # type: ignore
 
         response["gmm"] = {
             "current_n_components": requested_trial.n_components,
-            "optimal_n_compoents": optimal_trial.n_components,
+            "optimal_n_components": optimal_trial.n_components,
             "means": requested_trial.means,
             "covs": requested_trial.covariances,
         }
@@ -240,7 +230,7 @@ async def get_gmm_job(
             "duplicates": duplicates,
         }
         response["bic"] = {
-            "n_components": optimal_trial.n_components,
+            "n_components": hues,
             "bics": bics,
         }
     if job.status == JobStatus.failure:  # type: ignore
