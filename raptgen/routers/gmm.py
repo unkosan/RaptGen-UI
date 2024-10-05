@@ -379,6 +379,9 @@ async def publish_gmm_job(
         covariance_type="full",
     )
     mixture.converged_ = True
+    mixture.weights_ = (
+        np.ones(optimalTrial.n_components) / optimalTrial.n_components  # type: ignore
+    )
     mixture.means_ = np.array(optimalTrial.means)
     mixture.covariances_ = np.array(optimalTrial.covariances)
 
