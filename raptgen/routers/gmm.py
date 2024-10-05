@@ -117,7 +117,12 @@ async def search_gmm_jobs(
         elif job.status.value == "progress":
             duration = int(time()) - job.datetime_start - job.duration_suspend
         else:
-            duration = job.datetime_laststop - job.datetime_start - job.duration_suspend
+            if job.datetime_laststop is None:
+                duration = int(time()) - job.datetime_start - job.duration_suspend
+            else:
+                duration = (
+                    job.datetime_laststop - job.datetime_start - job.duration_suspend
+                )
 
         response.append(
             {
@@ -193,7 +198,7 @@ async def get_gmm_job(
     if job.status in [JobStatus.suspend, JobStatus.progress]:
         response["current_states"] = {
             "n_components": job.n_component_current,
-            "trials": requested_trial.n_trials_completed,
+            "trial": requested_trial.n_trials_completed,
         }
 
     if job.status in [JobStatus.suspend, JobStatus.progress, JobStatus.success]:
@@ -298,6 +303,10 @@ async def suspend_gmm_job(
 
     AbortableAsyncResult(job.worker_uuid, app=celery).abort()
 
+    while job.status.value == "progress":
+        db.refresh(job)
+        # wait for the task to be aborted
+
     return None
 
 
@@ -319,6 +328,14 @@ async def resume_gmm_job(
         datapath_prefix=datapath_prefix,
         database_url=database_url,
     )
+
+    job = db.query(GMMJob).filter(GMMJob.uuid == request.uuid).first()
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    while job.status.value == "suspend":
+        db.refresh(job)
+        # wait for the task to be resumed
 
     return None
 
