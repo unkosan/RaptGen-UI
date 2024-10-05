@@ -169,7 +169,7 @@ async def get_gmm_job(
         "name": job.name,
         "status": job.status.value,
         "start": job.datetime_start,
-        "duration": job.datetime_laststop - job.datetime_start,
+        "duration": duration,
         "target": job.target_VAE_model,
         "params": {
             "minimum_n_components": job.minimum_n_components,
