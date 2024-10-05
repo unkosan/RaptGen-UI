@@ -99,7 +99,7 @@ const PagenationNav: React.FC = () => {
           n_trials_per_component: params.numTrials,
         },
         target: params.vaeModelName,
-        name: "GMM",
+        name: params.gmmName,
       });
       setIsLoading(false);
       router.push(`/gmm?experimentName=${res.uuid}`);

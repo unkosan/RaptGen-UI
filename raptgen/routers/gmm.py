@@ -101,28 +101,28 @@ async def search_gmm_jobs(
 
     response = []
     for job in results:
-        total_n_components = (
-            job.maximum_n_components - job.minimum_n_components
-        ) // job.step_size
-        current_n_components = (
-            job.n_component_current - job.minimum_n_components
-        ) // job.step_size
-
-        optimal_trial = (
-            db.query(OptimalTrial)
-            .filter(
-                OptimalTrial.gmm_job_id == job.uuid,
-                OptimalTrial.n_components == job.n_component_current,
-            )
-            .first()
+        trials = (
+            db.query(OptimalTrial).filter(OptimalTrial.gmm_job_id == job.uuid).all()
         )
-        if optimal_trial is None:
-            raise Exception("This should not happen")
 
-        if job.status == "progress":  # type: ignore
+        trials_total = 0
+        trials_current = 0
+
+        for trial in trials:
+            trials_total += trial.n_trials_total
+            trials_current += trial.n_trials_completed
+
+        if job.status.value == "pending":
+            duration = 0
+        elif job.status.value == "progress":
             duration = int(time()) - job.datetime_start - job.duration_suspend
         else:
-            duration = job.datetime_laststop - job.datetime_start - job.duration_suspend
+            if job.datetime_laststop is None:
+                duration = int(time()) - job.datetime_start - job.duration_suspend
+            else:
+                duration = (
+                    job.datetime_laststop - job.datetime_start - job.duration_suspend
+                )
 
         response.append(
             {
@@ -131,23 +131,18 @@ async def search_gmm_jobs(
                 "status": job.status,
                 "start": job.datetime_start,
                 "duration": duration,
-                "trials_total": job.n_trials_per_component * total_n_components,
-                "trials_current": job.n_trials_per_component * current_n_components
-                + optimal_trial.n_trials_completed,
+                "trials_total": trials_total,
+                "trials_current": trials_current,
             }
         )
 
     return response
 
 
-class GetGMMJobPayload(BaseModel):
-    n_components: Optional[int] = None
-
-
 @router.get("/api/gmm/jobs/items/{uuid}")
 async def get_gmm_job(
     uuid: str,
-    n_components: Optional[int],
+    n_components: Optional[int] = None,
     datapath_prefix: Optional[str] = DATA_PATH,
     db: Session = Depends(get_db_session),
 ):
@@ -155,12 +150,19 @@ async def get_gmm_job(
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
 
+    if job.status.value == "pending":
+        duration = 0
+    elif job.status.value == "progress":
+        duration = int(time()) - job.datetime_start - job.duration_suspend
+    else:
+        duration = job.datetime_laststop - job.datetime_start - job.duration_suspend
+
     response = {
         "uuid": job.uuid,
         "name": job.name,
         "status": job.status.value,
         "start": job.datetime_start,
-        "duration": job.datetime_laststop - job.datetime_start,
+        "duration": duration,
         "target": job.target_VAE_model,
         "params": {
             "minimum_n_components": job.minimum_n_components,
@@ -172,10 +174,8 @@ async def get_gmm_job(
 
     optimal_trial = (
         db.query(OptimalTrial)
-        .filter(
-            OptimalTrial.gmm_job_id == job.uuid,
-            OptimalTrial.n_components == n_components,
-        )
+        .filter(OptimalTrial.gmm_job_id == job.uuid)
+        .order_by(OptimalTrial.BIC.asc())
         .first()
     )
     if n_components is None:
@@ -183,8 +183,10 @@ async def get_gmm_job(
     else:
         requested_trial = (
             db.query(OptimalTrial)
-            .filter(OptimalTrial.gmm_job_id == job.uuid)
-            .order_by(OptimalTrial.BIC.asc())
+            .filter(
+                OptimalTrial.gmm_job_id == job.uuid,
+                OptimalTrial.n_components == n_components,
+            )
             .first()
         )
 
@@ -196,7 +198,7 @@ async def get_gmm_job(
     if job.status in [JobStatus.suspend, JobStatus.progress]:
         response["current_states"] = {
             "n_components": job.n_component_current,
-            "trials_completed": requested_trial.n_trials_completed,
+            "trial": requested_trial.n_trials_completed,
         }
 
     if job.status in [JobStatus.suspend, JobStatus.progress, JobStatus.success]:
@@ -208,19 +210,13 @@ async def get_gmm_job(
         coords_y = df["coord_y"].to_list()
         random_regions = df["Without_Adapters"].to_list()
 
-        bics_entries = (
-            db.query(BIC.BIC)
-            .filter(
-                BIC.gmm_job_id == job.uuid,
-                BIC.n_components == requested_trial.n_components,
-            )
-            .all()
-        )
-        bics: List[float] = [entry.BIC for entry in bics_entries]
+        bics_entries = db.query(BIC).filter(BIC.gmm_job_id == job.uuid).all()
+        bics: List[float] = [entry.BIC for entry in bics_entries]  # type: ignore
+        hues: List[int] = [entry.n_components for entry in bics_entries]  # type: ignore
 
         response["gmm"] = {
             "current_n_components": requested_trial.n_components,
-            "optimal_n_compoents": optimal_trial.n_components,
+            "optimal_n_components": optimal_trial.n_components,
             "means": requested_trial.means,
             "covs": requested_trial.covariances,
         }
@@ -231,7 +227,7 @@ async def get_gmm_job(
             "duplicates": duplicates,
         }
         response["bic"] = {
-            "n_components": optimal_trial.n_components,
+            "n_components": hues,
             "bics": bics,
         }
     if job.status == JobStatus.failure:  # type: ignore
@@ -307,6 +303,10 @@ async def suspend_gmm_job(
 
     AbortableAsyncResult(job.worker_uuid, app=celery).abort()
 
+    while job.status.value == "progress":
+        db.refresh(job)
+        # wait for the task to be aborted
+
     return None
 
 
@@ -328,6 +328,14 @@ async def resume_gmm_job(
         datapath_prefix=datapath_prefix,
         database_url=database_url,
     )
+
+    job = db.query(GMMJob).filter(GMMJob.uuid == request.uuid).first()
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    while job.status.value == "suspend":
+        db.refresh(job)
+        # wait for the task to be resumed
 
     return None
 
@@ -371,6 +379,9 @@ async def publish_gmm_job(
         covariance_type="full",
     )
     mixture.converged_ = True
+    mixture.weights_ = (
+        np.ones(optimalTrial.n_components) / optimalTrial.n_components  # type: ignore
+    )
     mixture.means_ = np.array(optimalTrial.means)
     mixture.covariances_ = np.array(optimalTrial.covariances)
 

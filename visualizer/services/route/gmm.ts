@@ -160,6 +160,7 @@ export const responsePostGMMJobsResume = z.null();
 export const requestPostGMMJobsPublish = z.object({
   uuid: z.string().uuid(),
   name: z.string().nonempty(),
+  n_components: z.number().int().min(1),
 });
 export const responsePostGMMJobsPublish = z.null();
 

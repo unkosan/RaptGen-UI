@@ -217,9 +217,13 @@ const Main: React.FC = () => {
                 variant="primary"
                 disabled={!publishName}
                 onClick={async () => {
+                  if (jobItem.status !== "success") {
+                    return;
+                  }
                   await apiClient.publishGMMJobs({
                     name: publishName,
                     uuid: currentUUID,
+                    n_components: jobItem.gmm.current_n_components,
                   });
                   setIsPublishModalOpen(false);
                 }}
