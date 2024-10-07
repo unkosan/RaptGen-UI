@@ -220,9 +220,13 @@ class ViewerGMM(BaseSchema):
     seed = Column(Integer)
 
     # training data
-    n_components = Column(Integer)  # Number of components
-    means = Column(postgresql.ARRAY(Float, dimensions=2))  # Means of the GMM
-    covariances = Column(postgresql.ARRAY(Float, dimensions=3))  # Covariance of the GMM
+    n_components = Column(Integer, nullable=False)  # Number of components
+    means = Column(
+        postgresql.ARRAY(Float, dimensions=2), nullable=False
+    )  # Means of the GMM
+    covariances = Column(
+        postgresql.ARRAY(Float, dimensions=3), nullable=False
+    )  # Covariance of the GMM
 
 
 class ViewerSequenceEmbeddings(BaseSchema):
