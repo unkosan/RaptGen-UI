@@ -170,6 +170,80 @@ class SequenceEmbeddings(BaseSchema):
     duplicate = Column(Integer, nullable=False)
 
 
+class ViewerProfiles(BaseSchema):
+    __tablename__ = "viewer_profiles"
+
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    uuid = Column(String, unique=True, nullable=False)
+
+    # metadata
+    create_timestamp = Column(Integer, nullable=False)
+    name = Column(String, nullable=False)
+    device = Column(String)
+    seed = Column(Integer)
+
+    # preprocessing
+    forward_adapter = Column(String)
+    reverse_adapter = Column(String)
+    random_region_length_standard = Column(Integer)
+    random_region_length_tolerance = Column(Integer)
+    minimum_count = Column(Integer)
+
+    # training
+    epochs = Column(Integer)
+    epochs_beta_weighting = Column(Integer)
+    epochs_match_forcing = Column(Integer)
+    epochs_early_stopping = Column(Integer)
+
+    match_cost = Column(Float)
+    phmm_length = Column(Integer)
+
+    # training data
+    checkpoint = Column(LargeBinary, nullable=False)
+
+
+class ViewerGMM(BaseSchema):
+    __tablename__ = "viewer_gmm"
+
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    uuid = Column(String, unique=True, nullable=False)
+    profile_uuid = Column(
+        String,
+        ForeignKey("viewer_profiles.uuid"),
+        nullable=False,
+        onupdate="CASCADE",
+        ondelete="CASCADE",
+    )
+
+    # metadata
+    name = Column(String, nullable=False)
+    seed = Column(Integer)
+
+    # training data
+    n_components = Column(Integer)  # Number of components
+    means = Column(postgresql.ARRAY(Float, dimensions=2))  # Means of the GMM
+    covariances = Column(postgresql.ARRAY(Float, dimensions=3))  # Covariance of the GMM
+
+
+class ViewerSequenceEmbeddings(BaseSchema):
+    __tablename__ = "viewer_sequence_data"
+
+    id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    profile_uuid = Column(
+        String,
+        ForeignKey("viewer_profiles.uuid"),
+        nullable=False,
+        onupdate="CASCADE",
+        ondelete="CASCADE",
+    )
+
+    seq_id = Column(Integer, primary_key=True, nullable=False)
+    random_region = Column(String, nullable=False)
+    coord_x = Column(Float, nullable=False)
+    coord_y = Column(Float, nullable=False)
+    duplicate = Column(Integer, nullable=False)
+
+
 class TrainingLosses(BaseSchema):
     """
     Training losses of the child jobs. Required for visualization.
