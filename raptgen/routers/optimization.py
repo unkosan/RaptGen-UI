@@ -9,7 +9,7 @@ from botorch.acquisition import qExpectedImprovement
 from botorch.optim import optimize_acqf
 from gpytorch.mlls import ExactMarginalLogLikelihood
 from sqlalchemy.orm import Session
-from sqlalchemy import Column, func
+from sqlalchemy import func
 
 from uuid import uuid4
 import datetime
@@ -207,7 +207,7 @@ class AcquisitionMesh(BaseModel):
 class SubmitBayesianOptimization(BaseModel):
     # {
     #     experiment_name: string?, (null もしくは "" の時 untitled という名前がつきます）
-    #     VAE_model: string,
+    #     VAE_uuid: string,
     #     plot_config: {
     #         minimum_count: number,
     #         show_training_data: boolean,
@@ -242,7 +242,7 @@ class SubmitBayesianOptimization(BaseModel):
     #     }
     # }
     experiment_name: Optional[str] = None
-    VAE_model: str
+    VAE_uuid: str
     plot_config: PlotConfig
     optimization_config: OptimizationConfig
     distribution_config: DistributionConfig
@@ -286,7 +286,7 @@ async def submit_bayesian_optimization(
         db.Experiments(
             uuid=optimization_id,
             name=experiment_name,
-            VAE_model=request.VAE_model,
+            VAE_uuid=request.VAE_uuid,
             minimum_count=request.plot_config.minimum_count,
             show_training_data=request.plot_config.show_training_data,
             show_bo_contour=request.plot_config.show_bo_contour,
@@ -425,7 +425,8 @@ async def get_experiment_items(
 
 class ExperimentItem(BaseModel):
     experiment_name: str
-    VAE_model: str
+    VAE_uuid: str
+    VAE_name: str
     plot_config: PlotConfig
     optimization_config: OptimizationConfig
     distribution_config: DistributionConfig
@@ -493,9 +494,21 @@ async def get_experiment_item(
 
     session.commit()
 
+    # get VAE_name
+    vae_entry = (
+        session.query(db.ViewerVAE)
+        .filter(db.ViewerVAE.uuid == experiment.VAE_uuid)
+        .first()
+    )
+    if vae_entry is None:
+        raise HTTPException(
+            status_code=404, detail=f"Item not found: {experiment.VAE_uuid}"
+        )
+
     return ExperimentItem(
         experiment_name=experiment.name,  # type: ignore
-        VAE_model=experiment.VAE_model,  # type: ignore
+        VAE_uuid=experiment.VAE_uuid,  # type: ignore
+        VAE_name=vae_entry.name,  # type: ignore
         plot_config=PlotConfig(
             minimum_count=experiment.minimum_count,  # type: ignore
             show_training_data=experiment.show_training_data,  # type: ignore

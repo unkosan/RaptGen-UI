@@ -1,19 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
-import numpy as np
-
-router = APIRouter()
-
-import os
-from sklearn.mixture import GaussianMixture
-import pandas as pd
 from core.db import (
-    ViewerProfiles,
+    ViewerVAE,
     ViewerGMM,
     ViewerSequenceEmbeddings,
     get_db_session,
 )
+import numpy as np
+
+router = APIRouter()
+
 
 DATA_PATH = "/app/data/"
 
@@ -22,18 +18,16 @@ DATA_PATH = "/app/data/"
 async def get_VAE_model_names(
     session: Session = Depends(get_db_session),
 ):
-    result = session.query(ViewerProfiles).all()
-    data = [
-        {
-            "name": item.name,
-            "uuid": item.uuid,
-        }
-        for item in result
-    ]
+    result = session.query(ViewerVAE).all()
 
     return {
-        "status": "success",
-        "data": data,
+        "entries": [
+            {
+                "name": item.name,
+                "uuid": item.uuid,
+            }
+            for item in result
+        ]
     }
 
 
@@ -43,18 +37,16 @@ async def get_GMM_models_names(
     vae_uuid: str,
     session: Session = Depends(get_db_session),
 ):
-    result = session.query(ViewerGMM).where(ViewerGMM.profile_uuid == vae_uuid).all()
-    data = [
-        {
-            "name": item.name,
-            "uuid": item.uuid,
-        }
-        for item in result
-    ]
+    result = session.query(ViewerGMM).where(ViewerGMM.vae_uuid == vae_uuid).all()
 
     return {
-        "status": "success",
-        "data": data,
+        "entries": [
+            {
+                "name": item.name,
+                "uuid": item.uuid,
+            }
+            for item in result
+        ],
     }
 
 
@@ -65,17 +57,14 @@ async def get_GMM_model_parameters(
 ):
     result = session.query(ViewerGMM).where(ViewerGMM.uuid == gmm_uuid).first()
     if result is None:
-        return {"status": "error"}
+        raise HTTPException(status_code=404, detail="Item not found")
 
     means = np.array(result.means).tolist()
     covariances = np.array(result.covariances).tolist()
 
     return {
-        "status": "success",
-        "data": {
-            "means": means,
-            "covariances": covariances,
-        },
+        "means": means,
+        "covariances": covariances,
     }
 
 
@@ -86,22 +75,17 @@ async def get_selex_data(
 ):
     result = (
         session.query(ViewerSequenceEmbeddings)
-        .where(ViewerSequenceEmbeddings.profile_uuid == vae_uuid)
+        .where(ViewerSequenceEmbeddings.vae_uuid == vae_uuid)
         .all()
     )
     if len(result) == 0:
-        return {"status": "error"}
+        raise HTTPException(status_code=404, detail="Item not found")
 
-    data = {
+    return {
         "random_regions": [item.random_region for item in result],
         "duplicates": [item.duplicate for item in result],
         "coord_x": [item.coord_x for item in result],
         "coord_y": [item.coord_y for item in result],
-    }
-
-    return {
-        "status": "success",
-        "data": data,
     }
 
 
@@ -132,17 +116,12 @@ async def get_GMM_model_config(
 ):
     result = session.query(ViewerGMM).where(ViewerGMM.uuid == gmm_uuid).first()
     if result is None:
-        return {"status": "error"}
+        raise HTTPException(status_code=404, detail="Item not found")
 
-    data = {
+    return {
         "name": result.name,
         "seed": result.seed,
         "n_components": result.n_components,
-    }
-
-    return {
-        "status": "success",
-        "data": data,
     }
 
 
@@ -151,13 +130,11 @@ async def get_VAE_model_config(
     vae_uuid: str,
     session: Session = Depends(get_db_session),
 ):
-    result = (
-        session.query(ViewerProfiles).where(ViewerProfiles.uuid == vae_uuid).first()
-    )
+    result = session.query(ViewerVAE).where(ViewerVAE.uuid == vae_uuid).first()
     if result is None:
-        return {"status": "error"}
+        raise HTTPException(status_code=404, detail="Item not found")
 
-    data = {
+    return {
         # metadata
         "created_at": result.create_timestamp,
         "name": result.name,
@@ -176,9 +153,4 @@ async def get_VAE_model_config(
         "epochs_early_stopping": result.epochs_early_stopping,
         "match_cost": result.match_cost,
         "phmm_length": result.phmm_length,
-    }
-
-    return {
-        "status": "success",
-        "data": data,
     }
