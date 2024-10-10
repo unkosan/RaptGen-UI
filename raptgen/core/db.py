@@ -170,14 +170,13 @@ class SequenceEmbeddings(BaseSchema):
     duplicate = Column(Integer, nullable=False)
 
 
-class ViewerProfiles(BaseSchema):
-    __tablename__ = "viewer_profiles"
+    __tablename__ = "viewer_vae"
 
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     uuid = Column(String, unique=True, nullable=False)
 
     # metadata
-    create_timestamp = Column(Integer, nullable=False)
+    create_timestamp = Column(String)
     name = Column(String, nullable=False)
     device = Column(String)
     seed = Column(Integer)
@@ -207,12 +206,13 @@ class ViewerGMM(BaseSchema):
 
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     uuid = Column(String, unique=True, nullable=False)
-    profile_uuid = Column(
+    vae_uuid = Column(
         String,
-        ForeignKey("viewer_profiles.uuid"),
-        nullable=False,
-        onupdate="CASCADE",
-        ondelete="CASCADE",
+        ForeignKey(
+            "viewer_vae.uuid",
+            onupdate="CASCADE",
+            ondelete="CASCADE",
+        ),
     )
 
     # metadata
@@ -233,15 +233,15 @@ class ViewerSequenceEmbeddings(BaseSchema):
     __tablename__ = "viewer_sequence_data"
 
     id = Column(Integer, primary_key=True, unique=True, autoincrement=True)
-    profile_uuid = Column(
+    vae_uuid = Column(
         String,
-        ForeignKey("viewer_profiles.uuid"),
-        nullable=False,
-        onupdate="CASCADE",
-        ondelete="CASCADE",
+        ForeignKey(
+            "viewer_vae.uuid",
+            onupdate="CASCADE",
+            ondelete="CASCADE",
+        ),
     )
 
-    seq_id = Column(Integer, primary_key=True, nullable=False)
     random_region = Column(String, nullable=False)
     coord_x = Column(Float, nullable=False)
     coord_y = Column(Float, nullable=False)
@@ -271,7 +271,10 @@ class TrainingLosses(BaseSchema):
     __tablename__ = "training_losses"
 
     child_uuid = Column(
-        String, ForeignKey("child_jobs.uuid"), primary_key=True, nullable=False
+        String,
+        ForeignKey("child_jobs.uuid"),
+        primary_key=True,
+        nullable=False,
     )
     epoch = Column(Integer, primary_key=True, nullable=False)
 
@@ -393,7 +396,14 @@ class Experiments(BaseSchema):
     __tablename__ = "experiments"
     uuid = Column(String, unique=True, primary_key=True)
     name = Column(String)
-    VAE_model = Column(String)
+    VAE_uuid = Column(
+        String,
+        ForeignKey(
+            "viewer_vae.uuid",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+    )
     minimum_count = Column(Integer)
     show_training_data = Column(Boolean)
     show_bo_contour = Column(Boolean)
@@ -484,8 +494,15 @@ class GMMJob(BaseSchema):
     )  # UUID for each GMM job
     name = Column(String)  # Name of the GMM job
     status = Column(Enum(JobStatus), nullable=False)
+    target_VAE_uuid = Column(
+        String,
+        ForeignKey(
+            "viewer_vae.uuid",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+    )  # Target VAE UUID
 
-    target_VAE_model = Column(String)  # Target VAE model
     minimum_n_components = Column(Integer)  # Minimum number of components
     maximum_n_components = Column(Integer)  # Maximum number of components
     step_size = Column(Integer)  # Step size
@@ -513,11 +530,11 @@ class OptimalTrial(BaseSchema):
     gmm_job_id = Column(
         String, ForeignKey(GMMJob.uuid, ondelete="CASCADE", onupdate="CASCADE")
     )
+    n_components = Column(Integer, nullable=False)  # Number of components
 
     n_trials_completed = Column(Integer)  # Number of trials completed
     n_trials_total = Column(Integer)  # Number of trials
 
-    n_components = Column(Integer)  # Number of components
     means = Column(postgresql.ARRAY(Float, dimensions=2))  # Means of the GMM
     covariances = Column(postgresql.ARRAY(Float, dimensions=3))  # Covariance of the GMM
     BIC = Column(Float)  # Bayesian Information Criterion (BIC)
