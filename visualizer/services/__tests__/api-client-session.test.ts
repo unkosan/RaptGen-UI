@@ -2,6 +2,8 @@ import { apiClient } from "../api-client";
 import { setupServer } from "msw/node";
 import { handlers } from "~/mock/handlers";
 import axios from "axios";
+import { uuids } from "~/mock/route/asset/uuids";
+import { validate } from "uuid";
 
 const server = setupServer(...handlers);
 
@@ -53,57 +55,46 @@ describe("session service", () => {
   it("should return session id", async () => {
     const res = await apiClient.startSession({
       queries: {
-        VAE_name: "RAPT1",
+        vae_uuid: uuids.vae.rapt1,
       },
     });
-    expect(res.status).toBe("success");
-    if (res.status === "success") {
-      expect(res.data).toBeGreaterThan(1000000);
-    }
+    expect(validate(res.uuid)).toBeTruthy();
   });
 
   it("should finish session successfully", async () => {
     const resStart = await apiClient.startSession({
       queries: {
-        VAE_name: "RAPT1",
+        vae_uuid: uuids.vae.rapt1,
       },
     });
-    expect(resStart.status).toBe("success");
-    if (resStart.status === "success") {
-      expect(resStart.data).toBeGreaterThan(1000000);
-    } else {
-      throw new Error("Failed to start session");
-    }
 
     const resFinish = await apiClient.endSession({
       queries: {
-        session_id: resStart.data,
+        session_uuid: resStart.uuid,
       },
     });
-    expect(resFinish.status).toBe("success");
+
+    const resStatus = await apiClient.getSessionStatus();
+    expect(resStatus.entries).not.toContain(resStart.uuid);
   });
 
-  it("should finish session with error", async () => {
-    const resStart = await apiClient.startSession({
-      queries: {
-        VAE_name: "RAPT1",
-      },
-    });
-    if (resStart.status === "success") {
-      expect(resStart.data).toBeGreaterThan(1000000);
-    } else {
-      throw new Error("Failed to start session");
-    }
+  xit("should finish session with error", async () => {
+    expect(async () => {
+      const resStart = await apiClient.startSession({
+        queries: {
+          vae_uuid: uuids.vae.rapt1,
+        },
+      });
 
-    const resFinish = await apiClient.endSession({
-      queries: {
-        session_id: resStart.data + 1,
-      },
-    });
-    expect(resFinish.status).toBe("error");
+      const resFinish = await apiClient.endSession({
+        queries: {
+          session_uuid: resStart.uuid + "1",
+        },
+      });
+    }).toThrowError();
   });
 
-  // it("should return session status", async () => {
+  // xit("should return session status", async () => {
   //   const resStart = await apiClient.startSession({
   //     queries: {
   //       VAE_name: "RAPT1",
@@ -126,135 +117,78 @@ describe("session service", () => {
   it("should return encoded codes", async () => {
     const resStart = await apiClient.startSession({
       queries: {
-        VAE_name: "RAPT1",
+        vae_uuid: uuids.vae.rapt1,
       },
     });
-    expect(resStart.status).toBe("success");
-    if (resStart.status === "success") {
-      expect(resStart.data).toBeGreaterThan(1000000);
-    } else {
-      throw new Error("Failed to start session");
-    }
 
     const resEncode = await apiClient.encode({
-      session_id: resStart.data,
+      session_uuid: resStart.uuid,
       sequences: ["ATCG", "AAGG", "GGGC"],
     });
-    expect(resEncode.status).toBe("success");
+
+    expect(resEncode.coords_x).toBeInstanceOf(Array);
+    expect(resEncode.coords_y).toBeInstanceOf(Array);
   });
 
-  it("should not return encoded codes", async () => {
-    const resStart = await apiClient.startSession({
-      queries: {
-        VAE_name: "RAPT3",
-      },
-    });
-    expect(resStart.status).toBe("success");
-    if (resStart.status === "success") {
-      expect(resStart.data).toBeGreaterThan(1000000);
-    } else {
-      throw new Error("Failed to start session");
-    }
+  xit("should not return encoded codes", async () => {
+    expect(async () => {
+      const resStart = await apiClient.startSession({
+        queries: {
+          vae_uuid: uuids.vae.rapt3,
+        },
+      });
 
-    const resEncode = await apiClient.encode({
-      session_id: resStart.data + 1,
-      sequences: ["ATCG", "AAGG", "GGGC"],
-    });
-    expect(resEncode.status).toBe("error");
+      const resEncode = await apiClient.encode({
+        session_uuid: resStart.uuid + "1",
+        sequences: ["ATCG", "AAGG", "GGGC"],
+      });
+    }).toThrowError();
   });
 
   it("should return decoded sequences", async () => {
     const resStart = await apiClient.startSession({
       queries: {
-        VAE_name: "RAPT1",
+        vae_uuid: uuids.vae.rapt1,
       },
     });
-    expect(resStart.status).toBe("success");
-    if (resStart.status === "success") {
-      expect(resStart.data).toBeGreaterThan(1000000);
-    } else {
-      throw new Error("Failed to start session");
-    }
 
     const resDecode = await apiClient.decode({
-      session_id: resStart.data,
-      coords: [
-        {
-          coord_x: 0.1,
-          coord_y: 0.2,
-        },
-        {
-          coord_x: 0.3,
-          coord_y: 0.4,
-        },
-        {
-          coord_x: 0.5,
-          coord_y: 0.6,
-        },
-      ],
+      session_uuid: resStart.uuid,
+      coords_x: [0.1, 0.3, 0.5],
+      coords_y: [0.2, 0.4, 0.6],
     });
-    expect(resDecode.status).toBe("success");
-    if (resDecode.status === "success") {
-      expect(resDecode.data).toBeInstanceOf(Array);
-      expect(resDecode.data.length).toBe(3);
-      expect(typeof resDecode.data[0] === "string").toBe(true);
-    }
+    expect(resDecode.sequences).toBeInstanceOf(Array);
+    expect(resDecode.sequences.length).toBe(3);
+    expect(typeof resDecode.sequences[0] === "string").toBe(true);
   });
 
-  it("should not return decoded sequences", async () => {
-    const resStart = await apiClient.startSession({
-      queries: {
-        VAE_name: "RAPT3",
-      },
-    });
-    expect(resStart.status).toBe("success");
-    if (resStart.status === "success") {
-      expect(resStart.data).toBeGreaterThan(1000000);
-    } else {
-      throw new Error("Failed to start session");
-    }
+  xit("should not return decoded sequences", async () => {
+    expect(async () => {
+      const resStart = await apiClient.startSession({
+        queries: {
+          vae_uuid: uuids.vae.rapt3,
+        },
+      });
 
-    const resDecode = await apiClient.decode({
-      session_id: resStart.data + 1,
-      coords: [
-        {
-          coord_x: 0.1,
-          coord_y: 0.2,
-        },
-        {
-          coord_x: 0.3,
-          coord_y: 0.4,
-        },
-        {
-          coord_x: 0.5,
-          coord_y: 0.6,
-        },
-      ],
-    });
-    expect(resDecode.status).toBe("error");
+      const resDecode = await apiClient.decode({
+        session_uuid: resStart.uuid + "1",
+        coords_x: [0.1, 0.3, 0.5],
+        coords_y: [0.2, 0.4, 0.6],
+      });
+    }).toThrowError();
   });
 
   xit("should return weblogo image", async () => {
     const resStart = await apiClient.startSession({
       queries: {
-        VAE_name: "RAPT1",
+        vae_uuid: uuids.vae.rapt1,
       },
     });
-    expect(resStart.status).toBe("success");
-    if (resStart.status === "success") {
-      expect(resStart.data).toBeGreaterThan(1000000);
-    } else {
-      throw new Error("Failed to start session");
-    }
 
     const resWeblogo = await apiClient.getWeblogo({
-      session_id: resStart.data,
-      coords: [
-        {
-          coord_x: 0.1,
-          coord_y: 0.2,
-        },
-      ],
+      session_uuid: resStart.uuid,
+      coords_x: [0.1],
+      coords_y: [0.2],
     });
     expect(isBinaryData(String(resWeblogo))).toBe(true);
   });

@@ -71,21 +71,12 @@ export const sessionHandlers = [
   }),
 
   rest.get(mockURL("/session/status"), (req, res, ctx) => {
-    if (sessions.size !== 0) {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          entries: Array.from(sessions),
-        })
-      );
-    } else {
-      return res(
-        ctx.status(400),
-        ctx.json({
-          status: "error",
-        })
-      );
-    }
+    return res(
+      ctx.status(200),
+      ctx.json({
+        entries: Array.from(sessions),
+      })
+    );
   }),
 
   rest.post(mockURL("/session/encode"), (req, res, ctx) => {
