@@ -13,7 +13,15 @@ const BayesOptConfig: React.FC = () => {
   );
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
 
+  const setDirty = () => {
+    dispatch({
+      type: "isDirty/set",
+      payload: true,
+    });
+  };
+
   const onChangeColumnName = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setDirty();
     dispatch({
       type: "bayesoptConfig/set",
       payload: {
@@ -21,13 +29,10 @@ const BayesOptConfig: React.FC = () => {
         targetColumn: event.target.value,
       },
     });
-    dispatch({
-      type: "isDirty/set",
-      payload: true,
-    });
   };
 
   const onChangeBudget = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDirty();
     dispatch({
       type: "bayesoptConfig/set",
       payload: {
@@ -35,23 +40,16 @@ const BayesOptConfig: React.FC = () => {
         queryBudget: Number(e.target.value),
       },
     });
-    dispatch({
-      type: "isDirty/set",
-      payload: true,
-    });
   };
 
   const onChangeShowContour = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDirty();
     dispatch({
       type: "graphConfig/set",
       payload: {
         ...graphConfig,
         showAcquisition: e.target.checked,
       },
-    });
-    dispatch({
-      type: "isDirty/set",
-      payload: true,
     });
   };
 

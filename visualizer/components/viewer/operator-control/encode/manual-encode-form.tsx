@@ -32,20 +32,17 @@ const ManualEncodeForm: React.FC = () => {
       return;
     }
 
-    if (sessionId === 0) {
+    if (sessionId === "") {
       return;
     }
 
     const res = await apiClient.encode({
-      session_id: sessionId,
+      session_uuid: sessionId,
       sequences: [value],
     });
 
-    if (res.status === "error") {
-      return;
-    }
-
-    const { coord_x, coord_y } = res.data[0];
+    const coord_x = res.coords_x[0];
+    const coord_y = res.coords_y[0];
     let newEncodeData = [...encodeData];
     newEncodeData.push({
       key: manualEncodeCount,

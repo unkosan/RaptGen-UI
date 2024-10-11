@@ -6,88 +6,108 @@ import { RootState } from "../../redux/store";
 import { apiClient } from "~/services/api-client";
 
 const SelectVAE: React.FC = () => {
-  const [value, setValue] = useState<string>("");
-  const [nameList, setNameList] = useState<string[]>([""]);
+  const [id, setId] = useState<string>("");
+  const [models, setModels] = useState<
+    {
+      uuid: string;
+      name: string;
+    }[]
+  >([]);
 
   const dispatch = useDispatch();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
 
   // retrieve VAE model names
   useEffect(() => {
     (async () => {
       const res = await apiClient.getVAEModelNames();
-      if (res.status === "success") {
-        setNameList(res.data);
-        if (res.data.length > 0) {
-          setValue(res.data[0]);
-        } else {
-          setValue("");
-        }
+
+      setModels(res.entries);
+      if (res.entries.length > 0) {
+        setId(res.entries[0].uuid);
+      } else {
+        setId("");
       }
     })();
   }, []);
 
   // dispatch model names to redux store
   useEffect(() => {
-    if (value === "") {
+    if (id === "") {
       return;
     }
+    const vaeName = models.find((model) => model.uuid === id)?.name;
     dispatch({
       type: "graphConfig/set",
       payload: {
         ...graphConfig,
-        vaeName: value,
+        vaeName: vaeName,
         gmmName: "",
       },
     });
-  }, [value, dispatch]);
+  }, [id, dispatch]);
 
   // start session
   useEffect(() => {
     (async () => {
-      if (value === "") {
+      if (id === "") {
         return;
       }
 
-      const res = await apiClient.startSession({
-        queries: {
-          VAE_name: value,
-        },
-      });
-
-      if (res.status === "success") {
-        const sessionId: number = res.data;
-        dispatch({
-          type: "sessionConfig/setSessionId",
-          payload: sessionId,
+      try {
+        const resStart = await apiClient.startSession({
+          queries: {
+            vae_uuid: id,
+          },
         });
+
+        if (sessionConfig.sessionId !== "") {
+          const resEnd = await apiClient.endSession({
+            queries: {
+              session_uuid: sessionConfig.sessionId,
+            },
+          });
+        }
+
+        dispatch({
+          type: "sessionConfig/set",
+          payload: {
+            ...sessionConfig,
+            sessionId: resStart.uuid,
+            vaeId: id,
+            gmmId: "",
+            forwardAdapter: "",
+            reverseAdapter: "",
+          },
+        });
+      } catch (e) {
+        console.error(e);
       }
     })();
-  }, [value, dispatch]);
+  }, [id, dispatch]);
 
   // retrieve VAE data
   useEffect(() => {
     (async () => {
-      if (value === "") {
+      if (id === "") {
         return;
       }
 
-      const res = await apiClient.getSelexData({
-        queries: {
-          VAE_model_name: value,
-        },
-      });
-
-      if (res.status === "success") {
-        const rawData = res.data;
-        const vaeData = rawData.Sequence.map((value, index) => {
+      try {
+        const res = await apiClient.getSelexData({
+          queries: {
+            vae_uuid: id,
+          },
+        });
+        const vaeData = res.random_regions.map((value, index) => {
           return {
             key: index,
             sequence: value,
-            randomRegion: rawData.Without_Adapters[index],
-            duplicates: rawData.Duplicates[index],
-            coordX: rawData.coord_x[index],
-            coordY: rawData.coord_y[index],
+            randomRegion: value,
+            duplicates: res.duplicates[index],
+            coordX: res.coord_x[index],
+            coordY: res.coord_y[index],
             isSelected: false,
             isShown: true,
           };
@@ -97,14 +117,19 @@ const SelectVAE: React.FC = () => {
           type: "vaeData/set",
           payload: vaeData,
         });
+      } catch (e) {
+        console.error(e);
+        return;
       }
     })();
-  }, [value, dispatch]);
+  }, [id, dispatch]);
 
   return (
-    <Form.Select value={value} onChange={(e) => setValue(e.target.value)}>
-      {nameList.map((name, index) => (
-        <option key={index}>{name}</option>
+    <Form.Select value={id} onChange={(e) => setId(e.target.value)}>
+      {models.map((model, index) => (
+        <option key={index} value={model.uuid}>
+          {model.name}
+        </option>
       ))}
     </Form.Select>
   );

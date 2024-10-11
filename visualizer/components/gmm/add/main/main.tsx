@@ -20,39 +20,35 @@ const Main: React.FC = () => {
 
 const LatentGraph: React.FC = () => {
   const params = useSelector((state: RootState) => state.params);
-  const paramsValid = useSelector((state: RootState) => state.paramsValid);
   const [vaeDataPlot, setVaeDataPlot] = useState<Partial<PlotData> | null>(
     null
   );
 
   useEffect(() => {
-    if (!params?.vaeModelName) {
+    if (params.vaeId === "") {
       return;
     }
 
     (async () => {
+      console.log(params);
       const res = await apiClient.getSelexData({
-        queries: { VAE_model_name: params.vaeModelName },
+        queries: { vae_uuid: params.vaeId },
       });
-      if (res.status !== "success") {
-        return;
-      }
-      const data = res.data;
 
-      const mask = data.Duplicates.map((value) => value >= 5);
+      const mask = res.duplicates.map((value) => value >= 5);
       const trace: Partial<PlotData> = {
-        x: data.coord_x.filter((_, index) => mask[index]),
-        y: data.coord_y.filter((_, index) => mask[index]),
+        x: res.coord_x.filter((_, index) => mask[index]),
+        y: res.coord_y.filter((_, index) => mask[index]),
         type: "scattergl",
         mode: "markers",
         marker: {
-          size: data.Duplicates.map((d) => Math.max(2, Math.sqrt(d))),
+          size: res.duplicates.map((d) => Math.max(2, Math.sqrt(d))),
           color: "silver",
           line: {
             color: "silver",
           },
         },
-        customdata: data.Without_Adapters.filter((_, index) => mask[index]),
+        customdata: res.random_regions.filter((_, index) => mask[index]),
         hovertemplate:
           "X: %{x}<br>" +
           "Y: %{y}<br>" +
@@ -62,7 +58,7 @@ const LatentGraph: React.FC = () => {
 
       setVaeDataPlot(trace);
     })();
-  }, [params?.vaeModelName]);
+  }, [params.vaeId]);
 
   if (!vaeDataPlot) {
     return <div>Loading...</div>;
@@ -71,7 +67,7 @@ const LatentGraph: React.FC = () => {
       <Plot
         data={[vaeDataPlot]}
         useResizeHandler={true}
-        layout={returnLayout(params.vaeModelName)}
+        layout={returnLayout("Latent Space")}
         config={{ responsive: true }}
         style={{ width: "100%" }}
       />
@@ -98,7 +94,7 @@ const PagenationNav: React.FC = () => {
           step_size: params.stepSize,
           n_trials_per_component: params.numTrials,
         },
-        target: params.vaeModelName,
+        target: params.vaeId,
         name: params.gmmName,
       });
       setIsLoading(false);
@@ -123,7 +119,7 @@ const PagenationNav: React.FC = () => {
         }}
         disabled={
           !(
-            paramsValid.vaeModelName &&
+            paramsValid.vaeId &&
             paramsValid.gmmName &&
             paramsValid.minNumComponents &&
             paramsValid.maxNumComponents &&

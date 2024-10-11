@@ -6,62 +6,72 @@ import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 
 const SelectGMM: React.FC = () => {
-  const [value, setValue] = useState<string>("");
-  const [nameList, setNameList] = useState<string[]>([]);
+  const [models, setModels] = useState<
+    {
+      uuid: string;
+      name: string;
+    }[]
+  >([]);
+  const [id, setId] = useState<string>("");
 
   const dispatch = useDispatch();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
-  const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig.sessionId
-  );
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
 
   // retrieve GMM model names
   useEffect(() => {
     (async () => {
-      if (graphConfig.vaeName === "") {
+      if (sessionConfig.sessionId === "") {
         return;
       }
 
-      const res = await apiClient.getGMMModelNames({
-        queries: {
-          VAE_model_name: graphConfig.vaeName,
-        },
-      });
-      if (res.status === "success") {
-        setValue("");
-        setNameList(res.data);
+      try {
+        const res = await apiClient.getGMMModelNames({
+          queries: {
+            vae_uuid: sessionConfig.vaeId,
+          },
+        });
+
+        console.log(res);
+
+        setModels(res.entries);
+        if (res.entries.length > 0) {
+          setId(res.entries[0].uuid);
+        } else {
+          setId("");
+        }
+      } catch (e) {
+        console.error(e);
+        return;
       }
     })();
-  }, [graphConfig.vaeName]);
-
-  // when name list is updated, set the first element as default
-  useEffect(() => {
-    if (nameList.length > 0) {
-      setValue(nameList[0]);
-    } else {
-      setValue("");
-    }
-  }, [nameList]);
+  }, [sessionConfig.sessionId]);
 
   // dispatch model names to redux store
   useEffect(() => {
+    if (id === "") {
+      return;
+    }
+    dispatch({
+      type: "sessionConfig/set",
+      payload: {
+        ...sessionConfig,
+        gmmId: id,
+      },
+    });
     dispatch({
       type: "graphConfig/set",
       payload: {
         ...graphConfig,
-        gmmName: value,
+        gmmName: models.find((model) => model.uuid === id)?.name,
       },
     });
-  }, [value, dispatch]);
+  }, [id]);
 
   // retrieve GMM data and dispatch to redux store
   useEffect(() => {
     (async () => {
-      if (sessionId === 0) {
-        return;
-      }
-
-      if (value === "") {
+      if (id === "") {
         dispatch({
           type: "gmmData/set",
           payload: {
@@ -77,49 +87,35 @@ const SelectGMM: React.FC = () => {
 
       const res = await apiClient.getGMMModel({
         queries: {
-          VAE_model_name: graphConfig.vaeName,
-          GMM_model_name: value,
+          gmm_uuid: id,
         },
       });
 
-      if (res.status !== "success") {
-        return;
-      }
-
-      const gmm = res.data;
-
-      const resDecode = await apiClient.decode({
-        session_id: sessionId,
-        coords: gmm.means.map((value) => {
-          return { coord_x: value[0], coord_y: value[1] };
-        }),
+      const resCoords = await apiClient.decode({
+        session_uuid: sessionConfig.sessionId,
+        coords_x: res.means.map((value) => value[0]),
+        coords_y: res.means.map((value) => value[1]),
       });
-
-      if (resDecode.status !== "success") {
-        return;
-      }
-
-      // const decoded = resDecord.data;
-      const decoded = resDecode.data;
 
       dispatch({
         type: "gmmData/set",
         payload: {
-          weights: gmm.weights,
-          means: gmm.means,
-          covariances: gmm.covariances,
-          decodedSequences: decoded,
-          isShown: Array(gmm.weights.length).fill(true),
+          means: res.means,
+          covariances: res.covariances,
+          decodedSequences: resCoords.sequences,
+          isShown: Array(res.means.length).fill(true),
         },
       });
     })();
-  }, [value, sessionId, dispatch]);
+  }, [id, sessionConfig.sessionId, dispatch]);
   // use sessionId instead of graphConfig.vaeName to access the VAE name changed by the user
 
   return (
-    <Form.Select value={value} onChange={(e) => setValue(e.target.value)}>
-      {nameList.map((name, index) => (
-        <option key={index}>{name}</option>
+    <Form.Select value={id} onChange={(e) => setId(e.target.value)}>
+      {models.map((model, index) => (
+        <option key={index} value={model.uuid}>
+          {model.name}
+        </option>
       ))}
     </Form.Select>
   );

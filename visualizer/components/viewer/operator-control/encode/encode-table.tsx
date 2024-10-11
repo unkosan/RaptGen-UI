@@ -137,13 +137,9 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
 
   const onConfirmClick = async () => {
     const res = await apiClient.encode({
-      session_id: sessionId,
+      session_uuid: sessionId,
       sequences: [value],
     });
-
-    if (res.status === "error") {
-      return;
-    }
 
     const key: number = props.cellProps.data.key;
     const idx = encodeData.findIndex((e) => e.key === key);
@@ -152,8 +148,8 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
       ...newEncodeData[idx],
       randomRegion: value,
       sequence: "",
-      coordX: res.data[0].coord_x,
-      coordY: res.data[0].coord_y,
+      coordX: res.coords_x[0],
+      coordY: res.coords_y[0],
     };
 
     dispatch({

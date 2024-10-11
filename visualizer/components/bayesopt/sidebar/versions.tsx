@@ -16,6 +16,7 @@ const Versions: React.FC = () => {
   const currentUUID = useRouter().query.uuid as string;
 
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
   const bayesoptConfig = useSelector(
     (state: RootState) => state.bayesoptConfig
   );
@@ -67,7 +68,8 @@ const Versions: React.FC = () => {
 
     const obj = {
       experiment_name: "",
-      VAE_model: graphConfig.vaeName,
+      VAE_name: graphConfig.vaeName,
+      VAE_uuid: sessionConfig.vaeId,
       plot_config: {
         minimum_count: graphConfig.minCount,
         show_training_data: graphConfig.showSelex,

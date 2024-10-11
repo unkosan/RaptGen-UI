@@ -1,7 +1,6 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type GmmData = {
-  weights: number[];
   means: number[][];
   covariances: number[][][];
   decodedSequences: string[];
@@ -11,7 +10,6 @@ type GmmData = {
 const gmmDataSlice = createSlice({
   name: "gmmData",
   initialState: {
-    weights: [] as number[],
     means: [] as number[][],
     covariances: [] as number[][][],
     decodedSequences: [] as string[],

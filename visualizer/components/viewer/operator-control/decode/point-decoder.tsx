@@ -54,25 +54,23 @@ const PointDecoder: React.FC = () => {
       return;
     }
 
-    if (sessionId === 0) {
+    if (sessionId === "") {
       return;
     }
 
     // dispatch decoded point value to redux
     (async () => {
-      const res = await apiClient.decode({
-        session_id: sessionId,
-        coords: [
-          {
-            coord_x: pointX,
-            coord_y: pointY,
-          },
-        ],
-      });
+      try {
+        const res = await apiClient.decode({
+          session_uuid: sessionId,
+          coords_x: [pointX],
+          coords_y: [pointY],
+        });
 
-      if (res.status === "success") {
-        const sequence: string = res.data[0];
+        const sequence: string = res.sequences[0];
         setSequence(sequence);
+      } catch (e) {
+        console.error(e);
       }
     })();
   }, [isValidX, isValidY, pointX, pointY]);

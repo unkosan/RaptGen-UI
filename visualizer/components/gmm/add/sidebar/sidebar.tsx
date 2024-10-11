@@ -11,29 +11,46 @@ const SideBar: React.FC = () => {
   const params = useSelector((state: RootState) => state.params);
   const paramsValid = useSelector((state: RootState) => state.paramsValid);
 
-  const [vaeModels, setVaeModels] = useState<string[]>([]);
+  const [vaeModels, setVaeModels] = useState<
+    {
+      uuid: string;
+      name: string;
+    }[]
+  >([]);
 
   const dispatch = useDispatch();
 
+  // retrieve VAE model names
   useEffect(() => {
     (async () => {
       const res = await apiClient.getVAEModelNames();
-      if (res.status !== "success") {
-        return;
-      }
-      setVaeModels(res.data);
-      if (res.data.length > 0) {
-        dispatch({
-          type: "params/set",
-          payload: {
-            ...params,
-            vaeModelName: res.data[0],
-          },
-        });
+
+      setVaeModels(res.entries);
+
+      if (res.entries.length > 0) {
+        try {
+          dispatch({
+            type: "params/set",
+            payload: {
+              ...params,
+              vaeId: res.entries[0].uuid,
+            },
+          });
+          dispatch({
+            type: "paramsValid/set",
+            payload: {
+              ...paramsValid,
+              vaeId: true,
+            },
+          });
+        } catch (e) {
+          console.error(e);
+        }
       }
     })();
   }, []);
 
+  // validate minNumComponents and maxNumComponents
   useEffect(() => {
     if (!paramsValid.minNumComponents || !paramsValid.maxNumComponents) {
       if (
@@ -59,23 +76,36 @@ const SideBar: React.FC = () => {
       <legend>Target VAE model</legend>
       <Form.Group className="mb-3">
         <Form.Label>Model type</Form.Label>
-        <Form.Control
-          as="select"
+        <Form.Select
+          value={params.vaeId}
           onChange={(e) => {
-            const model = e.currentTarget.value;
-            dispatch({
-              type: "params/set",
-              payload: {
-                ...params,
-                vaeModelName: model,
-              },
-            });
+            const uuid = e.target.value;
+            try {
+              dispatch({
+                type: "params/set",
+                payload: {
+                  ...params,
+                  vaeId: uuid,
+                },
+              });
+              dispatch({
+                type: "paramsValid/set",
+                payload: {
+                  ...paramsValid,
+                  vaeId: true,
+                },
+              });
+            } catch (e) {
+              console.error(e);
+            }
           }}
         >
-          {vaeModels.map((model) => (
-            <option key={model}>{model}</option>
+          {vaeModels.map((model, index) => (
+            <option key={index} value={model.uuid}>
+              {model.name}
+            </option>
           ))}
-        </Form.Control>
+        </Form.Select>
       </Form.Group>
       <TextForm
         label="GMM name"
