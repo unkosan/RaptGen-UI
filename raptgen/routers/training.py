@@ -424,7 +424,7 @@ async def run_parent_job(
                     parent_uuid=parent_id,
                     random_region=seq,
                     is_training_data=i < num_entries * 0.8,
-                    duplicate=1,
+                    duplicate=request_param.duplicates[i],
                 )
             )
         session.add(
