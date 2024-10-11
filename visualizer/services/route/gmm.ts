@@ -3,7 +3,7 @@ import { z } from "zod";
 
 // API POST /gmm/jobs/submit
 export const requestPostGMMJobsSubmit = z.object({
-  target: z.string(),
+  target: z.string().uuid(),
   name: z.string(),
   params: z.object({
     minimum_n_components: z.number().int().min(1),

@@ -262,59 +262,54 @@ const RunBayesOptButton: React.FC = () => {
       });
     }
 
-    let resDecode = await apiClient.decode({
-      session_id: sessionId,
-      coords: coords_original,
-    });
+    try {
+      const resDecode = await apiClient.decode({
+        session_uuid: sessionId,
+        coords_x: resBayesopt.query_data.coords_x,
+        coords_y: resBayesopt.query_data.coords_y,
+      });
 
-    if (resDecode.status === "error") return;
+      const randomRegion = resDecode.sequences.map((value) => {
+        return value.replaceAll("_", "").replaceAll("N", "");
+      });
 
-    const randomRegion = resDecode.data.map((seq) => {
-      seq = seq.replaceAll("_", "");
-      seq = seq.replaceAll("N", "");
-      return seq;
-    });
+      const resEncode = await apiClient.encode({
+        session_uuid: sessionId,
+        sequences: randomRegion,
+      });
 
-    let resEncode = await apiClient.encode({
-      session_id: sessionId,
-      sequences: randomRegion,
-    });
+      dispatch({
+        type: "isDirty/set",
+        payload: true,
+      });
 
-    if (resEncode.status === "error") return;
+      dispatch({
+        type: "queriedValues/set",
+        payload: {
+          wholeSelected: queryData.wholeSelected,
+          randomRegion: randomRegion,
+          coordX: resEncode.coords_x,
+          coordY: resEncode.coords_y,
+          coordOriginalX: resBayesopt.query_data.coords_x,
+          coordOriginalY: resBayesopt.query_data.coords_y,
+          staged: new Array(resDecode.sequences.length).fill(
+            queryData.wholeSelected
+          ),
+        },
+      });
 
-    let reembeddedCoordX: number[] = [];
-    let reembeddedCoordY: number[] = [];
-    resEncode.data.forEach((value) => {
-      reembeddedCoordX.push(value.coord_x);
-      reembeddedCoordY.push(value.coord_y);
-    });
-
-    dispatch({
-      type: "queriedValues/set",
-      payload: {
-        wholeSelected: queryData.wholeSelected,
-        randomRegion: randomRegion,
-        coordX: reembeddedCoordX,
-        coordY: reembeddedCoordY,
-        coordOriginalX: resBayesopt.query_data.coords_x,
-        coordOriginalY: resBayesopt.query_data.coords_y,
-        staged: new Array(resDecode.data.length).fill(queryData.wholeSelected),
-      },
-    });
-
-    dispatch({
-      type: "acquisitionValues/set",
-      payload: {
-        acquisitionValues: resBayesopt.acquisition_data.values,
-        coordX: resBayesopt.acquisition_data.coords_x,
-        coordY: resBayesopt.acquisition_data.coords_y,
-      },
-    });
-
-    dispatch({
-      type: "isDirty/set",
-      payload: true,
-    });
+      dispatch({
+        type: "acquisitionValues/set",
+        payload: {
+          acquisitionValues: resBayesopt.acquisition_data.values,
+          coordX: resBayesopt.acquisition_data.coords_x,
+          coordY: resBayesopt.acquisition_data.coords_y,
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      return;
+    }
   };
 
   return (

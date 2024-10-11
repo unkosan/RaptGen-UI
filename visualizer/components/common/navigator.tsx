@@ -16,7 +16,7 @@ const Navigator: React.FC<Props> = ({ currentPage }) => {
         <Navbar.Brand>RaptGen Visualizer</Navbar.Brand>
         <Nav className="me-auto">
           <Nav.Link href="/viewer">Viewer</Nav.Link>
-          <Nav.Link href="/uploader">Uploader</Nav.Link>
+          {/* <Nav.Link href="/uploader">Uploader</Nav.Link> */}
           <Nav.Link href="/trainer">VAE Trainer</Nav.Link>
           <Nav.Link href="/gmm">GMM Trainer</Nav.Link>
           <Nav.Link href="/bayesopt">Bayesian Optimization</Nav.Link>

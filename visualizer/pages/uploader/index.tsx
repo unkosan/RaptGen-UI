@@ -23,7 +23,8 @@ const Home: React.FC = () => {
         <Container>
           <h1 style={{ marginTop: "1rem" }}>Uploader</h1>
           <hr />
-          <Row>
+          This page is under construction.
+          {/* <Row>
             <Col md={4}>
               <legend>Menu</legend>
               <Card
@@ -53,7 +54,7 @@ const Home: React.FC = () => {
               </Card>
             </Col>
             <Col>Please select a menu.</Col>
-          </Row>
+          </Row> */}
         </Container>
       </main>
     </>

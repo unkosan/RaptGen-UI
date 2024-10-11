@@ -1,5 +1,5 @@
 import { rest } from "msw";
-import { randomInt } from "mathjs";
+import { v4 as uuidv4 } from "uuid";
 // import weblogo from "./asset/weblogo.png";
 import {
   requestPostDecode,
@@ -7,6 +7,7 @@ import {
   // requestPostWeblogo,
 } from "../../services/route/session";
 import { z } from "zod";
+import { uuids } from "./asset/uuids";
 
 function randomNormal() {
   const u = 1 - Math.random(); // Subtraction to flip [0, 1) to (0, 1].
@@ -25,7 +26,7 @@ const errorMsg = {
   type: "value_error.invalid_type",
 };
 
-let sessions = new Set<number>();
+let sessions = new Set<string>();
 
 export const sessionHandlers = [
   rest.get(mockURL(""), (req, res, ctx) => {
@@ -39,20 +40,19 @@ export const sessionHandlers = [
   }),
 
   rest.get(mockURL("/session/start"), (req, res, ctx) => {
-    const VAE_model_name = req.url.searchParams.get("VAE_name");
-    if (VAE_model_name === "RAPT1" || VAE_model_name === "RAPT3") {
-      const sessionId = randomInt(1000000, 9999999);
-      sessions.add(sessionId);
+    const vae_uuid = req.url.searchParams.get("vae_uuid");
+    if (vae_uuid === uuids.vae.rapt1 || vae_uuid === uuids.vae.rapt3) {
+      const session_uuid = uuidv4();
+      sessions.add(session_uuid);
       return res(
         ctx.status(200),
         ctx.json({
-          status: "success",
-          data: sessionId,
+          uuid: session_uuid,
         })
       );
     } else {
       return res(
-        ctx.status(200),
+        ctx.status(404),
         ctx.json({
           status: "error",
         })
@@ -61,124 +61,94 @@ export const sessionHandlers = [
   }),
 
   rest.get(mockURL("/session/end"), (req, res, ctx) => {
-    const session_id = req.url.searchParams.get("session_id");
-    if (sessions.has(Number(session_id))) {
-      sessions.delete(Number(session_id));
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status: "success",
-        })
-      );
+    const session_uuid = req.url.searchParams.get("session_uuid");
+    if (sessions.has(session_uuid as string)) {
+      sessions.delete(session_uuid as string);
+      return res(ctx.status(200), ctx.json(null));
     } else {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status: "error",
-        })
-      );
+      return res(ctx.status(404), ctx.json(null));
     }
   }),
 
   rest.get(mockURL("/session/status"), (req, res, ctx) => {
-    if (sessions.size !== 0) {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status: "success",
-          data: Array.from(sessions),
-        })
-      );
-    } else {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status: "error",
-        })
-      );
-    }
+    return res(
+      ctx.status(200),
+      ctx.json({
+        entries: Array.from(sessions),
+      })
+    );
   }),
 
   rest.post(mockURL("/session/encode"), (req, res, ctx) => {
     const resBody = req.body as z.infer<typeof requestPostEncode>;
     const length = resBody.sequences.length;
 
+    if (!sessions.has(resBody.session_uuid)) {
+      return res(
+        ctx.status(400),
+        ctx.json({
+          error: "session error",
+        })
+      );
+    }
+
     if (length === 0) {
       return res(
-        ctx.status(200),
+        ctx.status(400),
         ctx.json({
-          status: "error",
+          error: "input error",
         })
       );
     }
 
     // generate random codes
-    let codes = [];
-    for (let i = 0; i < length; i++) {
-      codes.push({
-        coord_x: randomNormal(),
-        coord_y: randomNormal(),
-      });
-    }
-
-    if (sessions.has(resBody.session_id)) {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status: "success",
-          data: codes,
-        })
-      );
-    } else {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status: "error",
-        })
-      );
-    }
+    return res(
+      ctx.status(200),
+      ctx.json({
+        coords_x: Array.from({ length }, () => randomNormal()),
+        coords_y: Array.from({ length }, () => randomNormal()),
+      })
+    );
   }),
 
   rest.post(mockURL("/session/decode"), (req, res, ctx) => {
     const resBody = req.body as z.infer<typeof requestPostDecode>;
-    const length = resBody.coords.length;
+    const length = resBody.coords_x.length;
+
+    if (!sessions.has(resBody.session_uuid)) {
+      return res(
+        ctx.status(400),
+        ctx.json({
+          error: "session error",
+        })
+      );
+    }
 
     if (length === 0) {
       return res(
-        ctx.status(200),
+        ctx.status(400),
         ctx.json({
-          status: "error",
+          error: "input error",
         })
       );
     }
 
     // generate random sequences
-    let sequences = [];
-    for (let i = 0; i < length; i++) {
+    const sequences = Array.from({ length }, () => {
       let seq = "";
       for (let j = 0; j < 10; j++) {
         const char = "ATCG".charAt(Math.floor(Math.random() * 4));
         seq += char;
       }
-      sequences.push(seq);
-    }
+      return seq;
+    });
 
-    if (sessions.has(resBody.session_id)) {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status: "success",
-          data: sequences,
-        })
-      );
-    } else {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status: "error",
-        })
-      );
-    }
+    return res(
+      ctx.status(200),
+      ctx.json({
+        sequences: sequences,
+      })
+    );
   }),
 
   // cannot mock image data

@@ -54,97 +54,94 @@ const parseCsv = (text: string) => {
 
 const InitialDataset: React.FC = () => {
   const dispatch = useDispatch();
-  const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig.sessionId
-  );
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
   const bayesoptConfig = useSelector(
     (state: RootState) => state.bayesoptConfig
   );
-  const selectedVAE = useSelector(
-    (state: RootState) => state.sessionConfig.vaeName
-  );
-  const [gmmNames, setGmmNames] = useState<string[]>([]);
-  const [selectedGMM, setSelectedGMM] = useState<string>("");
+  const [gmmModels, setGmmModels] = useState<
+    {
+      uuid: string;
+      name: string;
+    }[]
+  >([]);
+  const [selectedModel, setSelectedModel] = useState<string>("");
 
+  // retrieve GMM model names
   useEffect(() => {
     (async () => {
-      if (selectedVAE === "") return;
+      if (sessionConfig.vaeId === "") return;
       const res = await apiClient.getGMMModelNames({
         queries: {
-          VAE_model_name: selectedVAE,
+          vae_uuid: sessionConfig.vaeId,
         },
       });
-      if (res.status === "error") return;
-      setGmmNames(res.data);
-      if (res.data.length > 0) {
-        setSelectedGMM(res.data[0]);
+
+      setGmmModels(res.entries);
+      if (res.entries.length > 0) {
+        setSelectedModel(res.entries[0].uuid);
       }
     })();
-  }, [selectedVAE]);
+  }, [sessionConfig.vaeId]);
 
-  const retrieveGMM = async () => {
-    if (selectedVAE === "") return;
-    if (selectedGMM === "") return;
+  // when gmm model is selected
+  const onClickApplyGMM = async () => {
+    if (selectedModel === "") return;
+    try {
+      const resModel = await apiClient.getGMMModel({
+        queries: {
+          gmm_uuid: selectedModel,
+        },
+      });
 
-    const resGMM = await apiClient.getGMMModel({
-      queries: {
-        VAE_model_name: selectedVAE,
-        GMM_model_name: selectedGMM,
-      },
-    });
-    if (resGMM.status === "error") return;
+      const resDecode = await apiClient.decode({
+        session_uuid: sessionConfig.sessionId,
+        coords_x: resModel.means.map((mean) => mean[0]),
+        coords_y: resModel.means.map((mean) => mean[1]),
+      });
 
-    const resDecode = await apiClient.decode({
-      session_id: sessionId,
-      coords: resGMM.data.means.map((mean: number[]) => {
-        return { coord_x: mean[0], coord_y: mean[1] };
-      }),
-    });
-    if (resDecode.status === "error") return;
+      const randomRegions = resDecode.sequences.map((value) => {
+        return value.replaceAll("_", "").replaceAll("N", "");
+      });
 
-    const randomRegion = resDecode.data.map((seq) => {
-      seq = seq.replaceAll("_", "");
-      seq = seq.replaceAll("N", "");
-      return seq;
-    });
-    console.log(randomRegion);
-    const resEncode = await apiClient.encode({
-      session_id: sessionId,
-      sequences: randomRegion,
-    });
-    if (resEncode.status === "error") return;
+      const resEncode = await apiClient.encode({
+        session_uuid: sessionConfig.sessionId,
+        sequences: randomRegions,
+      });
 
-    dispatch({
-      type: "registeredValues/set",
-      payload: {
-        id: new Array(randomRegion.length)
-          .fill("")
-          .map((_, i) => `MoG No.${i + 1}`),
-        randomRegion,
-        coordX: resEncode.data.map((data) => data.coord_x),
-        coordY: resEncode.data.map((data) => data.coord_y),
-        staged: new Array(randomRegion.length).fill(false),
-        columnNames: ["value"],
-        sequenceIndex: resEncode.data.map((_, i) => i),
-        column: new Array(randomRegion.length).fill("value"),
-        value: new Array(randomRegion.length).fill(null),
-      },
-    });
-    dispatch({
-      type: "isDirty/set",
-      payload: true,
-    });
+      setDirty();
 
-    dispatch({
-      type: "bayesoptConfig/set",
-      payload: {
-        ...bayesoptConfig,
-        targetColumn: "value",
-      },
-    });
+      dispatch({
+        type: "registeredValues/set",
+        payload: {
+          id: new Array(randomRegions.length)
+            .fill("")
+            .map((_, i) => `MoG No.${i + 1}`),
+          randomRegion: randomRegions,
+          coordX: resEncode.coords_x,
+          coordY: resEncode.coords_y,
+          staged: new Array(randomRegions.length).fill(false),
+          columnNames: ["value"],
+          sequenceIndex: randomRegions.map((_, i) => i),
+          column: new Array(randomRegions.length).fill("value"),
+          value: new Array(randomRegions.length).fill(null),
+        },
+      });
+
+      dispatch({
+        type: "bayesoptConfig/set",
+        payload: {
+          ...bayesoptConfig,
+          targetColumn: "value",
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      return;
+    }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // when a file is uploaded
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -155,50 +152,55 @@ const InitialDataset: React.FC = () => {
       const { columnNames, randomRegion, id, sequenceIndex, column, value } =
         parseCsv(text);
 
-      const res = await apiClient.encode({
-        session_id: sessionId,
-        sequences: randomRegion,
-      });
-      if (res.status === "error") return;
-      let coordX: number[] = [];
-      let coordY: number[] = [];
-      for (let i = 0; i < res.data.length; i++) {
-        coordX.push(res.data[i].coord_x);
-        coordY.push(res.data[i].coord_y);
+      if (columnNames.length === 0) {
+        alert("No valid columns found");
+        return;
       }
 
-      dispatch({
-        type: "registeredValues/set",
-        payload: {
-          id,
-          randomRegion,
-          coordX,
-          coordY,
-          staged: new Array(randomRegion.length).fill(false),
-          columnNames,
-          sequenceIndex,
-          column,
-          value,
-        },
-      });
-      dispatch({
-        type: "isDirty/set",
-        payload: true,
-      });
+      try {
+        const res = await apiClient.encode({
+          session_uuid: sessionConfig.sessionId,
+          sequences: randomRegion,
+        });
 
-      if (columnNames.length === 0) return;
+        setDirty();
 
-      dispatch({
-        type: "bayesoptConfig/set",
-        payload: {
-          ...bayesoptConfig,
-          targetColumn: columnNames[0],
-          optimizationType: "qEI",
-          queryBudget: 3,
-        },
-      });
+        dispatch({
+          type: "registeredValues/set",
+          payload: {
+            id,
+            randomRegion,
+            coordX: res.coords_x,
+            coordY: res.coords_y,
+            staged: new Array(randomRegion.length).fill(false),
+            columnNames,
+            sequenceIndex,
+            column,
+            value,
+          },
+        });
+
+        dispatch({
+          type: "bayesoptConfig/set",
+          payload: {
+            targetColumn: columnNames[0],
+            optimizationType: "qEI",
+            queryBudget: 3,
+          },
+        });
+      } catch (e) {
+        console.error(e);
+        return;
+      }
     };
     reader.readAsText(file);
+  };
+
+  const setDirty = () => {
+    dispatch({
+      type: "isDirty/set",
+      payload: true,
+    });
   };
 
   return (
@@ -226,7 +228,7 @@ const InitialDataset: React.FC = () => {
             </span>
           </OverlayTrigger>
         </Form.Label>
-        <Form.Control type="file" onChange={handleFileChange} />
+        <Form.Control type="file" onChange={onFileChange} />
       </Form.Group>
       <Form.Group className="mb-3">
         <Form.Label>
@@ -253,19 +255,16 @@ const InitialDataset: React.FC = () => {
           <Form.Control
             as="select"
             onChange={(e) => {
-              setSelectedGMM(e.target.value);
+              setSelectedModel(e.target.value);
             }}
           >
-            {gmmNames.map((name, i) => (
-              <option key={i}>{name}</option>
+            {gmmModels.map((model, i) => (
+              <option key={i} value={model.uuid}>
+                {model.name}
+              </option>
             ))}
           </Form.Control>
-          <Button
-            variant="outline-primary"
-            onClick={() => {
-              retrieveGMM();
-            }}
-          >
+          <Button variant="outline-primary" onClick={onClickApplyGMM}>
             Load
           </Button>
         </InputGroup>

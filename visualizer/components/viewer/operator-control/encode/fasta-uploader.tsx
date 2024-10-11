@@ -51,29 +51,23 @@ const FastaUploader: React.FC = () => {
       }
 
       const res = await apiClient.encode({
-        session_id: sessionId,
+        session_uuid: sessionId,
         sequences: seqs,
       });
 
-      if (res.status === "error") {
-        return;
-      }
-
-      const coords = res.data;
       const firstKey = (encodeData[-1]?.key ?? 0) + 1;
-      console.log(coords);
 
       dispatch({
         type: "encodeData/set",
         payload: encodeData.concat(
-          coords.map((coord, i) => {
+          res.coords_x.map((coord, i) => {
             return {
               key: firstKey + i,
               id: ids[i],
               sequence: "",
               randomRegion: seqs[i],
-              coordX: coord.coord_x,
-              coordY: coord.coord_y,
+              coordX: coord,
+              coordY: res.coords_y[i],
               isSelected: false,
               isShown: true,
               category: "fasta",
@@ -81,8 +75,9 @@ const FastaUploader: React.FC = () => {
             };
           })
         ),
-      }),
-        setIsValid(true);
+      });
+
+      setIsValid(true);
     };
     reader.readAsText(file);
   };

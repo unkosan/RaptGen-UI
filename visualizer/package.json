@@ -57,6 +57,7 @@
     "@types/react-dom": "18.0.10",
     "@types/react-plotly.js": "^2.5.2",
     "@types/react-redux": "^7.1.25",
+    "@types/uuid": "^10.0.0",
     "csv-parser": "^3.0.0",
     "fs": "^0.0.1-security",
     "jest": "^29.5.0",
@@ -64,7 +65,8 @@
     "msw": "^1.2.2",
     "prettier": "^2.8.7",
     "serve": "^14.2.0",
-    "ts-jest": "^29.1.0"
+    "ts-jest": "^29.1.0",
+    "uuid": "^10.0.0"
   },
   "msw": {
     "workerDirectory": "public"

@@ -1,4 +1,5 @@
 import { rest } from "msw";
+import { uuids } from "./asset/uuids";
 
 export const mockURL = (path: string) => {
   return `http://localhost:3000/api${path}`;
@@ -12,7 +13,8 @@ const errorMsg = {
 
 const experimentState = {
   experiment_name: "",
-  VAE_model: "",
+  VAE_uuid: "",
+  VAE_name: "",
   plot_config: {
     minimum_count: 2,
     show_training_data: true,
@@ -74,12 +76,12 @@ export const bayesoptHandlers = [
       ctx.status(200),
       ctx.json([
         {
-          uuid: "7df9fae4-245a-4cf2-8252-abcb649507df",
+          uuid: uuids.bo.rapt1,
           name: "RAPT1",
           last_modified: 1720137600,
         },
         {
-          uuid: "9f9ad2e8-6b37-4677-8ad3-1f214c843baf",
+          uuid: uuids.bo.rapt3,
           name: "RAPT3",
           last_modified: 1720137600,
         },
@@ -89,22 +91,31 @@ export const bayesoptHandlers = [
 
   rest.get(mockURL("/bayesopt/items/:uuid"), (req, res, ctx) => {
     let uuid = req.params.uuid;
-    let vae_name: string;
 
-    if (uuid === "7df9fae4-245a-4cf2-8252-abcb649507df") {
-      vae_name = "RAPT1";
-    } else {
-      vae_name = "RAPT3";
+    switch (uuid) {
+      case uuids.bo.rapt1:
+        return res(
+          ctx.status(200),
+          ctx.json({
+            ...experimentState,
+            experiment_name: "Exp: RAPT1",
+            VAE_name: "RAPT1",
+            VAE_uuid: uuids.vae.rapt1,
+          })
+        );
+      case uuids.bo.rapt3:
+        return res(
+          ctx.status(200),
+          ctx.json({
+            ...experimentState,
+            experiment_name: "Exp: RAPT3",
+            VAE_name: "RAPT3",
+            VAE_uuid: uuids.vae.rapt3,
+          })
+        );
+      default:
+        return res(ctx.status(404), ctx.json(errorMsg));
     }
-
-    return res(
-      ctx.status(200),
-      ctx.json({
-        ...experimentState,
-        experiment_name: "Exp: " + vae_name,
-        VAE_model: vae_name,
-      })
-    );
   }),
 
   rest.put(mockURL("/bayesopt/items/:uuid"), (req, res, ctx) => {

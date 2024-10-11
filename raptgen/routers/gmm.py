@@ -7,16 +7,19 @@ from core.db import GMMJob, OptimalTrial, BIC
 import re
 from fastapi import HTTPException
 from core.gmmjobs import initialize_job_gmm, run_job_gmm
-import pandas as pd
 from time import time
 from celery.contrib.abortable import AbortableAsyncResult
 from tasks import celery
+from uuid import uuid4
 
 from routers.data import DATA_PATH
 
-from core.db import get_db_session, JobStatus
-from sklearn.mixture import GaussianMixture
-import numpy as np
+from core.db import (
+    JobStatus,
+    ViewerGMM,
+    ViewerSequenceEmbeddings,
+    get_db_session,
+)
 
 
 router = APIRouter()
@@ -30,7 +33,7 @@ class GMMParams(BaseModel):
 
 
 class SubmitGMMJobPayload(BaseModel):
-    target: str
+    target: str  # uuid
     name: str
     params: GMMParams
 
@@ -44,7 +47,7 @@ async def submit_gmm_job(
     job_uuid = initialize_job_gmm(
         session=db,
         name=request.name,
-        target_VAE_model=request.target,
+        target_uuid=request.target,
         minimum_n_components=request.params.minimum_n_components,
         maximum_n_components=request.params.maximum_n_components,
         step_size=request.params.step_size,
@@ -163,7 +166,7 @@ async def get_gmm_job(
         "status": job.status.value,
         "start": job.datetime_start,
         "duration": duration,
-        "target": job.target_VAE_model,
+        "target": job.target_VAE_uuid,
         "params": {
             "minimum_n_components": job.minimum_n_components,
             "maximum_n_components": job.maximum_n_components,
@@ -202,13 +205,15 @@ async def get_gmm_job(
         }
 
     if job.status in [JobStatus.suspend, JobStatus.progress, JobStatus.success]:
-        df = pd.read_pickle(
-            datapath_prefix + "items/" + job.target_VAE_model + "/unique_seq_dataframe.pkl"  # type: ignore
+        embeddings = (
+            db.query(ViewerSequenceEmbeddings)
+            .filter(ViewerSequenceEmbeddings.vae_uuid == job.target_VAE_uuid)
+            .all()
         )
-        duplicates = df["Duplicates"].to_list()
-        coords_x = df["coord_x"].to_list()
-        coords_y = df["coord_y"].to_list()
-        random_regions = df["Without_Adapters"].to_list()
+        duplicates = [entry.duplicate for entry in embeddings]
+        coords_x = [entry.coord_x for entry in embeddings]
+        coords_y = [entry.coord_y for entry in embeddings]
+        random_regions = [entry.random_region for entry in embeddings]
 
         bics_entries = db.query(BIC).filter(BIC.gmm_job_id == job.uuid).all()
         bics: List[float] = [entry.BIC for entry in bics_entries]  # type: ignore
@@ -373,37 +378,19 @@ async def publish_gmm_job(
     if optimalTrial is None:
         raise HTTPException(status_code=404, detail="Optimal trial not found")
 
-    # construct GMM model
-    mixture = GaussianMixture(
-        n_components=optimalTrial.n_components,  # type: ignore
-        covariance_type="full",
+    gmm = ViewerGMM(
+        uuid=str(uuid4()),
+        vae_uuid=job.target_VAE_uuid,
+        # metadata
+        name=request.name,
+        seed=None,
+        # training data
+        n_components=optimalTrial.n_components,
+        means=optimalTrial.means,
+        covariances=optimalTrial.covariances,
     )
-    mixture.converged_ = True
-    mixture.weights_ = (
-        np.ones(optimalTrial.n_components) / optimalTrial.n_components  # type: ignore
-    )
-    mixture.means_ = np.array(optimalTrial.means)
-    mixture.covariances_ = np.array(optimalTrial.covariances)
 
-    # construct dataframe
-    df_gmm = pd.DataFrame(
-        {
-            "GMM_num_components": [request.n_components],
-            "GMM_seed": [None],
-            "GMM_model_type": ["GaussianMixture"],
-            "GMM_optimal_model": [mixture],
-        },
-        index=[request.name],
-    )
-    df_gmm.index.name = "name"
-
-    # append to existing dataframe
-    df = pd.read_pickle(
-        datapath_prefix + "items/" + job.target_VAE_model + "/best_gmm_dataframe.pkl"  # type: ignore
-    )
-    df = pd.concat([df, df_gmm])
-    df.to_pickle(
-        datapath_prefix + "items/" + job.target_VAE_model + "/best_gmm_dataframe.pkl"  # type: ignore
-    )
+    db.add(gmm)
+    db.commit()
 
     return None

@@ -49,20 +49,18 @@ const Home: React.FC = () => {
             </Col>
             <Col>
               <Cell
-                title="Upload"
-                content="upload a trained RaptGen model or GMM model"
-                url="/uploader"
-              />
-            </Col>
-          </Row>
-          <Row className="my-3">
-            <Col>
-              <Cell
                 title="VAE Trainer"
                 content="Train a RaptGen model"
                 url="/trainer"
               />
+              {/* <Cell
+                title="Upload"
+                content="upload a trained RaptGen model or GMM model"
+                url="/uploader"
+              /> */}
             </Col>
+          </Row>
+          <Row className="my-3">
             <Col>
               <Cell
                 title="GMM Trainer"
@@ -70,14 +68,21 @@ const Home: React.FC = () => {
                 url="/gmm"
               />
             </Col>
-          </Row>
-          <Row className="my-3">
             <Col>
               <Cell
                 title="Bayesian Optimization"
                 content="Optimize objective function using Bayesian Optimization"
                 url="/bayesopt"
               />
+            </Col>
+          </Row>
+          <Row className="my-3">
+            <Col>
+              {/* <Cell
+                title="Bayesian Optimization"
+                content="Optimize objective function using Bayesian Optimization"
+                url="/bayesopt"
+              /> */}
             </Col>
             <Col></Col>
           </Row>

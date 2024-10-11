@@ -41,20 +41,16 @@ const ResultViewer: React.FC = () => {
       setWeblogoBase64("");
       return;
     }
-    if (sessionConfig.sessionId === 0) {
+    if (sessionConfig.sessionId === "") {
       return;
     }
 
     (async () => {
       const res = await apiClient.getWeblogo(
         {
-          session_id: sessionConfig.sessionId,
-          coords: [
-            {
-              coord_x: gridPoint.coordX,
-              coord_y: gridPoint.coordY,
-            },
-          ],
+          session_uuid: sessionConfig.sessionId,
+          coords_x: [gridPoint.coordX],
+          coords_y: [gridPoint.coordY],
         },
         {
           responseType: "arraybuffer",

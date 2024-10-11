@@ -1,7 +1,9 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type SessionConfig = {
-  sessionId: number;
+  sessionId: string;
+  vaeId: string;
+  gmmId: string;
   manualEncodeCount: number;
   manualDecodeCount: number;
   forwardAdapter: string;
@@ -11,19 +13,36 @@ type SessionConfig = {
 const sessionConfigSlice = createSlice({
   name: "sessionConfig",
   initialState: {
-    sessionId: 0,
+    sessionId: "",
+    vaeId: "",
+    gmmId: "",
     manualEncodeCount: 0,
     manualDecodeCount: 1,
     forwardAdapter: "",
     reverseAdapter: "",
   },
   reducers: {
-    setSessionId: (state: SessionConfig, action: PayloadAction<number>) => {
-      return {
-        ...state,
-        sessionId: action.payload,
-      };
+    set: (state: SessionConfig, action: PayloadAction<SessionConfig>) => {
+      return action.payload;
     },
+    // setSessionId: (state: SessionConfig, action: PayloadAction<string>) => {
+    //   return {
+    //     ...state,
+    //     sessionId: action.payload,
+    //   };
+    // },
+    // setVaeId: (state: SessionConfig, action: PayloadAction<string>) => {
+    //   return {
+    //     ...state,
+    //     vaeId: action.payload,
+    //   };
+    // },
+    // setGmmId: (state: SessionConfig, action: PayloadAction<string>) => {
+    //   return {
+    //     ...state,
+    //     gmmId: action.payload,
+    //   };
+    // },
     resetEncodeCount: (state: SessionConfig, action: PayloadAction<null>) => {
       return {
         ...state,

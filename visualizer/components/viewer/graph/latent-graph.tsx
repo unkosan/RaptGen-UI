@@ -125,39 +125,39 @@ const LatentGraph: React.FC = () => {
   }, [vaeData, graphConfig.minCount]);
 
   // Measured data //
-  const measuredDataPlot: Partial<PlotData>[] = useMemo(() => {
-    if (!graphConfig.showMeasured) {
-      return [];
-    }
+  // const measuredDataPlot: Partial<PlotData>[] = useMemo(() => {
+  //   if (!graphConfig.showMeasured) {
+  //     return [];
+  //   }
 
-    let measuredDataPlot = [...measuredData];
+  //   let measuredDataPlot = [...measuredData];
 
-    // categorize with series name
-    const groupedData = groupBy(measuredDataPlot, "seriesName");
+  //   // categorize with series name
+  //   const groupedData = groupBy(measuredDataPlot, "seriesName");
 
-    return Object.keys(groupedData).map((key, index) => {
-      const data = groupedData[key];
-      return {
-        name: key,
-        showlegend: true,
-        type: "scatter",
-        x: data.map((d) => d.coordX),
-        y: data.map((d) => d.coordY),
-        mode: "markers",
-        marker: {
-          size: 5,
-          color: ["#6495ed", "#ffa500", "#ffff00", "#800080", "#ff0000"][
-            index % 5
-          ],
-        },
-        customdata: data.map((d) => [d.id, d.randomRegion]),
-        hovertemplate:
-          `<b>ID</b>: %{customdata[0]}<br>` +
-          "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
-          `<b>Sequence:</b> %{customdata[1]}<br>`,
-      };
-    });
-  }, [measuredData, graphConfig.showMeasured]);
+  //   return Object.keys(groupedData).map((key, index) => {
+  //     const data = groupedData[key];
+  //     return {
+  //       name: key,
+  //       showlegend: true,
+  //       type: "scatter",
+  //       x: data.map((d) => d.coordX),
+  //       y: data.map((d) => d.coordY),
+  //       mode: "markers",
+  //       marker: {
+  //         size: 5,
+  //         color: ["#6495ed", "#ffa500", "#ffff00", "#800080", "#ff0000"][
+  //           index % 5
+  //         ],
+  //       },
+  //       customdata: data.map((d) => [d.id, d.randomRegion]),
+  //       hovertemplate:
+  //         `<b>ID</b>: %{customdata[0]}<br>` +
+  //         "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
+  //         `<b>Sequence:</b> %{customdata[1]}<br>`,
+  //     };
+  //   });
+  // }, [measuredData, graphConfig.showMeasured]);
 
   // encode data //
   const encodeDataPlot: Partial<PlotData> = useMemo(() => {
@@ -250,12 +250,12 @@ const LatentGraph: React.FC = () => {
       return [];
     }
 
-    if (gmmData.weights.length === 0) {
+    if (gmmData.means.length === 0) {
       return [];
     }
 
     let gmmDataPlot: Partial<PlotData>[] = [];
-    for (let i = 0; i < gmmData.weights.length; i++) {
+    for (let i = 0; i < gmmData.means.length; i++) {
       if (!gmmData.isShown[i]) {
         continue;
       }
@@ -268,7 +268,7 @@ const LatentGraph: React.FC = () => {
         "]";
       const meanStr =
         "[" + gmmData.means[i].map((d) => d.toFixed(4)).join(", ") + "]";
-      const weightStr = gmmData.weights[i].toFixed(4);
+      // const weightStr = gmmData.weights[i].toFixed(4);
 
       const trace = zip(
         ...calculateTraces(gmmData.means[i], gmmData.covariances[i])
@@ -285,7 +285,7 @@ const LatentGraph: React.FC = () => {
         },
         hovertemplate:
           `<b>MoG No.${i}</b><br>` +
-          `<b>Weight:</b> ${weightStr}<br>` +
+          // `<b>Weight:</b> ${weightStr}<br>` +
           `<b>Mean:</b> ${meanStr}<br>` +
           `<b>Coval:</b> ${covalStr}<br>` +
           `<b>Sequence:</b> ${gmmData.decodedSequences[i]}<br>`,
@@ -301,7 +301,7 @@ const LatentGraph: React.FC = () => {
         textposition: "inside",
         hovertemplate:
           `<b>MoG No.${i}</b><br>` +
-          `<b>Weight:</b> ${weightStr}<br>` +
+          // `<b>Weight:</b> ${weightStr}<br>` +
           `<b>Mean:</b> ${meanStr}<br>` +
           `<b>Coval:</b> ${covalStr}<br>` +
           `<b>Sequence:</b> ${gmmData.decodedSequences[i]}<br>`,
@@ -336,7 +336,7 @@ const LatentGraph: React.FC = () => {
         ...gmmDataPlot,
         encodeDataPlot,
         ...decodeDataPlot,
-        ...measuredDataPlot,
+        // ...measuredDataPlot,
       ]}
       layout={layout}
       useResizeHandler={true}
