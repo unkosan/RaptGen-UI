@@ -5,6 +5,7 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 type BicProps = {
   n_components: number[];
   values: number[];
+  step_size: number;
 };
 
 const BicGraph: React.FC<BicProps> = (props) => {
@@ -20,6 +21,15 @@ const BicGraph: React.FC<BicProps> = (props) => {
     opacity: 0.5,
     side: "positive",
     orientation: "h",
+    points: "all",
+    box: {
+      visible: true,
+    },
+    width: 5,
+    jitter: 0.1,
+    marker: {
+      opacity: 0.5,
+    },
   };
 
   const layout: Partial<Layout> = {
@@ -30,11 +40,11 @@ const BicGraph: React.FC<BicProps> = (props) => {
     yaxis: {
       title: "Number of components",
       range: [
-        Math.min(...props.n_components) - 1,
-        Math.max(...props.n_components) + 1,
+        Math.min(...props.n_components) - props.step_size,
+        Math.max(...props.n_components) + props.step_size,
       ],
     },
-    height: hues.size * 100,
+    height: hues.size * 30 + 200,
     margin: {
       l: 100,
       r: 100,

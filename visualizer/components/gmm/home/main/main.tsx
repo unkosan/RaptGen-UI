@@ -307,6 +307,7 @@ const Main: React.FC = () => {
           <BicGraph
             n_components={jobItem.bic.n_components}
             values={jobItem.bic.bics}
+            step_size={jobItem.params.step_size}
           />
         </>
       )}

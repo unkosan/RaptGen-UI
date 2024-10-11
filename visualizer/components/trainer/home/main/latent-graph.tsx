@@ -69,15 +69,21 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
       marker: {
         size: duplicates.map((d) => Math.max(2, Math.sqrt(d))),
         color: "black",
+        opacity: 0.5,
         line: {
           color: "black",
         },
       },
-      customdata: randomRegions.filter((_, index) => mask[index]),
+      customdata: mask
+        .map((value, index) =>
+          value ? [randomRegions[index], duplicates[index]] : null
+        )
+        .filter((value) => value !== null) as [string, number][],
       hovertemplate:
-        "X: %{x}<br>" +
-        "Y: %{y}<br>" +
-        "Random Region: %{customdata}" +
+        "<b>X</b>: %{x}<br>" +
+        "<b>Y</b>: %{y}<br>" +
+        "<b>Random Region</b>: %{customdata[0]}<br>" +
+        "<b>Duplicates</b>: %{customdata[1]}<br>" +
         "<extra></extra>",
     };
     return trace;
