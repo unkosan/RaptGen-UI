@@ -1,0 +1,3 @@
+id,uuid,create_timestamp,name,device,seed,forward_adapter,reverse_adapter,random_region_length_standard,random_region_length_tolerance,minimum_count,epochs,epochs_beta_weighting,epochs_match_forcing,epochs_early_stopping,match_cost,phmm_length,checkpoint
+0,ac607566-0c39-4b28-b543-7e73c8784c6a,2024-01-01T00:00:00Z,RAPT1,CPU,0,TAATACGACTCACTATAGGGAGCAGGAGAGAGGTCAGATG,CCTATGCGTGCTAGTGTGA,30,0,2,1000,50,50,50,5,30,""
+1,18142870-6ce3-4444-8c95-0a7825cb302d,2024-01-01T00:00:00Z,RAPT3,CPU,0,TAATACGACTCACTATAGGGAGAACTTCGACCAGAAG,TATGTGCGCATACATGGATCCTC,30,0,2,1000,50,50,50,5,30,""
