@@ -11,9 +11,6 @@ import numpy as np
 router = APIRouter()
 
 
-DATA_PATH = "/app/data/"
-
-
 @router.get("/api/data/VAE-model-names")
 async def get_VAE_model_names(
     session: Session = Depends(get_db_session),

@@ -13,7 +13,6 @@ from core.db import (
 )
 from tasks import celery
 from threading import Semaphore
-from routers.data import DATA_PATH
 import numpy as np
 from sklearn.mixture import GaussianMixture
 
@@ -81,7 +80,6 @@ def run_job_gmm(
     uuid: str,
     is_resume: bool = False,
     database_url: str = "postgresql+psycopg2://postgres:postgres@db:5432/raptgen",
-    datapath_prefix: str = DATA_PATH,
 ):
     """
     Run the GMM job.

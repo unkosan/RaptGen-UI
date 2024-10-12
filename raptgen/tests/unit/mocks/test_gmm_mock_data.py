@@ -2,10 +2,7 @@
 This module contains mock data for the tests of the GMMJob and Trial modules.
 """
 
-from dataclasses import dataclass
-from typing import List
 from enum import Enum
-import random
 
 
 class C:  # as "Constants"
@@ -15,7 +12,7 @@ class C:  # as "Constants"
     uuid = "uuid"
     name = "name"
     status = "status"
-    target_VAE_model = "target_VAE_model"
+    target_VAE_uuid = "target_VAE_uuid"
     minimum_n_components = "minimum_n_components"
     maximum_n_components = "maximum_n_components"
     step_size = "step_size"
@@ -37,11 +34,19 @@ class C:  # as "Constants"
     covariances = "covariances"
     BIC = "BIC"
 
-    # SequenceEmbeddings DF
+    # ViewerVAE table
+    ViewerVAE = "ViewerVAE"
+    uuid = "uuid"
+    name = "name"
+    checkpoint = "checkpoint"
+
+    # ViewerSequenceEmbeddings table
+    ViewerSequenceEmbeddings = "ViewerSequenceEmbeddings"
+    vae_uuid = "vae_uuid"
     random_region = "random_region"
     coord_x = "coord_x"
     coord_y = "coord_y"
-    duplicates = "duplicates"
+    duplicate = "duplicate"
 
 
 class GMMTest(Enum):
@@ -80,7 +85,7 @@ mock_gmm_db = [
             C.GMMJob: [
                 {
                     C.uuid: "11111111-1111-1111-1111-111111111111",
-                    C.target_VAE_model: "VAE_model_1",
+                    C.target_VAE_uuid: "11111111-1111-1111-1111-111111111111",
                     C.minimum_n_components: 3,
                     C.maximum_n_components: 5,
                     C.step_size: 1,
@@ -175,7 +180,7 @@ mock_gmm_db = [
             C.GMMJob: [
                 {
                     C.uuid: "11111111-1111-1111-1111-111111111111",
-                    C.target_VAE_model: "VAE_model_1",
+                    C.target_VAE_uuid: "11111111-1111-1111-1111-111111111111",
                     C.minimum_n_components: 3,
                     C.maximum_n_components: 3,
                     C.step_size: 1,
@@ -191,7 +196,7 @@ mock_gmm_db = [
                 },
                 {
                     C.uuid: "22222222-2222-2222-2222-222222222222",
-                    C.target_VAE_model: "VAE_model_2",
+                    C.target_VAE_uuid: "11111111-1111-1111-1111-111111111111",
                     C.minimum_n_components: 3,
                     C.maximum_n_components: 3,
                     C.step_size: 1,
@@ -207,7 +212,7 @@ mock_gmm_db = [
                 },
                 {
                     C.uuid: "33333333-3333-3333-3333-333333333333",
-                    C.target_VAE_model: "VAE_model_3",
+                    C.target_VAE_uuid: "11111111-1111-1111-1111-111111111111",
                     C.minimum_n_components: 3,
                     C.maximum_n_components: 3,
                     C.step_size: 1,
@@ -223,7 +228,7 @@ mock_gmm_db = [
                 },
                 {
                     C.uuid: "44444444-4444-4444-4444-444444444444",
-                    C.target_VAE_model: "VAE_model_4",
+                    C.target_VAE_uuid: "11111111-1111-1111-1111-111111111111",
                     C.minimum_n_components: 3,
                     C.maximum_n_components: 3,
                     C.step_size: 1,
@@ -239,7 +244,7 @@ mock_gmm_db = [
                 },
                 {
                     C.uuid: "55555555-5555-5555-5555-555555555555",
-                    C.target_VAE_model: "VAE_model_5",
+                    C.target_VAE_uuid: "11111111-1111-1111-1111-111111111111",
                     C.minimum_n_components: 3,
                     C.maximum_n_components: 3,
                     C.step_size: 1,
@@ -356,50 +361,65 @@ mock_gmm_db = [
 ]
 
 
-@dataclass
-class SequenceEmbedding:
-    random_region: str
-    coord_x: float
-    coord_y: float
-    duplicates: int
-
-
-@dataclass
-class DFData:
-    name: str
-    data: List[SequenceEmbedding]
-
-
-@dataclass
-class LatentData:
-    tests: set[GMMTest]
-    data: List[DFData]
-
-
-mock_gmm_latent_df_data = [
-    LatentData(
-        tests={
-            GMMTest.DF_INSERT_SUCCESS,
+mock_vae_db = [
+    {
+        "tests": {
+            GMMTest.DB_INSERT_SUCCESS,
             GMMTest.DATA_INSERT_SUCCESS,
-            GMMTest.POST_submit_success,
             GMMTest.GET_items_uuid_success,
+            GMMTest.PATCH_items_uuid_success,
+            GMMTest.DELETE_items_uuid_success,
+            GMMTest.POST_submit_success,
+            GMMTest.POST_search_success,
             GMMTest.POST_suspend_success,
             GMMTest.POST_resume_success,
             GMMTest.POST_publish_success,
         },
-        data=[
-            DFData(
-                name="VAE_model_1",
-                data=[
-                    SequenceEmbedding(
-                        random_region="".join(random.choices("ACGU", k=4)),
-                        coord_x=random.random(),
-                        coord_y=random.random(),
-                        duplicates=random.randint(1, 5),
-                    )
-                    for _ in range(10000)
-                ],
-            ),
-        ],
-    ),
+        "data": {
+            C.ViewerVAE: [
+                {
+                    C.uuid: "11111111-1111-1111-1111-111111111111",
+                    C.name: "VAE_model_1",
+                    C.checkpoint: b"checkpoint_1",
+                },
+            ],
+            C.ViewerSequenceEmbeddings: [
+                {
+                    C.vae_uuid: "11111111-1111-1111-1111-111111111111",
+                    C.random_region: "ACGU",
+                    C.coord_x: 0.1,
+                    C.coord_y: 0.2,
+                    C.duplicate: 1,
+                },
+                {
+                    C.vae_uuid: "11111111-1111-1111-1111-111111111111",
+                    C.random_region: "ACGU",
+                    C.coord_x: 0.3,
+                    C.coord_y: 0.4,
+                    C.duplicate: 2,
+                },
+                {
+                    C.vae_uuid: "11111111-1111-1111-1111-111111111111",
+                    C.random_region: "ACGU",
+                    C.coord_x: 0.5,
+                    C.coord_y: 0.6,
+                    C.duplicate: 3,
+                },
+                {
+                    C.vae_uuid: "11111111-1111-1111-1111-111111111111",
+                    C.random_region: "ACGU",
+                    C.coord_x: 0.7,
+                    C.coord_y: 0.8,
+                    C.duplicate: 4,
+                },
+                {
+                    C.vae_uuid: "11111111-1111-1111-1111-111111111111",
+                    C.random_region: "ACGU",
+                    C.coord_x: 0.9,
+                    C.coord_y: 1.0,
+                    C.duplicate: 5,
+                },
+            ],
+        },
+    },
 ]

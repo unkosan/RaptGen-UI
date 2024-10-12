@@ -12,8 +12,6 @@ from celery.contrib.abortable import AbortableAsyncResult
 from tasks import celery
 from uuid import uuid4
 
-from routers.data import DATA_PATH
-
 from core.db import (
     JobStatus,
     ViewerGMM,
@@ -41,7 +39,6 @@ class SubmitGMMJobPayload(BaseModel):
 @router.post("/api/gmm/jobs/submit")
 async def submit_gmm_job(
     request: SubmitGMMJobPayload,
-    datapath_prefix: Optional[str] = DATA_PATH,
     db: Session = Depends(get_db_session),
 ):
     job_uuid = initialize_job_gmm(
@@ -59,7 +56,6 @@ async def submit_gmm_job(
     run_job_gmm.delay(
         uuid=job_uuid,
         is_resume=False,
-        datapath_prefix=datapath_prefix,
         database_url=database_url,
     )
 
@@ -146,7 +142,6 @@ async def search_gmm_jobs(
 async def get_gmm_job(
     uuid: str,
     n_components: Optional[int] = None,
-    datapath_prefix: Optional[str] = DATA_PATH,
     db: Session = Depends(get_db_session),
 ):
     job = db.query(GMMJob).filter(GMMJob.uuid == uuid).first()
@@ -322,7 +317,6 @@ class ResumeGMMJobPayload(BaseModel):
 @router.post("/api/gmm/jobs/resume")
 async def resume_gmm_job(
     request: ResumeGMMJobPayload,
-    datapath_prefix: Optional[str] = DATA_PATH,
     db: Session = Depends(get_db_session),
 ):
     database_url = db.get_bind().engine.url.render_as_string(hide_password=False)
@@ -330,7 +324,6 @@ async def resume_gmm_job(
     run_job_gmm.delay(
         uuid=request.uuid,
         is_resume=True,
-        datapath_prefix=datapath_prefix,
         database_url=database_url,
     )
 
@@ -354,7 +347,6 @@ class PublishGMMJobPayload(BaseModel):
 @router.post("/api/gmm/jobs/publish")
 async def publish_gmm_job(
     request: PublishGMMJobPayload,
-    datapath_prefix: Optional[str] = DATA_PATH,
     db: Session = Depends(get_db_session),
 ):
     job = db.query(GMMJob).filter(GMMJob.uuid == request.uuid).first()
