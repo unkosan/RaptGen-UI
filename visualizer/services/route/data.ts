@@ -82,7 +82,7 @@ export const responseDeleteItems = z.null();
 // API PATCH /data/items/{vae_uuid}
 export const requestPatchItems = z.object({
   target: z.string().nonempty(),
-  data: z.any(),
+  value: z.any(),
 });
 export const responsePatchItems = z.null();
 
@@ -194,7 +194,7 @@ export const apiData = makeApi([
   {
     alias: "deleteVaeItems",
     method: "delete",
-    path: "/data/items/{vae_uuid}",
+    path: "/data/items/:vae_uuid",
     description: "Delete items",
     parameters: [
       {
@@ -209,7 +209,7 @@ export const apiData = makeApi([
   {
     alias: "patchVaeItems",
     method: "patch",
-    path: "/data/items/{vae_uuid}",
+    path: "/data/items/:vae_uuid",
     description: "Patch items",
     parameters: [
       {
@@ -217,6 +217,12 @@ export const apiData = makeApi([
         description: "UUID of the VAE model",
         type: "Path",
         schema: z.string().uuid(),
+      },
+      {
+        name: "request",
+        description: "Request body",
+        type: "Body",
+        schema: requestPatchItems,
       },
     ],
     response: responsePatchItems,
