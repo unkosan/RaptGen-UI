@@ -192,7 +192,10 @@ const Versions: React.FC = () => {
               action
               key={i}
               active={currentUUID === experiment.uuid}
-              onClick={() => router.push(`?uuid=${experiment.uuid}`)}
+              onClick={(e) => {
+                e.preventDefault();
+                router.push(`?uuid=${experiment.uuid}`);
+              }}
             >
               <Stack direction="horizontal" gap={3}>
                 <span className="fs-5 me-2">{experiment.name}</span>
@@ -204,6 +207,7 @@ const Versions: React.FC = () => {
                 </span>
                 <Pencil
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     setSelectedExperimentId(experiment.uuid);
                     setSelectedExperimentName(experiment.name);
@@ -218,6 +222,7 @@ const Versions: React.FC = () => {
                 />
                 <XLg
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     setSelectedExperimentId(experiment.uuid);
                     setSelectedExperimentName(experiment.name);
