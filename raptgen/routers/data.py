@@ -4,6 +4,7 @@ from core.db import (
     ViewerVAE,
     ViewerGMM,
     ViewerSequenceEmbeddings,
+    Experiments,
     get_db_session,
 )
 import numpy as np
@@ -151,3 +152,45 @@ async def get_VAE_model_config(
         "match_cost": result.match_cost,
         "phmm_length": result.phmm_length,
     }
+
+
+@router.delete("/api/data/items/{vae_uuid}")
+async def delete_vae_data(
+    vae_uuid: str,
+    session: Session = Depends(get_db_session),
+):
+    session.query(ViewerSequenceEmbeddings).where(
+        ViewerSequenceEmbeddings.vae_uuid == vae_uuid
+    ).delete()
+    session.query(ViewerGMM).where(ViewerGMM.vae_uuid == vae_uuid).delete()
+    session.query(Experiments).where(Experiments.VAE_uuid == vae_uuid).delete()
+    session.query(ViewerVAE).where(ViewerVAE.uuid == vae_uuid).delete()
+
+    session.commit()
+    return None
+
+
+@router.patch("/api/data/items/{vae_uuid}")
+async def patch_vae_data(
+    vae_uuid: str,
+    request: dict,
+    session: Session = Depends(get_db_session),
+):
+    item = session.query(ViewerVAE).where(ViewerVAE.uuid == vae_uuid).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    if request["target"] == "name":
+        if ViewerVAE.name.type.python_type is not type(request["value"]):
+            raise HTTPException(
+                status_code=422, detail="Invalid value type"
+            )  # this should be 400?
+
+        session.query(ViewerVAE).where(ViewerVAE.uuid == vae_uuid).update(
+            {ViewerVAE.name: request["value"]}
+        )
+    else:
+        raise HTTPException(status_code=422, detail="Invalid target")
+
+    session.commit()
+    return None

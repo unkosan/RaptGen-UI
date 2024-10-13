@@ -193,4 +193,28 @@ export const dataHandlers = [
   //     );
   //   }
   // }),
+
+  rest.delete(mockURL("/data/items/:vae_uuid"), (req, res, ctx) => {
+    const vae_uuid = req.params.vae_uuid;
+    switch (vae_uuid) {
+      case uuids.vae.rapt1:
+        return res(ctx.status(200), ctx.json(null));
+      case uuids.vae.rapt3:
+        return res(ctx.status(200), ctx.json(null));
+      default:
+        return res(ctx.status(404), ctx.json(errorMsg));
+    }
+  }),
+
+  rest.patch(mockURL("/data/items/:vae_uuid"), (req, res, ctx) => {
+    const vae_uuid = req.params.vae_uuid;
+    switch (vae_uuid) {
+      case uuids.vae.rapt1:
+        return res(ctx.status(200), ctx.json(null));
+      case uuids.vae.rapt3:
+        return res(ctx.status(200), ctx.json(null));
+      default:
+        return res(ctx.status(404), ctx.json(errorMsg));
+    }
+  }),
 ];
