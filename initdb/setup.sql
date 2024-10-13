@@ -53,5 +53,9 @@ COPY viewer_vae FROM '/docker-entrypoint-initdb.d/viewer_vae.csv' DELIMITER ',' 
 COPY viewer_gmm FROM '/docker-entrypoint-initdb.d/viewer_gmm.csv' DELIMITER ',' CSV HEADER;
 COPY viewer_sequence_data FROM '/docker-entrypoint-initdb.d/viewer_sequence_data.csv' DELIMITER ',' CSV HEADER;
 
-UPDATE viewer_vae SET checkpoint = pg_read_binary_file('/docker-entrypoint-initdb.d/RAPT1.pth') WHERE id = 0;
-UPDATE viewer_vae SET checkpoint = pg_read_binary_file('/docker-entrypoint-initdb.d/RAPT3.pth') WHERE id = 1;
+UPDATE viewer_vae SET checkpoint = pg_read_binary_file('/docker-entrypoint-initdb.d/RAPT1.pth') WHERE id = 1;
+UPDATE viewer_vae SET checkpoint = pg_read_binary_file('/docker-entrypoint-initdb.d/RAPT3.pth') WHERE id = 2;
+
+SELECT setval('viewer_vae_id_seq', (SELECT MAX(id) FROM viewer_vae));
+SELECT setval('viewer_gmm_id_seq', (SELECT MAX(id) FROM viewer_gmm));
+SELECT setval('viewer_sequence_data_id_seq', (SELECT MAX(id) FROM viewer_sequence_data));
