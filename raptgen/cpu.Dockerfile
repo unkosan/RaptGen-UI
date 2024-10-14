@@ -9,7 +9,7 @@ RUN mkdir /usr/share/fonts/opentype/noto \
     && mv NotoSansCJK-Bold.ttc /usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc
 
 COPY ./environment-cpu.yml environment.yml
-RUN mamba env create -f environment.yml
+RUN /opt/conda/bin/mamba env create -f environment.yml
 
 RUN echo "conda activate raptgen" >>~/.bashrc
 ENV CONDA_DEFAULT_ENV raptgen

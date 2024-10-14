@@ -30,7 +30,7 @@ dependencies:
       - python-multipart
       - pytest-celery
       - pytest-postgresql
-  - botorch=0.10.0
+  - conda-forge::botorch=0.10.0
   - postgresql
   - psycopg2
   - pytest

@@ -1,4 +1,4 @@
-FROM --platform=amd64 condaforge/mambaforge
+FROM --platform=amd64 nvidia/cuda:11.6.1-runtime-ubuntu20.04
 
 RUN apt-get update \
     && apt-get upgrade -y \
@@ -8,8 +8,10 @@ RUN mkdir /usr/share/fonts/opentype/noto \
     && wget https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTC/NotoSansCJK-Bold.ttc \
     && mv NotoSansCJK-Bold.ttc /usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc
 
+COPY --from=condaforge/mambaforge /opt/conda /opt/conda
+
 COPY ./environment-gpu.yml environment.yml
-RUN mamba env create -f environment.yml
+RUN /opt/conda/bin/mamba env create -f environment.yml
 
 RUN echo "conda activate raptgen" >>~/.bashrc
 ENV CONDA_DEFAULT_ENV raptgen
