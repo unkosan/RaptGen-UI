@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "react-bootstrap";
+import { Alert, Button } from "react-bootstrap";
 import { PlusLg } from "react-bootstrap-icons";
 import JobCard from "./job-card";
 import { z } from "zod";
@@ -26,6 +26,8 @@ type Jobs = z.infer<typeof responsePostGMMJobsSearch>;
 
 const SideBar: React.FC = () => {
   const [jobs, setJobs] = useState<Jobs>([]);
+  const [runningJobs, setRunningJobs] = useState<Jobs>([]);
+  const [finishedJobs, setFinishedJobs] = useState<Jobs>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Update jobs per 5 second
@@ -42,20 +44,56 @@ const SideBar: React.FC = () => {
     return () => clearInterval(interval);
   }, [searchQuery]);
 
+  useEffect(() => {
+    let fJobs: Jobs = [];
+    let rJobs: Jobs = [];
+    for (let job of jobs) {
+      if (job.status === "success" || job.status === "failure") {
+        fJobs.push(job);
+      } else {
+        rJobs.push(job);
+      }
+    }
+    setFinishedJobs(fJobs);
+    setRunningJobs(rJobs);
+  }, [jobs]);
+
   return (
     <div>
       <AddJobButton />
-      {jobs.map((job) => (
-        <JobCard
-          key={job.uuid}
-          name={job.name}
-          status={job.status}
-          nCompleted={job.trials_current}
-          nTotal={job.trials_total}
-          duration={job.duration}
-          uuid={job.uuid}
-        />
-      ))}
+      <div style={{ height: "1rem" }} />
+      <legend>Running</legend>
+      {runningJobs.length ? (
+        runningJobs.map((job) => (
+          <JobCard
+            key={job.uuid}
+            name={job.name}
+            status={job.status}
+            nCompleted={job.trials_current}
+            nTotal={job.trials_total}
+            duration={job.duration}
+            uuid={job.uuid}
+          />
+        ))
+      ) : (
+        <Alert variant="info">No running jobs</Alert>
+      )}
+      <legend>Finished</legend>
+      {finishedJobs.length ? (
+        finishedJobs.map((job) => (
+          <JobCard
+            key={job.uuid}
+            name={job.name}
+            status={job.status}
+            nCompleted={job.trials_current}
+            nTotal={job.trials_total}
+            duration={job.duration}
+            uuid={job.uuid}
+          />
+        ))
+      ) : (
+        <Alert variant="info">No finished jobs</Alert>
+      )}
     </div>
   );
 };
