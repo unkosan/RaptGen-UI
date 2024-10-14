@@ -29,6 +29,7 @@ CREATE TABLE viewer_gmm (
     name VARCHAR NOT NULL, 
     seed INTEGER, 
     n_components INTEGER NOT NULL, 
+    weights FLOAT[] NOT NULL,
     means FLOAT[][] NOT NULL, 
     covariances FLOAT[][][] NOT NULL, 
     PRIMARY KEY (id), 

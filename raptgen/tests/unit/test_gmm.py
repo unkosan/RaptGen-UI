@@ -304,8 +304,10 @@ def test_get_job(db_session):
     assert response.json()["target"] == "11111111-1111-1111-1111-111111111111"
     assert response.json()["params"]["minimum_n_components"] == 3
     assert response.json()["current_states"]["n_components"] == 4
+    weights = response.json()["gmm"]["weights"]
     means = response.json()["gmm"]["means"]
     covs = response.json()["gmm"]["covs"]
+    assert np.array(weights).shape == (3,)
     assert np.array(means).shape == (3, 2)
     assert np.array(covs).shape == (3, 2, 2)
     assert response.json()["latent"]["random_regions"] is not None
