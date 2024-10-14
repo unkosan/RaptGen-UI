@@ -55,8 +55,11 @@ export const responseGetSelexData = z.object({
 // API GET /data/GMM-model
 export const requestGetGMMModel = z.void();
 export const responseGetGMMModel = z.object({
+  weights: z.array(z.number()).nonempty(),
   means: z.array(z.array(z.number()).length(2)).nonempty(),
-  covariances: z.array(z.array(z.array(z.number()).length(2)).length(2)),
+  covariances: z
+    .array(z.array(z.array(z.number()).length(2)).length(2))
+    .nonempty(),
 });
 
 // API GET /data/measured-data

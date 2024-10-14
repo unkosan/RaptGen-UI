@@ -83,6 +83,7 @@ export const responseGetGMMJobsItems = z.union([
     gmm: z.object({
       current_n_components: z.number().int(),
       optimal_n_components: z.number().int(),
+      weights: z.array(z.number()),
       means: z.array(z.array(z.number())),
       covs: z.array(z.array(z.array(z.number()))),
     }),
@@ -117,6 +118,7 @@ export const responseGetGMMJobsItems = z.union([
     gmm: z.object({
       current_n_components: z.number().int(),
       optimal_n_components: z.number().int(),
+      weights: z.array(z.number()),
       means: z.array(z.array(z.number())),
       covs: z.array(z.array(z.array(z.number()))),
     }),

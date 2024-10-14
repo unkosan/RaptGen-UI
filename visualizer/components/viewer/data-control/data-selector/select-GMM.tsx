@@ -77,6 +77,7 @@ const SelectGMM: React.FC = () => {
         dispatch({
           type: "gmmData/set",
           payload: {
+            weights: [],
             means: [],
             covariances: [],
             decodedSequences: [],
@@ -101,10 +102,11 @@ const SelectGMM: React.FC = () => {
       dispatch({
         type: "gmmData/set",
         payload: {
+          weights: res.weights,
           means: res.means,
           covariances: res.covariances,
           decodedSequences: resCoords.sequences,
-          isShown: Array(res.means.length).fill(true),
+          isShown: Array(res.weights.length).fill(true),
         },
       });
     })();
