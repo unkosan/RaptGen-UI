@@ -1,4 +1,4 @@
-FROM --platform=amd64 nvidia/cuda:11.1-cudnn8-devel-ubuntu20.04
+FROM --platform=amd64 nvidia/cuda:11.6.1-runtime-ubuntu20.04
 
 RUN apt-get update \
     && apt-get upgrade -y \
