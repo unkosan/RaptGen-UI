@@ -267,6 +267,8 @@ class ViewerGMM(BaseSchema):
         random seed for training
     n_components : int
         number of components
+    weights : list
+        weights of the Gaussian Mixtures
     means : list
         mean coordinates of the Gaussian Mixtures
     covariances : list
@@ -292,6 +294,7 @@ class ViewerGMM(BaseSchema):
 
     # training data
     n_components = Column(Integer, nullable=False)  # Number of components
+    weights = Column(postgresql.ARRAY(Float), nullable=False)
     means = Column(
         postgresql.ARRAY(Float, dimensions=2), nullable=False
     )  # Means of the GMM
@@ -778,6 +781,8 @@ class OptimalTrial(BaseSchema):
         number of trials completed
     n_trials_total : int
         number of trials
+    weights : list
+        weights of the Gaussian Mixtures
     means : list
         mean coordinates of the Gaussian Mixtures
     covariances : list
@@ -796,6 +801,7 @@ class OptimalTrial(BaseSchema):
     n_trials_completed = Column(Integer)  # Number of trials completed
     n_trials_total = Column(Integer)  # Number of trials
 
+    weights = Column(postgresql.ARRAY(Float))  # Weights of the GMM
     means = Column(postgresql.ARRAY(Float, dimensions=2))  # Means of the GMM
     covariances = Column(postgresql.ARRAY(Float, dimensions=3))  # Covariance of the GMM
     BIC = Column(Float)  # Bayesian Information Criterion (BIC)

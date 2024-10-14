@@ -57,10 +57,12 @@ async def get_GMM_model_parameters(
     if result is None:
         raise HTTPException(status_code=404, detail="Item not found")
 
+    weights = np.array(result.weights).tolist()
     means = np.array(result.means).tolist()
     covariances = np.array(result.covariances).tolist()
 
     return {
+        "weights": weights,
         "means": means,
         "covariances": covariances,
     }

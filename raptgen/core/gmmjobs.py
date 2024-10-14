@@ -165,6 +165,7 @@ def run_job_gmm(
                 )
 
                 if bic < minimum_bic:
+                    optimal_trial_db.weights = np.array(gmm.weights_).tolist()
                     optimal_trial_db.means = np.array(gmm.means_).tolist()
                     optimal_trial_db.covariances = np.array(gmm.covariances_).tolist()
                     optimal_trial_db.BIC = bic  # type: ignore
@@ -242,6 +243,7 @@ def initialize_job_gmm(
             n_trials_completed=0,
             n_trials_total=n_trials_per_component,
             n_components=n_component,
+            weights=[1 / n_component for _ in range(n_component)],
             means=[[0, 0] for _ in range(n_component)],
             covariances=[[[1, 0], [0, 1]] for _ in range(n_component)],
             BIC=float("inf"),

@@ -62,7 +62,7 @@ const DownloadCluster: React.FC = () => {
       const coordY = vaeData.map((d) => d.coordY);
       const duplicates = vaeData.map((d) => d.duplicates);
 
-      // const weights = gmmData.weights;
+      const weights = gmmData.weights;
       const means = gmmData.means;
       const covariances = gmmData.covariances;
 
@@ -71,16 +71,11 @@ const DownloadCluster: React.FC = () => {
       let probsTable: number[][] = Array(seq.length).fill(Array(length));
       probsTable = probsTable.map((row, i) => {
         const coords = [coordX[i], coordY[i]];
-        // const probs = weights.map((w, j) => {
-        //   return calcProb(w, means[j], covariances[j], coords);
-        // });
-        const probs = means.map((m, j) => {
-          return calcProb(1, m, covariances[j], coords);
-        }); // must be changed later
+        const probs = weights.map((w, j) => {
+          return calcProb(w, means[j], covariances[j], coords);
+        });
         return probs;
       });
-
-      console.log(probsTable);
 
       if (asProbs) {
         if (cluster === -1) {

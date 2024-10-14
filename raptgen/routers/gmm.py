@@ -217,6 +217,7 @@ async def get_gmm_job(
         response["gmm"] = {
             "current_n_components": requested_trial.n_components,
             "optimal_n_components": optimal_trial.n_components,
+            "weights": requested_trial.weights,
             "means": requested_trial.means,
             "covs": requested_trial.covariances,
         }
@@ -378,6 +379,7 @@ async def publish_gmm_job(
         seed=None,
         # training data
         n_components=optimalTrial.n_components,
+        weights=optimalTrial.weights,
         means=optimalTrial.means,
         covariances=optimalTrial.covariances,
     )

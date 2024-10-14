@@ -30,6 +30,7 @@ class C:  # as "Constants"
     n_trials_completed = "n_trials_completed"
     n_trials_total = "n_trials_total"
     n_components = "n_components"
+    weights = "weights"
     means = "means"
     covariances = "covariances"
     BIC = "BIC"
@@ -106,6 +107,7 @@ mock_gmm_db = [
                     C.n_components: 3,
                     C.n_trials_completed: 3,
                     C.n_trials_total: 3,
+                    C.weights: [1 / 3, 1 / 3, 1 / 3],
                     C.means: [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]],
                     C.covariances: [
                         [[0.1, 0.0], [0.0, 0.1]],
@@ -119,6 +121,7 @@ mock_gmm_db = [
                     C.n_components: 4,
                     C.n_trials_completed: 3,
                     C.n_trials_total: 2,
+                    C.weights: [1 / 4, 1 / 4, 1 / 4, 1 / 4],
                     C.means: [[0.2, 0.3], [0.4, 0.5], [0.6, 0.7], [0.8, 0.9]],
                     C.covariances: [
                         [[0.2, 0.0], [0.0, 0.2]],
@@ -133,6 +136,7 @@ mock_gmm_db = [
                     C.n_components: 5,
                     C.n_trials_completed: 0,
                     C.n_trials_total: 3,
+                    C.weights: None,
                     C.means: None,
                     C.covariances: None,
                     C.BIC: float("inf"),
@@ -265,6 +269,7 @@ mock_gmm_db = [
                     C.n_components: 3,
                     C.n_trials_completed: 3,
                     C.n_trials_total: 3,
+                    C.weights: [1 / 3, 1 / 3, 1 / 3],
                     C.means: [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]],
                     C.covariances: [
                         [[0.1, 0.0], [0.0, 0.1]],
@@ -278,6 +283,7 @@ mock_gmm_db = [
                     C.n_components: 3,
                     C.n_trials_completed: 0,
                     C.n_trials_total: 3,
+                    C.weights: None,
                     C.means: None,
                     C.covariances: None,
                     C.BIC: float("inf"),
@@ -287,6 +293,7 @@ mock_gmm_db = [
                     C.n_components: 3,
                     C.n_trials_completed: 2,
                     C.n_trials_total: 3,
+                    C.weights: [1 / 3, 1 / 3, 1 / 3],
                     C.means: [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]],
                     C.covariances: [
                         [[0.1, 0.0], [0.0, 0.1]],
@@ -300,6 +307,7 @@ mock_gmm_db = [
                     C.n_components: 3,
                     C.n_trials_completed: 1,
                     C.n_trials_total: 3,
+                    C.weights: [1 / 3, 1 / 3, 1 / 3],
                     C.means: [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]],
                     C.covariances: [
                         [[0.1, 0.0], [0.0, 0.1]],
@@ -313,6 +321,7 @@ mock_gmm_db = [
                     C.n_components: 3,
                     C.n_trials_completed: 0,
                     C.n_trials_total: 3,
+                    C.weights: None,
                     C.means: None,
                     C.covariances: None,
                     C.BIC: float("inf"),
