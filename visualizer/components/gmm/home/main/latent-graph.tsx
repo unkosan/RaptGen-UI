@@ -64,7 +64,7 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
     const trace: Partial<PlotData> = {
       x: coordsX.filter((_, index) => mask[index]),
       y: coordsY.filter((_, index) => mask[index]),
-      type: "scattergl",
+      type: "scatter",
       mode: "markers",
       name: "SELEX",
       marker: {
@@ -81,7 +81,8 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
         "Y: %{y}<br>" +
         "Random Region: %{customdata}" +
         "<extra></extra>",
-    };
+      zorder: -1, // to show behind GMM, this is implemented in @types/react-plotly
+    } as Partial<PlotData>;
     return trace;
   }, [vaeData]);
 

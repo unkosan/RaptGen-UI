@@ -44,7 +44,7 @@ export const responseGetGMMJobsItems = z.union([
     status: z.enum(["pending"]),
     start: z.number().int(),
     duration: z.number().int(),
-    target: z.string(),
+    target: z.string().uuid(),
     params: z.object({
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
@@ -58,7 +58,7 @@ export const responseGetGMMJobsItems = z.union([
     status: z.enum(["failure"]),
     start: z.number().int(),
     duration: z.number().int(),
-    target: z.string(),
+    target: z.string().uuid(),
     params: z.object({
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
@@ -73,7 +73,7 @@ export const responseGetGMMJobsItems = z.union([
     status: z.enum(["success"]),
     start: z.number().int(),
     duration: z.number().int(),
-    target: z.string(),
+    target: z.string().uuid(),
     params: z.object({
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
@@ -104,7 +104,7 @@ export const responseGetGMMJobsItems = z.union([
     status: z.enum(["progress", "suspend"]),
     start: z.number().int(),
     duration: z.number().int(),
-    target: z.string(),
+    target: z.string().uuid(),
     params: z.object({
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
