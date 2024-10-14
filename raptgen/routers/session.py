@@ -35,8 +35,6 @@ class CPU_Unpickler(pickle.Unpickler):
 
 sessions: Dict[str, CNN_PHMM_VAE] = dict()
 
-DATA_PATH = "/app/data/"
-
 
 class RequestCoordinates(BaseModel):
     session_uuid: str

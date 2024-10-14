@@ -21,7 +21,7 @@ const SelectGMM: React.FC = () => {
   // retrieve GMM model names
   useEffect(() => {
     (async () => {
-      if (sessionConfig.sessionId === "") {
+      if (sessionConfig.vaeId === "") {
         return;
       }
 
@@ -31,8 +31,6 @@ const SelectGMM: React.FC = () => {
             vae_uuid: sessionConfig.vaeId,
           },
         });
-
-        console.log(res);
 
         setModels(res.entries);
         if (res.entries.length > 0) {
@@ -45,7 +43,7 @@ const SelectGMM: React.FC = () => {
         return;
       }
     })();
-  }, [sessionConfig.sessionId]);
+  }, [sessionConfig.vaeId]);
 
   // dispatch model names to redux store
   useEffect(() => {
@@ -71,11 +69,14 @@ const SelectGMM: React.FC = () => {
   // retrieve GMM data and dispatch to redux store
   useEffect(() => {
     (async () => {
-      if (id === "") {
+      if (!sessionConfig.sessionId) {
+        return;
+      }
+
+      if (!sessionConfig.gmmId) {
         dispatch({
           type: "gmmData/set",
           payload: {
-            weights: [],
             means: [],
             covariances: [],
             decodedSequences: [],
@@ -87,7 +88,7 @@ const SelectGMM: React.FC = () => {
 
       const res = await apiClient.getGMMModel({
         queries: {
-          gmm_uuid: id,
+          gmm_uuid: sessionConfig.gmmId,
         },
       });
 
@@ -107,17 +108,19 @@ const SelectGMM: React.FC = () => {
         },
       });
     })();
-  }, [id, sessionConfig.sessionId, dispatch]);
+  }, [sessionConfig]);
   // use sessionId instead of graphConfig.vaeName to access the VAE name changed by the user
 
   return (
-    <Form.Select value={id} onChange={(e) => setId(e.target.value)}>
-      {models.map((model, index) => (
-        <option key={index} value={model.uuid}>
-          {model.name}
-        </option>
-      ))}
-    </Form.Select>
+    <>
+      <Form.Select value={id} onChange={(e) => setId(e.target.value)}>
+        {models.map((model, index) => (
+          <option key={index} value={model.uuid}>
+            {model.name}
+          </option>
+        ))}
+      </Form.Select>
+    </>
   );
 };
 

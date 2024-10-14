@@ -31,7 +31,6 @@ from core.db import (
 from core.jobs import initialize_job_raptgen, run_job_raptgen
 from celery.contrib.abortable import AbortableAsyncResult
 
-DATA_PATH = "/app/data/"
 
 router = APIRouter()
 
@@ -121,10 +120,11 @@ async def get_parent_job(
 
         # if child_job.minimum_NLL is not None and not np.isnan(child_job.minimum_NLL):
         minimum_NLL: Optional[float] = child_job.minimum_NLL
-        if minimum_NLL is not None and not np.isfinite(minimum_NLL):
+        if minimum_NLL is not None and np.isfinite(minimum_NLL):
             summary["minimum_NLLs"].append(minimum_NLL)
         else:
             summary["minimum_NLLs"].append(None)
+        print(summary)
 
     params_preprocessing = (
         session.query(PreprocessingParams)
@@ -748,7 +748,6 @@ class PublishPayload(BaseModel):
     uuid: str
     multi: Optional[int] = None
     name: str = "default"
-    debug: Optional[bool] = False
 
 
 @router.post("/api/train/jobs/publish")

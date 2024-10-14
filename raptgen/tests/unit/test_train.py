@@ -27,6 +27,7 @@ from core.db import (
     SequenceData,
     RaptGenParams,
     PreprocessingParams,
+    ViewerVAE,
     get_db_session,
 )
 
@@ -386,7 +387,7 @@ def test_enqueue_job(db_session, celery_worker):
                 "ATGCC",
             ]
             * 100,
-            "duplicates": [],
+            "duplicates": [2] * 800,
             "reiteration": 2,
             "params_training": {
                 "model_length": 5,
@@ -445,7 +446,7 @@ def test_suspend_job(db_session, celery_worker):
                 "ATGCC",
             ]
             * 100,
-            "duplicates": [],
+            "duplicates": [2] * 800,
             "reiteration": 2,
             "params_training": {
                 "model_length": 5,
@@ -547,10 +548,14 @@ def test_publish_parent_job(db_session, celery_worker):
     parent_uuid = test_enqueue_job(db_session, celery_worker)
     print(f"parent_uuid: {parent_uuid}")
     response = client.post(
-        "/api/train/jobs/publish?debug=true",
+        "/api/train/jobs/publish",
         json={
             "uuid": parent_uuid,
+            "multi": 0,
             "name": "test",
         },
     )
     assert response.status_code == 200
+
+    vae_entry = db_session.query(ViewerVAE).filter(ViewerVAE.name == "test").first()
+    assert vae_entry is not None

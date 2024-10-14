@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.testclient import TestClient
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from mocks import mock_bo_db, BOTest, C
+from mocks import mock_bovae_db, mock_bo_db, BOTest, C
 from tasks import celery
 
 from core.db import (
@@ -19,6 +19,7 @@ from core.db import (
     TargetValues,
     QueryData,
     AcquisitionData,
+    ViewerVAE,
     get_db_session,
 )
 
@@ -133,25 +134,32 @@ def mock_db(db_session, testcase: BOTest):
     #  ... ]
 
     # get the data
-    data = [d for d in mock_bo_db if testcase in d["tests"]][0]["data"]
+    bo_data = [d for d in mock_bo_db if testcase in d["tests"]][0]["data"]
+    vae_data = [d for d in mock_bovae_db if testcase in d["tests"]]
 
     # add the data to the database
-    for d in data[C.Experiments]:
+    for group in vae_data:
+        for d in group["data"][C.ViewerVAE]:
+            db_session.add(ViewerVAE(**d))
+        db_session.commit()
+
+    # add the data to the database
+    for d in bo_data[C.Experiments]:
         db_session.add(Experiments(**d))
 
-    for d in data[C.RegisteredValues]:
+    for d in bo_data[C.RegisteredValues]:
         db_session.add(RegisteredValues(**d))
 
-    for d in data[C.TargetColumns]:
+    for d in bo_data[C.TargetColumns]:
         db_session.add(TargetColumns(**d))
 
-    for d in data[C.TargetValues]:
+    for d in bo_data[C.TargetValues]:
         db_session.add(TargetValues(**d))
 
-    for d in data[C.QueryData]:
+    for d in bo_data[C.QueryData]:
         db_session.add(QueryData(**d))
 
-    for d in data[C.AcquisitionData]:
+    for d in bo_data[C.AcquisitionData]:
         db_session.add(AcquisitionData(**d))
 
     db_session.commit()
@@ -291,7 +299,8 @@ def test_get_items_success_single_data(db_session):
 
     data = response.json()
     assert data["experiment_name"] == "multiple_data"
-    assert data["VAE_model"] == "test_VAE"
+    assert data["VAE_name"] == "test_VAE"
+    assert data["VAE_uuid"] == "00000000-0000-0000-0000-000000000000"
     assert data["plot_config"] == {
         "minimum_count": 2,
         "show_training_data": True,
@@ -345,7 +354,7 @@ def test_put_items_success(db_session):
         "/api/bayesopt/items/00000000-0000-0000-0000-000000000000",
         json={
             "experiment_name": "test_experiment_updated",
-            "VAE_model": "test_model_updated",
+            "VAE_uuid": "00000000-0000-0000-0000-000000000000",
             "plot_config": {
                 "minimum_count": 3,
                 "show_training_data": False,
@@ -403,7 +412,7 @@ def test_put_items_failure_uuid_invalid(db_session):
         "/api/bayesopt/items/bad00000-0000-0000-0000-000000000000",
         json={
             "experiment_name": "bad_test_experiment_updated",
-            "VAE_model": "bad_test_model_updated",
+            "VAE_uuid": "00000000-0000-0000-0000-000000000000",
             "plot_config": {
                 "minimum_count": 3,
                 "show_training_data": False,
@@ -635,7 +644,7 @@ def test_submit_bo_result(db_session):
         "/api/bayesopt/submit",
         json={
             "experiment_name": "test_experiment",
-            "VAE_model": "test_model",
+            "VAE_uuid": "00000000-0000-0000-0000-000000000000",
             "plot_config": {
                 "minimum_count": 2,
                 "show_training_data": True,
@@ -680,7 +689,7 @@ def test_submit_bo_result(db_session):
 
     assert experiment is not None
     assert experiment.name == "test_experiment"
-    assert experiment.VAE_model == "test_model"
+    assert experiment.VAE_uuid == "00000000-0000-0000-0000-000000000000"
 
     # check query data
     assert experiment.query_data is not None
@@ -735,7 +744,7 @@ def test_submit_bo_result_multi_sequence(db_session):
         "/api/bayesopt/submit",
         json={
             "experiment_name": "test_experiment_2",
-            "VAE_model": "test_model_2",
+            "VAE_uuid": "00000000-0000-0000-0000-000000000001",
             "plot_config": {
                 "minimum_count": 2,
                 "show_training_data": True,
@@ -780,7 +789,7 @@ def test_submit_bo_result_multi_sequence(db_session):
 
     assert experiment is not None
     assert experiment.name == "test_experiment_2"
-    assert experiment.VAE_model == "test_model_2"
+    assert experiment.VAE_uuid == "00000000-0000-0000-0000-000000000001"
 
     # check registered data
     assert experiment.registered_values is not None
