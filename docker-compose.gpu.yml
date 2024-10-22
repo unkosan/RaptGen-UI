@@ -16,7 +16,7 @@ services:
   visualizer:
     build:
       context: ./visualizer
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     container_name: frontend
     tty: true
     ports:
@@ -30,7 +30,7 @@ services:
   back:
     build:
       context: ./raptgen
-      dockerfile: gpu.Dockerfile
+      dockerfile: gpu.dockerfile
     container_name: backend
     tty: true
     ports:
@@ -59,7 +59,7 @@ services:
   worker:
     build:
       context: ./raptgen
-      dockerfile: gpu.Dockerfile
+      dockerfile: gpu.dockerfile
     container_name: worker
     tty: true
     depends_on:
@@ -77,19 +77,3 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-
-  flower:
-    build:
-      context: ./raptgen
-      dockerfile: gpu.Dockerfile
-    container_name: flower
-    tty: true
-    depends_on:
-      - redis
-    volumes:
-      - ./raptgen:/app
-    environment:
-      - PYTHONPATH=/app
-    command: sh -c "celery --app=tasks.celery flower --port=5555"
-    ports:
-      - 8010:5555
