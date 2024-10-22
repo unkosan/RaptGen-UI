@@ -1,31 +1,28 @@
-from typing import Optional
-
 import time
+from io import BytesIO
+from threading import Semaphore
+from typing import Optional
+from uuid import UUID, uuid4
+
 import pandas as pd
 import torch
-from torch.utils.data import TensorDataset, DataLoader
-from uuid import uuid4
-from io import BytesIO
-from celery.contrib.abortable import AbortableTask, AbortableAsyncResult
+from celery.contrib.abortable import AbortableAsyncResult, AbortableTask
 from celery.result import allow_join_result
-
-from sqlalchemy.orm import Session, scoped_session
-from uuid import UUID
-
+from core.algorithms import CNN_PHMM_VAE, profile_hmm_vae_loss
 from core.db import (
-    ParentJob,
     ChildJob,
+    ParentJob,
+    RaptGenParams,
+    SequenceData,
     SequenceEmbeddings,
     TrainingLosses,
-    SequenceData,
-    RaptGenParams,
     get_db_session,
 )
-from core.algorithms import profile_hmm_vae_loss, CNN_PHMM_VAE
 from core.preprocessing import ID_encode
 from core.schemas import RaptGenTrainingParams
+from sqlalchemy.orm import Session, scoped_session
 from tasks import celery
-from threading import Semaphore
+from torch.utils.data import DataLoader, TensorDataset
 
 # Use a semaphore to limit the number of concurrent jobs
 if torch.cuda.is_available():
@@ -318,6 +315,11 @@ def run_job_raptgen(
 
         model.to(device_t)
         model.train()
+
+        for state in optimizer.state.values():
+            for k, v in state.items():
+                if isinstance(v, torch.Tensor):
+                    state[k] = v.to(device_t)
 
         print(
             f"Training RaptGen model for task_id {self.request.id}. With abort flag {self.is_aborted()}."
