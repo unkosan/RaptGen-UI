@@ -45,13 +45,13 @@ Train a VAE model with the HT-SELEX data.
 
 ![VAE Trainer View](docs/images/vae_trainer.png)
 
-### GMM Trainer
+### [GMM Trainer](docs/GMM_Trainer.md)
 
 Train a GMM model with the HT-SELEX data.
 
 ![GMM Trainer View](docs/images/gmm.png)
 
-### Bayesian Optimization
+### [Bayesian Optimization](docs/BO.md)
 
 Optimize the HT-SELEX data with Bayesian Optimization.
 
