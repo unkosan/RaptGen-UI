@@ -68,7 +68,7 @@ Training job is submitted and added to the Running Jobs list. You can check the 
 
 - To Stop, Delete or Rename the training job, you can click the `Stop`, `Delete`, or `Rename` button.
 - The current status of the experiment section shows the running status of the training job. The total number of jobs are the number of `reiteration of training` parameter.  
-	![current status of the experiment section](image.png)
+	![current status of the experiment section](images/image.png)
 - The Training Parameters section shows the training parameters for the training job.  
 	![training parameters](images/image-1.png)
 - The Job information section shows the job information for the training job.  
