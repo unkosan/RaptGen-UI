@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { Form, ListGroup, Modal, Stack } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { RootState } from "../../redux/store";
+import { AppDispatch, RootState } from "../../redux/store";
 import { apiClient } from "~/services/api-client";
 import { useRouter } from "next/router";
 import { Pencil, XLg } from "react-bootstrap-icons";
 import { Button } from "react-bootstrap";
+
+import { setSessionConfigByVaeId } from "../../redux/session-config2";
 
 const SelectVAE: React.FC = () => {
   const [id, setId] = useState<string>("");
@@ -17,7 +19,7 @@ const SelectVAE: React.FC = () => {
     }[]
   >([]);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
   const router = useRouter();
@@ -99,6 +101,7 @@ const SelectVAE: React.FC = () => {
             reverseAdapter: "",
           },
         });
+        dispatch(setSessionConfigByVaeId(id));
       } catch (e) {
         console.error(e);
       }

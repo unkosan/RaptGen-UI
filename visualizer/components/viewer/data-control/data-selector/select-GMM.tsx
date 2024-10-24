@@ -4,6 +4,7 @@ import { RootState } from "../../redux/store";
 import { Form } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
+import { setGmmId } from "../../redux/session-config2";
 
 const SelectGMM: React.FC = () => {
   const [models, setModels] = useState<
@@ -109,6 +110,7 @@ const SelectGMM: React.FC = () => {
           isShown: Array(res.weights.length).fill(true),
         },
       });
+      dispatch(setGmmId(sessionConfig.gmmId));
     })();
   }, [sessionConfig]);
   // use sessionId instead of graphConfig.vaeName to access the VAE name changed by the user

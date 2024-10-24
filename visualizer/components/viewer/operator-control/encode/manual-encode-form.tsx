@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
 import { apiClient } from "~/services/api-client";
+import { setEncoded } from "../../redux/interaction-data";
 
 const ManualEncodeForm: React.FC = () => {
   const [value, setValue] = useState<string>("");
@@ -18,6 +19,9 @@ const ManualEncodeForm: React.FC = () => {
     (state: RootState) => state.sessionConfig.manualEncodeCount
   );
   const encodeData = useSelector((state: RootState) => state.encodeData);
+  const encodedData2 = useSelector(
+    (state: RootState) => state.interactionData.encoded
+  );
 
   useEffect(() => {
     setIsValid(/^[ACGTUacgtu]+$/.test(value));
@@ -64,6 +68,17 @@ const ManualEncodeForm: React.FC = () => {
       type: "sessionConfig/incrementEncodeCount",
       payload: null,
     });
+    console.log("setEncoded, manual");
+    dispatch(
+      setEncoded({
+        ids: encodedData2.ids.concat(`manual-${encodedData2.ids.length}`),
+        randomRegions: encodedData2.randomRegions.concat(value),
+        coordsX: encodedData2.coordsX.concat(coord_x),
+        coordsY: encodedData2.coordsY.concat(coord_y),
+        shown: encodedData2.shown.concat(true),
+      })
+    );
+    console.log("setEncoded, manual done");
     setValue("");
   };
 

@@ -6,6 +6,7 @@ import { InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
 import { useEffect, useState } from "react";
 import { apiClient } from "~/services/api-client";
+import { setDecoded } from "../../redux/interaction-data";
 
 const ResultViewer: React.FC = () => {
   const dispatch = useDispatch();
@@ -96,6 +97,15 @@ const ResultViewer: React.FC = () => {
       type: "decodeData/set",
       payload: newDecodeData,
     });
+    dispatch(
+      setDecoded({
+        ids: newDecodeData.map((d) => d.id),
+        coordsX: newDecodeData.map((d) => d.coordX),
+        coordsY: newDecodeData.map((d) => d.coordY),
+        randomRegions: newDecodeData.map((d) => d.randomRegion),
+        shown: newDecodeData.map((d) => d.isShown),
+      })
+    );
     dispatch({
       type: "sessionConfig/incrementDecodeCount",
       payload: null,

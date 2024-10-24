@@ -6,6 +6,7 @@ import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
 
 import { apiClient } from "~/services/api-client";
 import CustomDataGrid from "~/components/common/custom-datagrid";
+import { setEncoded } from "../../redux/interaction-data";
 
 type EditorProps = {
   value: string;
@@ -42,6 +43,15 @@ const IdEditor: React.FC<EditorProps> = (props) => {
       type: "encodeData/set",
       payload: newEncodeData,
     });
+    dispatch(
+      setEncoded({
+        ids: newEncodeData.map((e) => e.id),
+        coordsX: newEncodeData.map((e) => e.coordX),
+        coordsY: newEncodeData.map((e) => e.coordY),
+        randomRegions: newEncodeData.map((e) => e.randomRegion),
+        shown: newEncodeData.map((e) => e.isShown),
+      })
+    );
 
     console.log(props, props.onChange, value);
     // props.onChange(value); # onEditChangeValue does not work. fxxx
@@ -252,6 +262,15 @@ const Actions: React.FC<ActionsProps> = (props) => {
       type: "encodeData/set",
       payload: newEncodeData,
     });
+    dispatch(
+      setEncoded({
+        ids: newEncodeData.map((e) => e.id),
+        coordsX: newEncodeData.map((e) => e.coordX),
+        coordsY: newEncodeData.map((e) => e.coordY),
+        randomRegions: newEncodeData.map((e) => e.randomRegion),
+        shown: newEncodeData.map((e) => e.isShown),
+      })
+    );
   };
 
   const onClickDelete = async () => {
@@ -263,6 +282,15 @@ const Actions: React.FC<ActionsProps> = (props) => {
       type: "encodeData/set",
       payload: newEncodeData,
     });
+    dispatch(
+      setEncoded({
+        ids: newEncodeData.map((e) => e.id),
+        coordsX: newEncodeData.map((e) => e.coordX),
+        coordsY: newEncodeData.map((e) => e.coordY),
+        randomRegions: newEncodeData.map((e) => e.randomRegion),
+        shown: newEncodeData.map((e) => e.isShown),
+      })
+    );
   };
 
   const showStyle = {

@@ -6,6 +6,8 @@ import { Form, InputGroup } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { apiClient } from "~/services/api-client";
+import { setDecodeGrid } from "../../redux/interaction-data";
+import { setGraphConfig } from "../../redux/graph-config2";
 
 const PointDecoder: React.FC = () => {
   const [pointX, setPointX] = useState<number>(0);
@@ -23,6 +25,7 @@ const PointDecoder: React.FC = () => {
   );
   const decodeData = useSelector((state: RootState) => state.decodeData);
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
+  const graphConfig2 = useSelector((state: RootState) => state.graphConfig2);
 
   const onChangeX = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -93,6 +96,13 @@ const PointDecoder: React.FC = () => {
       type: "decodeData/set",
       payload: newDecodeData,
     });
+    dispatch(
+      setDecodeGrid({
+        coordX: pointX,
+        coordY: pointY,
+        randomRegion: sequence,
+      })
+    );
   }, [sequence, pointX, pointY]);
 
   const onChangeShowGrid = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,6 +113,12 @@ const PointDecoder: React.FC = () => {
         showDecodeGrid: e.target.checked,
       },
     });
+    dispatch(
+      setGraphConfig({
+        ...graphConfig2,
+        showDecodeGrid: e.target.checked,
+      })
+    );
   };
 
   return (

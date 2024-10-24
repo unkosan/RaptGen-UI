@@ -8,6 +8,10 @@ import measuredDataReducer from "./measured-data";
 import encodeDataReducer from "./encode-data";
 import decodeDataReducer from "./decode-data";
 import graphDataReducer from "./graph-data";
+import sessionConfigReducer2 from "./session-config2";
+import graphConfigReducer2 from "./graph-config2";
+import InteractionDataReducer from "./interaction-data";
+import selectedPointsReducer from "./graph-data2";
 
 export const store = configureStore({
   reducer: {
@@ -19,7 +23,12 @@ export const store = configureStore({
     encodeData: encodeDataReducer,
     decodeData: decodeDataReducer,
     graphData: graphDataReducer,
+    sessionConfig2: sessionConfigReducer2,
+    graphConfig2: graphConfigReducer2,
+    selectedPoints: selectedPointsReducer,
+    interactionData: InteractionDataReducer,
   },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

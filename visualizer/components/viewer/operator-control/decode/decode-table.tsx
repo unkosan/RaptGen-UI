@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { apiClient } from "~/services/api-client";
 import CustomDataGrid from "~/components/common/custom-datagrid";
+import { setDecoded } from "../../redux/interaction-data";
 
 type CoordEditorProps = {
   value: number;
@@ -178,6 +179,13 @@ const Actions: React.FC<ActionProps> = (props) => {
     dispatch({
       type: "decodeData/set",
       payload: newDecodeData,
+    });
+    setDecoded({
+      ids: newDecodeData.map((e) => e.id),
+      coordsX: newDecodeData.map((e) => e.coordX),
+      coordsY: newDecodeData.map((e) => e.coordY),
+      randomRegions: newDecodeData.map((e) => e.randomRegion),
+      shown: newDecodeData.map((e) => e.isShown),
     });
   };
 
