@@ -15,16 +15,25 @@ Docker version 20.10.21, build baeda1f
 
 ### Procedure
 
-1. Export your UID and GID environmental variables (needed for the `worker` container to work successfully)
+1. Open your terminal. Then export your UID and GID environmental variables with the following command (needed for the `worker` container to work successfully.)
    ```shell
    $ export UID GID
    ```
-2. build and run containers with docker-compose. You need to assign the `docker-compose.prod.yml` file.
+2. Build and run containers with docker-compose. If you have GPU devices which supports CUDA, run with `docker-compose.gpu.yml` file.
+   ```shell
+   $ docker compose -f docker-compose.gpu.yml up -d
+   ```
+   Otherwise, you need to assign `docker-compose.prod.yml` file.
    ```shell
    $ docker compose -f docker-compose.prod.yml up -d
    ```
-3. Please wait before all the containers are ready. This may take a few minutes. Even if Docker says all the containers are ready, it may take some extra time for the `frontend` container to be working.
+3. Please wait before all the containers are ready. This may take a few minutes. Even if Docker says they are ready, it may take some extra time for the `frontend` container to be working.
 4. Access http://localhost:3000 with your favorite internet browser.
+5. If you would like to stop the containers, please type the following command. This stops containers and all data will be retained in `db` container.
+   ```shell
+   $ docker compose stop
+   ```
+   If you send `down` command, all data will be lost (containers are removed.)
 
 ## Usage
 
