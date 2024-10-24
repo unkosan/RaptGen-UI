@@ -12,7 +12,7 @@ const VAEParamsTable: React.FC = () => {
     {} as { [keys: string]: string }
   );
 
-  const vaeName = useSelector((state: RootState) => state.graphConfig.vaeName);
+  const vaeId = useSelector((state: RootState) => state.sessionConfig.vaeId);
 
   const [forwardAdapter, setForwardAdapter] = useState<string>("");
   const [reverseAdapter, setReverseAdapter] = useState<string>("");
@@ -21,28 +21,30 @@ const VAEParamsTable: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      if (vaeName === "") {
+      if (vaeId === "") {
         setParamsList({} as { [keys: string]: string });
         return;
       }
 
-      const res = await apiClient.getVAEModelParameters({
-        queries: {
-          VAE_model_name: vaeName,
-        },
-      });
+      try {
+        const res = await apiClient.getVAEModelParameters({
+          queries: {
+            vae_uuid: vaeId,
+          },
+        });
 
-      if (res.status === "success") {
-        setParamsList(res.data);
-        if (res.data["fwd_adapter"]) {
-          setForwardAdapter(res.data["fwd_adapter"]);
+        setParamsList(res);
+        if (Object.keys(res).includes("forward_adapter")) {
+          setForwardAdapter(res["forward_adapter"]);
         }
-        if (res.data["rev_adapter"]) {
-          setReverseAdapter(res.data["rev_adapter"]);
+        if (Object.keys(res).includes("reverse_adapter")) {
+          setReverseAdapter(res["reverse_adapter"]);
         }
+      } catch (e) {
+        console.error(e);
       }
     })();
-  }, [vaeName]);
+  }, [vaeId]);
 
   useEffect(() => {
     (async () => {

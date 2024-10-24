@@ -46,35 +46,28 @@ const CoordEditor: React.FC<CoordEditorProps> = (props) => {
     const idx = decodeData.findIndex((e) => e.key === key);
     const newDecodeData = [...decodeData];
 
-    const res = await apiClient.decode({
-      session_id: sessionId,
-      coords: [
-        {
-          coord_x: parseFloat(valueX),
-          coord_y: parseFloat(valueY),
-        },
-      ],
-    });
+    try {
+      const res = await apiClient.decode({
+        session_uuid: sessionId,
+        coords_x: [parseFloat(valueX)],
+        coords_y: [parseFloat(valueY)],
+      });
 
-    if (res.status === "error") {
-      return;
+      newDecodeData[idx] = {
+        ...newDecodeData[idx],
+        randomRegion: res.sequences[0],
+        sequence: "",
+      };
+
+      dispatch({
+        type: "decodeData/set",
+        payload: newDecodeData,
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      props.onComplete();
     }
-
-    console.log("res", res);
-    newDecodeData[idx] = {
-      ...newDecodeData[idx],
-      coordX: parseFloat(valueX),
-      coordY: parseFloat(valueY),
-      randomRegion: res.data[0],
-      sequence: "",
-    };
-
-    dispatch({
-      type: "decodeData/set",
-      payload: newDecodeData,
-    });
-
-    props.onComplete();
   };
 
   const style = Object.assign(

@@ -3,7 +3,8 @@ import { z } from "zod";
 
 export const experimentState = z.object({
   experiment_name: z.string().optional(),
-  VAE_model: z.string(),
+  VAE_uuid: z.string().uuid(),
+  VAE_name: z.string().nonempty(),
   plot_config: z.object({
     minimum_count: z.number().int().min(1),
     show_training_data: z.boolean(),

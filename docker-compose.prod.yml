@@ -10,11 +10,13 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: raptgen
       PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
 
   visualizer:
     build:
       context: ./visualizer
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     container_name: frontend
     tty: true
     ports:
@@ -29,7 +31,7 @@ services:
   back:
     build:
       context: ./raptgen
-      dockerfile: cpu.Dockerfile
+      dockerfile: cpu.dockerfile
     container_name: backend
     tty: true
     ports:
@@ -49,7 +51,7 @@ services:
   worker:
     build:
       context: ./raptgen
-      dockerfile: cpu.Dockerfile
+      dockerfile: cpu.dockerfile
     container_name: worker
     tty: true
     depends_on:
@@ -60,19 +62,3 @@ services:
       - PYTHONPATH=/app
     user: "${UID}:${GID}"
     command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"
-
-  flower:
-    build:
-      context: ./raptgen
-      dockerfile: cpu.Dockerfile
-    container_name: flower
-    tty: true
-    depends_on:
-      - redis
-    volumes:
-      - ./raptgen:/app
-    environment:
-      - PYTHONPATH=/app
-    command: sh -c "celery --app=tasks.celery flower --port=5555"
-    ports:
-      - 8010:5555

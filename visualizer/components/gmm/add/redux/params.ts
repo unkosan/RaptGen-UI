@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type Params = {
-  vaeModelName: string;
   gmmName: string;
+  vaeId: string;
   minNumComponents: number;
   maxNumComponents: number;
   stepSize: number;
@@ -12,8 +12,8 @@ type Params = {
 const paramsSlice = createSlice({
   name: "params",
   initialState: {
-    vaeModelName: "RAPT1",
     gmmName: "",
+    vaeId: "",
     minNumComponents: 5,
     maxNumComponents: 15,
     stepSize: 1,

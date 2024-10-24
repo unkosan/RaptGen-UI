@@ -2,7 +2,6 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 type VaeDataEntry = {
   key: number;
-  sequence: string;
   randomRegion: string;
   duplicates: number;
   coordX: number;

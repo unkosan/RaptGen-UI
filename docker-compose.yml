@@ -10,11 +10,13 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: raptgen
       PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
 
   visualizer:
     build:
       context: ./visualizer
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     container_name: frontend
     tty: true
     ports:
@@ -29,7 +31,7 @@ services:
   back:
     build:
       context: ./raptgen
-      dockerfile: cpu.Dockerfile
+      dockerfile: cpu.dockerfile
     container_name: backend
     tty: true
     ports:
@@ -38,8 +40,8 @@ services:
       - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
-    command: sh
-    # command: sh -c "uvicorn --reload --host 0.0.0.0 api:app"
+    # command: sh
+    command: sh -c "uvicorn --reload --host 0.0.0.0 api:app"
 
   redis:
     image: redis
@@ -50,7 +52,7 @@ services:
   worker:
     build:
       context: ./raptgen
-      dockerfile: cpu.Dockerfile
+      dockerfile: cpu.dockerfile
     container_name: worker
     tty: true
     depends_on:
@@ -66,7 +68,7 @@ services:
   flower:
     build:
       context: ./raptgen
-      dockerfile: cpu.Dockerfile
+      dockerfile: cpu.dockerfile
     container_name: flower
     tty: true
     depends_on:

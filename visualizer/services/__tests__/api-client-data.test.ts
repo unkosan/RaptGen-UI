@@ -1,6 +1,7 @@
 import { apiClient } from "../api-client";
 import { setupServer } from "msw/node";
 import { handlers } from "~/mock/handlers";
+import { uuids } from "~/mock/route/asset/uuids";
 
 const server = setupServer(...handlers);
 
@@ -21,87 +22,72 @@ describe("data service", () => {
 
   it("should return VAE model names", async () => {
     const res = await apiClient.getVAEModelNames();
-    expect(res.status).toBe("success");
-    if (res.status === "success") {
-      expect(res.data).toEqual(["RAPT1", "RAPT3"]);
-    }
+    expect(res.entries).toEqual([
+      { uuid: uuids.vae.rapt1, name: "RAPT1" },
+      { uuid: uuids.vae.rapt3, name: "RAPT3" },
+    ]);
   });
 
   it("should return GMM model names", async () => {
     const res = await apiClient.getGMMModelNames({
       queries: {
-        VAE_model_name: "RAPT1",
+        vae_uuid: uuids.vae.rapt1,
       },
     });
-    expect(res.status).toBe("success");
-    if (res.status === "success") {
-      expect(res.data).toEqual(["num_comp_15_A"]);
-    }
+    expect(res).toEqual({
+      entries: [{ uuid: uuids.gmm.rapt1, name: "num_comp_15_A" }],
+    });
 
     const res2 = await apiClient.getGMMModelNames({
       queries: {
-        VAE_model_name: "RAPT3",
+        vae_uuid: uuids.vae.rapt3,
       },
     });
-    expect(res2.status).toBe("success");
-    if (res2.status === "success") {
-      expect(res2.data).toEqual(["num_comp_15_B"]);
-    }
+    expect(res2).toEqual({
+      entries: [{ uuid: uuids.gmm.rapt3, name: "num_comp_15_B" }],
+    });
   });
 
-  it("should return measured data names", async () => {
-    const res = await apiClient.getMeasuredDataNames();
-    expect(res.status).toBe("success");
-    if (res.status === "success") {
-      expect(res.data).toEqual(["report1.csv", "report3.csv"]);
-    }
-  });
+  // not available in the current implementation
+  // it("should return measured data names", async () => {
+  //   const res = await apiClient.getMeasuredDataNames();
+  //   expect(res.status).toBe("success");
+  //   if (res.status === "success") {
+  //     expect(res.data).toEqual(["report1.csv", "report3.csv"]);
+  //   }
+  // });
 
   it("should return VAE model parameters", async () => {
     const res = await apiClient.getVAEModelParameters({
       queries: {
-        VAE_model_name: "RAPT1",
+        vae_uuid: uuids.vae.rapt1,
       },
     });
-    expect(res.status).toBe("success");
-    if (res.status === "success") {
-      expect(res.data.experiment).toBe("RAPT1");
-    }
+    expect(res.name).toBe("RAPT1");
 
     const res2 = await apiClient.getVAEModelParameters({
       queries: {
-        VAE_model_name: "RAPT3",
+        vae_uuid: uuids.vae.rapt3,
       },
     });
-    expect(res2.status).toBe("success");
-    if (res2.status === "success") {
-      expect(res2.data.experiment).toBe("RAPT3");
-    }
+    expect(res2.name).toBe("RAPT3");
   });
 
   it("should return GMM model parameters", async () => {
     const res = await apiClient.getGMMModelParameters({
       queries: {
-        VAE_model_name: "RAPT1",
-        GMM_model_name: "num_comp_15_A",
+        gmm_uuid: uuids.gmm.rapt1,
       },
     });
-    expect(res.status).toBe("success");
-    if (res.status === "success") {
-      expect(res.data.GMM_num_components).toBe(15);
-      expect(res.data.GMM_seed).toBe(42);
-    }
+    expect(res.num_components).toBe(15);
+    expect(res.seed).toBe(42);
 
     const res2 = await apiClient.getGMMModelParameters({
       queries: {
-        VAE_model_name: "RAPT3",
-        GMM_model_name: "num_comp_15_B",
+        gmm_uuid: uuids.gmm.rapt3,
       },
     });
-    expect(res2.status).toBe("success");
-    if (res2.status === "success") {
-      expect(res2.data.GMM_num_components).toBe(15);
-      expect(res2.data.GMM_seed).toBe(23);
-    }
+    expect(res2.num_components).toBe(15);
+    expect(res2.seed).toBe(23);
   });
 });

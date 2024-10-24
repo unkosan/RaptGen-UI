@@ -1,7 +1,7 @@
 import { Form } from "react-bootstrap";
 import SelectVAE from "./select-VAE";
 import SelectGMM from "./select-GMM";
-import SelectMeasured from "./select-measured";
+// import SelectMeasured from "./select-measured";
 
 const DataSelector: React.FC = () => {
   return (
@@ -14,10 +14,10 @@ const DataSelector: React.FC = () => {
         <Form.Label>Selected GMM Model</Form.Label>
         <SelectGMM />
       </Form.Group>
-      <Form.Group className="mb-3">
+      {/* <Form.Group className="mb-3">
         <Form.Label>Selected Measured Data</Form.Label>
         <SelectMeasured />
-      </Form.Group>
+      </Form.Group> */}
     </Form>
   );
 };

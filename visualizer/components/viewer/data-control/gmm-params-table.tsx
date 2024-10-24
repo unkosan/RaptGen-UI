@@ -9,33 +9,24 @@ const GMMParamsTable: React.FC = () => {
     {} as { [keys: string]: string }
   );
 
-  const vaeName = useSelector((state: RootState) => state.graphConfig.vaeName);
-  const gmmName = useSelector((state: RootState) => state.graphConfig.gmmName);
+  const gmmId = useSelector((state: RootState) => state.sessionConfig.gmmId);
 
   useEffect(() => {
     (async () => {
-      if (vaeName === "") {
-        setParamsList({} as { [keys: string]: string });
-        return;
-      }
-
-      if (gmmName === "") {
+      if (gmmId === "") {
         setParamsList({} as { [keys: string]: string });
         return;
       }
 
       const res = await apiClient.getGMMModelParameters({
         queries: {
-          VAE_model_name: vaeName,
-          GMM_model_name: gmmName,
+          gmm_uuid: gmmId,
         },
       });
 
-      if (res.status === "success") {
-        setParamsList(res.data);
-      }
+      setParamsList(res);
     })();
-  }, [vaeName, gmmName]);
+  }, [gmmId]);
 
   const gridStyle = {
     minHeight: 300,

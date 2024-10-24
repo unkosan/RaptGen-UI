@@ -1,22 +1,18 @@
-from typing import Optional
-
 import time
-import pandas as pd
 from uuid import uuid4
-from io import BytesIO
 from celery.contrib.abortable import AbortableTask
 
-from sqlalchemy.orm import Session, scoped_session
+from sqlalchemy.orm import Session
 
 from core.db import (
     GMMJob,
     OptimalTrial,
     BIC,
+    ViewerSequenceEmbeddings,
     get_db_session,
 )
 from tasks import celery
 from threading import Semaphore
-from routers.data import DATA_PATH
 import numpy as np
 from sklearn.mixture import GaussianMixture
 
@@ -84,7 +80,6 @@ def run_job_gmm(
     uuid: str,
     is_resume: bool = False,
     database_url: str = "postgresql+psycopg2://postgres:postgres@db:5432/raptgen",
-    datapath_prefix: str = DATA_PATH,
 ):
     """
     Run the GMM job.
@@ -123,11 +118,12 @@ def run_job_gmm(
         job_db.status = "progress"  # type: ignore
         session.commit()
 
-        df = pd.read_pickle(
-            datapath_prefix + "items/" + job_db.target_VAE_model + "/unique_seq_dataframe.pkl"  # type: ignore
+        # load the data
+        embeddings = session.query(ViewerSequenceEmbeddings).filter(
+            ViewerSequenceEmbeddings.vae_uuid == job_db.target_VAE_uuid  # type: ignore
         )
-        x = df["coord_x"].to_numpy()
-        y = df["coord_y"].to_numpy()
+        x = [embedding.coord_x for embedding in embeddings]
+        y = [embedding.coord_y for embedding in embeddings]
         coords = np.array([x, y]).T
 
         if is_resume:
@@ -169,6 +165,7 @@ def run_job_gmm(
                 )
 
                 if bic < minimum_bic:
+                    optimal_trial_db.weights = np.array(gmm.weights_).tolist()
                     optimal_trial_db.means = np.array(gmm.means_).tolist()
                     optimal_trial_db.covariances = np.array(gmm.covariances_).tolist()
                     optimal_trial_db.BIC = bic  # type: ignore
@@ -185,7 +182,7 @@ def run_job_gmm(
 def initialize_job_gmm(
     session: Session,
     name: str,
-    target_VAE_model: str,
+    target_uuid: str,
     minimum_n_components: int,
     maximum_n_components: int,
     step_size: int,
@@ -203,8 +200,8 @@ def initialize_job_gmm(
         The UUID of the GMM job.
     name : str
         The name of the job.
-    target_VAE_model : str
-        The target VAE model.
+    target_uuid : str
+        The UUID of the target VAE model.
     minimum_n_components : int
         The minimum number of components.
     maximum_n_components : int
@@ -224,7 +221,7 @@ def initialize_job_gmm(
         uuid=job_uuid,
         name=name,
         status="pending",
-        target_VAE_model=target_VAE_model,
+        target_VAE_uuid=target_uuid,
         minimum_n_components=minimum_n_components,
         maximum_n_components=maximum_n_components,
         step_size=step_size,
@@ -246,6 +243,7 @@ def initialize_job_gmm(
             n_trials_completed=0,
             n_trials_total=n_trials_per_component,
             n_components=n_component,
+            weights=[1 / n_component for _ in range(n_component)],
             means=[[0, 0] for _ in range(n_component)],
             covariances=[[[1, 0], [0, 1]] for _ in range(n_component)],
             BIC=float("inf"),

@@ -6,11 +6,15 @@ import { apiClient } from "~/services/api-client";
 import { RootState } from "../redux/store";
 
 const VaeSelector: React.FC = () => {
-  const [models, setModels] = useState<string[]>([]);
+  const [models, setModels] = useState<
+    {
+      uuid: string;
+      name: string;
+    }[]
+  >([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [minimumCount, setMinimumCount] = useState<number>(5);
   const [showSelex, setShowSelex] = useState<boolean>(true);
-  const isLoading = useSelector((state: RootState) => state.isLoading);
 
   const dispatch = useDispatch();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
@@ -18,138 +22,107 @@ const VaeSelector: React.FC = () => {
   const registeredValues = useSelector(
     (state: RootState) => state.registeredValues
   );
-  const queriedValues = useSelector((state: RootState) => state.queriedValues);
 
   // retrieve VAE model names
   useEffect(() => {
     (async () => {
       const res = await apiClient.getVAEModelNames();
-      if (res.status === "error") return;
-      setModels(res.data);
+      setModels(res.entries);
     })();
   }, []);
 
-  // dispatch model names to redux store
+  // if redux store is changed, update local state
   useEffect(() => {
-    if (isLoading) return;
-    if (selectedModel === "") return;
+    setSelectedModel(sessionConfig.vaeId);
+    setMinimumCount(graphConfig.minCount);
+    setShowSelex(graphConfig.showSelex);
+  }, [sessionConfig, graphConfig]);
 
+  const setDirty = () => {
     dispatch({
-      type: "graphConfig/set",
-      payload: {
-        ...graphConfig,
-        vaeName: selectedModel,
-        minCount: minimumCount,
-        showSelex: showSelex,
-      },
+      type: "isDirty/set",
+      payload: true,
     });
-  }, [selectedModel, minimumCount, showSelex]);
+  };
 
-  // restart session
-  useEffect(() => {
-    (async () => {
-      if (isLoading) return;
+  const onModelChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const uuid = e.target.value;
+    setDirty();
+    setSelectedModel(uuid);
 
-      if (sessionConfig.sessionId !== 0) {
-        await apiClient.endSession({
-          queries: {
-            session_id: sessionConfig.sessionId,
-          },
-        });
-        console.log("session ended");
-      }
-
-      if (graphConfig.vaeName === "") return;
-
+    try {
       const resStart = await apiClient.startSession({
         queries: {
-          VAE_name: graphConfig.vaeName,
+          vae_uuid: uuid,
+        },
+      });
+      const resEnd = await apiClient.endSession({
+        queries: {
+          session_uuid: sessionConfig.sessionId,
+        },
+      });
+      dispatch({
+        type: "sessionConfig/set",
+        payload: {
+          sessionId: resStart.uuid,
+          vaeId: uuid,
+        },
+      });
+      dispatch({
+        type: "graphConfig/set",
+        payload: {
+          ...graphConfig,
+          vaeId: uuid,
         },
       });
 
-      if (resStart.status === "success") {
-        const sessionId: number = resStart.data;
+      // retrieve SELEX data
+      const resSelex = await apiClient.getSelexData({
+        queries: {
+          vae_uuid: uuid,
+        },
+      });
+      dispatch({
+        type: "vaeData/set",
+        payload: Array.from({ length: resSelex.coord_x.length }, (_, i) => ({
+          key: i,
+          randomRegion: resSelex.random_regions[i],
+          coordX: resSelex.coord_x[i],
+          coordY: resSelex.coord_y[i],
+          duplicates: resSelex.duplicates[i],
+          isSelected: false,
+          isShown: false,
+        })),
+      });
+
+      // update registered table with re-encoded data
+      if (registeredValues.randomRegion.length !== 0) {
+        const resRegistered = await apiClient.encode({
+          session_uuid: resStart.uuid,
+          sequences: registeredValues.randomRegion,
+        });
         dispatch({
-          type: "sessionConfig/set",
+          type: "registeredValues/set",
           payload: {
-            sessionId,
-            vaeName: graphConfig.vaeName,
+            ...registeredValues,
+            coordX: resRegistered.coords_x,
+            coordY: resRegistered.coords_y,
           },
         });
       }
-    })();
-  }, [graphConfig.vaeName]);
 
-  // if selectedModel is changed, upload the associated data to redux store
-  useEffect(() => {
-    if (!graphConfig.vaeName) return;
-    (async () => {
-      const res = await apiClient.getSelexData({
-        queries: {
-          VAE_model_name: graphConfig.vaeName,
-        },
-      });
-
-      if (res.status === "error") return;
-
-      const rawData = res.data;
-      const vaeData = rawData.Sequence.map((seq, index) => {
-        return {
-          key: index,
-          sequence: seq,
-          randomRegion: rawData.Without_Adapters[index],
-          duplicates: rawData.Duplicates[index],
-          coordX: rawData.coord_x[index],
-          coordY: rawData.coord_y[index],
-          isSelected: false,
-          isShown: true,
-        };
-      });
-
-      dispatch({
-        type: "vaeData/set",
-        payload: vaeData,
-      });
-    })();
-  }, [graphConfig.vaeName]);
-
-  // if sessionID is changed, upload updated data to redux store
-  useEffect(() => {
-    (async () => {
-      if (isLoading) return;
-
-      if (sessionConfig.sessionId === 0) return;
-      if (registeredValues.randomRegion.length === 0) return;
-
-      // update registered values
-      const resRegistered = await apiClient.encode({
-        session_id: sessionConfig.sessionId,
-        sequences: registeredValues.randomRegion,
-      });
-      if (resRegistered.status === "error") return;
-      dispatch({
-        type: "registeredValues/set",
-        payload: {
-          ...registeredValues,
-          coordX: resRegistered.data.map((data) => data.coord_x),
-          coordY: resRegistered.data.map((data) => data.coord_y),
-        },
-      });
-
-      // update query values
+      // reset queried values and acquisition values
       dispatch({
         type: "queriedValues/set",
         payload: {
-          ...queriedValues,
           randomRegion: [],
           coordX: [],
           coordY: [],
           coordOriginalX: [],
           coordOriginalY: [],
+          staged: [],
         },
       });
-
-      // update acquisition values
       dispatch({
         type: "acquisitionValues/set",
         payload: {
@@ -158,8 +131,51 @@ const VaeSelector: React.FC = () => {
           coordY: [],
         },
       });
-    })();
-  }, [sessionConfig.sessionId]);
+    } catch (e) {
+      console.error(e);
+      return;
+    }
+  };
+
+  const onMinimumCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDirty();
+    setMinimumCount(parseInt(e.currentTarget.value));
+
+    if (isNaN(parseInt(e.currentTarget.value))) {
+      return;
+    }
+
+    try {
+      dispatch({
+        type: "graphConfig/set",
+        payload: {
+          ...graphConfig,
+          minCount: parseInt(e.currentTarget.value),
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      return;
+    }
+  };
+
+  const onShowSelexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDirty();
+    setShowSelex(e.currentTarget.checked);
+
+    try {
+      dispatch({
+        type: "graphConfig/set",
+        payload: {
+          ...graphConfig,
+          showSelex: e.currentTarget.checked,
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      return;
+    }
+  };
 
   return (
     <>
@@ -168,21 +184,13 @@ const VaeSelector: React.FC = () => {
         <Tab eventKey="modelSelector" title="Select">
           <Form.Group className="mb-3">
             <Form.Label>Selected VAE model</Form.Label>
-            <Form.Control
-              as="select"
-              value={selectedModel}
-              onChange={(e) => {
-                dispatch({
-                  type: "isDirty/set",
-                  payload: true,
-                });
-                setSelectedModel(e.target.value);
-              }}
-            >
+            <Form.Select value={selectedModel} onChange={onModelChange}>
               {models.map((model, i) => (
-                <option key={i}>{model}</option>
+                <option key={i} value={model.uuid}>
+                  {model.name}
+                </option>
               ))}
-            </Form.Control>
+            </Form.Select>
           </Form.Group>
         </Tab>
         <Tab eventKey="modelConfig" title="Config">
@@ -191,26 +199,14 @@ const VaeSelector: React.FC = () => {
             <Form.Control
               type="number"
               value={minimumCount}
-              onChange={(e) => {
-                dispatch({
-                  type: "isDirty/set",
-                  payload: true,
-                });
-                setMinimumCount(parseInt(e.currentTarget.value));
-              }}
+              onChange={onMinimumCountChange}
             />
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Switch
               label="show SELEX dataset"
               checked={showSelex}
-              onChange={(e) => {
-                dispatch({
-                  type: "isDirty/set",
-                  payload: true,
-                });
-                setShowSelex(e.currentTarget.checked);
-              }}
+              onChange={onShowSelexChange}
             />
           </Form.Group>
         </Tab>

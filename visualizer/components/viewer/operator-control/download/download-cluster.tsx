@@ -50,7 +50,7 @@ const DownloadCluster: React.FC = () => {
   const gmmData = useSelector((state: RootState) => state.gmmData);
   const vaeData = useSelector((state: RootState) => state.vaeData);
 
-  const length = gmmData.weights.length;
+  const length = gmmData.means.length;
   if (length === 0) {
     return <Alert variant="warning">No GMM selected</Alert>;
   }
@@ -68,9 +68,7 @@ const DownloadCluster: React.FC = () => {
 
       // column: cluster
       // row: coord
-      let probsTable: number[][] = Array(seq.length).fill(
-        Array(weights.length)
-      );
+      let probsTable: number[][] = Array(seq.length).fill(Array(length));
       probsTable = probsTable.map((row, i) => {
         const coords = [coordX[i], coordY[i]];
         const probs = weights.map((w, j) => {
@@ -79,14 +77,12 @@ const DownloadCluster: React.FC = () => {
         return probs;
       });
 
-      console.log(probsTable);
-
       if (asProbs) {
         if (cluster === -1) {
           // download all clusters as probabilities
           const header =
             "seq,coordX,coordY,duplicates," +
-            weights.map((w, i) => "cluster" + i).join(",");
+            means.map((_, i) => "cluster" + i).join(",");
           const body = seq.map((s, i) => {
             return [
               s,

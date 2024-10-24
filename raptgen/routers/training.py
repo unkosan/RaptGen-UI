@@ -9,13 +9,10 @@ from pydantic import BaseModel
 from uuid import uuid4
 import numpy as np
 
-from typing import List, Any, Optional, Tuple
+from typing import List, Any, Optional
 from tasks import celery
 import pandas as pd
 from sqlalchemy import func
-from io import BytesIO
-import pickle
-import os
 import time
 
 
@@ -27,12 +24,13 @@ from core.db import (
     SequenceData,
     PreprocessingParams,
     RaptGenParams,
+    ViewerVAE,
+    ViewerSequenceEmbeddings,
     get_db_session,
 )
-from core.jobs import initialize_job_raptgen, run_job_raptgen, ChildJobTask
+from core.jobs import initialize_job_raptgen, run_job_raptgen
 from celery.contrib.abortable import AbortableAsyncResult
 
-DATA_PATH = "/app/data/"
 
 router = APIRouter()
 
@@ -120,10 +118,13 @@ async def get_parent_job(
         summary["statuses"].append(child_job.status)
         summary["epochs_finished"].append(child_job.epochs_current)
 
-        if child_job.minimum_NLL is not None and not np.isnan(child_job.minimum_NLL):
-            summary["minimum_NLLs"].append(child_job.minimum_NLL)
+        # if child_job.minimum_NLL is not None and not np.isnan(child_job.minimum_NLL):
+        minimum_NLL: Optional[float] = child_job.minimum_NLL
+        if minimum_NLL is not None and np.isfinite(minimum_NLL):
+            summary["minimum_NLLs"].append(minimum_NLL)
         else:
             summary["minimum_NLLs"].append(None)
+        print(summary)
 
     params_preprocessing = (
         session.query(PreprocessingParams)
@@ -148,6 +149,7 @@ async def get_parent_job(
         "params_preprocessing": params_preprocessing,
         "summary": summary,
     }
+
     return response
 
 
@@ -424,7 +426,7 @@ async def run_parent_job(
                     parent_uuid=parent_id,
                     random_region=seq,
                     is_training_data=i < num_entries * 0.8,
-                    duplicate=1,
+                    duplicate=request_param.duplicates[i],
                 )
             )
         session.add(
@@ -746,7 +748,6 @@ class PublishPayload(BaseModel):
     uuid: str
     multi: Optional[int] = None
     name: str = "default"
-    debug: Optional[bool] = False
 
 
 @router.post("/api/train/jobs/publish")
@@ -847,99 +848,45 @@ async def publish_job(
             ],
         )
 
-    df_profile: pd.DataFrame = pd.read_pickle(DATA_PATH + "profile_dataframe.pkl")
-    df_profile = pd.concat(
-        [
-            df_profile,
-            pd.DataFrame(
-                {
-                    "published_time": pd.Timestamp.now().strftime("%Y/%m/%d"),
-                    "experiment": request.name,
-                    "round": None,
-                    "fwd_adapter": params_preprocessing.forward,
-                    "rev_adapter": params_preprocessing.reverse,
-                    "target_length": params_preprocessing.random_region_length
-                    + len(params_preprocessing.forward)  # type: ignore
-                    + len(params_preprocessing.reverse),  # type: ignore
-                    "filtering_standard_length": params_preprocessing.random_region_length,
-                    "filtering_tolerance": params_preprocessing.tolerance,
-                    "filtering_method": None,
-                    "minimum_count": params_preprocessing.minimum_count,
-                    "embedding_dim": 2,
-                    "epochs": params_training.epochs,
-                    "beta_weight_epochs": params_training.beta_duration,
-                    "match_forcing_epochs": params_training.match_forcing_duration,
-                    "match_cost": params_training.match_cost,
-                    "early_stopping_epochs": params_training.early_stopping,
-                    "CUDA_num_workers": None,
-                    "CUDA_pin_memory": None,
-                    "pHMM_VAE_model_length": params_training.model_length,
-                    "pHMM_VAE_seed": params_training.seed_value,
-                },
-                index=[str(request.name)],
-            ),
-        ],
+    viewer = ViewerVAE(
+        # metadata
+        uuid=uuid4(),
+        create_timestamp=pd.Timestamp.now().strftime("%Y/%m/%d"),
+        name=request.name,
+        device=params_training.device,
+        seed=params_training.seed_value,
+        # preprocessing
+        forward_adapter=params_preprocessing.forward,
+        reverse_adapter=params_preprocessing.reverse,
+        random_region_length_standard=params_preprocessing.random_region_length,
+        random_region_length_tolerance=params_preprocessing.tolerance,
+        minimum_count=params_preprocessing.minimum_count,
+        # training
+        epochs=child_job.epochs_current,
+        epochs_beta_weighting=params_training.beta_duration,
+        epochs_match_forcing=params_training.match_forcing_duration,
+        epochs_early_stopping=params_training.early_stopping,
+        match_cost=params_training.match_cost,
+        phmm_length=params_training.model_length,
+        # checkpoint
+        checkpoint=child_job.optimal_checkpoint,
     )
+    session.add(viewer)
 
-    df_embeddings: pd.DataFrame = pd.read_sql(
-        f"""
-        SELECT 
-            CONCAT('{params_preprocessing.forward}', random_region, '{params_preprocessing.reverse}') AS Sequence, 
-            duplicate AS Duplicates, 
-            random_region AS Without_Adapters, 
-            coord_x, 
-            coord_y 
-        FROM sequence_embeddings
-        WHERE child_uuid = '{child_job.uuid}';
-        """,
-        session.get_bind(),
-    )
-    df_embeddings.rename(
-        columns={
-            "sequence": "Sequence",
-            "duplicates": "Duplicates",
-            "without_adapters": "Without_Adapters",
-        },
-        inplace=True,
-    )
-
-    model_binary: bytes = child_job.optimal_checkpoint  # type: ignore
-    state_dict_map = torch.load(BytesIO(model_binary))
-    state_dict = state_dict_map["model"]
-
-    df_gmm = pd.DataFrame(
-        {
-            "GMM_num_components": [],
-            "GMM_seed": [],
-            "GMM_optimal_model": [],
-            "GMM_model_type": [],
-        },
-    ).astype(
-        {
-            "GMM_num_components": int,
-            "GMM_seed": int,
-            "GMM_model_type": str,
-            "GMM_optimal_model": "object",
-        }
-    )
-    df_gmm.index.name = "name"
-
-    if not request.debug:
-        os.makedirs(DATA_PATH + "items/" + str(request.name), exist_ok=True)
-        df_profile.to_pickle(DATA_PATH + "/profile_dataframe.pkl")
-        df_embeddings.to_pickle(
-            DATA_PATH + "items/" + str(request.name) + "/unique_seq_dataframe.pkl"
+    for embedding in (
+        session.query(SequenceEmbeddings)
+        .filter(SequenceEmbeddings.child_uuid == child_job.uuid)
+        .all()
+    ):
+        viewer_embedding = ViewerSequenceEmbeddings(
+            vae_uuid=viewer.uuid,
+            random_region=embedding.random_region,
+            coord_x=embedding.coord_x,
+            coord_y=embedding.coord_y,
+            duplicate=embedding.duplicate,
         )
-        df_gmm.to_pickle(
-            DATA_PATH + "items/" + str(request.name) + "/best_gmm_dataframe.pkl"
-        )
-        pickle.dump(
-            state_dict,
-            open(DATA_PATH + "items/" + str(request.name) + "/VAE_model.pkl", "wb"),
-        )
-    else:
-        print(df_profile)
-        print(df_embeddings)
-        print(df_gmm)
+        session.add(viewer_embedding)
+
+    session.commit()
 
     return None

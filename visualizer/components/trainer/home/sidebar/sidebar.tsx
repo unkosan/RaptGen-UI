@@ -19,19 +19,13 @@ const SideBar: React.FC = () => {
   const [finishedJobs, setFinishedJobs] = useState<Jobs>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const dispatch = useDispatch();
-
   // Update jobs per second
   useEffect(() => {
-    const updateFunc = () => {
-      apiClient
-        .postSearchJobs({
-          search_regex: searchQuery ? searchQuery : undefined,
-        })
-        .then((newJobs) => {
-          // if (isEqual(newJobs, jobs)) return;
-          setJobs(newJobs);
-        });
+    const updateFunc = async () => {
+      const res = await apiClient.postSearchJobs({
+        search_regex: searchQuery ? searchQuery : undefined,
+      });
+      setJobs(res);
     };
     updateFunc();
     const interval = setInterval(updateFunc, 5000);

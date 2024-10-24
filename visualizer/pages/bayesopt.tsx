@@ -33,16 +33,13 @@ const InitializeExperimentComponent: React.FC = () => {
         payload: true,
       });
 
-      if (sessionId !== 0) {
-        await apiClient.endSession({
-          queries: {
-            session_id: sessionId,
-          },
-        });
-      }
-
       if (uuid && typeof uuid === "string") {
-        await restoreExperiment();
+        try {
+          await restoreExperiment(uuid);
+        } catch (e) {
+          console.error(e);
+          await initializeExperiment();
+        }
       } else {
         await initializeExperiment();
       }
@@ -60,13 +57,13 @@ const InitializeExperimentComponent: React.FC = () => {
 
   // initialize new experiment and set redux store
   const initializeExperiment = async () => {
-    const vaeNames = await apiClient.getVAEModelNames();
-    if (vaeNames.status === "error") {
-      return;
-    }
+    const resVaeNames = await apiClient.getVAEModelNames();
 
     const response = {
-      VAE_model: vaeNames.data[0] ? vaeNames.data[0] : "",
+      VAE_uuid:
+        resVaeNames.entries.length > 0 ? resVaeNames.entries[0].uuid : "",
+      VAE_name:
+        resVaeNames.entries.length > 0 ? resVaeNames.entries[0].name : "",
       plot_config: {
         minimum_count: 5,
         show_training_data: true,
@@ -101,22 +98,6 @@ const InitializeExperimentComponent: React.FC = () => {
       },
     } as z.infer<typeof experimentState>;
 
-    const resSessionId = await apiClient.startSession({
-      queries: { VAE_name: response.VAE_model },
-    });
-    if (resSessionId.status === "error") {
-      return;
-    }
-    const sessionId = resSessionId.data;
-
-    dispatch({
-      type: "sessionConfig/set",
-      payload: {
-        vaeName: response.VAE_model,
-        sessionId: sessionId,
-      },
-    });
-
     dispatch({
       type: "bayesoptConfig/set",
       payload: {
@@ -138,7 +119,7 @@ const InitializeExperimentComponent: React.FC = () => {
     dispatch({
       type: "graphConfig/set",
       payload: {
-        vaeName: response.VAE_model,
+        vaeName: response.VAE_name,
         minCount: response.plot_config.minimum_count,
         showSelex: response.plot_config.show_training_data,
         showAcquisition: true,
@@ -173,70 +154,59 @@ const InitializeExperimentComponent: React.FC = () => {
         staged: new Array(response.query_table.sequences.length).fill(false),
       },
     });
-  };
 
-  // restore experiment and set redux store
-  const restoreExperiment = async () => {
-    const vaeNames = await apiClient.getVAEModelNames();
-    if (vaeNames.status === "error") {
+    if (response.VAE_uuid === "") {
+      console.log("No VAE model found");
       return;
-    }
-
-    let response = {
-      VAE_model: vaeNames.data[0] ? vaeNames.data[0] : "",
-      plot_config: {
-        minimum_count: 5,
-        show_training_data: true,
-        show_bo_contour: true,
-      },
-      optimization_config: {
-        method_name: "qEI",
-        target_column_name: "target",
-        query_budget: 3,
-      },
-      distribution_config: {
-        xlim_min: -3.5,
-        xlim_max: 3.5,
-        ylim_min: -3.5,
-        ylim_max: 3.5,
-      },
-      registered_values_table: {
-        ids: [],
-        sequences: [],
-        target_column_names: [],
-        target_values: [],
-      },
-      query_table: {
-        sequences: [],
-        coords_x_original: [],
-        coords_y_original: [],
-      },
-      acquisition_mesh: {
-        coords_x: [],
-        coords_y: [],
-        values: [],
-      },
-    } as z.infer<typeof experimentState>;
-
-    if (uuid) {
-      response = await apiClient.getExperiment({
-        params: { uuid: uuid as string },
-      });
     }
 
     const resSessionId = await apiClient.startSession({
-      queries: { VAE_name: response.VAE_model },
+      queries: { vae_uuid: response.VAE_uuid },
     });
-    if (resSessionId.status === "error") {
-      return;
-    }
-    const sessionId = resSessionId.data;
-
     dispatch({
       type: "sessionConfig/set",
       payload: {
-        vaeName: response.VAE_model,
-        sessionId: sessionId,
+        vaeId: response.VAE_uuid,
+        sessionId: resSessionId.uuid,
+      },
+    });
+
+    const resCoords = await apiClient.getSelexData({
+      queries: { vae_uuid: response.VAE_uuid },
+    });
+    dispatch({
+      type: "vaeData/set",
+      payload: resCoords.random_regions.map((value, index) => {
+        return {
+          key: index,
+          randomRegion: value,
+          duplicates: resCoords.duplicates[index],
+          coordX: resCoords.coord_x[index],
+          coordY: resCoords.coord_y[index],
+          isSelected: false,
+          isShown: true,
+        };
+      }),
+    });
+  };
+
+  // restore experiment and set redux store
+  const restoreExperiment = async (uuid: string) => {
+    const response = await apiClient.getExperiment({
+      params: { uuid },
+    });
+
+    const resSessionId = await apiClient.startSession({
+      queries: { vae_uuid: response.VAE_uuid },
+    });
+    if (resSessionId.uuid === "") {
+      throw "Failed to start session";
+    }
+    dispatch({
+      type: "sessionConfig/set",
+      payload: {
+        vaeId: response.VAE_uuid,
+        sessionId: resSessionId.uuid,
       },
     });
 
@@ -261,28 +231,41 @@ const InitializeExperimentComponent: React.FC = () => {
     dispatch({
       type: "graphConfig/set",
       payload: {
-        vaeName: response.VAE_model,
+        vaeName: response.VAE_name,
         minCount: response.plot_config.minimum_count,
         showSelex: response.plot_config.show_training_data,
         showAcquisition: true,
       },
     });
 
+    // set selex data
+    const resSelex = await apiClient.getSelexData({
+      queries: { vae_uuid: response.VAE_uuid },
+    });
+    dispatch({
+      type: "vaeData/set",
+      payload: Array.from({ length: resSelex.coord_x.length }, (_, i) => ({
+        key: i,
+        randomRegion: resSelex.random_regions[i],
+        coordX: resSelex.coord_x[i],
+        coordY: resSelex.coord_y[i],
+        duplicates: resSelex.duplicates[i],
+        isSelected: false,
+        isShown: false,
+      })),
+    });
+
     // set registered values
-    let resCoords = {
-      status: "success",
-      data: [],
-    } as z.infer<typeof responsePostEncode>;
+    let resCoords: z.infer<typeof responsePostEncode> = {
+      coords_x: [],
+      coords_y: [],
+    };
     if (response.registered_values_table.sequences.length !== 0) {
       resCoords = await apiClient.encode({
-        session_id: sessionId,
+        session_uuid: resSessionId.uuid,
         sequences: response.registered_values_table.sequences,
       });
     }
-    if (resCoords.status === "error") {
-      return;
-    }
-    const coords = resCoords.data;
 
     let columns: string[] = [];
     let values: (number | null)[] = [];
@@ -308,8 +291,8 @@ const InitializeExperimentComponent: React.FC = () => {
       payload: {
         id: response.registered_values_table.ids,
         randomRegion: response.registered_values_table.sequences,
-        coordX: coords.map((coord) => coord.coord_x),
-        coordY: coords.map((coord) => coord.coord_y),
+        coordX: resCoords.coords_x,
+        coordY: resCoords.coords_y,
         // staged: response.registered_values[0].staged,
         staged: new Array(
           response.registered_values_table.sequences.length
@@ -322,27 +305,22 @@ const InitializeExperimentComponent: React.FC = () => {
     });
 
     // set query values
-    let resQueryCoords = {
-      status: "success",
-      data: [],
-    } as z.infer<typeof responsePostEncode>;
+    let resQueryCoords: z.infer<typeof responsePostEncode> = {
+      coords_x: [],
+      coords_y: [],
+    };
     if (response.query_table.sequences.length !== 0) {
       resQueryCoords = await apiClient.encode({
-        session_id: sessionId,
+        session_uuid: resSessionId.uuid,
         sequences: response.query_table.sequences,
       });
     }
-    if (resQueryCoords.status === "error") {
-      return;
-    }
-    const queryCoords = resQueryCoords.data;
-
     dispatch({
       type: "queriedValues/set",
       payload: {
         randomRegion: response.query_table.sequences,
-        coordX: queryCoords.map((coord) => coord.coord_x),
-        coordY: queryCoords.map((coord) => coord.coord_y),
+        coordX: resQueryCoords.coords_x,
+        coordY: resQueryCoords.coords_y,
         coordOriginalX: response.query_table.coords_x_original,
         coordOriginalY: response.query_table.coords_y_original,
         staged: new Array(response.query_table.sequences.length).fill(false),
@@ -374,10 +352,10 @@ const Home: React.FC = () => {
     }
   };
   const unload = async () => {
-    if (sessionId !== 0) {
+    if (sessionId !== "") {
       await apiClient.endSession({
         queries: {
-          session_id: sessionId,
+          session_uuid: sessionId,
         },
       });
     }

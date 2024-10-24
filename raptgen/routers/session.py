@@ -1,17 +1,20 @@
-from fastapi import APIRouter
-
-router = APIRouter()
-
-import os
-import random
+from typing import Dict, List
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
+from sqlalchemy.orm import Session
+from pydantic import BaseModel
 import pickle
 import torch
-import io
 import numpy as np
-import pandas as pd
-from typing import Dict, List, Tuple
-from pydantic import BaseModel
-
+from uuid import uuid4
+import matplotlib.pyplot as plt
+from io import BytesIO
+import tempfile
+import subprocess
+from core.db import (
+    ViewerVAE,
+    get_db_session,
+)
 from core.algorithms import (
     CNN_PHMM_VAE,
     embed_sequences,
@@ -19,193 +22,124 @@ from core.algorithms import (
     draw_logo,
 )
 
+router = APIRouter()
+
 
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
         if module == "torch.storage" and name == "_load_from_bytes":
-            return lambda b: torch.load(io.BytesIO(b), map_location="cpu")
+            return lambda b: torch.load(BytesIO(b), map_location="cpu")
         else:
             return super().find_class(module, name)
 
 
-sessions: Dict[int, CNN_PHMM_VAE] = dict()
-DATA_PATH = "/app/data/"
+sessions: Dict[str, CNN_PHMM_VAE] = dict()
 
 
-class Coords(BaseModel):
-    coord_x: float
-    coord_y: float
+class RequestCoordinates(BaseModel):
+    session_uuid: str
+    coords_x: List[float]
+    coords_y: List[float]
 
 
-class CoordsData(BaseModel):
-    session_id: int
-    coords: List[Coords]
-
-
-class SeqsData(BaseModel):
-    session_id: int
+class RequestSequences(BaseModel):
+    session_uuid: str
     sequences: List[str]
 
 
-@router.post("/api/session/encode/no-id-test")
-async def noid_encode(seqs_data: SeqsData):
-    seqs_dict = seqs_data.dict()
-    seqs: List[str] = seqs_dict["data"]
-
-    vae_list = os.listdir(DATA_PATH + "items/")
-    vae_name = vae_list[0]
-
-    df = pd.read_pickle(DATA_PATH + "/profile_dataframe.pkl")
-    model_len = df.loc[vae_name, "pHMM_VAE_model_length"]
-
-    with open(DATA_PATH + "items/" + vae_list[0] + "/VAE_model.pkl", "rb") as f:
-        state_dict = CPU_Unpickler(f).load()
-
-    model = CNN_PHMM_VAE(embed_size=2, motif_len=model_len)
-    model.load_state_dict(state_dict)
-    model.eval()
-
-    coords = embed_sequences(seqs, model)
-
-    return {
-        "status": "success",
-        "data": [
-            {"coord_x": float(coord[0]), "coord_y": float(coord[1])} for coord in coords
-        ],
-    }
-
-
-@router.post("/api/session/decode/no-id-test")
-async def noid_decode(coords_data: CoordsData):
-    coords_dict = coords_data.dict()
-    coords_list = [
-        [coord["coord_x"], coord["coord_y"]] for coord in coords_dict["data"]
-    ]
-    coords = np.array(coords_list)
-
-    vae_list = os.listdir(DATA_PATH + "items/")
-    vae_name = vae_list[0]
-
-    df = pd.read_pickle(DATA_PATH + "/profile_dataframe.pkl")
-    model_len = df.loc[vae_name, "pHMM_VAE_model_length"]
-
-    with open(DATA_PATH + "items/" + vae_list[0] + "/VAE_model.pkl", "rb") as f:
-        state_dict = CPU_Unpickler(f).load()
-
-    model = CNN_PHMM_VAE(embed_size=2, motif_len=model_len)
-    model.load_state_dict(state_dict)
-    model.eval()
-
-    seqs, _ = get_most_probable_seq(coords=list(coords), model=model)
-
-    return {
-        "status": "success",
-        "data": seqs,
-    }
-
-
 @router.get("/api/session/start")
-def start_session(VAE_name: str = ""):
+def start_session(
+    vae_uuid: str,
+    session: Session = Depends(get_db_session),
+):
     # if VAE_name is empty, return an error
-    if VAE_name == "":
-        return {"status": "error", "session_id": 0}
+    vae_profile = session.query(ViewerVAE).where(ViewerVAE.uuid == vae_uuid).first()
+    if vae_profile is None:
+        raise HTTPException(status_code=404, detail="Item not found")
 
     # session id is a random number from 1000000 to 9999999
     global sessions
-    session_id: int
     while True:
-        session_id = random.randint(1000000, 9999999)
-        if session_id not in sessions:
+        session_uuid: str = str(uuid4())
+        if session_uuid not in sessions:
             break
 
     # construct model
-    with open(DATA_PATH + "items/" + VAE_name + "/VAE_model.pkl", "rb") as f:
-        state_dict = CPU_Unpickler(f).load()
-    model_len = int(state_dict["decoder.emission.2.weight"].shape[0] / 4)
-    model = CNN_PHMM_VAE(embed_size=2, motif_len=model_len)
-    model.load_state_dict(state_dict)
+    checkpoints_bytes: bytes = vae_profile.checkpoint  # type: ignore
+    # with BytesIO(checkpoints_bytes) as f:
+    #     state_dict = CPU_Unpickler(f).load()
+    with BytesIO(checkpoints_bytes) as f:
+        checkpoint = torch.load(f, map_location="cpu")
+        model = CNN_PHMM_VAE(
+            embed_size=2,
+            motif_len=vae_profile.phmm_length,  # type: ignore
+        )
+        model.load_state_dict(checkpoint["model"])
     model.eval()
 
     # save model
-    sessions[session_id] = model
+    sessions[session_uuid] = model
 
-    return {"status": "success", "data": session_id}
+    return {
+        "uuid": session_uuid,
+    }
 
 
 @router.get("/api/session/end")
-def end_session(session_id: int = 0):
-    if session_id == 0:
-        return {"status": "error"}
-    else:
-        global sessions
-        if session_id in sessions.keys():
-            del sessions[session_id]
-            return {"status": "success"}
-        else:
-            return {"status": "error"}
+def end_session(session_uuid: str):
+    popped = sessions.pop(session_uuid, None)
+
+    if popped is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    return None
 
 
 @router.post("/api/session/encode")
-async def encode(seqs_data: SeqsData):
-    seqs_dict = seqs_data.dict()
-    seqs: List[str] = seqs_dict["sequences"]
-    session_ID: int = seqs_dict["session_id"]
-
-    if session_ID == 0:
-        return {"status": "error"}
-
+async def encode(request: RequestSequences):
     global sessions
-    if not session_ID in sessions.keys() or not len(seqs) > 0:
-        return {"status": "error"}
+    if request.session_uuid not in sessions.keys():
+        raise HTTPException(status_code=404, detail="Item not found")
 
-    model = sessions[session_ID]
-    coords = embed_sequences(seqs, model)
+    if not len(request.sequences) > 0:
+        raise HTTPException(status_code=400, detail="Invalid input")
+
+    model = sessions[request.session_uuid]
+    coords = embed_sequences(request.sequences, model)
 
     return {
-        "status": "success",
-        "data": [
-            {"coord_x": float(coord[0]), "coord_y": float(coord[1])} for coord in coords
-        ],
+        "coords_x": [float(coord[0]) for coord in coords],
+        "coords_y": [float(coord[1]) for coord in coords],
     }
 
 
 @router.post("/api/session/decode")
-async def decode(coords_data: CoordsData):
-    coords_dict = coords_data.dict()
-    coords_list = [
-        [coord["coord_x"], coord["coord_y"]] for coord in coords_dict["coords"]
-    ]
-    coords = np.array(coords_list)
-
-    session_ID: int = coords_dict["session_id"]
-
-    if session_ID == 0:
-        return {"status": "error"}
-
+async def decode(request: RequestCoordinates):
     global sessions
-    if not session_ID in sessions.keys() or not len(coords) > 0:
-        return {"status": "error"}
+    if request.session_uuid not in sessions.keys():
+        raise HTTPException(status_code=404, detail="Item not found")
 
-    model = sessions[session_ID]
+    if not len(request.coords_x) > 0 or not len(request.coords_y) > 0:
+        raise HTTPException(status_code=400, detail="Invalid input")
+    if not len(request.coords_x) == len(request.coords_y):
+        raise HTTPException(status_code=400, detail="Invalid input")
+
+    coords = np.array([request.coords_x, request.coords_y]).T
+
+    model = sessions[request.session_uuid]
     seqs, _ = get_most_probable_seq(coords=list(coords), model=model)
 
     return {
-        "status": "success",
-        "data": seqs,
+        "sequences": seqs,
     }
 
 
 @router.get("/api/session/status")
 def get_session_status():
     global sessions
-    return {"status": "success", "data": list(sessions.keys())}
-
-
-from fastapi.responses import Response
-import matplotlib.pyplot as plt
-from io import BytesIO
-import tempfile
-import subprocess
+    return {
+        "entries": list(sessions.keys()),
+    }
 
 
 @router.post(
@@ -213,18 +147,19 @@ import subprocess
     responses={200: {"content": {"image/png": {}}}},
     response_class=Response,
 )
-async def get_weblogo(coords_data: CoordsData):
-    coords_dict = coords_data.dict()
-    coord = np.array(
-        [coords_dict["coords"][0]["coord_x"], coords_dict["coords"][0]["coord_y"]]
-    )
-    session_id = coords_data.session_id
-    model = sessions[session_id]
+async def get_weblogo(request: RequestCoordinates):
+    if request.session_uuid not in sessions.keys():
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    if not len(request.coords_x) == 1 or not len(request.coords_y) == 1:
+        raise HTTPException(status_code=400, detail="Invalid input")
+
+    model = sessions[request.session_uuid]
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 3), dpi=120)
     draw_logo(
         ax=ax,
-        coord=coord,
+        coord=np.array([request.coords_x[0], request.coords_y[0]]),
         model=model,
     )
     bytes_io = BytesIO()

@@ -10,6 +10,7 @@ import { responseGetGMMJobsItems } from "~/services/route/gmm";
 import ParamsTable from "./params-table";
 import BicGraph from "./bic-graph";
 import LatentGraph from "./latent-graph";
+import { responseGetVAEModelNames } from "~/services/route/data";
 
 type JobItem = z.infer<typeof responseGetGMMJobsItems>;
 
@@ -22,6 +23,12 @@ const Main: React.FC = () => {
   const [renameName, setRenameName] = useState<string>("");
   const [isPublishModalOpen, setIsPublishModalOpen] = useState<boolean>(false);
   const [publishName, setPublishName] = useState<string>("");
+  const [vaeEntries, setVaeEntries] = useState<
+    {
+      uuid: string;
+      name: string;
+    }[]
+  >([]);
 
   const reload = async () => {
     if (!currentUUID) {
@@ -39,6 +46,14 @@ const Main: React.FC = () => {
     });
     setJobItem(res);
   };
+
+  useEffect(() => {
+    const updateFunc = async () => {
+      const res = await apiClient.getVAEModelNames();
+      setVaeEntries(res.entries);
+    };
+    updateFunc();
+  }, []);
 
   useEffect(() => {
     reload();
@@ -66,7 +81,7 @@ const Main: React.FC = () => {
         <div>
           Running duration:{" "}
           {formatDuration(
-            intervalToDuration({ start: 0, end: jobItem.duration })
+            intervalToDuration({ start: 0, end: jobItem.duration * 1000 })
           )}
         </div>
       </p>
@@ -240,15 +255,18 @@ const Main: React.FC = () => {
           <>
             <legend>Currently Running</legend>
             <p>
-              <div>Target: {jobItem.target}</div>
               <div>
-                The number of Gaussian distribution components:
+                Target:{" "}
+                {
+                  vaeEntries.find((entry) => entry.uuid === jobItem.target)
+                    ?.name
+                }
+              </div>
+              <div>
+                The number of Gaussian distribution components:{" "}
                 {jobItem.current_states.n_components}
               </div>
-              <div>
-                Trial:
-                {jobItem.current_states.trial}
-              </div>
+              <div>Trial: {jobItem.current_states.trial}</div>
             </p>
           </>
         )}
@@ -307,6 +325,7 @@ const Main: React.FC = () => {
           <BicGraph
             n_components={jobItem.bic.n_components}
             values={jobItem.bic.bics}
+            step_size={jobItem.params.step_size}
           />
         </>
       )}

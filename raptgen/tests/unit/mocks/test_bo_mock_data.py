@@ -6,10 +6,17 @@ from enum import Enum
 
 
 class C:  # as "Constants"
+    ## [DB] ViewerVAE
+    ViewerVAE = "ViewerVAE"
+    uuid = "uuid"
+    name = "name"
+    checkpoint = "checkpoint"
+
+    ## [DB] Experiments
     Experiments = "Experiments"
     uuid = "uuid"
     name = "name"
-    VAE_model = "VAE_model"
+    VAE_uuid = "VAE_uuid"
     minimum_count = "minimum_count"
     show_training_data = "show_training_data"
     show_bo_contour = "show_bo_contour"
@@ -149,7 +156,7 @@ mock_bo_db = [
                 {
                     C.uuid: "00000000-0000-0000-0000-000000000000",
                     C.name: "multiple_data",
-                    C.VAE_model: "test_VAE",
+                    C.VAE_uuid: "00000000-0000-0000-0000-000000000000",
                     C.minimum_count: 2,
                     C.show_training_data: True,
                     C.show_bo_contour: True,
@@ -165,7 +172,7 @@ mock_bo_db = [
                 {
                     C.uuid: "00000000-0000-0000-0000-000000000001",
                     C.name: "multiple_data_2",
-                    C.VAE_model: "test_VAE_2",
+                    C.VAE_uuid: "00000000-0000-0000-0000-000000000001",
                     C.minimum_count: 2,
                     C.show_training_data: True,
                     C.show_bo_contour: True,
@@ -316,7 +323,7 @@ mock_bo_db = [
                 {
                     C.uuid: "00000000-0000-0000-0000-000000000002",
                     C.name: "single_data_test",
-                    C.VAE_model: "test_VAE",
+                    C.VAE_uuid: "00000000-0000-0000-0000-000000000000",
                     C.minimum_count: 2,
                     C.show_training_data: True,
                     C.show_bo_contour: True,
@@ -399,4 +406,39 @@ mock_bo_db = [
             ],
         },
     },
+]
+
+mock_bovae_db = [
+    {
+        "tests": {
+            BOTest.GET_items_all_success_single_data,
+            BOTest.GET_items_all_success_multiple_data,
+            BOTest.GET_items_success,
+            BOTest.GET_items_failure,
+            BOTest.PUT_items_success,
+            BOTest.PUT_items_failure_uuid_invalid,
+            BOTest.PUT_items_failure_payload_invalid,
+            BOTest.PATCH_items_success,
+            BOTest.PATCH_items_failure_invalid_target,
+            BOTest.PATCH_items_failure_invalid_value_type,
+            BOTest.DELETE_items_success,
+            BOTest.DELETE_items_failure,
+            BOTest.POST_submit_success,
+            BOTest.POST_submit_failure,
+        },
+        "data": {
+            C.ViewerVAE: [
+                {
+                    C.uuid: "00000000-0000-0000-0000-000000000000",
+                    C.name: "test_VAE",
+                    C.checkpoint: b"checkpoint_1",
+                },
+                {
+                    C.uuid: "00000000-0000-0000-0000-000000000001",
+                    C.name: "VAE_VAE_2",
+                    C.checkpoint: b"checkpoint_2",
+                },
+            ],
+        },
+    }
 ]

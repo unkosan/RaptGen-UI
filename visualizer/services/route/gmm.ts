@@ -3,7 +3,7 @@ import { z } from "zod";
 
 // API POST /gmm/jobs/submit
 export const requestPostGMMJobsSubmit = z.object({
-  target: z.string(),
+  target: z.string().uuid(),
   name: z.string(),
   params: z.object({
     minimum_n_components: z.number().int().min(1),
@@ -44,7 +44,7 @@ export const responseGetGMMJobsItems = z.union([
     status: z.enum(["pending"]),
     start: z.number().int(),
     duration: z.number().int(),
-    target: z.string(),
+    target: z.string().uuid(),
     params: z.object({
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
@@ -58,7 +58,7 @@ export const responseGetGMMJobsItems = z.union([
     status: z.enum(["failure"]),
     start: z.number().int(),
     duration: z.number().int(),
-    target: z.string(),
+    target: z.string().uuid(),
     params: z.object({
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
@@ -73,7 +73,7 @@ export const responseGetGMMJobsItems = z.union([
     status: z.enum(["success"]),
     start: z.number().int(),
     duration: z.number().int(),
-    target: z.string(),
+    target: z.string().uuid(),
     params: z.object({
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
@@ -83,6 +83,7 @@ export const responseGetGMMJobsItems = z.union([
     gmm: z.object({
       current_n_components: z.number().int(),
       optimal_n_components: z.number().int(),
+      weights: z.array(z.number()),
       means: z.array(z.array(z.number())),
       covs: z.array(z.array(z.array(z.number()))),
     }),
@@ -103,7 +104,7 @@ export const responseGetGMMJobsItems = z.union([
     status: z.enum(["progress", "suspend"]),
     start: z.number().int(),
     duration: z.number().int(),
-    target: z.string(),
+    target: z.string().uuid(),
     params: z.object({
       minimum_n_components: z.number().int(),
       maximum_n_components: z.number().int(),
@@ -117,6 +118,7 @@ export const responseGetGMMJobsItems = z.union([
     gmm: z.object({
       current_n_components: z.number().int(),
       optimal_n_components: z.number().int(),
+      weights: z.array(z.number()),
       means: z.array(z.array(z.number())),
       covs: z.array(z.array(z.array(z.number()))),
     }),
