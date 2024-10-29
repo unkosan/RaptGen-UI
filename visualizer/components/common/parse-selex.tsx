@@ -22,9 +22,9 @@ const parseSelex = async (file: File) => {
   let regex;
   let match: RegExpExecArray | null;
   if (fileType === "fasta") {
-    regex = /^>\s*\S+[\n\r]+([ACGTUacgtu\n\r]+)$/gm;
+    regex = /^>[^\n\r]+[\n\r]+([ACGTUacgtu\n\r]+)$/gm;
   } else {
-    regex = /^@\s*\S+[\n\r]+([ACGTUacgtu\n\r]+)/gm;
+    regex = /^@[^\n\r]+[\n\r]+([ACGTUacgtu\n\r]+)$/gm;
   }
 
   let seqs: string[] = [];
