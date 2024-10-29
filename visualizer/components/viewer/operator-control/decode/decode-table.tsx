@@ -183,11 +183,11 @@ const Actions: React.FC<ActionProps> = (props) => {
   const onClickDelete = async () => {
     dispatch(
       setDecoded({
-        ids: decodeData.ids.toSpliced(index, 1),
-        coordsX: decodeData.coordsX.toSpliced(index, 1),
-        coordsY: decodeData.coordsY.toSpliced(index, 1),
-        randomRegions: decodeData.randomRegions.toSpliced(index, 1),
-        shown: decodeData.shown.toSpliced(index, 1),
+        ids: decodeData.ids.filter((_, i) => i !== index),
+        coordsX: decodeData.coordsX.filter((_, i) => i !== index),
+        coordsY: decodeData.coordsY.filter((_, i) => i !== index),
+        randomRegions: decodeData.randomRegions.filter((_, i) => i !== index),
+        shown: decodeData.shown.filter((_, i) => i !== index),
       })
     );
   };
