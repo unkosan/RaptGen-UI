@@ -7,7 +7,7 @@ import { apiClient } from "~/services/api-client";
 import { setEncoded } from "../../redux/interaction-data";
 
 const parser = (text: string) => {
-  const regex = /^>\s*(\S+)[\n\r]+([ACGTUacgtu\n\r]+)$/gm;
+  const regex = /^>\s*([^\n\r]+)[\n\r]+([ACGTUacgtu\n\r]+)$/gm;
   let ids: string[] = [];
   let seqs: string[] = [];
   let match: RegExpExecArray | null;
