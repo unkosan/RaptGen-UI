@@ -10,18 +10,10 @@ const FormMinCount: React.FC = () => {
   const [isValid, setIsValid] = useState<boolean>(true);
 
   const dispatch = useDispatch();
-  const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const graphConfig2 = useSelector((state: RootState) => state.graphConfig2);
 
   useEffect(() => {
     if (isValid) {
-      dispatch({
-        type: "graphConfig/set",
-        payload: {
-          ...graphConfig,
-          minCount: value,
-        },
-      });
       dispatch(
         setGraphConfig({
           ...graphConfig2,

@@ -62,6 +62,7 @@ const sessionConfigSlice = createSlice({
     },
     setGmmId: (state, action: PayloadAction<string>) => {
       state.gmmId = action.payload;
+      return state;
     },
   },
   extraReducers: (builder) => {

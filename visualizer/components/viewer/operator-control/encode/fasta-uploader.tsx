@@ -28,7 +28,7 @@ const parser = (text: string) => {
 const FastaUploader: React.FC = () => {
   const dispatch = useDispatch();
   const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig.sessionId
+    (state: RootState) => state.sessionConfig2.sessionId
   );
 
   const encodeData = useSelector((state: RootState) => state.encodeData);
@@ -59,27 +59,6 @@ const FastaUploader: React.FC = () => {
         sequences: seqs,
       });
 
-      const firstKey = (encodeData[-1]?.key ?? 0) + 1;
-
-      dispatch({
-        type: "encodeData/set",
-        payload: encodeData.concat(
-          res.coords_x.map((coord, i) => {
-            return {
-              key: firstKey + i,
-              id: ids[i],
-              sequence: "",
-              randomRegion: seqs[i],
-              coordX: coord,
-              coordY: res.coords_y[i],
-              isSelected: false,
-              isShown: true,
-              category: "fasta",
-              seriesName: file.name,
-            };
-          })
-        ),
-      });
       dispatch(
         setEncoded({
           ids: encodedData2.ids.concat(ids),

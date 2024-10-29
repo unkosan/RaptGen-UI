@@ -4,15 +4,36 @@ import { useDispatch } from "react-redux";
 import { Button, Form, Image } from "react-bootstrap";
 import { InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "~/services/api-client";
 import { setDecoded } from "../../redux/interaction-data";
 
+const useBlockTime = (millisecond: number): [boolean, () => void] => {
+  const [lock, setLock] = useState<boolean>(false);
+  const setLockCallback = useCallback(() => {
+    setLock(true);
+  }, []);
+  useEffect(() => {
+    if (!lock) {
+      return;
+    }
+    setTimeout(() => {
+      setLock(false);
+    }, millisecond);
+  }, [lock]);
+  return [lock, setLockCallback];
+};
 const ResultViewer: React.FC = () => {
   const dispatch = useDispatch();
-  const gridPoint = useSelector((state: RootState) => state.decodeData)[0];
-  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
-  const decodeData = useSelector((state: RootState) => state.decodeData);
+  const gridPoint = useSelector(
+    (state: RootState) => state.interactionData.decodeGrid
+  );
+  const sessionId = useSelector(
+    (state: RootState) => state.sessionConfig2.sessionId
+  );
+  const decodeData = useSelector(
+    (state: RootState) => state.interactionData.decoded
+  );
 
   const [showWeblogo, setShowWeblogo] = useState<boolean>(false);
   const [showSecondaryStructure, setShowSecondaryStructure] =
@@ -22,34 +43,21 @@ const ResultViewer: React.FC = () => {
   const [secondaryStructureBase64, setSecondaryStructureBase64] =
     useState<string>("");
 
-  const [lock, setLock] = useState<boolean>(false);
+  const [lock, setLock] = useBlockTime(400);
+
   useEffect(() => {
-    if (lock) {
-      return;
-    }
-    setLock(true);
-    setTimeout(() => {
-      setLock(false);
-    }, 200);
+    setLock();
   }, [gridPoint]);
 
   // weblogo image
   useEffect(() => {
-    if (lock) {
-      return;
-    }
-    if (!showWeblogo) {
-      setWeblogoBase64("");
-      return;
-    }
-    if (sessionConfig.sessionId === "") {
-      return;
-    }
-
     (async () => {
+      if (lock || !showWeblogo || !sessionId) {
+        return;
+      }
       const res = await apiClient.getWeblogo(
         {
-          session_uuid: sessionConfig.sessionId,
+          session_uuid: sessionId,
           coords_x: [gridPoint.coordX],
           coords_y: [gridPoint.coordY],
         },
@@ -57,22 +65,18 @@ const ResultViewer: React.FC = () => {
           responseType: "arraybuffer",
         }
       );
+
       const base64 = Buffer.from(res, "binary").toString("base64");
       setWeblogoBase64(base64);
     })();
-  }, [sessionConfig.sessionId, gridPoint, showWeblogo]);
+  }, [sessionId, gridPoint, showWeblogo, lock]);
 
   // secondary structure image
   useEffect(() => {
-    if (lock) {
-      return;
-    }
-    if (!showSecondaryStructure) {
-      setSecondaryStructureBase64("");
-      return;
-    }
-
     (async () => {
+      if (lock || !showSecondaryStructure) {
+        return;
+      }
       const res = await apiClient.getSecondaryStructureImage({
         queries: {
           sequence: gridPoint.randomRegion.replace(/\_/g, ""),
@@ -83,33 +87,19 @@ const ResultViewer: React.FC = () => {
       const base64 = Buffer.from(res, "binary").toString("base64");
       setSecondaryStructureBase64(base64);
     })();
-  }, [gridPoint, showSecondaryStructure]);
+  }, [gridPoint, showSecondaryStructure, lock]);
 
   // add button
   const onAdd = async () => {
-    const newDecodeData = [...decodeData];
-    newDecodeData.push({
-      ...decodeData[0],
-      key: sessionConfig.manualDecodeCount,
-      id: `manual-${sessionConfig.manualDecodeCount}`,
-    });
-    dispatch({
-      type: "decodeData/set",
-      payload: newDecodeData,
-    });
     dispatch(
       setDecoded({
-        ids: newDecodeData.map((d) => d.id),
-        coordsX: newDecodeData.map((d) => d.coordX),
-        coordsY: newDecodeData.map((d) => d.coordY),
-        randomRegions: newDecodeData.map((d) => d.randomRegion),
-        shown: newDecodeData.map((d) => d.isShown),
+        ids: decodeData.ids.concat(`manual-${decodeData.ids.length}`),
+        coordsX: decodeData.coordsX.concat(gridPoint.coordX),
+        coordsY: decodeData.coordsY.concat(gridPoint.coordY),
+        randomRegions: decodeData.randomRegions.concat(gridPoint.randomRegion),
+        shown: decodeData.shown.concat(true),
       })
     );
-    dispatch({
-      type: "sessionConfig/incrementDecodeCount",
-      payload: null,
-    });
   };
 
   return (

@@ -21,7 +21,9 @@ const IdEditor: React.FC<EditorProps> = (props) => {
   const [value, setValue] = useState(props.value);
   const [valid, setValid] = useState(true);
 
-  const encodeData = useSelector((state: RootState) => state.encodeData);
+  const encodeData = useSelector(
+    (state: RootState) => state.interactionData.encoded
+  );
   const dispatch = useDispatch();
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -31,30 +33,17 @@ const IdEditor: React.FC<EditorProps> = (props) => {
   };
 
   const onConfirmClick = async () => {
-    const key: number = props.cellProps.data.key;
-    const idx = encodeData.findIndex((e) => e.key === key);
-    const newEncodeData = [...encodeData];
-    newEncodeData[idx] = {
-      ...newEncodeData[idx],
-      id: value,
-    };
-
-    dispatch({
-      type: "encodeData/set",
-      payload: newEncodeData,
-    });
+    const index: number = props.cellProps.data.key;
     dispatch(
       setEncoded({
-        ids: newEncodeData.map((e) => e.id),
-        coordsX: newEncodeData.map((e) => e.coordX),
-        coordsY: newEncodeData.map((e) => e.coordY),
-        randomRegions: newEncodeData.map((e) => e.randomRegion),
-        shown: newEncodeData.map((e) => e.isShown),
+        ids: encodeData.ids.map((e, i) => (i === index ? value : e)),
+        coordsX: encodeData.coordsX,
+        coordsY: encodeData.coordsY,
+        randomRegions: encodeData.randomRegions,
+        shown: encodeData.shown,
       })
     );
 
-    console.log(props, props.onChange, value);
-    // props.onChange(value); # onEditChangeValue does not work. fxxx
     props.onComplete();
   };
 
@@ -133,9 +122,11 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
   const [value, setValue] = useState(props.value);
   const [valid, setValid] = useState(true);
 
-  const encodeData = useSelector((state: RootState) => state.encodeData);
+  const encodeData = useSelector(
+    (state: RootState) => state.interactionData.encoded
+  );
   const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig.sessionId
+    (state: RootState) => state.sessionConfig2.sessionId
   );
   const dispatch = useDispatch();
 
@@ -151,24 +142,21 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
       sequences: [value],
     });
 
-    const key: number = props.cellProps.data.key;
-    const idx = encodeData.findIndex((e) => e.key === key);
-    const newEncodeData = [...encodeData];
-    newEncodeData[idx] = {
-      ...newEncodeData[idx],
-      randomRegion: value,
-      sequence: "",
-      coordX: res.coords_x[0],
-      coordY: res.coords_y[0],
-    };
+    // const key: number = props.cellProps.data.key;
+    const index: number = props.cellProps.data.key;
+    const coordX = res.coords_x[0];
+    const coordY = res.coords_y[0];
+    dispatch(
+      setEncoded({
+        ...encodeData,
+        coordsX: encodeData.coordsX.map((e, i) => (i === index ? coordX : e)),
+        coordsY: encodeData.coordsY.map((e, i) => (i === index ? coordY : e)),
+        randomRegions: encodeData.randomRegions.map((e, i) =>
+          i === index ? value : e
+        ),
+      })
+    );
 
-    dispatch({
-      type: "encodeData/set",
-      payload: newEncodeData,
-    });
-
-    console.log(props, props.onChange, value);
-    // props.onChange(value); # onEditChangeValue does not work. fxxx
     props.onComplete();
   };
 
@@ -244,51 +232,33 @@ type ActionsProps = {
 
 const Actions: React.FC<ActionsProps> = (props) => {
   const { data } = props;
-  const key = data.key;
+  // const key = data.key;
+  const index = data.key; // key is index
   const dispatch = useDispatch();
-  const encodeData = useSelector((state: RootState) => state.encodeData);
+  const encodeData = useSelector(
+    (state: RootState) => state.interactionData.encoded
+  );
 
   console.log("Actions", props, data, encodeData);
 
   const onClickShow = async () => {
-    const idx = encodeData.findIndex((e) => e.key === key);
-    const newEncodeData = [...encodeData];
-    newEncodeData[idx] = {
-      ...newEncodeData[idx],
-      isShown: !data.isShown,
-    };
-
-    dispatch({
-      type: "encodeData/set",
-      payload: newEncodeData,
-    });
+    const newShown = encodeData.shown.map((e, i) => (i === index ? !e : e));
     dispatch(
       setEncoded({
-        ids: newEncodeData.map((e) => e.id),
-        coordsX: newEncodeData.map((e) => e.coordX),
-        coordsY: newEncodeData.map((e) => e.coordY),
-        randomRegions: newEncodeData.map((e) => e.randomRegion),
-        shown: newEncodeData.map((e) => e.isShown),
+        ...encodeData,
+        shown: newShown,
       })
     );
   };
 
   const onClickDelete = async () => {
-    const idx = encodeData.findIndex((e) => e.key === key);
-    const newEncodeData = [...encodeData];
-    newEncodeData.splice(idx, 1);
-
-    dispatch({
-      type: "encodeData/set",
-      payload: newEncodeData,
-    });
     dispatch(
       setEncoded({
-        ids: newEncodeData.map((e) => e.id),
-        coordsX: newEncodeData.map((e) => e.coordX),
-        coordsY: newEncodeData.map((e) => e.coordY),
-        randomRegions: newEncodeData.map((e) => e.randomRegion),
-        shown: newEncodeData.map((e) => e.isShown),
+        ids: encodeData.ids.toSpliced(index, 1),
+        coordsX: encodeData.coordsX.toSpliced(index, 1),
+        coordsY: encodeData.coordsY.toSpliced(index, 1),
+        randomRegions: encodeData.randomRegions.toSpliced(index, 1),
+        shown: encodeData.shown.toSpliced(index, 1),
       })
     );
   };
@@ -365,13 +335,15 @@ const columns = [
 const gridStyle = { minHeight: 500, width: "100%", zIndex: 1000 };
 
 const EncodeTable: React.FC = () => {
-  const encodeData = useSelector((state: RootState) => state.encodeData);
-  const data = encodeData.map((e) => {
+  const encodeData = useSelector(
+    (state: RootState) => state.interactionData.encoded
+  );
+  const data = encodeData.ids.map((id, index) => {
     return {
-      key: e.key,
-      id: e.id,
-      randomRegion: e.randomRegion,
-      isShown: e.isShown,
+      key: index, // key is index
+      id: id,
+      randomRegion: encodeData.randomRegions[index],
+      isShown: encodeData.shown[index],
     };
   });
 

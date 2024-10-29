@@ -21,7 +21,6 @@ const SelectVAE: React.FC = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
-  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
   const router = useRouter();
   const { uuid } = router.query;
   const [isRenameModelOpen, setIsRenameModelOpen] = useState(false);
@@ -52,22 +51,6 @@ const SelectVAE: React.FC = () => {
     reloadModels();
   }, [uuid]);
 
-  // dispatch model names to redux store
-  useEffect(() => {
-    if (id === "") {
-      return;
-    }
-    const vaeName = models.find((model) => model.uuid === id)?.name;
-    dispatch({
-      type: "graphConfig/set",
-      payload: {
-        ...graphConfig,
-        vaeName: vaeName,
-        gmmName: "",
-      },
-    });
-  }, [id, dispatch]);
-
   // start session
   useEffect(() => {
     (async () => {
@@ -75,75 +58,18 @@ const SelectVAE: React.FC = () => {
         return;
       }
 
-      try {
-        const resStart = await apiClient.startSession({
-          queries: {
-            vae_uuid: id,
-          },
-        });
-
-        if (sessionConfig.sessionId !== "") {
-          const resEnd = await apiClient.endSession({
-            queries: {
-              session_uuid: sessionConfig.sessionId,
-            },
-          });
-        }
-
-        dispatch({
-          type: "sessionConfig/set",
-          payload: {
-            ...sessionConfig,
-            sessionId: resStart.uuid,
-            vaeId: id,
-            gmmId: "",
-            forwardAdapter: "",
-            reverseAdapter: "",
-          },
-        });
-        dispatch(setSessionConfigByVaeId(id));
-      } catch (e) {
-        console.error(e);
-      }
+      const vaeName = models.find((model) => model.uuid === id)?.name;
+      dispatch({
+        type: "graphConfig/set",
+        payload: {
+          ...graphConfig,
+          vaeName: vaeName,
+          gmmName: "",
+        },
+      });
+      dispatch(setSessionConfigByVaeId(id));
     })();
-  }, [id, dispatch]);
-
-  // retrieve VAE data
-  useEffect(() => {
-    (async () => {
-      if (id === "") {
-        return;
-      }
-
-      try {
-        const res = await apiClient.getSelexData({
-          queries: {
-            vae_uuid: id,
-          },
-        });
-        const vaeData = res.random_regions.map((value, index) => {
-          return {
-            key: index,
-            sequence: value,
-            randomRegion: value,
-            duplicates: res.duplicates[index],
-            coordX: res.coord_x[index],
-            coordY: res.coord_y[index],
-            isSelected: false,
-            isShown: true,
-          };
-        });
-
-        dispatch({
-          type: "vaeData/set",
-          payload: vaeData,
-        });
-      } catch (e) {
-        console.error(e);
-        return;
-      }
-    })();
-  }, [id, dispatch]);
+  }, [id]);
 
   return (
     <div

@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface SelectedPointsState {
   series: string[];
+  ids: string[];
   coordsX: number[];
   coordsY: number[];
   randomRegions: string[];
@@ -10,6 +11,7 @@ interface SelectedPointsState {
 
 const initialState: SelectedPointsState = {
   series: [],
+  ids: [],
   coordsX: [],
   coordsY: [],
   randomRegions: [],

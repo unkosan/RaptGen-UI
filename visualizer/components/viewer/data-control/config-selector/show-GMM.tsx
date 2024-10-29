@@ -9,17 +9,9 @@ const ShowGMM: React.FC = () => {
   const [value, setValue] = useState<boolean>(true);
 
   const dispatch = useDispatch();
-  const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const graphConfig2 = useSelector((state: RootState) => state.graphConfig2);
 
   useEffect(() => {
-    dispatch({
-      type: "graphConfig/set",
-      payload: {
-        ...graphConfig,
-        showGmm: value,
-      },
-    });
     dispatch(
       setGraphConfig({
         ...graphConfig2,

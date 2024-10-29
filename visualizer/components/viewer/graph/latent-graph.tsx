@@ -447,20 +447,24 @@ const LatentGraph: React.FC = () => {
       type: "graphData/set",
       payload: selectedData,
     });
+    let ids: string[] = [];
     let randomRegions: string[] = [];
     let duplicates: number[] = [];
     for (const point of points) {
       const hue = String(point.fullData.name);
       switch (hue) {
         case "SELEX":
+          ids.push(selexData.duplicates[point.pointIndex].toString());
           randomRegions.push(selexData.random_regions[point.pointIndex]);
           duplicates.push(selexData.duplicates[point.pointIndex]);
           break;
         case "Encoded Data":
+          ids.push(encodeData2.ids[point.pointIndex]);
           randomRegions.push(encodeData2.randomRegions[point.pointIndex]);
           duplicates.push(1);
           break;
         case "Decoded Data":
+          ids.push(decodeData2.ids[point.pointIndex]);
           randomRegions.push(decodeData2.randomRegions[point.pointIndex]);
           duplicates.push(1);
           break;
@@ -474,6 +478,7 @@ const LatentGraph: React.FC = () => {
     }
     dispatch(
       setSelectedPoints({
+        ids: ids,
         coordsX: points.map((point) => point.x) as number[],
         coordsY: points.map((point) => point.y) as number[],
         series: points.map((point) => String(point.fullData.name)),
