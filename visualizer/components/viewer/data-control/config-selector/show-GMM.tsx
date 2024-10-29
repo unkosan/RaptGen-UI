@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { Form } from "react-bootstrap";
+import { setGraphConfig } from "../../redux/graph-config";
 
 const ShowGMM: React.FC = () => {
   const [value, setValue] = useState<boolean>(true);
@@ -11,13 +12,12 @@ const ShowGMM: React.FC = () => {
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
 
   useEffect(() => {
-    dispatch({
-      type: "graphConfig/set",
-      payload: {
+    dispatch(
+      setGraphConfig({
         ...graphConfig,
-        showGmm: value,
-      },
-    });
+        showGMM: value,
+      })
+    );
   }, [value]);
 
   return (

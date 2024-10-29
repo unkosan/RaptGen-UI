@@ -17,73 +17,21 @@ const filterValue = [
 const gridStyle = { minHeight: 650, width: "100%", zIndex: 950 };
 
 const SelectionTable: React.FC = () => {
-  const vaeData = useSelector((state: RootState) => state.vaeData);
-  const gmmData = useSelector((state: RootState) => state.gmmData);
-  const measuredData = useSelector((state: RootState) => state.measuredData);
-  const pivotMeasured = groupBy(measuredData, (value) => value.seriesName);
-  const decodeData = useSelector((state: RootState) => state.decodeData);
-  const encodeData = useSelector((state: RootState) => state.encodeData);
+  const selectedPoints = useSelector(
+    (state: RootState) => state.selectedPoints
+  );
 
-  const graphData = useSelector((state: RootState) => state.graphData);
-
-  const data = graphData.map((value, index) => {
-    if (value.hue === "SELEX") {
-      const vaeEntry = vaeData[value.key];
-      return {
-        index: index,
-        hue: value.hue,
-        id: value.key,
-        coordX: value.x,
-        coordY: value.y,
-        randomRegion: vaeEntry.randomRegion,
-        duplicates: vaeEntry.duplicates,
-      };
-    } else if (value.hue === "Encoded Data") {
-      const encodeEntry = encodeData[value.key];
-      return {
-        index: index,
-        hue: value.hue,
-        id: encodeEntry.id,
-        coordX: value.x,
-        coordY: value.y,
-        randomRegion: encodeEntry.randomRegion,
-        duplicates: 1,
-      };
-    } else if (value.hue === "Decoded Data") {
-      const decodeEntry = decodeData[value.key];
-      return {
-        index: index,
-        hue: value.hue,
-        id: decodeEntry.id,
-        coordX: value.x,
-        coordY: value.y,
-        randomRegion: decodeEntry.randomRegion,
-        duplicates: 1,
-      };
-    } else if (/^MoG No.\d+$/.test(value.hue)) {
-      const res = /MoG No.(\d+)/.exec(value.hue);
-      const num = parseInt(res![1]);
-      return {
-        index: index,
-        hue: "MoG centers",
-        id: num,
-        coordX: value.x,
-        coordY: value.y,
-        randomRegion: gmmData.decodedSequences[num],
-        duplicates: 1,
-      };
-    } else {
-      const measuredEntry = pivotMeasured[value.hue][value.key];
-      return {
-        index: index,
-        hue: value.hue,
-        id: measuredEntry.id,
-        coordX: value.x,
-        coordY: value.y,
-        randomRegion: measuredEntry.randomRegion,
-        duplicates: 1,
-      };
-    }
+  const ids = selectedPoints.ids as string[];
+  const plotData = ids.map((id, index) => {
+    return {
+      index: index,
+      id: id,
+      hue: selectedPoints.series[index],
+      coordX: selectedPoints.coordsX[index],
+      coordY: selectedPoints.coordsY[index],
+      randomRegion: selectedPoints.randomRegions[index],
+      duplicates: selectedPoints.duplicates[index],
+    };
   });
 
   const columns = [
@@ -94,7 +42,7 @@ const SelectionTable: React.FC = () => {
       filterEditor: SelectFilter,
       filterEditorProps: {
         placeholder: "All",
-        dataSource: uniq(data.map((value) => value.hue)).map((value) => {
+        dataSource: uniq(plotData.map((value) => value.hue)).map((value) => {
           return { id: value, label: value };
         }),
       },
@@ -122,7 +70,7 @@ const SelectionTable: React.FC = () => {
       <CustomDataGrid
         idProperty="index"
         columns={columns}
-        dataSource={data}
+        dataSource={plotData}
         style={gridStyle}
         filterable
         defaultFilterValue={filterValue}

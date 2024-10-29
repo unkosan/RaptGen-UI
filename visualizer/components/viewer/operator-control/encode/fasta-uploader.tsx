@@ -4,6 +4,7 @@ import { RootState } from "../../redux/store";
 import { useState } from "react";
 import { Form } from "react-bootstrap";
 import { apiClient } from "~/services/api-client";
+import { setEncoded } from "../../redux/interaction-data";
 
 const parser = (text: string) => {
   const regex = /^>\s*(\S+)[\n\r]+([ACGTUacgtu\n\r]+)$/gm;
@@ -30,7 +31,9 @@ const FastaUploader: React.FC = () => {
     (state: RootState) => state.sessionConfig.sessionId
   );
 
-  const encodeData = useSelector((state: RootState) => state.encodeData);
+  const encodedData2 = useSelector(
+    (state: RootState) => state.interactionData.encoded
+  );
 
   // const [feedback, setFeedback] = useState<string>("");
   const [isValid, setIsValid] = useState<boolean>(true);
@@ -55,27 +58,15 @@ const FastaUploader: React.FC = () => {
         sequences: seqs,
       });
 
-      const firstKey = (encodeData[-1]?.key ?? 0) + 1;
-
-      dispatch({
-        type: "encodeData/set",
-        payload: encodeData.concat(
-          res.coords_x.map((coord, i) => {
-            return {
-              key: firstKey + i,
-              id: ids[i],
-              sequence: "",
-              randomRegion: seqs[i],
-              coordX: coord,
-              coordY: res.coords_y[i],
-              isSelected: false,
-              isShown: true,
-              category: "fasta",
-              seriesName: file.name,
-            };
-          })
-        ),
-      });
+      dispatch(
+        setEncoded({
+          ids: encodedData2.ids.concat(ids),
+          randomRegions: encodedData2.randomRegions.concat(seqs),
+          coordsX: encodedData2.coordsX.concat(res.coords_x),
+          coordsY: encodedData2.coordsY.concat(res.coords_y),
+          shown: encodedData2.shown.concat(Array(ids.length).fill(true)),
+        })
+      );
 
       setIsValid(true);
     };

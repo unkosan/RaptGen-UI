@@ -1,45 +1,28 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-type GraphConfig = {
-  vaeName: string;
-  gmmName: string;
-  measuredName: string;
-
+interface GraphConfigState {
   minCount: number;
-  tolerance: number;
-  randomRegionLength: number;
-
-  showGmm: boolean;
-  showMeasured: boolean;
-  showDecoded: boolean;
-  showEncoded: boolean;
-
+  showGMM: boolean;
   showDecodeGrid: boolean;
+}
+
+const initialState: GraphConfigState = {
+  minCount: 5,
+  showGMM: true,
+  showDecodeGrid: false,
 };
 
 const graphConfigSlice = createSlice({
-  name: "graphConfig",
-  initialState: {
-    vaeName: "",
-    gmmName: "",
-    measuredName: "",
-    minCount: 5,
-    tolerance: 0,
-    randomRegionLength: 0,
-    showMeasured: true,
-    showGmm: true,
-    showEncoded: true,
-    showDecoded: false,
-    showDecodeGrid: false,
-  },
+  name: "graphConfig2",
+  initialState,
   reducers: {
-    set: (state: GraphConfig, action: PayloadAction<GraphConfig>) => {
+    setGraphConfig: (state, action: PayloadAction<GraphConfigState>) => {
       return action.payload;
     },
   },
 });
 
 const graphConfigReducer = graphConfigSlice.reducer;
-
+export const { setGraphConfig } = graphConfigSlice.actions;
+export type { GraphConfigState };
 export default graphConfigReducer;
-export type { GraphConfig };

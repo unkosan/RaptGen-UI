@@ -1,25 +1,20 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import graphConfigReducer from "./graph-config";
+// import measuredDataReducer from "./measured-data";
 import sessionConfigReducer from "./session-config";
-import vaeDataReducer from "./vae-data";
-import gmmDataReducer from "./gmm-data";
-import measuredDataReducer from "./measured-data";
-import encodeDataReducer from "./encode-data";
-import decodeDataReducer from "./decode-data";
-import graphDataReducer from "./graph-data";
+import graphConfigReducer from "./graph-config";
+import InteractionDataReducer from "./interaction-data";
+import selectedPointsReducer from "./selected-points";
 
 export const store = configureStore({
   reducer: {
-    graphConfig: graphConfigReducer,
+    // measuredData: measuredDataReducer,
     sessionConfig: sessionConfigReducer,
-    vaeData: vaeDataReducer,
-    gmmData: gmmDataReducer,
-    measuredData: measuredDataReducer,
-    encodeData: encodeDataReducer,
-    decodeData: decodeDataReducer,
-    graphData: graphDataReducer,
+    graphConfig: graphConfigReducer,
+    selectedPoints: selectedPointsReducer,
+    interactionData: InteractionDataReducer,
   },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

@@ -17,15 +17,23 @@ const downloadText = (text: string, filename: string) => {
 };
 
 const DownloadDecode: React.FC = () => {
-  const decodeData = useSelector((state: RootState) => state.decodeData);
-  if (decodeData.length <= 1) {
+  const decodeData = useSelector(
+    (state: RootState) => state.interactionData.decoded
+  );
+  if (!decodeData.ids.length) {
     return <Alert variant="warning">No decode data</Alert>;
   }
 
   const onDownload = () => {
     const header = "id,seq,coordX,coordY";
-    const body = decodeData
-      .map((d) => `${d.id},${d.randomRegion},${d.coordX},${d.coordY}`)
+    const body = decodeData.ids
+      .map(
+        (id, index) =>
+          `${id},` +
+          `${decodeData.randomRegions[index]},` +
+          `${decodeData.coordsX[index]},` +
+          `${decodeData.coordsY}`
+      )
       .join("\n");
     const csv = header + "\n" + body;
     downloadText(csv, `decoded.csv`);
