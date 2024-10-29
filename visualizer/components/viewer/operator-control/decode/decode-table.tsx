@@ -27,7 +27,7 @@ const CoordEditor: React.FC<CoordEditorProps> = (props) => {
   );
 
   const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig2.sessionId
+    (state: RootState) => state.sessionConfig.sessionId
   );
 
   const onChangeX: React.ChangeEventHandler<HTMLInputElement> = (e) => {

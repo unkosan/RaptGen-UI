@@ -4,7 +4,7 @@ import { RootState } from "../../redux/store";
 import { Form } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
-import { setGmmId } from "../../redux/session-config2";
+import { setGmmId } from "../../redux/session-config";
 
 const SelectGMM: React.FC = () => {
   const [models, setModels] = useState<
@@ -16,19 +16,17 @@ const SelectGMM: React.FC = () => {
   const [id, setId] = useState<string>("");
 
   const dispatch = useDispatch();
-  const sessionConfig2 = useSelector(
-    (state: RootState) => state.sessionConfig2
-  );
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
 
   useEffect(() => {
     (async () => {
-      if (!sessionConfig2.vaeId || !sessionConfig2.vaeId) {
+      if (!sessionConfig.vaeId) {
         return;
       }
 
       const res = await apiClient.getGMMModelNames({
         queries: {
-          vae_uuid: sessionConfig2.vaeId,
+          vae_uuid: sessionConfig.vaeId,
         },
       });
       setModels(res.entries);
@@ -41,7 +39,7 @@ const SelectGMM: React.FC = () => {
         dispatch(setGmmId(""));
       }
     })();
-  }, [sessionConfig2.vaeId]);
+  }, [sessionConfig.vaeId]);
 
   const onChangeGMM = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setId(e.target.value);

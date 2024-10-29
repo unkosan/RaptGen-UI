@@ -126,7 +126,7 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
     (state: RootState) => state.interactionData.encoded
   );
   const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig2.sessionId
+    (state: RootState) => state.sessionConfig.sessionId
   );
   const dispatch = useDispatch();
 

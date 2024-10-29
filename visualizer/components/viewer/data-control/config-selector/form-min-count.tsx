@@ -3,20 +3,20 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { Form } from "react-bootstrap";
-import { setGraphConfig } from "../../redux/graph-config2";
+import { setGraphConfig } from "../../redux/graph-config";
 
 const FormMinCount: React.FC = () => {
   const [value, setValue] = useState<number>(5);
   const [isValid, setIsValid] = useState<boolean>(true);
 
   const dispatch = useDispatch();
-  const graphConfig2 = useSelector((state: RootState) => state.graphConfig2);
+  const graphConfig = useSelector((state: RootState) => state.graphConfig);
 
   useEffect(() => {
     if (isValid) {
       dispatch(
         setGraphConfig({
-          ...graphConfig2,
+          ...graphConfig,
           minCount: value,
         })
       );

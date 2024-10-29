@@ -48,7 +48,7 @@ const DownloadCluster: React.FC = () => {
   const [asProbs, setAsProbs] = useState<boolean>(false);
   const [asFasta, setAsFasta] = useState<boolean>(false);
 
-  const sessionConfig = useSelector((state: RootState) => state.sessionConfig2);
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
 
   if (!sessionConfig.gmmId) {
     return <Alert variant="warning">No GMM selected</Alert>;

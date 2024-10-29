@@ -7,7 +7,7 @@ import RangeSlider from "react-bootstrap-range-slider";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { apiClient } from "~/services/api-client";
 import { setDecodeGrid } from "../../redux/interaction-data";
-import { setGraphConfig } from "../../redux/graph-config2";
+import { setGraphConfig } from "../../redux/graph-config";
 
 const useBlockTime = (millisecond: number): [boolean, () => void] => {
   const [lock, setLock] = useState<boolean>(false);
@@ -37,9 +37,9 @@ const PointDecoder: React.FC = () => {
 
   const dispatch = useDispatch();
   const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig2.sessionId
+    (state: RootState) => state.sessionConfig.sessionId
   );
-  const graphConfig2 = useSelector((state: RootState) => state.graphConfig2);
+  const graphConfig2 = useSelector((state: RootState) => state.graphConfig);
 
   const onChangeX = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);

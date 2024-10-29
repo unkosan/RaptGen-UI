@@ -29,8 +29,9 @@ const ResultViewer: React.FC = () => {
     (state: RootState) => state.interactionData.decodeGrid
   );
   const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig2.sessionId
+    (state: RootState) => state.sessionConfig.sessionId
   );
+  const vaeId = useSelector((state: RootState) => state.sessionConfig.vaeId);
   const decodeData = useSelector(
     (state: RootState) => state.interactionData.decoded
   );
@@ -43,7 +44,28 @@ const ResultViewer: React.FC = () => {
   const [secondaryStructureBase64, setSecondaryStructureBase64] =
     useState<string>("");
 
+  const [forward, setForward] = useState<string>("");
+  const [reverse, setReverse] = useState<string>("");
+
   const [lock, setLock] = useBlockTime(400);
+
+  useEffect(() => {
+    (async () => {
+      if (!vaeId) {
+        return;
+      }
+
+      const res = await apiClient.getVAEModelParameters({
+        queries: {
+          vae_uuid: vaeId,
+        },
+      });
+
+      console.log(res);
+      setForward(res.forward_adapter || "");
+      setReverse(res.reverse_adapter || "");
+    })();
+  }, [vaeId]);
 
   useEffect(() => {
     setLock();
@@ -79,7 +101,8 @@ const ResultViewer: React.FC = () => {
       }
       const res = await apiClient.getSecondaryStructureImage({
         queries: {
-          sequence: gridPoint.randomRegion.replace(/\_/g, ""),
+          sequence:
+            forward + gridPoint.randomRegion.replace(/\_/g, "") + reverse,
         },
         responseType: "arraybuffer",
       });

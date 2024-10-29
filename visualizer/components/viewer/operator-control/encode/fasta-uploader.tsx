@@ -28,10 +28,9 @@ const parser = (text: string) => {
 const FastaUploader: React.FC = () => {
   const dispatch = useDispatch();
   const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig2.sessionId
+    (state: RootState) => state.sessionConfig.sessionId
   );
 
-  const encodeData = useSelector((state: RootState) => state.encodeData);
   const encodedData2 = useSelector(
     (state: RootState) => state.interactionData.encoded
   );

@@ -14,7 +14,7 @@ import { cloneDeep, zip } from "lodash";
 import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
-import { setSelectedPoints } from "../redux/graph-data2";
+import { setSelectedPoints } from "../redux/selected-points";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 interface PlotDatumAmend extends PlotDatum {
@@ -117,22 +117,18 @@ function useIsLoading(): [boolean, () => void, () => void] {
 
 const LatentGraph: React.FC = () => {
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
-
-  const graphConfig2 = useSelector((state: RootState) => state.graphConfig2);
-  const encodeData2 = useSelector(
+  const encodeData = useSelector(
     (state: RootState) => state.interactionData.encoded
   );
-  const decodeData2 = useSelector(
+  const decodeData = useSelector(
     (state: RootState) => state.interactionData.decoded
   );
   const grid = useSelector(
     (state: RootState) => state.interactionData.decodeGrid
   );
-  const sessionConfig2 = useSelector(
-    (state: RootState) => state.sessionConfig2
-  );
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
 
-  const layout = returnLayout(graphConfig.vaeName);
+  const layout = returnLayout(sessionConfig.vaeName);
 
   const dispatch = useDispatch();
 
@@ -141,7 +137,7 @@ const LatentGraph: React.FC = () => {
   // VAE data //
   const selexData = useAsyncMemo(
     async () => {
-      if (sessionConfig2.vaeId === "") {
+      if (sessionConfig.vaeId === "") {
         return {
           duplicates: [],
           coord_x: [],
@@ -154,7 +150,7 @@ const LatentGraph: React.FC = () => {
 
       const res = await apiClient.getSelexData({
         queries: {
-          vae_uuid: sessionConfig2.vaeId,
+          vae_uuid: sessionConfig.vaeId,
         },
       });
 
@@ -162,14 +158,14 @@ const LatentGraph: React.FC = () => {
 
       return res;
     },
-    [sessionConfig2.vaeId],
+    [sessionConfig.vaeId],
     { duplicates: [], coord_x: [], coord_y: [], random_regions: [] }
   );
 
   const vaeDataPlot: Partial<PlotData> = useMemo(() => {
     lock();
     const mcMask = selexData.duplicates.map(
-      (value) => value >= graphConfig2.minCount
+      (value) => value >= graphConfig.minCount
     );
     const coordsX = selexData.coord_x.filter((_, index) => mcMask[index]);
     const coordsY = selexData.coord_y.filter((_, index) => mcMask[index]);
@@ -199,7 +195,7 @@ const LatentGraph: React.FC = () => {
         "<b>Seq</b>: %{customdata}<br>" +
         "<b>Duplicates</b>: %{duplicates}",
     };
-  }, [selexData, graphConfig2.minCount]);
+  }, [selexData, graphConfig.minCount]);
 
   // Measured data //
   // const measuredDataPlot: Partial<PlotData>[] = useMemo(() => {
@@ -238,12 +234,12 @@ const LatentGraph: React.FC = () => {
 
   // encode data //
   const encodeDataPlot: Partial<PlotData> = useMemo(() => {
-    const shMask = encodeData2.shown;
+    const shMask = encodeData.shown;
 
-    const ids = encodeData2.ids.filter((_, index) => shMask[index]);
-    const coordsX = encodeData2.coordsX.filter((_, index) => shMask[index]);
-    const coordsY = encodeData2.coordsY.filter((_, index) => shMask[index]);
-    const randomRegions = encodeData2.randomRegions.filter(
+    const ids = encodeData.ids.filter((_, index) => shMask[index]);
+    const coordsX = encodeData.coordsX.filter((_, index) => shMask[index]);
+    const coordsY = encodeData.coordsY.filter((_, index) => shMask[index]);
+    const randomRegions = encodeData.randomRegions.filter(
       (_, index) => shMask[index]
     );
 
@@ -265,16 +261,16 @@ const LatentGraph: React.FC = () => {
         "<b>Coord:</b> (%{x:.4f}, %{y:.4f})<br>" +
         "<b>Seq:</b> %{customdata[1]}",
     };
-  }, [encodeData2]);
+  }, [encodeData]);
 
   // decode data //
   const decodeDataPlot: Partial<PlotData> = useMemo(() => {
-    const shMask = decodeData2.shown;
+    const shMask = decodeData.shown;
 
-    const ids = decodeData2.ids.filter((_, index) => shMask[index]);
-    const coordsX = decodeData2.coordsX.filter((_, index) => shMask[index]);
-    const coordsY = decodeData2.coordsY.filter((_, index) => shMask[index]);
-    const randomRegions = decodeData2.randomRegions.filter(
+    const ids = decodeData.ids.filter((_, index) => shMask[index]);
+    const coordsX = decodeData.coordsX.filter((_, index) => shMask[index]);
+    const coordsY = decodeData.coordsY.filter((_, index) => shMask[index]);
+    const randomRegions = decodeData.randomRegions.filter(
       (_, index) => shMask[index]
     );
 
@@ -296,10 +292,10 @@ const LatentGraph: React.FC = () => {
         "<b>Coord:</b> (%{x:.4f}, %{y:.4f})<br>" +
         "<b>Seq:</b> %{customdata[1]}",
     };
-  }, [decodeData2]);
+  }, [decodeData]);
 
   const gridPlot: Partial<PlotData>[] = useMemo(() => {
-    if (!graphConfig2.showDecodeGrid) {
+    if (!graphConfig.showDecodeGrid) {
       return [];
     }
 
@@ -347,12 +343,12 @@ const LatentGraph: React.FC = () => {
     };
 
     return [decodeLineX, decodeLineY, decodeCrossPoint];
-  }, [grid, graphConfig2.showDecodeGrid]);
+  }, [grid, graphConfig.showDecodeGrid]);
 
   // GMM data //
   const gmmDataPlot: Partial<PlotData>[] = useAsyncMemo(
     async () => {
-      if (!graphConfig2.showGMM || !sessionConfig2.gmmId) {
+      if (!graphConfig.showGMM || !sessionConfig.gmmId) {
         return [];
       }
 
@@ -360,12 +356,12 @@ const LatentGraph: React.FC = () => {
 
       const gmm = await apiClient.getGMMModel({
         queries: {
-          gmm_uuid: sessionConfig2.gmmId,
+          gmm_uuid: sessionConfig.gmmId,
         },
       });
 
       const decoded = await apiClient.decode({
-        session_uuid: sessionConfig2.sessionId,
+        session_uuid: sessionConfig.sessionId,
         coords_x: gmm.means.map((value) => value[0]),
         coords_y: gmm.means.map((value) => value[1]),
       });
@@ -428,7 +424,7 @@ const LatentGraph: React.FC = () => {
 
       return gmmPlots;
     },
-    [graphConfig2.showGMM, sessionConfig2.gmmId],
+    [graphConfig.showGMM, sessionConfig.gmmId],
     []
   );
 
@@ -459,13 +455,13 @@ const LatentGraph: React.FC = () => {
           duplicates.push(selexData.duplicates[point.pointIndex]);
           break;
         case "Encoded Data":
-          ids.push(encodeData2.ids[point.pointIndex]);
-          randomRegions.push(encodeData2.randomRegions[point.pointIndex]);
+          ids.push(encodeData.ids[point.pointIndex]);
+          randomRegions.push(encodeData.randomRegions[point.pointIndex]);
           duplicates.push(1);
           break;
         case "Decoded Data":
-          ids.push(decodeData2.ids[point.pointIndex]);
-          randomRegions.push(decodeData2.randomRegions[point.pointIndex]);
+          ids.push(decodeData.ids[point.pointIndex]);
+          randomRegions.push(decodeData.randomRegions[point.pointIndex]);
           duplicates.push(1);
           break;
         default:

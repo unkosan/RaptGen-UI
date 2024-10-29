@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { Form, ListGroup, Modal, Stack } from "react-bootstrap";
-import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { AppDispatch, RootState } from "../../redux/store";
+import { AppDispatch } from "../../redux/store";
 import { apiClient } from "~/services/api-client";
 import { useRouter } from "next/router";
 import { Pencil, XLg } from "react-bootstrap-icons";
 import { Button } from "react-bootstrap";
 
-import { setSessionConfigByVaeId } from "../../redux/session-config2";
+import { setSessionConfigByVaeIdName } from "../../redux/session-config";
 
 const SelectVAE: React.FC = () => {
   const [id, setId] = useState<string>("");
@@ -20,7 +19,6 @@ const SelectVAE: React.FC = () => {
   >([]);
 
   const dispatch = useDispatch<AppDispatch>();
-  const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const router = useRouter();
   const { uuid } = router.query;
   const [isRenameModelOpen, setIsRenameModelOpen] = useState(false);
@@ -59,15 +57,12 @@ const SelectVAE: React.FC = () => {
       }
 
       const vaeName = models.find((model) => model.uuid === id)?.name;
-      dispatch({
-        type: "graphConfig/set",
-        payload: {
-          ...graphConfig,
+      dispatch(
+        setSessionConfigByVaeIdName({
+          vaeId: id,
           vaeName: vaeName,
-          gmmName: "",
-        },
-      });
-      dispatch(setSessionConfigByVaeId(id));
+        })
+      );
     })();
   }, [id]);
 
