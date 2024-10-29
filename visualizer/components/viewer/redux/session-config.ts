@@ -88,6 +88,8 @@ const sessionConfigSlice = createSlice({
       state.sessionId = action.payload.sessionId;
       state.vaeId = action.payload.vaeId;
       state.gmmId = action.payload.gmmId;
+      state.vaeName = action.payload.vaeName;
+      state.gmmName = action.payload.gmmName;
     });
   },
 });

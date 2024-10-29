@@ -430,19 +430,6 @@ const LatentGraph: React.FC = () => {
 
   const handleSelected = ((eventData: PlotSelectionEventAmend) => {
     const points = eventData.points;
-    const selectedData = points.map((point: any) => {
-      return {
-        key: point.pointIndex,
-        uid: point.fullData.uid,
-        hue: point.fullData.name,
-        x: point.x,
-        y: point.y,
-      };
-    });
-    dispatch({
-      type: "graphData/set",
-      payload: selectedData,
-    });
     let ids: string[] = [];
     let randomRegions: string[] = [];
     let duplicates: number[] = [];
