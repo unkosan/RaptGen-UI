@@ -1,6 +1,6 @@
 # RaptGen UI
 
-The GUI for RaptGen developed with React and FastAPI.
+The GUI for RaptGen developed with React and ... FastAPI.
 
 ## How to Launch
 
