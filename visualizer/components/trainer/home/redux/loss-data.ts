@@ -1,11 +1,11 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-type LossData = {
+interface LossData {
   trainLoss: number[];
   testLoss: number[];
   testKldLoss: number[];
   testReconLoss: number[];
-};
+}
 
 const lossDataSlice = createSlice({
   name: "lossData",
@@ -16,9 +16,8 @@ const lossDataSlice = createSlice({
     testReconLoss: [] as number[],
   },
   reducers: {
-    set: (state: LossData, action: PayloadAction<LossData>) => {
+    setLossData: (state: LossData, action: PayloadAction<LossData>) => {
       return {
-        ...state,
         trainLoss: action.payload.trainLoss,
         testLoss: action.payload.testLoss,
         testKldLoss: action.payload.testKldLoss,
@@ -31,5 +30,5 @@ const lossDataSlice = createSlice({
 const lossDataReducer = lossDataSlice.reducer;
 
 export default lossDataReducer;
-export const { set: setLossData } = lossDataSlice.actions;
+export const { setLossData } = lossDataSlice.actions;
 export type { LossData };

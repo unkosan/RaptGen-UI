@@ -7,7 +7,7 @@ import { responseGetItem } from "~/services/route/train";
 import { z } from "zod";
 import {
   Alert,
-  Badge,
+  Button,
   Card,
   Col,
   Form,
@@ -23,20 +23,39 @@ import {
   DeleteButton,
   DownloadCurrentCodesButton,
   DownloadLossesButton,
+  RenameButton,
   ResumeButton,
   StopButton,
 } from "./action-buttons";
 import _ from "lodash";
 import { useRouter } from "next/router";
-import { Item } from "react-bootstrap/lib/Breadcrumb";
+import { ArrowClockwise } from "react-bootstrap-icons";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type Item = z.infer<typeof responseGetItem>;
 
-const ParentPane: React.FC<{ item: Item }> = ({ item }) => {
+const ParentPane: React.FC<{
+  item: Item;
+  updateFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ item, updateFunc }) => {
   return (
     <>
-      <h2>Experiment: {item.name}</h2>
+      <div className="justify-content-between d-flex">
+        <h2>Experiment: {item.name}</h2>
+        <div>
+          <Button
+            variant="primary"
+            onClick={() => {
+              updateFunc(item.uuid);
+            }}
+          >
+            <div className="align-items-center d-flex">
+              <ArrowClockwise />
+              <span className="ms-2">Refresh</span>
+            </div>
+          </Button>
+        </div>
+      </div>
       <p>
         <div>Start time: {new Date(item.start * 1000).toLocaleString()}</div>
         <div>The number of models to train: {item.reiteration}</div>
@@ -44,15 +63,17 @@ const ParentPane: React.FC<{ item: Item }> = ({ item }) => {
       <p className="d-flex align-items-center">
         <b className="me-2">Actions:</b>
         {item.status === "progress" ? (
-          <StopButton uuid={item.uuid} />
+          <StopButton uuid={item.uuid} updateFunc={updateFunc} />
         ) : item.status === "suspend" ? (
-          <ResumeButton uuid={item.uuid} />
+          <ResumeButton uuid={item.uuid} updateFunc={updateFunc} />
         ) : null}
 
-        <DeleteButton uuid={item.uuid} />
-        <Badge pill bg="success" className="mx-1">
-          Rename
-        </Badge>
+        <DeleteButton uuid={item.uuid} updateFunc={updateFunc} />
+        <RenameButton
+          uuid={item.uuid}
+          defaultName={item.name}
+          updateFunc={updateFunc}
+        />
       </p>
 
       <Row>
@@ -254,21 +275,21 @@ const Main: React.FC = () => {
   const [optimalModel, setOptimalModel] = React.useState<number | null>(null);
 
   // Update information of the parent job if avaiable
-  useEffect(() => {
+  const update = async (parentId: string | undefined) => {
     if (parentId) {
-      apiClient
-        .getItem({
-          params: {
-            parent_uuid: parentId,
-          },
-        })
-        .then((item) => {
-          setItem(item);
-        });
+      const item = await apiClient.getItem({
+        params: {
+          parent_uuid: parentId,
+        },
+      });
+      setItem(item);
     } else {
       setItem(null);
       setChildItem(null);
     }
+  };
+  useEffect(() => {
+    update(parentId);
   }, [parentId]);
 
   // Update information of the child job
@@ -387,7 +408,7 @@ const Main: React.FC = () => {
 
   return (
     <div>
-      <ParentPane item={item} />
+      <ParentPane item={item} updateFunc={update} />
       <ChildPane
         childItem={childItem}
         parentItem={item}

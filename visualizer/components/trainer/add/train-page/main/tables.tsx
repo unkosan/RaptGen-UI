@@ -15,7 +15,7 @@ const columnsSequenceTable = [
 ];
 
 const gridStyleCountTable = {
-  minHeight: 300,
+  minHeight: 250,
   width: "100%",
   zIndex: 1000,
   marginBlock: "1rem",
