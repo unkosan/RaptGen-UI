@@ -1,40 +1,65 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-type PreprocessingConfig = {
+// maybe this should be integrated into selex-data.ts
+
+interface PreprocessingConfigState {
+  forwardAdapter: string;
+  reverseAdapter: string;
+  targetLength: number;
+  tolerance: number;
+  minCount: number;
+}
+
+interface PreprocessingConfigStateWithFlags extends PreprocessingConfigState {
   isDirty: boolean;
   isValidParams: boolean;
-  forwardAdapter?: string;
-  reverseAdapter?: string;
-  targetLength?: number;
-  tolerance?: number;
-  minCount?: number;
-};
+}
 
 const preprocessingConfigSlice = createSlice({
   name: "preprocessingConfig",
   initialState: {
     isDirty: false,
     isValidParams: false,
-    forwardAdapter: undefined as string | undefined,
-    reverseAdapter: undefined as string | undefined,
-    targetLength: undefined as number | undefined,
-    tolerance: undefined as number | undefined,
-    minCount: undefined as number | undefined,
+    forwardAdapter: "",
+    reverseAdapter: "",
+    targetLength: NaN,
+    tolerance: 0,
+    minCount: 1,
   },
   reducers: {
-    set: (
-      state: PreprocessingConfig,
-      action: PayloadAction<PreprocessingConfig>
+    setPreprocessingConfig: (
+      state: PreprocessingConfigStateWithFlags,
+      action: PayloadAction<PreprocessingConfigState>
     ) => {
+      const {
+        forwardAdapter,
+        reverseAdapter,
+        targetLength,
+        tolerance,
+        minCount,
+      } = action.payload;
+
+      const isValidParams =
+        forwardAdapter.length >= 0 &&
+        reverseAdapter.length >= 0 &&
+        targetLength > 0 &&
+        tolerance >= 0 &&
+        minCount >= 1;
+
+      return {
+        isDirty: true,
+        isValidParams,
+        forwardAdapter,
+        reverseAdapter,
+        targetLength,
+        tolerance,
+        minCount,
+      };
+    },
+    clearPreprocessingDirty: (state: PreprocessingConfigStateWithFlags) => {
       return {
         ...state,
-        isDirty: action.payload.isDirty,
-        isValidParams: action.payload.isValidParams,
-        forwardAdapter: action.payload.forwardAdapter,
-        reverseAdapter: action.payload.reverseAdapter,
-        targetLength: action.payload.targetLength,
-        tolerance: action.payload.tolerance,
-        minCount: action.payload.minCount,
+        isDirty: false,
       };
     },
   },
@@ -43,4 +68,6 @@ const preprocessingConfigSlice = createSlice({
 const preprocessingConfigReducer = preprocessingConfigSlice.reducer;
 
 export default preprocessingConfigReducer;
-export type { PreprocessingConfig };
+export type { PreprocessingConfigState };
+export const { setPreprocessingConfig, clearPreprocessingDirty } =
+  preprocessingConfigSlice.actions;

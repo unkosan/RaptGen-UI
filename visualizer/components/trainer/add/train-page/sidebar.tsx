@@ -1,166 +1,120 @@
-import React, { useEffect } from "react";
-import IntegerForm, {
-  SeedValueForm,
-} from "~/components/uploader/sidebar-vae/optional-params/integer-form";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { Button, Form } from "react-bootstrap";
+import { Form, InputGroup } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { apiClient } from "~/services/api-client";
+import { setTrainConfig } from "../redux/train-config";
+import { Button } from "react-bootstrap";
+
+function useAsyncMemo<T>(
+  asyncFunction: () => Promise<T>,
+  deps: any[],
+  defaultValue: T
+): T {
+  const [value, setValue] = useState<T>(defaultValue);
+  const func = useCallback(asyncFunction, deps);
+  useEffect(() => {
+    func().then(setValue);
+  }, [func, ...deps]);
+  return value;
+}
+
+function useStateWithPredicate<T>(
+  initialValue: T,
+  predicate: (value: T) => boolean,
+  initialTrue: boolean = false
+): [T, (value: T) => boolean, boolean] {
+  const [value, _setValue] = useState<T>(initialValue);
+  const [isValid, setIsValid] = useState<boolean>(
+    initialTrue ? true : predicate(value)
+  );
+  const setValue = useCallback((value: T) => {
+    _setValue(value);
+    const isValid = predicate(value);
+    setIsValid(isValid);
+    return isValid;
+  }, []);
+
+  return [value, setValue, isValid];
+}
 
 const SideBar: React.FC = () => {
   const preprocessConfig = useSelector(
     (state: RootState) => state.preprocessingConfig
   );
-  const [reiteration, setReiteration] = React.useState<number | undefined>(1);
-  const [modelLength, setModelLength] = React.useState<number | undefined>(
-    undefined
-  );
-  const [epochs, setEpochs] = React.useState<number | undefined>(1000);
-  const [matchForcingDuration, setMatchForcingDuration] = React.useState<
-    number | undefined
-  >(50);
-  const [betaDuration, setBetaDuration] = React.useState<number | undefined>(
-    50
-  );
-  const [earlyStopping, setEarlyStopping] = React.useState<number | undefined>(
-    50
-  );
-  const [seedValue, setSeedValue] = React.useState<number | undefined>(0);
-  const [matchCost, setMatchCost] = React.useState<number | undefined>(4);
-
-  const [isValidReiteration, setIsValidReiteration] =
-    React.useState<boolean>(true);
-  const [isValidModelLength, setIsValidModelLength] =
-    React.useState<boolean>(true);
-  const [isValidEpochs, setIsValidEpochs] = React.useState<boolean>(true);
-  const [isValidMatchForcingDuration, setIsValidMatchForcingDuration] =
-    React.useState<boolean>(true);
-  const [isValidBetaDuration, setIsValidBetaDuration] =
-    React.useState<boolean>(true);
-  const [isValidEarlyStopping, setIsValidEarlyStopping] =
-    React.useState<boolean>(true);
-  const [isValidSeedValue, setIsValidSeedValue] = React.useState<boolean>(true);
-  const [isValidMatchCost, setIsValidMatchCost] = React.useState<boolean>(true);
-
-  const [deviceList, setDeviceList] = React.useState<string[]>(["cpu"]);
-  const [device, setDevice] = React.useState<string>("cpu");
-
-  const dispatch = useDispatch();
   const trainConfig = useSelector((state: RootState) => state.trainConfig);
 
+  const [reiteration, setReiteration, isValidReiteration] =
+    useStateWithPredicate(
+      trainConfig.reiteration,
+      (value: number) => value > 0
+    );
+  const [device, setDevice] = useState<string>("cpu");
+  const [modelLength, setModelLength, isValidModelLength] =
+    useStateWithPredicate(
+      trainConfig.modelLength,
+      (value: number) => value > 0
+    );
+  const [epochs, setEpochs, isValidEpochs] = useStateWithPredicate(
+    trainConfig.epochs,
+    (value: number) => value > 0
+  );
+  const [
+    matchForcingDuration,
+    setMatchForcingDuration,
+    isValidMatchForcingDuration,
+  ] = useStateWithPredicate(
+    trainConfig.forceMatchEpochs,
+    (value: number) => value > 0
+  );
+  const [betaDuration, setBetaDuration, isValidBetaDuration] =
+    useStateWithPredicate(
+      trainConfig.betaScheduleEpochs,
+      (value: number) => value > 0
+    );
+  const [earlyStopping, setEarlyStopping, isValidEarlyStopping] =
+    useStateWithPredicate(
+      trainConfig.earlyStoppingEpochs,
+      (value: number) => value > 0
+    );
+  const [seedValue, setSeedValue, isValidSeedValue] = useStateWithPredicate(
+    trainConfig.seed,
+    (value: number) => value >= 0
+  );
+  const [matchCost, setMatchCost, isValidMatchCost] = useStateWithPredicate(
+    trainConfig.matchCost,
+    (value: number) => value >= 0
+  );
+
+  const deviceList = useAsyncMemo(() => apiClient.getDevices(), [], ["cpu"]);
+
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    if (
-      preprocessConfig.forwardAdapter !== undefined &&
-      preprocessConfig.targetLength !== undefined &&
-      preprocessConfig.reverseAdapter !== undefined
-    ) {
+    if (preprocessConfig.isValidParams) {
       setModelLength(
         preprocessConfig.targetLength -
           preprocessConfig.forwardAdapter.length -
           preprocessConfig.reverseAdapter.length
       );
+      dispatch(setTrainConfig({ ...trainConfig, modelLength: modelLength }));
     }
   }, [preprocessConfig]);
-
-  useEffect(() => {
-    // const response = ["cpu", "cuda:0", "cuda:1"];
-    (async () => {
-      const data = await apiClient.getDevices();
-      console.log("getDevices", data);
-      const devices = data ?? "cpu";
-      setDeviceList(devices);
-    })();
-  }, []);
-
-  useEffect(() => {
-    setDevice(deviceList[0] ?? "cpu");
-  }, [deviceList]);
-
-  useEffect(() => {
-    const isAllValid = [
-      isValidReiteration,
-      isValidModelLength,
-      isValidEpochs,
-      isValidMatchForcingDuration,
-      isValidBetaDuration,
-      isValidEarlyStopping,
-      isValidSeedValue,
-      isValidMatchCost,
-      reiteration !== undefined,
-      modelLength !== undefined,
-      epochs !== undefined,
-      matchForcingDuration !== undefined,
-      betaDuration !== undefined,
-      earlyStopping !== undefined,
-      seedValue !== undefined,
-      matchCost !== undefined,
-    ].every((isValid) => isValid);
-
-    if (isAllValid) {
-      dispatch({
-        type: "trainConfig/set",
-        payload: {
-          ...trainConfig,
-          isValidParams: true,
-          reiteration: reiteration,
-          modelLength: modelLength,
-          epochs: epochs,
-          forceMatchEpochs: matchForcingDuration,
-          betaScheduleEpochs: betaDuration,
-          earlyStoppingEpochs: earlyStopping,
-          seed: seedValue,
-          matchCost: matchCost,
-          device: device,
-        },
-      });
-    } else {
-      dispatch({
-        type: "trainConfig/set",
-        payload: {
-          ...trainConfig,
-          isValidParams: false,
-        },
-      });
-    }
-  }, [
-    isValidReiteration,
-    isValidModelLength,
-    isValidEpochs,
-    isValidMatchForcingDuration,
-    isValidBetaDuration,
-    isValidEarlyStopping,
-    isValidSeedValue,
-    isValidMatchCost,
-    reiteration,
-    modelLength,
-    epochs,
-    matchForcingDuration,
-    betaDuration,
-    earlyStopping,
-    seedValue,
-    matchCost,
-    device,
-  ]);
 
   return (
     <div>
       <legend>Training Parameters</legend>
-      <IntegerForm
-        label="Reiteration of Training"
-        placeholder="The number of reiteration of training"
-        predicate={(value: number) => value > 0}
-        value={reiteration}
-        setValue={setReiteration}
-        isValid={isValidReiteration}
-        setIsValid={setIsValidReiteration}
-      />
+
       <Form.Group className="mb-3">
         <Form.Label>Device</Form.Label>
         <Form.Select
           value={device}
           onChange={(e) => {
             setDevice(e.target.value);
+            dispatch(
+              setTrainConfig({ ...trainConfig, device: e.target.value })
+            );
           }}
         >
           {deviceList.map((device) => (
@@ -170,93 +124,170 @@ const SideBar: React.FC = () => {
           ))}
         </Form.Select>
       </Form.Group>
-      <SeedValueForm
-        label="Seed Value"
-        placeholder="An integer value for random seed"
-        value={seedValue}
-        setValue={setSeedValue}
-        isValid={isValidSeedValue}
-        setIsValid={setIsValidSeedValue}
-      />
-      <div className="mb-3 text-muted">
-        The seed value is used to initialize the random number generator. If you
-        want to reproduce the same result, set the seed.
-      </div>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Reiteration of Training</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="The number of reiteration of training"
+          value={reiteration}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            setReiteration(value);
+            dispatch(setTrainConfig({ ...trainConfig, reiteration: value }));
+          }}
+          isInvalid={!isValidReiteration}
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Seed Value</Form.Label>
+        <InputGroup>
+          <Form.Control
+            type="number"
+            placeholder="An integer value for random seed"
+            value={seedValue}
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              setSeedValue(value);
+              dispatch(setTrainConfig({ ...trainConfig, seed: value }));
+            }}
+            isInvalid={!isValidSeedValue}
+          />
+          <Button
+            variant="outline-primary"
+            onClick={() => {
+              const value = Math.floor(Math.random() * 1000000);
+              setSeedValue(value);
+              dispatch(setTrainConfig({ ...trainConfig, seed: value }));
+            }}
+          >
+            Random
+          </Button>
+        </InputGroup>
+        <Form.Text className="text-muted">
+          The seed value is used to initialize the random number generator. If
+          you want to reproduce the same result, set the seed.
+        </Form.Text>
+      </Form.Group>
+
       <hr />
-      <IntegerForm
-        label="Maximum Number of Epochs"
-        placeholder="The maxium number of epochs to train for"
-        predicate={(value: number) => value > 0}
-        value={epochs}
-        setValue={setEpochs}
-        isValid={isValidEpochs}
-        setIsValid={setIsValidEpochs}
-      />
-      <IntegerForm
-        label="Early Stopping Patience"
-        placeholder="The number of epochs to wait before early stopping"
-        predicate={(value: number) => value > 0}
-        value={earlyStopping}
-        setValue={setEarlyStopping}
-        isValid={isValidEarlyStopping}
-        setIsValid={setIsValidEarlyStopping}
-      />
-      <IntegerForm
-        label="Beta Weighting Epochs"
-        placeholder="The number of epochs under beta weighting"
-        predicate={(value: number) => value > 0}
-        value={betaDuration}
-        setValue={setBetaDuration}
-        isValid={isValidBetaDuration}
-        setIsValid={setIsValidBetaDuration}
-      />
-      <div className="mb-3 text-muted">
-        Reconstruction terms are weighted by beta, which is linearly increased
-        from 0 to 1, in the first beta epochs.
-      </div>
-      <IntegerForm
-        label="Force Matching Epochs"
-        placeholder="The number of epochs under match forcing"
-        predicate={(value: number) => value > 0}
-        value={matchForcingDuration}
-        setValue={setMatchForcingDuration}
-        isValid={isValidMatchForcingDuration}
-        setIsValid={setIsValidMatchForcingDuration}
-      />
-      <div className="mb-3 text-muted">
-        The match forcing term is added to the loss function during the first n
-        epochs specified by this parameter. In these epochs, objective function
-        includes the sum of transitional probabilities of &apos;match&apos; to
-        &apos;match&apos; states throughout the pHMM model, then tries to
-        maximize the value.
-      </div>
-      <IntegerForm
-        label="Match Cost"
-        placeholder="The cost of match forcing"
-        predicate={(value: number) => value > 0}
-        value={matchCost}
-        setValue={setMatchCost}
-        isValid={isValidMatchCost}
-        setIsValid={setIsValidMatchCost}
-      />
-      <div className="mb-3 text-muted">
-        The match cost is the cost of the match forcing term. The higher the
-        value, the more the model tries to maximize the sum of transitional
-        probabilities of &apos;match&apos; to &apos;match&apos; states.
-      </div>
-      <IntegerForm
-        label="pHMM Model Length"
-        placeholder="The length of matching states on the pHMM model"
-        predicate={(value: number) => value > 0}
-        value={modelLength}
-        setValue={setModelLength}
-        isValid={isValidModelLength}
-        setIsValid={setIsValidModelLength}
-      />
-      <div className="mb-3 text-muted">
-        This value is the length of the matching states on the pHMM model.
-        Default value equals to the random region length.
-      </div>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Maximum Number of Epochs</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="The maxium number of epochs to train for"
+          value={epochs}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            setEpochs(value);
+            dispatch(setTrainConfig({ ...trainConfig, epochs: value }));
+          }}
+          isInvalid={!isValidEpochs}
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Early Stopping Patience</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="The number of epochs to wait before early stopping"
+          value={earlyStopping}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            setEarlyStopping(value);
+            dispatch(
+              setTrainConfig({ ...trainConfig, earlyStoppingEpochs: value })
+            );
+          }}
+          isInvalid={!isValidEarlyStopping}
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Beta Weighting Epochs</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="The number of epochs under beta weighting"
+          value={betaDuration}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            setBetaDuration(value);
+            dispatch(
+              setTrainConfig({ ...trainConfig, betaScheduleEpochs: value })
+            );
+          }}
+          isInvalid={!isValidBetaDuration}
+        />
+        <Form.Text className="text-muted">
+          Reconstruction terms are weighted by beta, which is linearly increased
+          from 0 to 1, in the first beta epochs.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Force Matching Epochs</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="The number of epochs under match forcing"
+          value={matchForcingDuration}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            setMatchForcingDuration(value);
+            dispatch(
+              setTrainConfig({ ...trainConfig, forceMatchEpochs: value })
+            );
+          }}
+          isInvalid={!isValidMatchForcingDuration}
+        />
+        <Form.Text className="text-muted">
+          The match forcing term is added to the loss function during the first
+          n epochs specified by this parameter. In these epochs, objective
+          function includes the sum of transitional probabilities of
+          &apos;match&apos; to &apos;match&apos; states throughout the pHMM
+          model, then tries to maximize the value.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Match Cost</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="The cost of match forcing"
+          value={matchCost}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            setMatchCost(value);
+            dispatch(setTrainConfig({ ...trainConfig, matchCost: value }));
+          }}
+          isInvalid={!isValidMatchCost}
+        />
+        <Form.Text className="text-muted">
+          The match cost is the cost of the match forcing term. The higher the
+          value, the more the model tries to maximize the sum of transitional
+          probabilities of &apos;match&apos; to &apos;match&apos; states.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>pHMM Model Length</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="The length of matching states on the pHMM model"
+          value={modelLength}
+          onChange={(e) => {
+            const value = parseInt(e.target.value);
+            setModelLength(value);
+            dispatch(setTrainConfig({ ...trainConfig, modelLength: value }));
+          }}
+          isInvalid={!isValidModelLength}
+        />
+        <Form.Text className="text-muted">
+          This value is the length of the matching states on the pHMM model.
+          Default value equals to the random region length.
+        </Form.Text>
+      </Form.Group>
     </div>
   );
 };
