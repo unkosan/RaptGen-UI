@@ -1,6 +1,5 @@
-import { useCallback, useState } from "react";
 import { useDispatch } from "react-redux";
-import { RootState } from "../../redux/store";
+import { RootState } from "../redux/store";
 import { useSelector } from "react-redux";
 import {
   Button,
@@ -10,9 +9,10 @@ import {
   Spinner,
   Tooltip,
 } from "react-bootstrap";
-import { setPreprocessingConfig } from "../../redux/preprocessing-config";
-import { setPageConfig } from "../../redux/page-config";
+import { setPreprocessingConfig } from "../redux/preprocessing-config";
+import { setPageConfig } from "../redux/page-config";
 import { apiClient } from "~/services/api-client";
+import { useIsLoading, useStateWithPredicate } from "~/hooks/common";
 
 const availableModelTypes = [
   "RaptGen",
@@ -20,38 +20,6 @@ const availableModelTypes = [
   // "RaptGen-logfreq",
   // "RfamGen"
 ];
-
-function useIsLoading(): [boolean, () => void, () => void] {
-  const [currentJobs, setCurrentJobs] = useState(0);
-  const lock = useCallback(() => {
-    setCurrentJobs((prev) => prev + 1);
-  }, []);
-  const unlock = useCallback(() => {
-    setCurrentJobs((prev) => prev - 1);
-  }, [currentJobs]);
-  const isLoading = currentJobs > 0;
-
-  return [isLoading, lock, unlock];
-}
-
-function useStateWithPredicate<T>(
-  initialValue: T,
-  predicate: (value: T) => boolean,
-  initialTrue: boolean = false
-): [T, (value: T) => boolean, boolean] {
-  const [value, _setValue] = useState<T>(initialValue);
-  const [isValid, setIsValid] = useState<boolean>(
-    initialTrue ? true : predicate(value)
-  );
-  const setValue = useCallback((value: T) => {
-    _setValue(value);
-    const isValid = predicate(value);
-    setIsValid(isValid);
-    return isValid;
-  }, []);
-
-  return [value, setValue, isValid];
-}
 
 const SideBar: React.FC = () => {
   const pageConfig = useSelector((state: RootState) => state.pageConfig);

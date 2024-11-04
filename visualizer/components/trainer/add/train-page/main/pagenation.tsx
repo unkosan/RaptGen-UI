@@ -1,23 +1,10 @@
-import { useCallback, useState } from "react";
 import { Button, Spinner } from "react-bootstrap";
 import { ChevronLeft } from "react-bootstrap-icons";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useRouter } from "next/router";
 import { apiClient } from "~/services/api-client";
-
-function useIsLoading(): [boolean, () => void, () => void] {
-  const [currentJobs, setCurrentJobs] = useState(0);
-  const lock = useCallback(() => {
-    setCurrentJobs((prev) => prev + 1);
-  }, []);
-  const unlock = useCallback(() => {
-    setCurrentJobs((prev) => prev - 1);
-  }, [currentJobs]);
-  const isLoading = currentJobs > 0;
-
-  return [isLoading, lock, unlock];
-}
+import { useIsLoading } from "~/hooks/common";
 
 const Pagenation: React.FC = () => {
   const trainConfig = useSelector((state: RootState) => state.trainConfig);

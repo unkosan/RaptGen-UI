@@ -3,23 +3,10 @@ import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
-import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { preprocessSelexData } from "../../redux/selex-data";
 import { clearPreprocessingDirty } from "../../redux/preprocessing-config";
-
-function useIsLoading(): [boolean, () => void, () => void] {
-  const [currentJobs, setCurrentJobs] = useState(0);
-  const lock = useCallback(() => {
-    setCurrentJobs((prev) => prev + 1);
-  }, []);
-  const unlock = useCallback(() => {
-    setCurrentJobs((prev) => prev - 1);
-  }, [currentJobs]);
-  const isLoading = currentJobs > 0;
-
-  return [isLoading, lock, unlock];
-}
+import { useIsLoading } from "~/hooks/common";
 
 const Pagination: React.FC = () => {
   const dispatch = useDispatch();

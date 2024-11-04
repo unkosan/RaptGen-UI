@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Form, InputGroup } from "react-bootstrap";
 import { useSelector } from "react-redux";
@@ -6,38 +6,7 @@ import { RootState } from "../redux/store";
 import { apiClient } from "~/services/api-client";
 import { setTrainConfig } from "../redux/train-config";
 import { Button } from "react-bootstrap";
-
-function useAsyncMemo<T>(
-  asyncFunction: () => Promise<T>,
-  deps: any[],
-  defaultValue: T
-): T {
-  const [value, setValue] = useState<T>(defaultValue);
-  const func = useCallback(asyncFunction, deps);
-  useEffect(() => {
-    func().then(setValue);
-  }, [func, ...deps]);
-  return value;
-}
-
-function useStateWithPredicate<T>(
-  initialValue: T,
-  predicate: (value: T) => boolean,
-  initialTrue: boolean = false
-): [T, (value: T) => boolean, boolean] {
-  const [value, _setValue] = useState<T>(initialValue);
-  const [isValid, setIsValid] = useState<boolean>(
-    initialTrue ? true : predicate(value)
-  );
-  const setValue = useCallback((value: T) => {
-    _setValue(value);
-    const isValid = predicate(value);
-    setIsValid(isValid);
-    return isValid;
-  }, []);
-
-  return [value, setValue, isValid];
-}
+import { useAsyncMemo, useStateWithPredicate } from "~/hooks/common";
 
 const SideBar: React.FC = () => {
   const preprocessConfig = useSelector(
