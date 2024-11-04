@@ -41,7 +41,7 @@ const ParentPane: React.FC<{
   return (
     <>
       <div className="justify-content-between d-flex">
-        <h2>Experiment: {item.name}</h2>
+        <h3>Experiment: {item.name}</h3>
         <div>
           <Button
             variant="primary"

@@ -11,6 +11,7 @@ import ParamsTable from "./params-table";
 import BicGraph from "./bic-graph";
 import LatentGraph from "./latent-graph";
 import { responseGetVAEModelNames } from "~/services/route/data";
+import { ArrowClockwise } from "react-bootstrap-icons";
 
 type JobItem = z.infer<typeof responseGetGMMJobsItems>;
 
@@ -75,7 +76,22 @@ const Main: React.FC = () => {
 
   return (
     <div>
-      <h3>Experiment: {jobItem.name}</h3>
+      <div className="justify-content-between d-flex">
+        <h3>Experiment: {jobItem.name}</h3>
+        <div>
+          <Button
+            variant="primary"
+            onClick={() => {
+              reload();
+            }}
+          >
+            <div className="align-items-center d-flex">
+              <ArrowClockwise />
+              <span className="ms-2">Refresh</span>
+            </div>
+          </Button>
+        </div>
+      </div>
       <p>
         <div>Start time: {new Date(jobItem.start * 1000).toLocaleString()}</div>
         <div>
