@@ -33,8 +33,8 @@ const Pagenation: React.FC = () => {
           tolerance: preprocessingConfig.tolerance,
           minimum_count: preprocessingConfig.minCount,
         },
-        random_regions: selexData.randomRegions,
-        duplicates: selexData.duplicatesFiltered,
+        random_regions: selexData.validRandomRegions,
+        duplicates: selexData.validDuplicates,
         reiteration: trainConfig.reiteration,
         params_training: {
           model_length: trainConfig.modelLength,

@@ -11,11 +11,13 @@ interface SelexDataStateWithProcessedResult extends SelexDataState {
   isDirty: boolean;
   totalCount: number;
   uniqueCount: number;
-  sequenceFilterCount: number;
-  duplicateFilterCount: number;
+  validSequenceCount: number;
+  duplicateFilteredCount: number;
   uniqueRatio: number;
-  randomRegions: string[];
-  duplicatesFiltered: number[];
+  validRandomRegions: string[];
+  validDuplicates: number[];
+  filteredRandomRegions: string[];
+  filteredDuplicates: number[];
 }
 
 const selexDataSlice = createSlice({
@@ -24,13 +26,15 @@ const selexDataSlice = createSlice({
     isDirty: false,
     totalCount: NaN,
     uniqueCount: NaN,
-    sequenceFilterCount: NaN,
-    duplicateFilterCount: NaN,
+    validSequenceCount: NaN, // uniquified and filtered
+    duplicateFilteredCount: NaN, // uniquified and filtered
     uniqueRatio: NaN,
     sequences: [] as string[],
     duplicates: [] as number[],
-    randomRegions: [] as string[],
-    duplicatesFiltered: [] as number[],
+    validRandomRegions: [] as string[],
+    validDuplicates: [] as number[],
+    filteredRandomRegions: [] as string[],
+    filteredDuplicates: [] as number[],
   },
   reducers: {
     setSelexDataState: (
@@ -64,7 +68,7 @@ const selexDataSlice = createSlice({
       const totalCount = sum(duplicates);
       const uniqueCount = sequences.length;
 
-      const sequenceFilterMask = sequences.map((seq) => {
+      const validSequenceMask = sequences.map((seq) => {
         return (
           seq.startsWith(forwardAdapter) &&
           seq.endsWith(reverseAdapter) &&
@@ -72,40 +76,41 @@ const selexDataSlice = createSlice({
           seq.length <= targetLength + tolerance
         );
       });
-      const sequenceFilterCount = sum(sequenceFilterMask);
-
-      const duplicateFilterMask = duplicates.map((dup) => {
-        return dup >= minCount;
+      const validSequenceCount = sum(validSequenceMask);
+      const validRandomRegions = sequences.filter((_, index) => {
+        return validSequenceMask[index];
       });
-      const duplicateFilterCount = sum(duplicateFilterMask);
-
+      const validDuplicates = duplicates.filter((_, index) => {
+        return validSequenceMask[index];
+      });
       const uniqueRatio =
-        sum(sequenceFilterMask && duplicateFilterMask) / sequenceFilterCount;
+        validSequenceCount /
+        sum(duplicates.filter((_, index) => validSequenceMask[index]));
 
-      const randomRegions = sequences
-        .filter((seq, index) => {
-          return sequenceFilterMask[index] && duplicateFilterMask[index];
-        })
-        .map((seq) => {
-          return seq.slice(
-            forwardAdapter.length,
-            seq.length - reverseAdapter.length
-          );
-        });
-
-      const duplicatesFiltered = duplicates.filter(
-        (_, index) => sequenceFilterMask[index] && duplicateFilterMask[index]
+      const duplicateFilterMask = validSequenceMask.map(
+        (valid, index) => valid && duplicates[index] >= minCount
+      );
+      const duplicateFilteredCount = sum(duplicateFilterMask);
+      const filteredRandomRegions = sequences
+        .filter((_, index) => duplicateFilterMask[index])
+        .map((seq) =>
+          seq.slice(forwardAdapter.length, seq.length - reverseAdapter.length)
+        );
+      const filteredDuplicates = duplicates.filter(
+        (_, index) => duplicateFilterMask[index]
       );
 
       return {
         ...state,
         totalCount,
         uniqueCount,
-        sequenceFilterCount,
-        duplicateFilterCount,
+        validSequenceCount,
+        duplicateFilteredCount,
         uniqueRatio,
-        randomRegions,
-        duplicatesFiltered,
+        validRandomRegions,
+        validDuplicates,
+        filteredRandomRegions,
+        filteredDuplicates,
         isDirty: false,
       };
     },

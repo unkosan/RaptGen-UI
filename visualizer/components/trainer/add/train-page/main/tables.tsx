@@ -30,27 +30,33 @@ const gridStyleSequenceTable = {
 
 const Tables: React.FC = () => {
   const {
-    randomRegions,
-    duplicatesFiltered,
+    filteredRandomRegions,
+    filteredDuplicates,
     totalCount,
     uniqueCount,
-    sequenceFilterCount,
-    duplicateFilterCount,
+    validSequenceCount,
+    duplicateFilteredCount,
     uniqueRatio,
   } = useSelector((state: RootState) => state.selexData);
 
   const propertiesDataSource = [
     { id: 0, item: "Total Entry Count", duplicate: totalCount },
     { id: 1, item: "Uniquified Entry Count", duplicate: uniqueCount },
-    { id: 2, item: "Adapters Matched Count", duplicate: sequenceFilterCount },
-    { id: 3, item: "Min-count Filtered", duplicate: duplicateFilterCount },
-    { id: 4, item: "Filtered", duplicate: randomRegions.length },
-    { id: 5, item: "Unique Ratio", duplicate: uniqueRatio },
+    {
+      id: 2,
+      item: "Adapters Matched Count (uniquified)",
+      duplicate: validSequenceCount,
+    },
+    {
+      id: 3,
+      item: "Min-count Filtered (uniquified)",
+      duplicate: duplicateFilteredCount,
+    },
+    { id: 4, item: "Unique Ratio", duplicate: uniqueRatio },
   ];
-  const filteredDataSource = randomRegions.map((seq, i) => {
-    return { id: i, sequence: seq, duplicate: duplicatesFiltered[i] };
+  const filteredDataSource = filteredRandomRegions.map((seq, i) => {
+    return { id: i, sequence: seq, duplicate: filteredDuplicates[i] };
   });
-  console.log(filteredDataSource);
 
   return (
     <>
