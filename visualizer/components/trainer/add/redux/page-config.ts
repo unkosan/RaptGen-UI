@@ -22,6 +22,7 @@ const pageConfigSlice = createSlice({
           experimentName: action.payload.experimentName,
         };
       } else {
+        console.error("Unsupported model type:", action.payload.modelType);
         throw new Error("Unsupported model type");
       }
     },

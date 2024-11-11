@@ -98,7 +98,7 @@ const PagenationNav: React.FC = () => {
         name: params.gmmName,
       });
       setIsLoading(false);
-      router.push(`/gmm?experimentName=${res.uuid}`);
+      router.push(`/gmm?experiment=${res.uuid}`);
     })();
   }, [isLoading]);
 

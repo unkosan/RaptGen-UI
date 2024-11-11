@@ -85,7 +85,7 @@ const selexDataSlice = createSlice({
       });
       const uniqueRatio =
         validSequenceCount /
-        sum(duplicates.filter((_, index) => validSequenceMask[index]));
+        (sum(duplicates.filter((_, index) => validSequenceMask[index])) || 1);
 
       const duplicateFilterMask = validSequenceMask.map(
         (valid, index) => valid && duplicates[index] >= minCount
