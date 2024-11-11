@@ -5,7 +5,6 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export const returnLayout = (title: string): Partial<Layout> => {
   return {
-    height: 400,
     title: title,
     plot_bgcolor: "#EDEDED",
     xaxis: {
@@ -104,12 +103,14 @@ export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
   }, [lossData]);
 
   return (
-    <Plot
-      data={lossDataPlot}
-      useResizeHandler={true}
-      layout={returnLayout(title)}
-      config={{ responsive: true }}
-      style={{ width: "100%" }}
-    />
+    <div style={{ aspectRatio: "2 / 1" }}>
+      <Plot
+        data={lossDataPlot}
+        useResizeHandler={true}
+        layout={returnLayout(title)}
+        config={{ responsive: true }}
+        style={{ width: "100%", height: "100%" }}
+      />
+    </div>
   );
 };

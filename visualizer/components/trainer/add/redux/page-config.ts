@@ -1,28 +1,30 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-type PageConfig = {
-  modelType: string; // needed for future implementation of multiple model types (layout could change)
+interface PageConfigState {
+  modelType: "RaptGen"; // needed for future implementation of multiple model types (layout could change)
   experimentName: string; // experiment name does not depend on model type
-};
+}
 
 const pageConfigSlice = createSlice({
   name: "pageConfig",
   initialState: {
-    modelType: "RaptGen",
+    modelType: "RaptGen" as const,
     experimentName: "",
   },
   reducers: {
-    setModelType: (state: PageConfig, action: PayloadAction<string>) => {
-      return {
-        ...state,
-        modelType: action.payload,
-      };
-    },
-    setExperimentName: (state: PageConfig, action: PayloadAction<string>) => {
-      return {
-        ...state,
-        experimentName: action.payload,
-      };
+    setPageConfig: (
+      state: PageConfigState,
+      action: PayloadAction<PageConfigState>
+    ) => {
+      if (action.payload.modelType === "RaptGen") {
+        return {
+          modelType: "RaptGen" as const,
+          experimentName: action.payload.experimentName,
+        };
+      } else {
+        console.error("Unsupported model type:", action.payload.modelType);
+        throw new Error("Unsupported model type");
+      }
     },
   },
 });
@@ -30,4 +32,5 @@ const pageConfigSlice = createSlice({
 const pageConfigReducer = pageConfigSlice.reducer;
 
 export default pageConfigReducer;
-export type { PageConfig };
+export type { PageConfigState };
+export const { setPageConfig } = pageConfigSlice.actions;

@@ -1,40 +1,117 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { PreprocessingConfigState } from "./preprocessing-config";
+import { sum } from "lodash";
 
-type SelexData = {
-  totalLength: number;
-  uniqueLength: number;
-  matchedLength: number;
-  uniqueRatio: number;
+interface SelexDataState {
   sequences: string[];
   duplicates: number[];
-  randomRegions: string[];
-  adapterMatched: boolean[];
-};
+}
+
+interface SelexDataStateWithProcessedResult extends SelexDataState {
+  isDirty: boolean;
+  totalCount: number;
+  uniqueCount: number;
+  validSequenceCount: number;
+  duplicateFilteredCount: number;
+  uniqueRatio: number;
+  validRandomRegions: string[];
+  validDuplicates: number[];
+  filteredRandomRegions: string[];
+  filteredDuplicates: number[];
+}
 
 const selexDataSlice = createSlice({
   name: "selexData",
   initialState: {
-    totalLength: NaN,
-    uniqueLength: NaN,
-    matchedLength: NaN,
+    isDirty: false,
+    totalCount: NaN,
+    uniqueCount: NaN,
+    validSequenceCount: NaN, // uniquified and filtered
+    duplicateFilteredCount: NaN, // uniquified and filtered
     uniqueRatio: NaN,
     sequences: [] as string[],
     duplicates: [] as number[],
-    randomRegions: [] as string[],
-    adapterMatched: [] as boolean[],
+    validRandomRegions: [] as string[],
+    validDuplicates: [] as number[],
+    filteredRandomRegions: [] as string[],
+    filteredDuplicates: [] as number[],
   },
   reducers: {
-    set: (state: SelexData, action: PayloadAction<SelexData>) => {
+    setSelexDataState: (
+      state: SelexDataStateWithProcessedResult,
+      action: PayloadAction<SelexDataState>
+    ) => {
+      const sequences = action.payload.sequences.map((seq) =>
+        seq.toUpperCase().replace(/T/g, "U")
+      );
+      const duplicates = action.payload.duplicates;
       return {
         ...state,
-        totalLength: action.payload.totalLength,
-        uniqueLength: action.payload.uniqueLength,
-        matchedLength: action.payload.matchedLength,
-        uniqueRatio: action.payload.uniqueRatio,
-        sequences: action.payload.sequences,
-        duplicates: action.payload.duplicates,
-        randomRegions: action.payload.randomRegions,
-        adapterMatched: action.payload.adapterMatched,
+        sequences,
+        duplicates,
+        isDirty: true,
+      };
+    },
+    preprocessSelexData: (
+      state: SelexDataStateWithProcessedResult,
+      action: PayloadAction<PreprocessingConfigState>
+    ) => {
+      const { sequences, duplicates } = state;
+      const {
+        forwardAdapter,
+        reverseAdapter,
+        targetLength,
+        tolerance,
+        minCount,
+      } = action.payload;
+
+      const totalCount = sum(duplicates);
+      const uniqueCount = sequences.length;
+
+      const validSequenceMask = sequences.map((seq) => {
+        return (
+          seq.startsWith(forwardAdapter) &&
+          seq.endsWith(reverseAdapter) &&
+          seq.length >= targetLength - tolerance &&
+          seq.length <= targetLength + tolerance
+        );
+      });
+      const validSequenceCount = sum(validSequenceMask);
+      const validRandomRegions = sequences.filter((_, index) => {
+        return validSequenceMask[index];
+      });
+      const validDuplicates = duplicates.filter((_, index) => {
+        return validSequenceMask[index];
+      });
+      const uniqueRatio =
+        validSequenceCount /
+        (sum(duplicates.filter((_, index) => validSequenceMask[index])) || 1);
+
+      const duplicateFilterMask = validSequenceMask.map(
+        (valid, index) => valid && duplicates[index] >= minCount
+      );
+      const duplicateFilteredCount = sum(duplicateFilterMask);
+      const filteredRandomRegions = sequences
+        .filter((_, index) => duplicateFilterMask[index])
+        .map((seq) =>
+          seq.slice(forwardAdapter.length, seq.length - reverseAdapter.length)
+        );
+      const filteredDuplicates = duplicates.filter(
+        (_, index) => duplicateFilterMask[index]
+      );
+
+      return {
+        ...state,
+        totalCount,
+        uniqueCount,
+        validSequenceCount,
+        duplicateFilteredCount,
+        uniqueRatio,
+        validRandomRegions,
+        validDuplicates,
+        filteredRandomRegions,
+        filteredDuplicates,
+        isDirty: false,
       };
     },
   },
@@ -43,4 +120,6 @@ const selexDataSlice = createSlice({
 const selexDataReducer = selexDataSlice.reducer;
 
 export default selexDataReducer;
-export type { SelexData };
+export type { SelexDataState };
+export const { preprocessSelexData, setSelexDataState } =
+  selexDataSlice.actions;
