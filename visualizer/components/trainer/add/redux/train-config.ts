@@ -1,49 +1,73 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-type TrainConfig = {
+interface TrainConfigState {
+  reiteration: number;
+  modelLength: number;
+  epochs: number;
+  forceMatchEpochs: number;
+  betaScheduleEpochs: number;
+  earlyStoppingEpochs: number;
+  seed: number;
+  device: string;
+  matchCost: number;
+}
+
+interface TrainConfigStateWithFlags extends TrainConfigState {
   isValidParams: boolean;
-  reiteration?: number;
-  modelLength?: number;
-  epochs?: number;
-  forceMatchEpochs?: number;
-  betaScheduleEpochs?: number;
-  earlyStoppingEpochs?: number;
-  seed?: number;
-  device?: string;
-  embeddingSize?: number;
-  matchCost?: number;
-};
+}
 
 const pageConfigSlice = createSlice({
   name: "trainConfig",
   initialState: {
-    isValidParams: false,
-    reiteration: undefined as number | undefined,
-    modelLength: undefined as number | undefined,
-    epochs: undefined as number | undefined,
-    forceMatchEpochs: undefined as number | undefined,
-    betaScheduleEpochs: undefined as number | undefined,
-    earlyStoppingEpochs: undefined as number | undefined,
-    seed: undefined as number | undefined,
-    device: undefined as string | undefined,
-    embeddingSize: undefined as number | undefined,
-    matchCost: undefined as number | undefined,
+    isValidParams: true,
+    reiteration: 1,
+    modelLength: 0,
+    epochs: 1000,
+    forceMatchEpochs: 50,
+    betaScheduleEpochs: 50,
+    earlyStoppingEpochs: 50,
+    seed: 0,
+    device: "CPU",
+    matchCost: 4,
   },
   reducers: {
-    set: (state: TrainConfig, action: PayloadAction<TrainConfig>) => {
+    setTrainConfig: (
+      state: TrainConfigStateWithFlags,
+      action: PayloadAction<TrainConfigState>
+    ) => {
+      const {
+        reiteration,
+        modelLength,
+        epochs,
+        forceMatchEpochs,
+        betaScheduleEpochs,
+        earlyStoppingEpochs,
+        seed,
+        device,
+        matchCost,
+      } = action.payload;
+
+      const isValidParams =
+        reiteration >= 1 &&
+        modelLength >= 1 &&
+        epochs >= 1 &&
+        forceMatchEpochs >= 0 &&
+        betaScheduleEpochs >= 0 &&
+        earlyStoppingEpochs >= 1 &&
+        seed >= 0 &&
+        matchCost >= 0;
+
       return {
-        ...state,
-        isValidParams: action.payload.isValidParams,
-        reiteration: action.payload.reiteration,
-        modelLength: action.payload.modelLength,
-        epochs: action.payload.epochs,
-        forceMatchEpochs: action.payload.forceMatchEpochs,
-        betaScheduleEpochs: action.payload.betaScheduleEpochs,
-        earlyStoppingEpochs: action.payload.earlyStoppingEpochs,
-        seed: action.payload.seed,
-        device: action.payload.device,
-        embeddingSize: action.payload.embeddingSize,
-        matchCost: action.payload.matchCost,
+        isValidParams,
+        reiteration,
+        modelLength,
+        epochs,
+        forceMatchEpochs,
+        betaScheduleEpochs,
+        earlyStoppingEpochs,
+        seed,
+        device,
+        matchCost,
       };
     },
   },
@@ -52,4 +76,5 @@ const pageConfigSlice = createSlice({
 const trainConfigReducer = pageConfigSlice.reducer;
 
 export default trainConfigReducer;
-export type { TrainConfig };
+export type { TrainConfigState };
+export const { setTrainConfig } = pageConfigSlice.actions;

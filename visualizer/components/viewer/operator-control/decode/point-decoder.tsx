@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -6,6 +6,24 @@ import { Form, InputGroup } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { apiClient } from "~/services/api-client";
+import { setDecodeGrid } from "../../redux/interaction-data";
+import { setGraphConfig } from "../../redux/graph-config";
+
+const useBlockTime = (millisecond: number): [boolean, () => void] => {
+  const [lock, setLock] = useState<boolean>(false);
+  const setLockCallback = useCallback(() => {
+    setLock(true);
+  }, []);
+  useEffect(() => {
+    if (!lock) {
+      return;
+    }
+    setTimeout(() => {
+      setLock(false);
+    }, millisecond);
+  }, [lock]);
+  return [lock, setLockCallback];
+};
 
 const PointDecoder: React.FC = () => {
   const [pointX, setPointX] = useState<number>(0);
@@ -15,102 +33,69 @@ const PointDecoder: React.FC = () => {
 
   const [sequence, setSequence] = useState<string>("");
 
-  const [lock, setLock] = useState<boolean>(false);
+  const [lock, setLock] = useBlockTime(200);
 
   const dispatch = useDispatch();
   const sessionId = useSelector(
     (state: RootState) => state.sessionConfig.sessionId
   );
-  const decodeData = useSelector((state: RootState) => state.decodeData);
-  const graphConfig = useSelector((state: RootState) => state.graphConfig);
+  const graphConfig2 = useSelector((state: RootState) => state.graphConfig);
 
   const onChangeX = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
     setIsValidX(!isNaN(value));
     setPointX(value);
+    setLock();
   };
   const onChangeY = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
     setIsValidY(!isNaN(value));
     setPointY(value);
+    setLock();
   };
 
   useEffect(() => {
-    if (lock) {
-      return;
-    }
-    setLock(true);
-    setTimeout(() => {
-      setLock(false);
-    }, 200);
-  }, [pointX, pointY]);
-
-  useEffect(() => {
-    if (lock) {
-      return;
-    }
-
-    if (!isValidX || !isValidY) {
-      return;
-    }
-
-    if (sessionId === "") {
-      return;
-    }
-
-    // dispatch decoded point value to redux
     (async () => {
-      try {
-        const res = await apiClient.decode({
-          session_uuid: sessionId,
-          coords_x: [pointX],
-          coords_y: [pointY],
-        });
-
-        const sequence: string = res.sequences[0];
-        setSequence(sequence);
-      } catch (e) {
-        console.error(e);
+      if (lock || !isValidX || !isValidY || !sessionId) {
+        return;
       }
+      const resDecode = await apiClient.decode({
+        session_uuid: sessionId,
+        coords_x: [pointX],
+        coords_y: [pointY],
+      });
+
+      const sequence: string = resDecode.sequences[0];
+      setSequence(sequence);
     })();
-  }, [isValidX, isValidY, pointX, pointY]);
+  }, [pointX, pointY, isValidX, isValidY, sessionId, lock]);
 
   useEffect(() => {
-    let newDecodeData = [...decodeData];
-    newDecodeData[0] = {
-      key: 0,
-      id: "grid",
-      sequence: "",
-      randomRegion: sequence,
-      coordX: pointX,
-      coordY: pointY,
-      isSelected: false,
-      isShown: true,
-      category: "manual",
-      seriesName: "grid",
-    };
-    dispatch({
-      type: "decodeData/set",
-      payload: newDecodeData,
-    });
+    dispatch(
+      setDecodeGrid({
+        coordX: pointX,
+        coordY: pointY,
+        randomRegion: sequence,
+      })
+    );
   }, [sequence, pointX, pointY]);
 
   const onChangeShowGrid = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({
-      type: "graphConfig/set",
-      payload: {
-        ...graphConfig,
+    dispatch(
+      setGraphConfig({
+        ...graphConfig2,
         showDecodeGrid: e.target.checked,
-      },
-    });
+      })
+    );
   };
 
   return (
     <>
       <Form.Group className="mb-3">
+        {/* {lock.toString()} */}
         <Form.Switch
           label="Show Grid Line"
-          checked={graphConfig.showDecodeGrid}
+          checked={graphConfig2.showDecodeGrid}
           onChange={onChangeShowGrid}
         />
         <InputGroup hasValidation>

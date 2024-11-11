@@ -1,36 +1,31 @@
-import torch
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from core.schemas import RaptGenFreqModel, RaptGenModel
-from sqlalchemy.orm import Session
 import re
-from typing import List, Optional, Union
-from pydantic import BaseModel
-from uuid import uuid4
-import numpy as np
-
-from typing import List, Any, Optional
-from tasks import celery
-import pandas as pd
-from sqlalchemy import func
 import time
+from typing import Any, List, Optional, Union
+from uuid import uuid4
 
-
+import numpy as np
+import pandas as pd
+import torch
+from celery.contrib.abortable import AbortableAsyncResult
 from core.db import (
-    ParentJob,
     ChildJob,
-    SequenceEmbeddings,
-    TrainingLosses,
-    SequenceData,
+    ParentJob,
     PreprocessingParams,
     RaptGenParams,
-    ViewerVAE,
+    SequenceData,
+    SequenceEmbeddings,
+    TrainingLosses,
     ViewerSequenceEmbeddings,
+    ViewerVAE,
     get_db_session,
 )
 from core.jobs import initialize_job_raptgen, run_job_raptgen
-from celery.contrib.abortable import AbortableAsyncResult
-
+from core.schemas import RaptGenFreqModel, RaptGenModel
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+from tasks import celery
 
 router = APIRouter()
 
@@ -542,7 +537,7 @@ async def update_parent_job(
         if isinstance(request.value, str) and len(request.value) > 0:
             setattr(parent_job, request.target, request.value)
             session.commit()
-            return {}
+            return None
         else:
             raise HTTPException(
                 status_code=422,

@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { Form } from "react-bootstrap";
+import { setGraphConfig } from "../../redux/graph-config";
 
 const FormMinCount: React.FC = () => {
   const [value, setValue] = useState<number>(5);
@@ -13,13 +14,12 @@ const FormMinCount: React.FC = () => {
 
   useEffect(() => {
     if (isValid) {
-      dispatch({
-        type: "graphConfig/set",
-        payload: {
+      dispatch(
+        setGraphConfig({
           ...graphConfig,
           minCount: value,
-        },
-      });
+        })
+      );
     }
   }, [isValid, value]);
 

@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { Alert, Button, Form, InputGroup } from "react-bootstrap";
+import { Alert, Button, Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import { uniq } from "lodash";
 
 const downloadText = (text: string, filename: string) => {
   const link = document.createElement("a");
@@ -18,41 +16,30 @@ const downloadText = (text: string, filename: string) => {
 };
 
 const DownloadEncode: React.FC = () => {
-  const [series, setSeries] = useState<string>("");
-
-  const encodeData = useSelector((state: RootState) => state.encodeData);
-  if (encodeData.length === 0) {
+  const encodeData = useSelector(
+    (state: RootState) => state.interactionData.encoded
+  );
+  if (!encodeData.ids.length) {
     return <Alert variant="warning">No encode data</Alert>;
   }
-  const seriesList = uniq(encodeData.map((d) => d.seriesName));
-
   const onDownload = () => {
-    const filteredData = encodeData.filter((d) => d.seriesName === series);
     const header = "id,seq,coordX,coordY";
-    const body = filteredData
-      .map((d) => `${d.id},${d.randomRegion},${d.coordX},${d.coordY}`)
+    const body = encodeData.ids
+      .map(
+        (id, index) =>
+          `${id},` +
+          `${encodeData.randomRegions[index]},` +
+          `${encodeData.coordsX[index]},` +
+          `${encodeData.coordsY}`
+      )
       .join("\n");
     const csv = header + "\n" + body;
-    downloadText(csv, `${series}.csv`);
+    downloadText(csv, `encode.csv`);
   };
 
   return (
     <Form.Group className="mb-3">
-      <InputGroup>
-        <Form.Select id="series" onChange={(e) => setSeries(e.target.value)}>
-          <option value="" selected disabled>
-            select series
-          </option>
-          {seriesList.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </Form.Select>
-        <Button variant="primary" onClick={onDownload} disabled={series === ""}>
-          Download
-        </Button>
-      </InputGroup>
+      <Button onClick={onDownload}>Download</Button>
     </Form.Group>
   );
 };

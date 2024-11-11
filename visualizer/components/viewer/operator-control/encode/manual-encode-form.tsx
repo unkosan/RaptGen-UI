@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
 import { apiClient } from "~/services/api-client";
+import { setEncoded } from "../../redux/interaction-data";
 
 const ManualEncodeForm: React.FC = () => {
   const [value, setValue] = useState<string>("");
@@ -14,10 +15,9 @@ const ManualEncodeForm: React.FC = () => {
   const sessionId = useSelector(
     (state: RootState) => state.sessionConfig.sessionId
   );
-  const manualEncodeCount = useSelector(
-    (state: RootState) => state.sessionConfig.manualEncodeCount
+  const encodedData2 = useSelector(
+    (state: RootState) => state.interactionData.encoded
   );
-  const encodeData = useSelector((state: RootState) => state.encodeData);
 
   useEffect(() => {
     setIsValid(/^[ACGTUacgtu]+$/.test(value));
@@ -36,34 +36,20 @@ const ManualEncodeForm: React.FC = () => {
       return;
     }
 
-    const res = await apiClient.encode({
+    const encodeRes = await apiClient.encode({
       session_uuid: sessionId,
       sequences: [value],
     });
 
-    const coord_x = res.coords_x[0];
-    const coord_y = res.coords_y[0];
-    let newEncodeData = [...encodeData];
-    newEncodeData.push({
-      key: manualEncodeCount,
-      id: `manual-${manualEncodeCount}`,
-      sequence: "",
-      randomRegion: value,
-      coordX: coord_x,
-      coordY: coord_y,
-      isSelected: false,
-      isShown: true,
-      category: "manual",
-      seriesName: "manual",
-    });
-    dispatch({
-      type: "encodeData/set",
-      payload: newEncodeData,
-    });
-    dispatch({
-      type: "sessionConfig/incrementEncodeCount",
-      payload: null,
-    });
+    dispatch(
+      setEncoded({
+        ids: encodedData2.ids.concat(`manual-${encodedData2.ids.length}`),
+        randomRegions: encodedData2.randomRegions.concat(value),
+        coordsX: encodedData2.coordsX.concat(encodeRes.coords_x[0]),
+        coordsY: encodedData2.coordsY.concat(encodeRes.coords_y[0]),
+        shown: encodedData2.shown.concat(true),
+      })
+    );
     setValue("");
   };
 

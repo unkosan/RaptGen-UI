@@ -1,4 +1,3 @@
-import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import CustomDataGrid from "~/components/common/custom-datagrid";
@@ -11,12 +10,12 @@ const columnsCountTable = [
 
 const columnsSequenceTable = [
   { name: "id", type: "number", label: "ID", defaultVisible: false },
-  { name: "sequence", header: "Sequence", defaultFlex: 1 },
-  { name: "duplicate", header: "Duplicate", type: "number" },
+  { name: "sequence", header: "Random Regions", defaultFlex: 1 },
+  { name: "duplicate", header: "Duplicates", type: "number" },
 ];
 
 const gridStyleCountTable = {
-  minHeight: 200,
+  minHeight: 250,
   width: "100%",
   zIndex: 1000,
   marginBlock: "1rem",
@@ -29,80 +28,56 @@ const gridStyleSequenceTable = {
   marginBlock: "1rem",
 };
 
-const CountTable: React.FC = () => {
-  const selexData = useSelector((state: RootState) => state.selexData);
+const Tables: React.FC = () => {
+  const {
+    filteredRandomRegions,
+    filteredDuplicates,
+    totalCount,
+    uniqueCount,
+    validSequenceCount,
+    duplicateFilteredCount,
+    uniqueRatio,
+  } = useSelector((state: RootState) => state.selexData);
 
-  const dataTable = [
-    { id: 0, item: "Total Entry Count", duplicate: selexData.totalLength },
+  const propertiesDataSource = [
+    { id: 0, item: "Total Entry Count", duplicate: totalCount },
+    { id: 1, item: "Uniquified Entry Count", duplicate: uniqueCount },
     {
-      id: 1,
-      item: "Uniquified Entry Count",
-      duplicate: selexData.uniqueLength,
+      id: 2,
+      item: "Adapters Matched Count (uniquified)",
+      duplicate: validSequenceCount,
     },
-    { id: 2, item: "Adapters Matched", duplicate: selexData.matchedLength },
     {
       id: 3,
-      item: "Unique Ratio",
-      duplicate: selexData.uniqueRatio,
+      item: "Min-count Filtered (uniquified)",
+      duplicate: duplicateFilteredCount,
     },
+    { id: 4, item: "Unique Ratio", duplicate: uniqueRatio },
   ];
+  const filteredDataSource = filteredRandomRegions.map((seq, i) => {
+    return { id: i, sequence: seq, duplicate: filteredDuplicates[i] };
+  });
 
-  return (
-    <CustomDataGrid
-      idProperty="id"
-      columns={columnsCountTable}
-      dataSource={dataTable}
-      style={gridStyleCountTable}
-      rowStyle={{
-        fontFamily: "monospace",
-      }}
-    />
-  );
-};
-
-const SequenceTable: React.FC = () => {
-  const selexData = useSelector((state: RootState) => state.selexData);
-  const preprocessingConfig = useSelector(
-    (state: RootState) => state.preprocessingConfig
-  );
-
-  const seqs = selexData.randomRegions.filter(
-    (_, index) =>
-      selexData.adapterMatched[index] &&
-      selexData.duplicates[index] >= (preprocessingConfig.minCount as number)
-  );
-  const dups = selexData.duplicates.filter(
-    (_, index) =>
-      selexData.adapterMatched[index] &&
-      selexData.duplicates[index] >= (preprocessingConfig.minCount as number)
-  );
-
-  let dataSource = [];
-  for (let i = 0; i < seqs.length; i++) {
-    dataSource.push({
-      id: i,
-      sequence: seqs[i],
-      duplicate: dups[i],
-    });
-  }
-  return (
-    <CustomDataGrid
-      idProperty="id"
-      columns={columnsSequenceTable}
-      dataSource={dataSource}
-      style={gridStyleSequenceTable}
-      rowStyle={{
-        fontFamily: "monospace",
-      }}
-    />
-  );
-};
-
-const Tables: React.FC = () => {
   return (
     <>
-      <CountTable />
-      <SequenceTable />
+      <CustomDataGrid
+        idProperty="id"
+        columns={columnsCountTable}
+        dataSource={propertiesDataSource}
+        style={gridStyleCountTable}
+        rowStyle={{
+          fontFamily: "monospace",
+        }}
+      />
+      <CustomDataGrid
+        idProperty="id"
+        columns={columnsSequenceTable}
+        dataSource={filteredDataSource}
+        style={gridStyleSequenceTable}
+        rowStyle={{
+          fontFamily: "monospace",
+        }}
+      />
     </>
   );
 };

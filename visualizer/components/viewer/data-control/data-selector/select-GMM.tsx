@@ -4,6 +4,7 @@ import { RootState } from "../../redux/store";
 import { Form } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
+import { setGmmId } from "../../redux/session-config";
 
 const SelectGMM: React.FC = () => {
   const [models, setModels] = useState<
@@ -15,107 +16,39 @@ const SelectGMM: React.FC = () => {
   const [id, setId] = useState<string>("");
 
   const dispatch = useDispatch();
-  const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
 
-  // retrieve GMM model names
   useEffect(() => {
     (async () => {
-      if (sessionConfig.vaeId === "") {
+      if (!sessionConfig.vaeId) {
         return;
       }
 
-      try {
-        const res = await apiClient.getGMMModelNames({
-          queries: {
-            vae_uuid: sessionConfig.vaeId,
-          },
-        });
+      const res = await apiClient.getGMMModelNames({
+        queries: {
+          vae_uuid: sessionConfig.vaeId,
+        },
+      });
+      setModels(res.entries);
 
-        setModels(res.entries);
-        if (res.entries.length > 0) {
-          setId(res.entries[0].uuid);
-        } else {
-          setId("");
-        }
-      } catch (e) {
-        console.error(e);
-        return;
+      if (res.entries.length > 0) {
+        setId(res.entries[0].uuid);
+        dispatch(setGmmId(res.entries[0].uuid));
+      } else {
+        setId("");
+        dispatch(setGmmId(""));
       }
     })();
   }, [sessionConfig.vaeId]);
 
-  // dispatch model names to redux store
-  useEffect(() => {
-    if (id === "") {
-      return;
-    }
-    dispatch({
-      type: "sessionConfig/set",
-      payload: {
-        ...sessionConfig,
-        gmmId: id,
-      },
-    });
-    dispatch({
-      type: "graphConfig/set",
-      payload: {
-        ...graphConfig,
-        gmmName: models.find((model) => model.uuid === id)?.name,
-      },
-    });
-  }, [id]);
-
-  // retrieve GMM data and dispatch to redux store
-  useEffect(() => {
-    (async () => {
-      if (!sessionConfig.sessionId) {
-        return;
-      }
-
-      if (!sessionConfig.gmmId) {
-        dispatch({
-          type: "gmmData/set",
-          payload: {
-            weights: [],
-            means: [],
-            covariances: [],
-            decodedSequences: [],
-            isShown: [],
-          },
-        });
-        return;
-      }
-
-      const res = await apiClient.getGMMModel({
-        queries: {
-          gmm_uuid: sessionConfig.gmmId,
-        },
-      });
-
-      const resCoords = await apiClient.decode({
-        session_uuid: sessionConfig.sessionId,
-        coords_x: res.means.map((value) => value[0]),
-        coords_y: res.means.map((value) => value[1]),
-      });
-
-      dispatch({
-        type: "gmmData/set",
-        payload: {
-          weights: res.weights,
-          means: res.means,
-          covariances: res.covariances,
-          decodedSequences: resCoords.sequences,
-          isShown: Array(res.weights.length).fill(true),
-        },
-      });
-    })();
-  }, [sessionConfig]);
-  // use sessionId instead of graphConfig.vaeName to access the VAE name changed by the user
+  const onChangeGMM = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setId(e.target.value);
+    dispatch(setGmmId(e.target.value));
+  };
 
   return (
     <>
-      <Form.Select value={id} onChange={(e) => setId(e.target.value)}>
+      <Form.Select value={id} onChange={onChangeGMM}>
         {models.map((model, index) => (
           <option key={index} value={model.uuid}>
             {model.name}

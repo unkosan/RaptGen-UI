@@ -1,92 +1,102 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { apiClient } from "~/services/api-client";
+import { RootState } from "./store";
 
-type SessionConfig = {
-  sessionId: string;
-  vaeId: string;
-  gmmId: string;
-  manualEncodeCount: number;
-  manualDecodeCount: number;
-  forwardAdapter: string;
-  reverseAdapter: string;
+interface SessionConfigState {
+  sessionId: string; // uuid of the vae inference session
+  vaeId: string; // uuid of the vae model
+  gmmId: string; // uuid of the gmm model
+  vaeName: string;
+  gmmName: string;
+}
+
+const initialState: SessionConfigState = {
+  sessionId: "",
+  vaeId: "",
+  gmmId: "",
+  vaeName: "",
+  gmmName: "",
 };
 
-const sessionConfigSlice = createSlice({
-  name: "sessionConfig",
-  initialState: {
-    sessionId: "",
-    vaeId: "",
-    gmmId: "",
-    manualEncodeCount: 0,
-    manualDecodeCount: 1,
-    forwardAdapter: "",
-    reverseAdapter: "",
+const setSessionConfigByVaeIdName = createAsyncThunk<
+  SessionConfigState,
+  {
+    vaeId: string;
+    vaeName?: string;
   },
+  {
+    state: RootState;
+  }
+>(
+  "sessionConfig2/setByVaeIdName",
+  async (
+    vaeConfig: {
+      vaeId: string;
+      vaeName?: string;
+    },
+    thunkAPI
+  ) => {
+    const currentState: RootState = thunkAPI.getState();
+
+    try {
+      let newSessionId = "";
+      if (vaeConfig.vaeId !== "") {
+        const resStart = await apiClient.startSession({
+          queries: {
+            vae_uuid: vaeConfig.vaeId,
+          },
+        });
+        newSessionId = resStart.uuid;
+      }
+
+      if (currentState.sessionConfig.sessionId !== "") {
+        await apiClient.endSession({
+          queries: {
+            session_uuid: currentState.sessionConfig.sessionId,
+          },
+        });
+      }
+
+      return {
+        sessionId: newSessionId,
+        vaeId: vaeConfig.vaeId,
+        vaeName: vaeConfig.vaeName || "",
+        gmmId: "",
+        gmmName: "",
+      };
+    } catch (error) {
+      console.error(error);
+      return initialState;
+    }
+  }
+);
+
+const sessionConfigSlice = createSlice({
+  name: "sessionConfig2",
+  initialState,
   reducers: {
-    set: (state: SessionConfig, action: PayloadAction<SessionConfig>) => {
+    setSessionConfig: (state, action: PayloadAction<SessionConfigState>) => {
       return action.payload;
     },
-    // setSessionId: (state: SessionConfig, action: PayloadAction<string>) => {
-    //   return {
-    //     ...state,
-    //     sessionId: action.payload,
-    //   };
-    // },
-    // setVaeId: (state: SessionConfig, action: PayloadAction<string>) => {
-    //   return {
-    //     ...state,
-    //     vaeId: action.payload,
-    //   };
-    // },
-    // setGmmId: (state: SessionConfig, action: PayloadAction<string>) => {
-    //   return {
-    //     ...state,
-    //     gmmId: action.payload,
-    //   };
-    // },
-    resetEncodeCount: (state: SessionConfig, action: PayloadAction<null>) => {
-      return {
-        ...state,
-        manualEncodeCount: 0,
-      };
+    setGmmId: (state, action: PayloadAction<string>) => {
+      state.gmmId = action.payload;
+      return state;
     },
-    incrementEncodeCount: (
-      state: SessionConfig,
-      action: PayloadAction<null>
-    ) => {
-      return {
-        ...state,
-        manualEncodeCount: state.manualEncodeCount + 1,
-      };
-    },
-    resetDecodeCount: (state: SessionConfig, action: PayloadAction<null>) => {
-      return {
-        ...state,
-        manualDecodeCount: 0,
-      };
-    },
-    incrementDecodeCount: (
-      state: SessionConfig,
-      action: PayloadAction<null>
-    ) => {
-      return {
-        ...state,
-        manualDecodeCount: state.manualDecodeCount + 1,
-      };
-    },
-    setAdapters: (
-      state: SessionConfig,
-      action: PayloadAction<{ forwardAdapter: string; reverseAdapter: string }>
-    ) => {
-      return {
-        ...state,
-        forwardAdapter: action.payload.forwardAdapter,
-        reverseAdapter: action.payload.reverseAdapter,
-      };
-    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(setSessionConfigByVaeIdName.fulfilled, (state, action) => {
+      state.sessionId = action.payload.sessionId;
+      state.vaeId = action.payload.vaeId;
+      state.gmmId = action.payload.gmmId;
+      state.vaeName = action.payload.vaeName;
+      state.gmmName = action.payload.gmmName;
+    });
   },
 });
 
 const sessionConfigReducer = sessionConfigSlice.reducer;
 
 export default sessionConfigReducer;
-export type { SessionConfig };
+export const { setSessionConfig, setGmmId } = sessionConfigSlice.actions;
+export type { SessionConfigState };
+export { setSessionConfigByVaeIdName };

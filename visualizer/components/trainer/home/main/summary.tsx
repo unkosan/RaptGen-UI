@@ -18,24 +18,6 @@ type CellProps = {
   };
 };
 
-const DetailButton: React.FC<CellProps> = (props) => {
-  const router = useRouter();
-
-  return (
-    <Button
-      onClick={() => {
-        router.push(
-          `?experiment=${router.query.experiment}&job=${props.data.id}`,
-          undefined,
-          { scroll: false }
-        );
-      }}
-    >
-      Go Detail
-    </Button>
-  );
-};
-
 const columns = [
   { name: "id", type: "number", header: "ID", width: 60 },
   {

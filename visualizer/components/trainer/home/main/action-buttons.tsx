@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge, Button, Form, Modal } from "react-bootstrap";
 import { apiClient } from "~/services/api-client";
 
-export const StopButton: React.FC<{ uuid: string }> = ({ uuid }) => {
+export const StopButton: React.FC<{
+  uuid: string;
+  updateFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, updateFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -20,8 +23,9 @@ export const StopButton: React.FC<{ uuid: string }> = ({ uuid }) => {
           </Button>
           <Button
             variant="warning"
-            onClick={() => {
-              apiClient.postSuspend({ uuid });
+            onClick={async () => {
+              await apiClient.postSuspend({ uuid });
+              await updateFunc(uuid);
               setIsModalOpen(false);
             }}
           >
@@ -44,7 +48,10 @@ export const StopButton: React.FC<{ uuid: string }> = ({ uuid }) => {
   );
 };
 
-export const ResumeButton: React.FC<{ uuid: string }> = ({ uuid }) => {
+export const ResumeButton: React.FC<{
+  uuid: string;
+  updateFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, updateFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -62,8 +69,9 @@ export const ResumeButton: React.FC<{ uuid: string }> = ({ uuid }) => {
           </Button>
           <Button
             variant="success"
-            onClick={() => {
-              apiClient.postResume({ uuid });
+            onClick={async () => {
+              await apiClient.postResume({ uuid });
+              await updateFunc(uuid);
               setIsModalOpen(false);
             }}
           >
@@ -86,7 +94,10 @@ export const ResumeButton: React.FC<{ uuid: string }> = ({ uuid }) => {
   );
 };
 
-export const DeleteButton: React.FC<{ uuid: string }> = ({ uuid }) => {
+export const DeleteButton: React.FC<{
+  uuid: string;
+  updateFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, updateFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -104,10 +115,11 @@ export const DeleteButton: React.FC<{ uuid: string }> = ({ uuid }) => {
           </Button>
           <Button
             variant="danger"
-            onClick={() => {
-              apiClient.deleteItem(undefined, {
+            onClick={async () => {
+              await apiClient.deleteItem(undefined, {
                 params: { parent_uuid: uuid },
               });
+              await updateFunc(uuid);
               setIsModalOpen(false);
             }}
           >
@@ -125,6 +137,69 @@ export const DeleteButton: React.FC<{ uuid: string }> = ({ uuid }) => {
         style={{ cursor: "pointer" }}
       >
         Delete
+      </Badge>
+    </>
+  );
+};
+
+export const RenameButton: React.FC<{
+  uuid: string;
+  defaultName: string;
+  updateFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, defaultName, updateFunc }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [name, setName] = useState(defaultName);
+
+  useEffect(() => {
+    setName(defaultName);
+  }, [defaultName]);
+
+  return (
+    <>
+      <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Rename Experiment</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Enter the new name of the experiment.</p>
+          <Form.Control
+            type="text"
+            placeholder="Experiment Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="success"
+            onClick={async () => {
+              await apiClient.patchItem(
+                { target: "name", value: name },
+                {
+                  params: { parent_uuid: uuid },
+                }
+              );
+              await updateFunc(uuid);
+              setIsModalOpen(false);
+            }}
+          >
+            Rename
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Badge
+        pill
+        bg="success"
+        className="mx-1"
+        onClick={() => {
+          setIsModalOpen(true);
+        }}
+        style={{ cursor: "pointer" }}
+      >
+        Rename
       </Badge>
     </>
   );

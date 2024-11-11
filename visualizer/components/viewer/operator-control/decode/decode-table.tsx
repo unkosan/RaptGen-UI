@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { apiClient } from "~/services/api-client";
 import CustomDataGrid from "~/components/common/custom-datagrid";
+import { setDecoded } from "../../redux/interaction-data";
 
 type CoordEditorProps = {
   value: number;
@@ -21,7 +22,9 @@ const CoordEditor: React.FC<CoordEditorProps> = (props) => {
   const [valid, setValid] = useState<boolean>(true);
 
   const dispatch = useDispatch();
-  const decodeData = useSelector((state: RootState) => state.decodeData);
+  const decodeData = useSelector(
+    (state: RootState) => state.interactionData.decoded
+  );
 
   const sessionId = useSelector(
     (state: RootState) => state.sessionConfig.sessionId
@@ -42,32 +45,30 @@ const CoordEditor: React.FC<CoordEditorProps> = (props) => {
   }, [valueX, valueY]);
 
   const onConfirmClick = async () => {
-    const key: number = props.cellProps.data.key;
-    const idx = decodeData.findIndex((e) => e.key === key);
-    const newDecodeData = [...decodeData];
+    const res = await apiClient.decode({
+      session_uuid: sessionId,
+      coords_x: [parseFloat(valueX)],
+      coords_y: [parseFloat(valueY)],
+    });
 
-    try {
-      const res = await apiClient.decode({
-        session_uuid: sessionId,
-        coords_x: [parseFloat(valueX)],
-        coords_y: [parseFloat(valueY)],
-      });
+    const index: number = props.cellProps.data.key;
+    const sequence = res.sequences[0];
+    dispatch(
+      setDecoded({
+        ...decodeData,
+        coordsX: decodeData.coordsX.map((e, i) =>
+          i === index ? parseFloat(valueX) : e
+        ),
+        coordsY: decodeData.coordsY.map((e, i) =>
+          i === index ? parseFloat(valueY) : e
+        ),
+        randomRegions: decodeData.randomRegions.map((region, i) =>
+          i === index ? sequence : region
+        ),
+      })
+    );
 
-      newDecodeData[idx] = {
-        ...newDecodeData[idx],
-        randomRegion: res.sequences[0],
-        sequence: "",
-      };
-
-      dispatch({
-        type: "decodeData/set",
-        payload: newDecodeData,
-      });
-    } catch (e) {
-      console.error(e);
-    } finally {
-      props.onComplete();
-    }
+    props.onComplete();
   };
 
   const style = Object.assign(
@@ -163,33 +164,32 @@ type ActionProps = {
 
 const Actions: React.FC<ActionProps> = (props) => {
   const { data } = props;
-  const key = data.key;
+  const index = data.key; // key is index
   const dispatch = useDispatch();
-  const decodeData = useSelector((state: RootState) => state.decodeData);
+  const decodeData = useSelector(
+    (state: RootState) => state.interactionData.decoded
+  );
 
   const onClickShow = async () => {
-    const idx = decodeData.findIndex((e) => e.key === key);
-    const newDecodeData = [...decodeData];
-    newDecodeData[idx] = {
-      ...newDecodeData[idx],
-      isShown: !data.isShown,
-    };
-
-    dispatch({
-      type: "decodeData/set",
-      payload: newDecodeData,
-    });
+    const newShown = decodeData.shown.map((e, i) => (i === index ? !e : e));
+    dispatch(
+      setDecoded({
+        ...decodeData,
+        shown: newShown,
+      })
+    );
   };
 
   const onClickDelete = async () => {
-    const idx = decodeData.findIndex((e) => e.key === key);
-    const newDecodeData = [...decodeData];
-    newDecodeData.splice(idx, 1);
-
-    dispatch({
-      type: "decodeData/set",
-      payload: newDecodeData,
-    });
+    dispatch(
+      setDecoded({
+        ids: decodeData.ids.filter((_, i) => i !== index),
+        coordsX: decodeData.coordsX.filter((_, i) => i !== index),
+        coordsY: decodeData.coordsY.filter((_, i) => i !== index),
+        randomRegions: decodeData.randomRegions.filter((_, i) => i !== index),
+        shown: decodeData.shown.filter((_, i) => i !== index),
+      })
+    );
   };
 
   const showStyle = {
@@ -261,16 +261,22 @@ const columns = [
 const gridStyle = { minHeight: 500, width: "100%", zIndex: 1000 };
 
 const DecodeTable: React.FC = () => {
-  const decodeData = useSelector((state: RootState) => state.decodeData);
-  const data = decodeData.slice(1).map((e) => ({
-    key: e.key,
-    id: e.id,
-    coordX: e.coordX,
-    coordY: e.coordY,
-    randomRegion: e.randomRegion,
-    isShown: e.isShown,
-    coord: "(" + e.coordX.toFixed(3) + ", " + e.coordY.toFixed(3) + ")",
-  }));
+  const decodeData = useSelector(
+    (state: RootState) => state.interactionData.decoded
+  );
+  const data = decodeData.ids.map((id, index) => {
+    const coordX = decodeData.coordsX[index];
+    const coordY = decodeData.coordsY[index];
+    return {
+      key: index, // key is index
+      id: id,
+      coordX: coordX,
+      coordY: coordY,
+      randomRegion: decodeData.randomRegions[index],
+      isShown: decodeData.shown[index],
+      coord: "(" + coordX.toFixed(3) + ", " + coordY.toFixed(3) + ")",
+    };
+  });
 
   return (
     <CustomDataGrid

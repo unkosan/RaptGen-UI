@@ -5,7 +5,6 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const returnLayout = (title: string): Partial<Layout> => {
   return {
-    height: 800,
     title: title,
     plot_bgcolor: "#EDEDED",
     xaxis: {
@@ -90,12 +89,14 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
   }, [vaeData]);
 
   return (
-    <Plot
-      data={[vaeDataPlot]}
-      useResizeHandler={true}
-      layout={returnLayout(title)}
-      config={{ responsive: true }}
-      style={{ width: "100%" }}
-    />
+    <div style={{ aspectRatio: "1 / 1" }}>
+      <Plot
+        data={[vaeDataPlot]}
+        useResizeHandler={true}
+        layout={returnLayout(title)}
+        config={{ responsive: true }}
+        style={{ width: "100%", height: "100%" }}
+      />
+    </div>
   );
 };

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { useDispatch } from "react-redux";
 
 import "@inovua/reactdatagrid-community/index.css";
 import { apiClient } from "~/services/api-client";
@@ -13,11 +12,6 @@ const VAEParamsTable: React.FC = () => {
   );
 
   const vaeId = useSelector((state: RootState) => state.sessionConfig.vaeId);
-
-  const [forwardAdapter, setForwardAdapter] = useState<string>("");
-  const [reverseAdapter, setReverseAdapter] = useState<string>("");
-
-  const dispatch = useDispatch();
 
   useEffect(() => {
     (async () => {
@@ -34,29 +28,11 @@ const VAEParamsTable: React.FC = () => {
         });
 
         setParamsList(res);
-        if (Object.keys(res).includes("forward_adapter")) {
-          setForwardAdapter(res["forward_adapter"]);
-        }
-        if (Object.keys(res).includes("reverse_adapter")) {
-          setReverseAdapter(res["reverse_adapter"]);
-        }
       } catch (e) {
         console.error(e);
       }
     })();
   }, [vaeId]);
-
-  useEffect(() => {
-    (async () => {
-      dispatch({
-        type: "sessionConfig/setAdapters",
-        payload: {
-          forwardAdapter: forwardAdapter,
-          reverseAdapter: reverseAdapter,
-        },
-      });
-    })();
-  }, [forwardAdapter, reverseAdapter]);
 
   const gridStyle = {
     minHeight: 300,
