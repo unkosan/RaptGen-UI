@@ -13,10 +13,26 @@ const parseCsv = (text: string) => {
   const randomRegionIndex = headers.indexOf("random_region");
   if (randomRegionIndex === -1) {
     alert("random_region field is not found");
+    throw new Error("random_region field is not found");
   }
   const seqIdIndex = headers.indexOf("seq_id");
   if (seqIdIndex === -1) {
     alert("seq_id field is not found");
+    throw new Error("seq_id field is not found");
+  }
+
+  const validColumnsLength = headers.filter((header: string) => {
+    return (
+      header !== "random_region" &&
+      header !== "seq_id" &&
+      header !== "" &&
+      header !== "coord_x" &&
+      header !== "coord_y"
+    );
+  }).length;
+  if (validColumnsLength === 0) {
+    alert("No valid columns found");
+    throw new Error("No valid columns found");
   }
 
   let sequenceIndex: number[] = [];
@@ -149,31 +165,30 @@ const InitialDataset: React.FC = () => {
 
     reader.onload = async (e) => {
       const text = e.target?.result as string;
-      let { columnNames, randomRegion, id, sequenceIndex, column, value } =
-        parseCsv(text);
-
-      if (columnNames.length === 0) {
-        alert("No valid columns found");
-        return;
-      }
-
       try {
+        let { columnNames, randomRegion, id, sequenceIndex, column, value } =
+          parseCsv(text);
+
+        if (columnNames.length === 0) {
+          alert("No valid columns found");
+          return;
+        }
+
         const res = await apiClient.encode({
           session_uuid: sessionConfig.sessionId,
           sequences: randomRegion,
         });
 
-        if (
-          columnNames.includes("coord_X") ||
-          columnNames.includes("coord_Y")
-        ) {
+        if (columnNames.includes("coord_X")) {
           columnNames.splice(columnNames.indexOf("coord_X"), 1);
-          columnNames.splice(columnNames.indexOf("coord_Y"), 1);
-          const mask = column.map((c) => c !== "coord_X" && c !== "coord_Y");
-          column = column.filter((_, i) => mask[i]);
-          sequenceIndex = sequenceIndex.filter((_, i) => mask[i]);
-          value = value.filter((_, i) => mask[i]);
         }
+        if (columnNames.includes("coord_Y")) {
+          columnNames.splice(columnNames.indexOf("coord_Y"), 1);
+        }
+        const mask = column.map((c) => c !== "coord_X" && c !== "coord_Y");
+        column = column.filter((_, i) => mask[i]);
+        sequenceIndex = sequenceIndex.filter((_, i) => mask[i]);
+        value = value.filter((_, i) => mask[i]);
 
         setDirty();
 
@@ -232,7 +247,7 @@ const InitialDataset: React.FC = () => {
                   <br />
                   if <code>&apos;coord_x&apos;</code> or{" "}
                   <code>&apos;coord_y&apos;</code> field is included, it will be
-                  removed and reembedded.
+                  removed from the uploaded file to avoid duplication.
                 </div>
               </Tooltip>
             }
