@@ -306,25 +306,21 @@ const Main: React.FC = () => {
     });
     setCurrentModels(runningIndices);
 
-    const successIndices = summary.statuses.flatMap((value, index) => {
-      return value === "success" ? [index] : [];
-    });
+    const successIndices: number[] = summary.statuses.flatMap(
+      (value, index) => {
+        return value === "success" ? [index] : [];
+      }
+    );
     const nlls = summary.minimum_NLLs.flatMap((value, index) => {
       return value === null ? [Infinity] : [value];
     });
-    const argmin =
-      successIndices.length > 1
-        ? successIndices.reduce((acc, index) => {
-            if (nlls[index] < nlls[acc]) {
-              return index;
-            } else {
-              return acc;
-            }
-          })
-        : successIndices.length === 1
-        ? successIndices[0]
-        : null;
-    setOptimalModel(argmin);
+
+    const argmin = _.minBy(successIndices, (index) => nlls[index]);
+    if (argmin === undefined) {
+      setOptimalModel(null);
+    } else {
+      setOptimalModel(argmin);
+    }
 
     if (childId === undefined) {
       (async () => {
