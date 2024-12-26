@@ -10,13 +10,29 @@ const parseCsv = (text: string) => {
   const lines = text.split(/\r\n|\n|\r/);
   let headers = lines[0].split(",");
 
-  const randomRegionIndex = headers.indexOf("random_regions");
+  const randomRegionIndex = headers.indexOf("random_region");
   if (randomRegionIndex === -1) {
-    throw new Error("random_regions field is not found");
+    alert("random_region field is not found");
+    throw new Error("random_region field is not found");
   }
   const seqIdIndex = headers.indexOf("seq_id");
   if (seqIdIndex === -1) {
+    alert("seq_id field is not found");
     throw new Error("seq_id field is not found");
+  }
+
+  const validColumnsLength = headers.filter((header: string) => {
+    return (
+      header !== "random_region" &&
+      header !== "seq_id" &&
+      header !== "" &&
+      header !== "coord_x" &&
+      header !== "coord_y"
+    );
+  }).length;
+  if (validColumnsLength === 0) {
+    alert("No valid columns found");
+    throw new Error("No valid columns found");
   }
 
   let sequenceIndex: number[] = [];
@@ -149,19 +165,30 @@ const InitialDataset: React.FC = () => {
 
     reader.onload = async (e) => {
       const text = e.target?.result as string;
-      const { columnNames, randomRegion, id, sequenceIndex, column, value } =
-        parseCsv(text);
-
-      if (columnNames.length === 0) {
-        alert("No valid columns found");
-        return;
-      }
-
       try {
+        let { columnNames, randomRegion, id, sequenceIndex, column, value } =
+          parseCsv(text);
+
+        if (columnNames.length === 0) {
+          alert("No valid columns found");
+          return;
+        }
+
         const res = await apiClient.encode({
           session_uuid: sessionConfig.sessionId,
           sequences: randomRegion,
         });
+
+        if (columnNames.includes("coord_X")) {
+          columnNames.splice(columnNames.indexOf("coord_X"), 1);
+        }
+        if (columnNames.includes("coord_Y")) {
+          columnNames.splice(columnNames.indexOf("coord_Y"), 1);
+        }
+        const mask = column.map((c) => c !== "coord_X" && c !== "coord_Y");
+        column = column.filter((_, i) => mask[i]);
+        sequenceIndex = sequenceIndex.filter((_, i) => mask[i]);
+        value = value.filter((_, i) => mask[i]);
 
         setDirty();
 
@@ -214,9 +241,13 @@ const InitialDataset: React.FC = () => {
               <Tooltip>
                 <div style={{ textAlign: "left" }}>
                   Upload csv file with headers. The header must contain
-                  <code>&apos;random_regions&apos;</code> and{" "}
+                  <code>&apos;random_region&apos;</code> and{" "}
                   <code>&apos;seq_id&apos;</code>
                   field.
+                  <br />
+                  if <code>&apos;coord_x&apos;</code> or{" "}
+                  <code>&apos;coord_y&apos;</code> field is included, it will be
+                  removed from the uploaded file to avoid duplication.
                 </div>
               </Tooltip>
             }
