@@ -214,7 +214,7 @@ const InitialDataset: React.FC = () => {
               <Tooltip>
                 <div style={{ textAlign: "left" }}>
                   Upload csv file with headers. The header must contain
-                  <code>&apos;random_regions&apos;</code> and{" "}
+                  <code>&apos;random_region&apos;</code> and{" "}
                   <code>&apos;seq_id&apos;</code>
                   field.
                 </div>
