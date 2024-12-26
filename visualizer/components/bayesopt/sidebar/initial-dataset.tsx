@@ -10,13 +10,13 @@ const parseCsv = (text: string) => {
   const lines = text.split(/\r\n|\n|\r/);
   let headers = lines[0].split(",");
 
-  const randomRegionIndex = headers.indexOf("random_regions");
+  const randomRegionIndex = headers.indexOf("random_region");
   if (randomRegionIndex === -1) {
-    throw new Error("random_regions field is not found");
+    alert("random_region field is not found");
   }
   const seqIdIndex = headers.indexOf("seq_id");
   if (seqIdIndex === -1) {
-    throw new Error("seq_id field is not found");
+    alert("seq_id field is not found");
   }
 
   let sequenceIndex: number[] = [];
@@ -149,7 +149,7 @@ const InitialDataset: React.FC = () => {
 
     reader.onload = async (e) => {
       const text = e.target?.result as string;
-      const { columnNames, randomRegion, id, sequenceIndex, column, value } =
+      let { columnNames, randomRegion, id, sequenceIndex, column, value } =
         parseCsv(text);
 
       if (columnNames.length === 0) {
@@ -162,6 +162,18 @@ const InitialDataset: React.FC = () => {
           session_uuid: sessionConfig.sessionId,
           sequences: randomRegion,
         });
+
+        if (
+          columnNames.includes("coord_X") ||
+          columnNames.includes("coord_Y")
+        ) {
+          columnNames.splice(columnNames.indexOf("coord_X"), 1);
+          columnNames.splice(columnNames.indexOf("coord_Y"), 1);
+          const mask = column.map((c) => c !== "coord_X" && c !== "coord_Y");
+          column = column.filter((_, i) => mask[i]);
+          sequenceIndex = sequenceIndex.filter((_, i) => mask[i]);
+          value = value.filter((_, i) => mask[i]);
+        }
 
         setDirty();
 
@@ -217,6 +229,10 @@ const InitialDataset: React.FC = () => {
                   <code>&apos;random_region&apos;</code> and{" "}
                   <code>&apos;seq_id&apos;</code>
                   field.
+                  <br />
+                  if <code>&apos;coord_x&apos;</code> or{" "}
+                  <code>&apos;coord_y&apos;</code> field is included, it will be
+                  removed and reembedded.
                 </div>
               </Tooltip>
             }
