@@ -314,8 +314,8 @@ const Main: React.FC = () => {
     const nlls = summary.minimum_NLLs.flatMap((value, index) => {
       return value === null ? [Infinity] : [value];
     });
-
-    const argmin = _.minBy(successIndices, (index) => nlls[index]);
+    const validNLLs = nlls.map((value) => (isNaN(value) ? Infinity : value));
+    const argmin = _.minBy(successIndices, (index) => validNLLs[index]);
     if (argmin === undefined) {
       setOptimalModel(null);
     } else {
