@@ -55,7 +55,6 @@ const BayesOptConfig: React.FC = () => {
 
   return (
     <>
-      <legend>Bayes-Opt Configuration</legend>
       <Form.Group className="mb-3">
         <Form.Label>Optimization method</Form.Label>
         <Form.Control

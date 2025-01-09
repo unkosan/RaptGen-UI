@@ -63,7 +63,6 @@ export const QueryTable: React.FC = () => {
 
   return (
     <>
-      <legend>Query points by Bayesian Optimization</legend>
       <CustomDataGrid
         columns={[
           { name: "id", header: "ID", defaultVisible: false },

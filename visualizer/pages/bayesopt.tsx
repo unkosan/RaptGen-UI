@@ -388,15 +388,20 @@ const Home: React.FC = () => {
               <div>
                 <Versions />
                 <hr />
+                <legend>VAE model</legend>
                 <VaeSelector />
+                <legend>Initial dataset</legend>
                 <InitialDataset />
+                <legend>Bayes-Opt Configuration</legend>
                 <BayesOptConfig />
               </div>
             </Col>
             <Col>
               <div>
                 <LatentGraph />
+                <legend>Registered values</legend>
                 <RegisteredTable />
+                <legend>Query points by Bayesian Optimization</legend>
                 <QueryTable />
               </div>
             </Col>

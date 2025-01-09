@@ -116,7 +116,6 @@ export const RegisteredTable: React.FC = () => {
 
   return (
     <>
-      <legend>Registered values</legend>
       <CustomDataGrid
         columns={[
           {

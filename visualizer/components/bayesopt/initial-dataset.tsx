@@ -232,7 +232,6 @@ const InitialDataset: React.FC = () => {
 
   return (
     <>
-      <legend>Initial dataset</legend>
       <Form.Group className="mb-3">
         <Form.Label>
           upload csv dataset

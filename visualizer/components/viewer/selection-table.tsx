@@ -65,21 +65,18 @@ const SelectionTable: React.FC = () => {
   ];
 
   return (
-    <>
-      <legend>Selected sequences</legend>
-      <CustomDataGrid
-        idProperty="index"
-        columns={columns}
-        dataSource={plotData}
-        style={gridStyle}
-        filterable
-        defaultFilterValue={filterValue}
-        pagination
-        rowStyle={{ fontFamily: "monospace" }}
-        downloadable
-        copiable
-      />
-    </>
+    <CustomDataGrid
+      idProperty="index"
+      columns={columns}
+      dataSource={plotData}
+      style={gridStyle}
+      filterable
+      defaultFilterValue={filterValue}
+      pagination
+      rowStyle={{ fontFamily: "monospace" }}
+      downloadable
+      copiable
+    />
   );
 };
 

@@ -65,6 +65,7 @@ const Home: React.FC = () => {
             </Col>
             <Col>
               <LatentGraph />
+              <legend>Selected sequences</legend>
               <SelectionTable />
             </Col>
           </Row>

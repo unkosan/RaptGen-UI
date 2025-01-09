@@ -179,7 +179,6 @@ const VaeSelector: React.FC = () => {
 
   return (
     <>
-      <legend>VAE model</legend>
       <Tabs defaultActiveKey="modelSelector" className="mb-3">
         <Tab eventKey="modelSelector" title="Select">
           <Form.Group className="mb-3">
