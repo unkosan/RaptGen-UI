@@ -29,7 +29,7 @@ const Cell: React.FC<CellProps> = (props) => {
 const Home: React.FC = () => {
   return (
     <div className="vh-100 d-flex flex-column">
-      <Navigator currentPage="viewer" />
+      <Navigator currentPage="" />
       <main>
         <Container>
           <h1 style={{ marginTop: "1rem" }}>Home</h1>
