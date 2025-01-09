@@ -10,7 +10,6 @@ import { responseGetGMMJobsItems } from "~/services/route/gmm";
 import ParamsTable from "./params-table";
 import BicGraph from "./bic-graph";
 import LatentGraph from "./latent-graph";
-import { responseGetVAEModelNames } from "~/services/route/data";
 import { ArrowClockwise } from "react-bootstrap-icons";
 
 type JobItem = z.infer<typeof responseGetGMMJobsItems>;
