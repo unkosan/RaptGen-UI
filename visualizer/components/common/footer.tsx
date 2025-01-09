@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Github, House, JournalText } from "react-bootstrap-icons";
 
@@ -14,9 +15,9 @@ export const Footer: React.FC = () => {
               placement="top"
               overlay={<Tooltip id="tooltip-home">Go to the top page</Tooltip>}
             >
-              <a href="/">
+              <Link href="/">
                 <House size={24} color="white" />
-              </a>
+              </Link>
             </OverlayTrigger>
           </li>
           <li className="ms-3">
@@ -24,9 +25,9 @@ export const Footer: React.FC = () => {
               placement="top"
               overlay={<Tooltip id="tooltip-github">GitHub repository</Tooltip>}
             >
-              <a href="https://github.com/unkosan/RaptGen-UI">
+              <Link href="https://github.com/unkosan/RaptGen-UI">
                 <Github size={24} color="white" />
-              </a>
+              </Link>
             </OverlayTrigger>
           </li>
           <li className="ms-3">
@@ -34,9 +35,9 @@ export const Footer: React.FC = () => {
               placement="top"
               overlay={<Tooltip id="tooltip-biorxiv">Preprint</Tooltip>}
             >
-              <a href="https://www.biorxiv.org/">
+              <Link href="https://www.biorxiv.org/">
                 <JournalText size={24} color="white" />
-              </a>
+              </Link>
             </OverlayTrigger>
           </li>
         </ul>
