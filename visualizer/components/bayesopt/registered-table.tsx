@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import CustomDataGrid from "~/components/common/custom-datagrid";
 import { RootState } from "./redux/store";
 import React, { useCallback } from "react";
-import { cloneDeep } from "lodash";
+import { cloneDeep, set } from "lodash";
 import { useDispatch } from "react-redux";
 import { TypeEditInfo } from "@inovua/reactdatagrid-community/types";
 import { TypeOnSelectionChangeArg } from "@inovua/reactdatagrid-community/types/TypeDataGridProps";
@@ -150,12 +150,19 @@ export const RegisteredTable: React.FC = () => {
         checkboxOnlyRowSelect
         copiable
       />
-      <RunBayesOptButton />
     </>
   );
 };
 
-const RunBayesOptButton: React.FC = () => {
+type RunBayesOptButtonProps = {
+  setActiveTab: React.Dispatch<
+    React.SetStateAction<"registered-table" | "query-table">
+  >;
+};
+
+export const RunBayesOptButton: React.FC<RunBayesOptButtonProps> = ({
+  setActiveTab,
+}) => {
   const dispatch = useDispatch();
   const bayesoptConfig = useSelector(
     (state: RootState) => state.bayesoptConfig
@@ -305,6 +312,8 @@ const RunBayesOptButton: React.FC = () => {
           coordY: resBayesopt.acquisition_data.coords_y,
         },
       });
+
+      setActiveTab("query-table");
     } catch (e) {
       console.error(e);
       return;

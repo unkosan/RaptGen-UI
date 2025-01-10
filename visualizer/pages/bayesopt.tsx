@@ -4,12 +4,12 @@ import { NextPage } from "next";
 import { Provider } from "react-redux";
 import { useRouter } from "next/router";
 import { apiClient } from "~/services/api-client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { z } from "zod";
 import Head from "next/head";
 import Navigator from "~/components/common/navigator";
-import { Col, Container, Row, SSRProvider } from "react-bootstrap";
+import { Col, Container, Row, SSRProvider, Tab, Tabs } from "react-bootstrap";
 import { RootState, store } from "~/components/bayesopt/redux/store";
 import { responsePostEncode } from "~/services/route/session";
 import { experimentState } from "~/services/route/bayesopt";
@@ -20,8 +20,11 @@ import VaeSelector from "~/components/bayesopt/vae-selector";
 import InitialDataset from "~/components/bayesopt/initial-dataset";
 import BayesOptConfig from "~/components/bayesopt/bayes-opt-config";
 import { LatentGraph } from "~/components/bayesopt/latent-graph";
-import { RegisteredTable } from "~/components/bayesopt/registered-table";
-import { QueryTable } from "~/components/bayesopt/query-table";
+import {
+  RegisteredTable,
+  RunBayesOptButton,
+} from "~/components/bayesopt/registered-table";
+import { AddQueryButton, QueryTable } from "~/components/bayesopt/query-table";
 
 const InitializeExperimentComponent: React.FC = () => {
   const router = useRouter();
@@ -340,6 +343,9 @@ const Home: React.FC = () => {
   const sessionId = useSelector(
     (state: RootState) => state.sessionConfig.sessionId
   );
+  const [activeTableTab, setActiveTableTab] = useState<
+    "registered-table" | "query-table"
+  >("registered-table");
 
   const pageChangeHandler = () => {
     if (isDirty) {
@@ -397,13 +403,23 @@ const Home: React.FC = () => {
               </div>
             </Col>
             <Col>
-              <div>
-                <LatentGraph />
-                <legend>Registered values</legend>
-                <RegisteredTable />
-                <legend>Query points by Bayesian Optimization</legend>
-                <QueryTable />
-              </div>
+              <LatentGraph />
+              <Tabs
+                defaultActiveKey={"registered-table"}
+                activeKey={activeTableTab}
+                onSelect={(key) =>
+                  setActiveTableTab(key as "registered-table" | "query-table")
+                }
+              >
+                <Tab eventKey="registered-table" title="Registered values">
+                  <RegisteredTable />
+                  <RunBayesOptButton setActiveTab={setActiveTableTab} />
+                </Tab>
+                <Tab eventKey="query-table" title="Query points">
+                  <QueryTable />
+                  <AddQueryButton setActiveTab={setActiveTableTab} />
+                </Tab>
+              </Tabs>
             </Col>
           </Row>
         </Container>

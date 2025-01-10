@@ -139,12 +139,19 @@ export const QueryTable: React.FC = () => {
         onSelectionChange={onSelectionChange}
         checkboxOnlyRowSelect
       />
-      <AddQueryButton />
     </>
   );
 };
 
-const AddQueryButton: React.FC = () => {
+type AddQueryButtonProps = {
+  setActiveTab: React.Dispatch<
+    React.SetStateAction<"registered-table" | "query-table">
+  >;
+};
+
+export const AddQueryButton: React.FC<AddQueryButtonProps> = ({
+  setActiveTab,
+}) => {
   const dispatch = useDispatch();
   const registeredData = useSelector(
     (state: RootState) => state.registeredValues
@@ -211,6 +218,7 @@ const AddQueryButton: React.FC = () => {
       type: "isDirty/set",
       payload: true,
     });
+    setActiveTab("registered-table");
   };
 
   return (
