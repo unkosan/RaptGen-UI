@@ -54,22 +54,20 @@ const ManualEncodeForm: React.FC = () => {
   };
 
   return (
-    <Form.Group className="mb-3">
-      <InputGroup hasValidation>
-        <Form.Control
-          id="newSeqInput"
-          onChange={onSeqChange}
-          value={value}
-          isInvalid={!(isValid || value === "")}
-        />
-        <Button id="addSeqButton" disabled={!isValid} onClick={onAdd}>
-          <Plus size={25} />
-        </Button>
-        <Form.Control.Feedback type="invalid">
-          Please enter a valid sequence.
-        </Form.Control.Feedback>
-      </InputGroup>
-    </Form.Group>
+    <InputGroup hasValidation className="mb-2">
+      <Form.Control
+        id="newSeqInput"
+        onChange={onSeqChange}
+        value={value}
+        isInvalid={!(isValid || value === "")}
+      />
+      <Button id="addSeqButton" disabled={!isValid} onClick={onAdd}>
+        <Plus size={25} />
+      </Button>
+      <Form.Control.Feedback type="invalid">
+        Please enter a valid sequence.
+      </Form.Control.Feedback>
+    </InputGroup>
   );
 };
 

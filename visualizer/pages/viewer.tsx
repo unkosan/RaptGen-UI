@@ -15,7 +15,9 @@ import VAEParamsTable from "~/components/viewer/vae-params-table";
 import GMMParamsTable from "~/components/viewer/gmm-params-table";
 import Encode from "~/components/viewer/encode/encode";
 import Decode from "~/components/viewer/decode/decode";
-import Download from "~/components/viewer/download/download";
+import EncodeTable from "~/components/viewer/encode-table";
+import DecodeTable from "~/components/viewer/decode-table";
+import DownloadCluster from "~/components/viewer/download-cluster";
 
 const Home: React.FC = () => {
   return (
@@ -27,7 +29,7 @@ const Home: React.FC = () => {
           <hr />
           <Row>
             <Col md={4}>
-              <legend>Data</legend>
+              <legend>Data and properties</legend>
               <Tabs
                 defaultActiveKey="dataSelector"
                 id="dataControl"
@@ -46,27 +48,26 @@ const Home: React.FC = () => {
                   <GMMParamsTable />
                 </Tab>
               </Tabs>
-              <legend>Operation</legend>
-              <Tabs
-                defaultActiveKey="encode"
-                id="operatorControl"
-                className="mb-3"
-              >
-                <Tab eventKey="encode" title="Encode">
-                  <Encode />
-                </Tab>
-                <Tab eventKey="decode" title="Decode">
-                  <Decode />
-                </Tab>
-                <Tab eventKey="download" title="Download">
-                  <Download />
-                </Tab>
-              </Tabs>
+              <legend>Encode sequences</legend>
+              <Encode />
+              <legend>Decode latent points</legend>
+              <Decode />
+              <legend>Download clusters</legend>
+              <DownloadCluster />
             </Col>
             <Col>
               <LatentGraph />
-              <legend>Selected sequences</legend>
-              <SelectionTable />
+              <Tabs defaultActiveKey="selected-points" id="interaction-table">
+                <Tab eventKey="selected-points" title="Selected points">
+                  <SelectionTable />
+                </Tab>
+                <Tab eventKey="encoded-sequences" title="Encoded sequences">
+                  <EncodeTable />
+                </Tab>
+                <Tab eventKey="decoded-points" title="Decoded points">
+                  <DecodeTable />
+                </Tab>
+              </Tabs>
             </Col>
           </Row>
         </Container>

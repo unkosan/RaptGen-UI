@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Alert, Form, InputGroup } from "react-bootstrap";
+import { Alert, Card, Form, InputGroup } from "react-bootstrap";
 import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
+import { RootState } from "./redux/store";
 import { cloneDeep } from "lodash";
 import { det, inv, matrix, multiply, subtract, transpose } from "mathjs";
 import { Button } from "react-bootstrap";
@@ -162,33 +162,37 @@ const DownloadCluster: React.FC = () => {
   };
 
   return (
-    <Form.Group className="mb-3">
-      <Form.Switch
-        label="Download as probabilities"
-        checked={asProbs}
-        onChange={() => setAsProbs(!asProbs)}
-      />
-      <Form.Switch
-        label="Download as Fasta format"
-        checked={asFasta}
-        onChange={() => setAsFasta(!asFasta)}
-        disabled={asProbs}
-      />
-      <InputGroup>
-        <Form.Select
-          id="cluster"
-          onChange={(e) => setCluster(parseInt(e.target.value))}
-        >
-          <option value={-1}>All clusters</option>
-          {Array.from(Array(length).keys()).map((i) => (
-            <option key={i} value={i}>
-              {i}
-            </option>
-          ))}
-        </Form.Select>
-        <Button onClick={onDownload}>Download</Button>
-      </InputGroup>
-    </Form.Group>
+    <Card className="mb-3">
+      <Card.Body>
+        <Form.Switch
+          label="Download as probabilities"
+          checked={asProbs}
+          onChange={() => setAsProbs(!asProbs)}
+          className="mb-2"
+        />
+        <Form.Switch
+          label="Download as Fasta format"
+          checked={asFasta}
+          onChange={() => setAsFasta(!asFasta)}
+          disabled={asProbs}
+          className="mb-2"
+        />
+        <InputGroup>
+          <Form.Select
+            id="cluster"
+            onChange={(e) => setCluster(parseInt(e.target.value))}
+          >
+            <option value={-1}>All clusters</option>
+            {Array.from(Array(length).keys()).map((i) => (
+              <option key={i} value={i}>
+                {i}
+              </option>
+            ))}
+          </Form.Select>
+          <Button onClick={onDownload}>Download</Button>
+        </InputGroup>
+      </Card.Body>
+    </Card>
   );
 };
 

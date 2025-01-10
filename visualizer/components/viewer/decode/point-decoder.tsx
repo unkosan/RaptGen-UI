@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../redux/store";
-import { Form, InputGroup } from "react-bootstrap";
+import { Card, Form, InputGroup } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
 import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { apiClient } from "~/services/api-client";
@@ -90,13 +90,14 @@ const PointDecoder: React.FC = () => {
   };
 
   return (
-    <>
-      <Form.Group className="mb-3">
-        {/* {lock.toString()} */}
+    <Card className="mb-3">
+      <Card.Header>Point Decoder Input</Card.Header>
+      <Card.Body>
         <Form.Switch
           label="Show Grid Line"
           checked={graphConfig2.showDecodeGrid}
           onChange={onChangeShowGrid}
+          className="mb-2"
         />
         <InputGroup hasValidation>
           <InputGroup.Text>X :</InputGroup.Text>
@@ -151,8 +152,8 @@ const PointDecoder: React.FC = () => {
             Invalid Y value
           </Form.Control.Feedback>
         </InputGroup>
-      </Form.Group>
-    </>
+      </Card.Body>
+    </Card>
   );
 };
 

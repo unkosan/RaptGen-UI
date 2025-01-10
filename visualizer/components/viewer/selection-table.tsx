@@ -14,7 +14,7 @@ const filterValue = [
   { name: "duplicates", operator: "gte", type: "number", value: 0 },
 ];
 
-const gridStyle = { minHeight: 650, width: "100%", zIndex: 950 };
+const gridStyle = { minHeight: 500, width: "100%", zIndex: 950 };
 
 const SelectionTable: React.FC = () => {
   const selectedPoints = useSelector(

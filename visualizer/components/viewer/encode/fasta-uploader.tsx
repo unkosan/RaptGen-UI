@@ -74,7 +74,7 @@ const FastaUploader: React.FC = () => {
   };
 
   return (
-    <Form.Group className="mb-3">
+    <Form.Group className="">
       <Form.Control type="file" onChange={handleFile} isInvalid={!isValid} />
       <Form.Control.Feedback type="invalid">
         Invalid FASTA file

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
+import { RootState } from "./redux/store";
 import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
 
 import { apiClient } from "~/services/api-client";
 import CustomDataGrid from "~/components/common/custom-datagrid";
-import { setEncoded } from "../redux/interaction-data";
+import { setEncoded } from "./redux/interaction-data";
 
 type EditorProps = {
   value: string;
@@ -321,10 +321,19 @@ const columns = [
     },
   },
   {
-    name: "action",
-    header: "Action",
+    name: "coordX",
+    header: "Coord X",
+    editable: false,
+  },
+  {
+    name: "coordY",
+    header: "Coord Y",
+    editable: false,
+  },
+  {
+    name: "actions",
+    header: "Actions",
     width: 100,
-    defaultVisible: false,
     editable: false,
     render: (props: ActionsProps) => {
       return <Actions {...props} />;
@@ -343,6 +352,8 @@ const EncodeTable: React.FC = () => {
       key: index, // key is index
       id: id,
       randomRegion: encodeData.randomRegions[index],
+      coordX: encodeData.coordsX[index],
+      coordY: encodeData.coordsY[index],
       isShown: encodeData.shown[index],
     };
   });
@@ -358,6 +369,8 @@ const EncodeTable: React.FC = () => {
       defaultLimit={20}
       rowHeight={35}
       style={gridStyle}
+      copiable
+      downloadable
     />
   );
 };

@@ -2,10 +2,10 @@ import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
+import { RootState } from "./redux/store";
 import { apiClient } from "~/services/api-client";
 import CustomDataGrid from "~/components/common/custom-datagrid";
-import { setDecoded } from "../redux/interaction-data";
+import { setDecoded } from "./redux/interaction-data";
 
 type CoordEditorProps = {
   value: number;
@@ -234,11 +234,12 @@ const Actions: React.FC<ActionProps> = (props) => {
 
 const columns = [
   { name: "key", header: "Key", defaultVisible: false, editable: false },
-  { name: "id", header: "ID", defaultVisible: false, editable: false },
+  { name: "id", header: "ID", editable: false },
   {
     name: "coord",
     header: "Coord",
     width: 160,
+    defaultFlex: 1,
     editable: true,
     renderEditor: (props: CoordEditorProps) => <CoordEditor {...props} />,
   },
@@ -252,7 +253,6 @@ const columns = [
     name: "actions",
     header: "Actions",
     width: 100,
-    defaultVisible: false,
     editable: false,
     render: (props: ActionProps) => <Actions {...props} />,
   },
@@ -289,6 +289,8 @@ const DecodeTable: React.FC = () => {
       defaultLimit={20}
       rowHeight={35}
       style={gridStyle}
+      copiable
+      downloadable
     />
   );
 };

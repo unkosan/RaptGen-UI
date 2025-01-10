@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { useDispatch } from "react-redux";
-import { Button, Form, Image } from "react-bootstrap";
+import { Button, Card, Form, Image } from "react-bootstrap";
 import { InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
 import { useCallback, useEffect, useState } from "react";
@@ -126,39 +126,52 @@ const ResultViewer: React.FC = () => {
   };
 
   return (
-    <Form.Group className="mb-3">
-      <InputGroup>
-        <Form.Control value={gridPoint.randomRegion} readOnly />
-        <Button disabled={gridPoint.randomRegion === ""} onClick={onAdd}>
-          <Plus size={25} />
-        </Button>
-      </InputGroup>
-      <Form.Switch
-        label="Show Weblogo"
-        checked={showWeblogo}
-        onChange={() => setShowWeblogo(!showWeblogo)}
-      />
-      <Form.Switch
-        label="Show Secondary Structure"
-        checked={showSecondaryStructure}
-        onChange={() => setShowSecondaryStructure(!showSecondaryStructure)}
-      />
-      {showWeblogo ? (
-        <div>
-          <Form.Label>Weblogo</Form.Label>
-          <Image src={`data:image/png;base64, ${weblogoBase64}`} fluid />
-        </div>
-      ) : null}
-      {showSecondaryStructure ? (
-        <div>
-          <Form.Label>Secondary Structure</Form.Label>
-          <Image
-            src={`data:image/png;base64,${secondaryStructureBase64}`}
-            fluid
-          />
-        </div>
-      ) : null}
-    </Form.Group>
+    <Card className="mb-3">
+      <Card.Header>Point Decoder Output</Card.Header>
+      <Card.Body>
+        <InputGroup className="mb-2">
+          <Form.Control value={gridPoint.randomRegion} readOnly />
+          <Button disabled={gridPoint.randomRegion === ""} onClick={onAdd}>
+            <Plus size={25} />
+          </Button>
+        </InputGroup>
+        <Form.Switch
+          label="Show Weblogo"
+          checked={showWeblogo}
+          onChange={() => setShowWeblogo(!showWeblogo)}
+          className="mb-2"
+        />
+        <Form.Switch
+          label="Show Secondary Structure"
+          checked={showSecondaryStructure}
+          onChange={() => setShowSecondaryStructure(!showSecondaryStructure)}
+          className=""
+        />
+        {showWeblogo ? (
+          <Card className="mt-2">
+            <Card.Header>
+              <Card.Text>Weblogo</Card.Text>
+            </Card.Header>
+            <Card.Body>
+              <Image src={`data:image/png;base64, ${weblogoBase64}`} fluid />
+            </Card.Body>
+          </Card>
+        ) : null}
+        {showSecondaryStructure ? (
+          <Card className="mt-2">
+            <Card.Header>
+              <Card.Text>Secondary Structure</Card.Text>
+            </Card.Header>
+            <Card.Body>
+              <Image
+                src={`data:image/png;base64, ${secondaryStructureBase64}`}
+                fluid
+              />
+            </Card.Body>
+          </Card>
+        ) : null}
+      </Card.Body>
+    </Card>
   );
 };
 
