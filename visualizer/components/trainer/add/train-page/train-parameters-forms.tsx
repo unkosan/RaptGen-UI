@@ -8,7 +8,7 @@ import { setTrainConfig } from "../redux/train-config";
 import { Button } from "react-bootstrap";
 import { useAsyncMemo, useStateWithPredicate } from "~/hooks/common";
 
-const SideBar: React.FC = () => {
+const TrainParametersForms: React.FC = () => {
   const preprocessConfig = useSelector(
     (state: RootState) => state.preprocessingConfig
   );
@@ -261,4 +261,4 @@ const SideBar: React.FC = () => {
   );
 };
 
-export default SideBar;
+export default TrainParametersForms;

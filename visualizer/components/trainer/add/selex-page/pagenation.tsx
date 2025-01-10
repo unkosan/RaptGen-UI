@@ -2,10 +2,10 @@ import { Button, Spinner } from "react-bootstrap";
 import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { RootState } from "../../redux/store";
+import { RootState } from "../redux/store";
 import { useRouter } from "next/router";
-import { preprocessSelexData } from "../../redux/selex-data";
-import { clearPreprocessingDirty } from "../../redux/preprocessing-config";
+import { preprocessSelexData } from "../redux/selex-data";
+import { clearPreprocessingDirty } from "../redux/preprocessing-config";
 import { useIsLoading } from "~/hooks/common";
 
 const Pagination: React.FC = () => {

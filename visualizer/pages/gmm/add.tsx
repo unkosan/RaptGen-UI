@@ -6,9 +6,10 @@ import Navigator from "~/components/common/navigator";
 import { Provider } from "react-redux";
 import { store } from "~/components/gmm/add/redux/store";
 import "@inovua/reactdatagrid-community/index.css";
-import SideBar from "~/components/gmm/add/sidebar";
-import Main from "~/components/gmm/add/main";
+import Forms from "~/components/gmm/add/forms";
 import Footer from "~/components/common/footer";
+import LatentGraph from "~/components/gmm/add/latent-graph";
+import PagenationNav from "~/components/gmm/add/pagenation-nav";
 
 const Home: React.FC = () => {
   return (
@@ -20,10 +21,11 @@ const Home: React.FC = () => {
           <hr />
           <Row>
             <Col md={4}>
-              <SideBar />
+              <Forms />
             </Col>
             <Col>
-              <Main />
+              <LatentGraph />
+              <PagenationNav />
             </Col>
           </Row>
         </Container>

@@ -4,9 +4,10 @@ import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
 import "@inovua/reactdatagrid-community/index.css";
-import SideBar from "~/components/gmm/home/sidebar/sidebar";
 import Main from "~/components/gmm/home/main/main";
 import Footer from "~/components/common/footer";
+import AddJobButton from "~/components/gmm/home/add-job-button";
+import GmmJobsList from "~/components/gmm/home/gmm-jobs-list/gmm-jobs-list";
 
 const Home: React.FC = () => {
   return (
@@ -18,7 +19,8 @@ const Home: React.FC = () => {
           <hr />
           <Row>
             <Col md={4}>
-              <SideBar />
+              <AddJobButton />
+              <GmmJobsList />
             </Col>
             <Col>
               <Main />

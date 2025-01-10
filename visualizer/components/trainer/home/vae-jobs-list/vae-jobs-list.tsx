@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
-import AddJobButton from "./add-job-button";
 import JobCard from "./job-card/job-card";
 import { apiClient } from "~/services/api-client";
 import { responsePostSearchJobs } from "~/services/route/train";
 import { z } from "zod";
-import { useDispatch } from "react-redux";
 import { Alert } from "react-bootstrap";
 import { useRouter } from "next/router";
 
 type Jobs = z.infer<typeof responsePostSearchJobs>;
 
-const SideBar: React.FC = () => {
+const VaeJobsList: React.FC = () => {
   const router = useRouter();
   const experimentId = router.query.experiment as string | undefined;
 
@@ -57,7 +55,6 @@ const SideBar: React.FC = () => {
 
   return (
     <>
-      <AddJobButton />
       <div style={{ height: "1rem" }} />
       <legend>Running</legend>
       {runningJobs.length ? (
@@ -143,4 +140,4 @@ const SideBar: React.FC = () => {
   );
 };
 
-export default SideBar;
+export default VaeJobsList;

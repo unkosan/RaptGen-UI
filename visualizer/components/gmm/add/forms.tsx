@@ -7,7 +7,7 @@ import { apiClient } from "~/services/api-client";
 import IntegerForm from "~/components/uploader/sidebar-vae/optional-params/integer-form";
 import TextForm from "~/components/uploader/sidebar-vae/optional-params/text-form";
 
-const SideBar: React.FC = () => {
+const Forms: React.FC = () => {
   const params = useSelector((state: RootState) => state.params);
   const paramsValid = useSelector((state: RootState) => state.paramsValid);
 
@@ -238,4 +238,4 @@ const SideBar: React.FC = () => {
   );
 };
 
-export default SideBar;
+export default Forms;

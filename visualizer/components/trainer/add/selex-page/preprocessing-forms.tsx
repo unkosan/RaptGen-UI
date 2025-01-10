@@ -21,7 +21,7 @@ const availableModelTypes = [
   // "RfamGen"
 ];
 
-const SideBar: React.FC = () => {
+const PreprocessingForms: React.FC = () => {
   const pageConfig = useSelector((state: RootState) => state.pageConfig);
   const preprocessingConfig = useSelector(
     (state: RootState) => state.preprocessingConfig
@@ -315,4 +315,4 @@ const SideBar: React.FC = () => {
   );
 };
 
-export default SideBar;
+export default PreprocessingForms;

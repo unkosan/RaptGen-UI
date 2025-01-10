@@ -5,15 +5,56 @@ import { Container } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
 import { Provider } from "react-redux";
 import { store } from "~/components/trainer/add/redux/store";
-import SelexPage from "~/components/trainer/add/selex-page/selex-page";
-import TrainPage from "~/components/trainer/add/train-page/train-page";
 import "@inovua/reactdatagrid-community/index.css";
 import { useRouter } from "next/router";
 import Footer from "~/components/common/footer";
+import React from "react";
+import { Col, Row } from "react-bootstrap";
+import PreprocessingForms from "~/components/trainer/add/selex-page/preprocessing-forms";
+import UploadFile from "~/components/trainer/add/selex-page/upload-file";
+import SelexPagenation from "~/components/trainer/add/selex-page/pagenation";
+import TrainPagenation from "~/components/trainer/add/train-page/pagenation";
+import TrainParametersForms from "~/components/trainer/add/train-page/train-parameters-forms";
+import CountTable from "~/components/trainer/add/train-page/count-table";
+import SequenceTable from "~/components/trainer/add/train-page/sequence-table";
+
+const SelexPage: React.FC = () => {
+  return (
+    <div>
+      <Row>
+        <Col md={4}>
+          <PreprocessingForms />
+        </Col>
+        <Col>
+          <legend>SELEX sequences</legend>
+          <UploadFile />
+          <SelexPagenation />
+        </Col>
+      </Row>
+    </div>
+  );
+};
+
+const TrainPage: React.FC = () => {
+  return (
+    <div>
+      <Row>
+        <Col md={4}>
+          <TrainParametersForms />
+        </Col>
+        <Col>
+          <legend>SELEX sequences</legend>
+          <CountTable />
+          <SequenceTable />
+          <TrainPagenation />
+        </Col>
+      </Row>
+    </div>
+  );
+};
 
 const Home: React.FC = () => {
   const router = useRouter();
-
   return (
     <div className="d-flex flex-column vh-100">
       <main>

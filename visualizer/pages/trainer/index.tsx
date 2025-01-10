@@ -3,12 +3,13 @@ import { NextPage } from "next";
 import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
-import SideBar from "~/components/trainer/home/sidebar/sidebar";
+import VaeJobsList from "~/components/trainer/home/vae-jobs-list/vae-jobs-list";
 import { Provider } from "react-redux";
 import { store } from "~/components/trainer/home/redux/store";
 import Main from "~/components/trainer/home/main/main";
 import "@inovua/reactdatagrid-community/index.css";
 import Footer from "~/components/common/footer";
+import AddJobButton from "~/components/trainer/home/add-job-button";
 
 const Home: React.FC = () => {
   return (
@@ -20,7 +21,8 @@ const Home: React.FC = () => {
           <hr />
           <Row>
             <Col md={4}>
-              <SideBar />
+              <AddJobButton />
+              <VaeJobsList />
             </Col>
             <Col>
               <Main />

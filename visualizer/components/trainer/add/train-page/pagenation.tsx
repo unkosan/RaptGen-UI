@@ -1,7 +1,7 @@
 import { Button, Spinner } from "react-bootstrap";
 import { ChevronLeft } from "react-bootstrap-icons";
 import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
+import { RootState } from "../redux/store";
 import { useRouter } from "next/router";
 import { apiClient } from "~/services/api-client";
 import { useIsLoading } from "~/hooks/common";

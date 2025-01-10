@@ -4,9 +4,9 @@ import parseSelex from "~/components/common/parse-selex";
 import { countBy } from "lodash";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
+import { RootState } from "../redux/store";
 import CustomDataGrid from "~/components/common/custom-datagrid";
-import { setSelexDataState } from "../../redux/selex-data";
+import { setSelexDataState } from "../redux/selex-data";
 
 type Props = {};
 

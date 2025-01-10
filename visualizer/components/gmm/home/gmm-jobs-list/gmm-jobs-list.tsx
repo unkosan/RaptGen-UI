@@ -1,30 +1,13 @@
-import Link from "next/link";
-import { Alert, Button } from "react-bootstrap";
-import { PlusLg } from "react-bootstrap-icons";
+import { Alert } from "react-bootstrap";
 import JobCard from "./job-card";
 import { z } from "zod";
 import { responsePostGMMJobsSearch } from "~/services/route/gmm";
 import { useEffect, useState } from "react";
 import { apiClient } from "~/services/api-client";
 
-const AddJobButton: React.FC = () => {
-  return (
-    <Link href="/gmm/add">
-      <div className="d-grid gap-2">
-        <Button variant="primary text-start">
-          <div className="d-flex align-items-center">
-            <PlusLg className="mr-2" />
-            &nbsp; Add a New Training Job
-          </div>
-        </Button>
-      </div>
-    </Link>
-  );
-};
-
 type Jobs = z.infer<typeof responsePostGMMJobsSearch>;
 
-const SideBar: React.FC = () => {
+const GmmJobsList: React.FC = () => {
   const [jobs, setJobs] = useState<Jobs>([]);
   const [runningJobs, setRunningJobs] = useState<Jobs>([]);
   const [finishedJobs, setFinishedJobs] = useState<Jobs>([]);
@@ -60,7 +43,6 @@ const SideBar: React.FC = () => {
 
   return (
     <div>
-      <AddJobButton />
       <div style={{ height: "1rem" }} />
       <legend>Running</legend>
       {runningJobs.length ? (
@@ -98,4 +80,4 @@ const SideBar: React.FC = () => {
   );
 };
 
-export default SideBar;
+export default GmmJobsList;
