@@ -24,7 +24,7 @@ const FormMinCount: React.FC = () => {
   }, [isValid, value]);
 
   return (
-    <Form.Group className="mb-3">
+    <Form.Group className="">
       <Form.Label>Minimum Count</Form.Label>
       <Form.Control
         type="number"

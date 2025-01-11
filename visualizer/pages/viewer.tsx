@@ -30,15 +30,11 @@ const Home: React.FC = () => {
           <Row>
             <Col md={4}>
               <legend>Data and properties</legend>
-              <Tabs
-                defaultActiveKey="dataSelector"
-                id="dataControl"
-                className="mb-3"
-              >
-                <Tab eventKey="dataSelector" title="Select">
+              <Tabs defaultActiveKey="dataSelector" id="dataControl">
+                <Tab eventKey="dataSelector" title="Data">
                   <DataSelector />
                 </Tab>
-                <Tab eventKey="configSelector" title="Config">
+                <Tab eventKey="configSelector" title="Plot Config">
                   <ConfigSelector />
                 </Tab>
                 <Tab eventKey="vaeParamsTable" title="VAE Params">
