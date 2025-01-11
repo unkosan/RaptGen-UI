@@ -10,7 +10,7 @@ import dynamic from "next/dynamic";
 import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import { cloneDeep, zip } from "lodash";
-import { Spinner } from "react-bootstrap";
+import { Card, Spinner } from "react-bootstrap";
 
 import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import { useDispatch } from "react-redux";
@@ -27,7 +27,7 @@ interface PlotSelectionEventAmend extends PlotSelectionEvent {
 
 const returnLayout = (title: string): Partial<Layout> => {
   return {
-    title: title,
+    // title: title,
     plot_bgcolor: "#EDEDED",
     xaxis: {
       color: "#FFFFFF",
@@ -57,6 +57,13 @@ const returnLayout = (title: string): Partial<Layout> => {
       },
     },
     clickmode: "event+select",
+    margin: {
+      l: 20,
+      r: 20,
+      b: 20,
+      t: 20,
+      pad: 4,
+    },
   };
 };
 
@@ -472,49 +479,56 @@ const LatentGraph: React.FC = () => {
   }) as (eventData: PlotSelectionEvent) => void;
 
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100%",
-        aspectRatio: "1 / 1",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      {isLoading ? (
+    <Card className="mb-3">
+      <Card.Header>
+        <Card.Text>Latent space</Card.Text>
+      </Card.Header>
+      <Card.Body>
         <div
-          className="d-flex justify-content-center"
           style={{
-            height: "100%",
+            position: "relative",
+            width: "100%",
+            aspectRatio: "1 / 1",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <div className="mx-auto d-flex align-items-center">
-            <Spinner
-              animation="border"
-              variant="primary"
-              role="status"
-              className="mx-auto"
+          {isLoading ? (
+            <div
+              className="d-flex justify-content-center"
+              style={{
+                height: "100%",
+              }}
+            >
+              <div className="mx-auto d-flex align-items-center">
+                <Spinner
+                  animation="border"
+                  variant="primary"
+                  role="status"
+                  className="mx-auto"
+                />
+                <div className="ms-2 fs-3">Loading...</div>
+              </div>
+            </div>
+          ) : (
+            <Plot
+              data={[
+                vaeDataPlot,
+                ...gmmDataPlot,
+                encodeDataPlot,
+                decodeDataPlot,
+                ...gridPlot,
+                // ...measuredDataPlot,
+              ]}
+              layout={layout}
+              useResizeHandler={true}
+              style={{ width: "100%", height: "100%" }}
+              onSelected={handleSelected}
             />
-            <div className="ms-2 fs-3">Loading...</div>
-          </div>
+          )}
         </div>
-      ) : (
-        <Plot
-          data={[
-            vaeDataPlot,
-            ...gmmDataPlot,
-            encodeDataPlot,
-            decodeDataPlot,
-            ...gridPlot,
-            // ...measuredDataPlot,
-          ]}
-          layout={layout}
-          useResizeHandler={true}
-          style={{ width: "100%", height: "100%" }}
-          onSelected={handleSelected}
-        />
-      )}
-    </div>
+      </Card.Body>
+    </Card>
   );
 };
 
