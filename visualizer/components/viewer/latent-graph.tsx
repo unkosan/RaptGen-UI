@@ -58,11 +58,11 @@ const returnLayout = (title: string): Partial<Layout> => {
     },
     clickmode: "event+select",
     margin: {
-      l: 20,
-      r: 20,
-      b: 20,
-      t: 20,
-      pad: 4,
+      l: 30,
+      r: 30,
+      b: 30,
+      t: 30,
+      pad: 5,
     },
   };
 };

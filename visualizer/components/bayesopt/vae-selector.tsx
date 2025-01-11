@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Form, Tab, Tabs } from "react-bootstrap";
+import { Card, Form, Tab, Tabs } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
@@ -179,35 +179,43 @@ const VaeSelector: React.FC = () => {
 
   return (
     <>
-      <Tabs defaultActiveKey="modelSelector" className="mb-3">
-        <Tab eventKey="modelSelector" title="Select">
-          <Form.Group className="mb-3">
-            <Form.Label>Selected VAE model</Form.Label>
-            <Form.Select value={selectedModel} onChange={onModelChange}>
-              {models.map((model, i) => (
-                <option key={i} value={model.uuid}>
-                  {model.name}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
+      <Tabs defaultActiveKey="modelSelector">
+        <Tab eventKey="modelSelector" title="Data">
+          <Card className="mb-3">
+            <Card.Body>
+              <Form.Group>
+                <Form.Label>Selected VAE model</Form.Label>
+                <Form.Select value={selectedModel} onChange={onModelChange}>
+                  {models.map((model, i) => (
+                    <option key={i} value={model.uuid}>
+                      {model.name}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Card.Body>
+          </Card>
         </Tab>
-        <Tab eventKey="modelConfig" title="Config">
-          <Form.Group className="mb-3">
-            <Form.Label>Minimum count</Form.Label>
-            <Form.Control
-              type="number"
-              value={minimumCount}
-              onChange={onMinimumCountChange}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Switch
-              label="show SELEX dataset"
-              checked={showSelex}
-              onChange={onShowSelexChange}
-            />
-          </Form.Group>
+        <Tab eventKey="modelConfig" title="Plot Config">
+          <Card className="mb-3">
+            <Card.Body>
+              <Form.Group className="mb-3">
+                <Form.Label>Minimum count</Form.Label>
+                <Form.Control
+                  type="number"
+                  value={minimumCount}
+                  onChange={onMinimumCountChange}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Switch
+                  label="show SELEX dataset"
+                  checked={showSelex}
+                  onChange={onShowSelexChange}
+                />
+              </Form.Group>
+            </Card.Body>
+          </Card>
         </Tab>
       </Tabs>
     </>

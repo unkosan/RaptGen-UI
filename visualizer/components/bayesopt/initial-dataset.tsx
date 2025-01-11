@@ -234,7 +234,7 @@ const InitialDataset: React.FC = () => {
     <>
       <Form.Group className="mb-3">
         <Form.Label>
-          upload csv dataset
+          Upload manually curated csv dataset
           <OverlayTrigger
             overlay={
               <Tooltip>
@@ -262,7 +262,7 @@ const InitialDataset: React.FC = () => {
       </Form.Group>
       <Form.Group className="mb-3">
         <Form.Label>
-          or get from registered GMM centers
+          Auto-generate from registered GMM centers
           <OverlayTrigger
             overlay={
               <Tooltip>
