@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { Layout, ViolinData } from "plotly.js";
+import { Card } from "react-bootstrap";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 type BicProps = {
@@ -46,20 +47,38 @@ const BicGraph: React.FC<BicProps> = (props) => {
     },
     height: hues.size * 30 + 200,
     margin: {
-      l: 100,
-      r: 100,
+      l: 50,
+      r: 50,
       b: 50,
       t: 50,
+      pad: 5,
     },
   };
   return (
-    <Plot
-      data={[bicData]}
-      useResizeHandler={true}
-      layout={layout}
-      config={{ responsive: true }}
-      style={{ width: "100%" }}
-    />
+    <Card className="mb-3">
+      <Card.Header>
+        <Card.Text>BIC Distribution</Card.Text>
+      </Card.Header>
+      <Card.Body>
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            aspectRatio: "3 / 2",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Plot
+            data={[bicData]}
+            useResizeHandler={true}
+            layout={layout}
+            config={{ responsive: true }}
+            style={{ width: "100%" }}
+          />
+        </div>
+      </Card.Body>
+    </Card>
   );
 };
 

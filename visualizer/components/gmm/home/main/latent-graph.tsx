@@ -3,13 +3,13 @@ import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import dynamic from "next/dynamic";
 import { Layout, PlotData } from "plotly.js";
 import { useMemo } from "react";
+import { Card } from "react-bootstrap";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const returnLayout = (title: string): Partial<Layout> => {
   return {
-    height: 800,
-    title: title,
+    // title: title,
     plot_bgcolor: "#EDEDED",
     xaxis: {
       color: "#FFFFFF",
@@ -39,6 +39,13 @@ const returnLayout = (title: string): Partial<Layout> => {
       },
     },
     clickmode: "event+select",
+    margin: {
+      l: 30,
+      r: 30,
+      b: 30,
+      t: 30,
+      pad: 5,
+    },
   };
 };
 
@@ -143,13 +150,30 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
   }, [gmmData]);
 
   return (
-    <Plot
-      data={[vaeDataPlot, ...gmmDataPlot]}
-      useResizeHandler={true}
-      layout={returnLayout("")}
-      config={{ responsive: true }}
-      style={{ width: "100%" }}
-    />
+    <Card className="mb-3">
+      <Card.Header>
+        <Card.Text>Latent Space</Card.Text>
+      </Card.Header>
+      <Card.Body>
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            aspectRatio: "10 / 9",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Plot
+            data={[vaeDataPlot, ...gmmDataPlot]}
+            useResizeHandler={true}
+            layout={returnLayout("")}
+            config={{ responsive: true }}
+            style={{ width: "100%", height: "100%" }}
+          />
+        </div>
+      </Card.Body>
+    </Card>
   );
 };
 

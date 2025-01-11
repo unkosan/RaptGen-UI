@@ -288,7 +288,7 @@ const Main: React.FC = () => {
       {jobItem.status !== "failure" && jobItem.status !== "pending" && (
         <>
           <legend>Optimal GMM</legend>
-          <InputGroup>
+          <InputGroup className="mb-3">
             <InputGroup.Text>Number of components</InputGroup.Text>
             <Form.Select
               onChange={(e) => {
@@ -336,7 +336,6 @@ const Main: React.FC = () => {
               covariances: jobItem.gmm.covs,
             }}
           />
-          <legend>BIC distribution</legend>
           <BicGraph
             n_components={jobItem.bic.n_components}
             values={jobItem.bic.bics}
@@ -344,7 +343,6 @@ const Main: React.FC = () => {
           />
         </>
       )}
-      <legend>Parameters</legend>
       <ParamsTable params={jobItem.params} />
       {jobItem.status === "failure" && (
         <Alert variant="danger">
