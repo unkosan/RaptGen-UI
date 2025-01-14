@@ -196,11 +196,14 @@ const LatentGraph: React.FC = () => {
           color: "silver",
         },
       },
-      customdata: randomRegions,
+      customdata: zip(
+        randomRegions,
+        duplicates.map((d) => d.toString())
+      ) as unknown as string[],
       hovertemplate:
         "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
-        "<b>Seq</b>: %{customdata}<br>" +
-        "<b>Duplicates</b>: %{duplicates}",
+        "<b>Seq</b>: %{customdata[0]}<br>" +
+        "<b>Duplicates</b>: %{customdata[1]}",
     };
   }, [selexData, graphConfig.minCount]);
 
@@ -405,7 +408,7 @@ const LatentGraph: React.FC = () => {
             `<b>Weight:</b> ${weightStr}<br>` +
             `<b>Mean:</b> ${meanStr}<br>` +
             `<b>Coval:</b> ${covalStr}<br>` +
-            `<b>Decoded Seq:</b> ${decoded.sequences[i]}<br>`,
+            `<b>Decoded Centroid:</b> ${decoded.sequences[i]}<br>`,
         };
 
         const label: Partial<PlotData> = {
@@ -422,7 +425,7 @@ const LatentGraph: React.FC = () => {
             `<b>Weight:</b> ${weightStr}<br>` +
             `<b>Mean:</b> ${meanStr}<br>` +
             `<b>Coval:</b> ${covalStr}<br>` +
-            `<b>Sequence:</b> ${decoded.sequences[i]}<br>`,
+            `<b>Decoded Sequence:</b> ${decoded.sequences[i]}<br>`,
         };
         gmmPlots.push(...[circle, label]);
       }

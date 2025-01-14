@@ -6,6 +6,7 @@ import { cloneDeep } from "lodash";
 import { det, inv, matrix, multiply, subtract, transpose } from "mathjs";
 import { Button } from "react-bootstrap";
 import { apiClient } from "~/services/api-client";
+import { useAsyncMemo } from "~/hooks/common";
 
 const calcProb = (
   weight: number,
@@ -50,6 +51,32 @@ const DownloadCluster: React.FC = () => {
 
   const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
 
+  const gmm = useAsyncMemo(
+    async () => {
+      if (!sessionConfig.gmmId) {
+        return {
+          weights: [] as number[],
+          means: [] as number[][],
+          covariances: [] as number[][][],
+        };
+      }
+      const gmm = await apiClient.getGMMModel({
+        queries: {
+          gmm_uuid: sessionConfig.gmmId,
+        },
+      });
+      return gmm;
+    },
+    [sessionConfig.gmmId],
+    {
+      weights: [] as number[],
+      means: [] as number[][],
+      covariances: [] as number[][][],
+    }
+  );
+
+  const length = gmm.weights.length;
+
   if (!sessionConfig.gmmId) {
     return <Alert variant="warning">No GMM selected</Alert>;
   }
@@ -58,11 +85,6 @@ const DownloadCluster: React.FC = () => {
     const selex = await apiClient.getSelexData({
       queries: {
         vae_uuid: sessionConfig.vaeId,
-      },
-    });
-    const gmm = await apiClient.getGMMModel({
-      queries: {
-        gmm_uuid: sessionConfig.gmmId,
       },
     });
 
