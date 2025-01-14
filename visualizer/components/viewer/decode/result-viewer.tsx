@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { useDispatch } from "react-redux";
-import { Button, Card, Form, Image } from "react-bootstrap";
+import { Accordion, Button, Card, Form, Image } from "react-bootstrap";
 import { InputGroup } from "react-bootstrap";
 import { Plus } from "react-bootstrap-icons";
 import { useCallback, useEffect, useState } from "react";
@@ -129,47 +129,37 @@ const ResultViewer: React.FC = () => {
     <Card className="mb-3">
       <Card.Header>Point Decoder Output</Card.Header>
       <Card.Body>
-        <InputGroup className="mb-2">
+        <InputGroup className="mb-3">
           <Form.Control value={gridPoint.randomRegion} readOnly />
           <Button disabled={gridPoint.randomRegion === ""} onClick={onAdd}>
             <Plus size={25} />
           </Button>
         </InputGroup>
-        <Form.Switch
-          label="Show Weblogo"
-          checked={showWeblogo}
-          onChange={() => setShowWeblogo(!showWeblogo)}
-          className="mb-2"
-        />
-        <Form.Switch
-          label="Show Secondary Structure"
-          checked={showSecondaryStructure}
-          onChange={() => setShowSecondaryStructure(!showSecondaryStructure)}
-          className=""
-        />
-        {showWeblogo ? (
-          <Card className="mt-2">
-            <Card.Header>
-              <Card.Text>Weblogo</Card.Text>
-            </Card.Header>
-            <Card.Body>
+        <Accordion>
+          <Accordion.Item eventKey="0">
+            <Accordion.Header onClick={() => setShowWeblogo(!showWeblogo)}>
+              Weblogo
+            </Accordion.Header>
+            <Accordion.Body>
               <Image src={`data:image/png;base64, ${weblogoBase64}`} fluid />
-            </Card.Body>
-          </Card>
-        ) : null}
-        {showSecondaryStructure ? (
-          <Card className="mt-2">
-            <Card.Header>
-              <Card.Text>Secondary Structure</Card.Text>
-            </Card.Header>
-            <Card.Body>
+            </Accordion.Body>
+          </Accordion.Item>
+        </Accordion>
+        <Accordion>
+          <Accordion.Item eventKey="0">
+            <Accordion.Header
+              onClick={() => setShowSecondaryStructure(!showSecondaryStructure)}
+            >
+              Secondary Structure
+            </Accordion.Header>
+            <Accordion.Body>
               <Image
                 src={`data:image/png;base64, ${secondaryStructureBase64}`}
                 fluid
               />
-            </Card.Body>
-          </Card>
-        ) : null}
+            </Accordion.Body>
+          </Accordion.Item>
+        </Accordion>
       </Card.Body>
     </Card>
   );
