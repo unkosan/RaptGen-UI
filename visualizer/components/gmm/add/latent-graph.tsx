@@ -1,16 +1,15 @@
 import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
-import { useEffect, useState } from "react";
 import { PlotData, Layout } from "plotly.js";
 import { apiClient } from "~/services/api-client";
 import dynamic from "next/dynamic";
+import { Card } from "react-bootstrap";
+import { useAsyncMemo } from "~/hooks/common";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const returnLayout = (title: string): Partial<Layout> => {
   return {
-    height: 800,
-    title: title,
     plot_bgcolor: "#EDEDED",
     xaxis: {
       color: "#FFFFFF",
@@ -40,22 +39,28 @@ const returnLayout = (title: string): Partial<Layout> => {
       },
     },
     clickmode: "event+select",
+    margin: {
+      l: 30,
+      r: 30,
+      b: 30,
+      t: 30,
+      pad: 5,
+    },
   };
 };
 
 const LatentGraph: React.FC = () => {
   const params = useSelector((state: RootState) => state.params);
-  const [vaeDataPlot, setVaeDataPlot] = useState<Partial<PlotData> | null>(
-    null
-  );
-
-  useEffect(() => {
-    if (params.vaeId === "") {
-      return;
-    }
-
-    (async () => {
-      console.log(params);
+  const vaeDataPlot = useAsyncMemo(
+    async () => {
+      if (params.vaeId === "") {
+        return {
+          x: [],
+          y: [],
+          type: "scattergl",
+          mode: "markers",
+        } as Partial<PlotData>;
+      }
       const res = await apiClient.getSelexData({
         queries: { vae_uuid: params.vaeId },
       });
@@ -80,24 +85,43 @@ const LatentGraph: React.FC = () => {
           "Random Region: %{customdata}" +
           "<extra></extra>",
       };
+      return trace;
+    },
+    [params.vaeId],
+    {
+      x: [],
+      y: [],
+      type: "scattergl",
+      mode: "markers",
+    }
+  );
 
-      setVaeDataPlot(trace);
-    })();
-  }, [params.vaeId]);
-
-  if (!vaeDataPlot) {
-    return <div>Loading...</div>;
-  } else {
-    return (
-      <Plot
-        data={[vaeDataPlot]}
-        useResizeHandler={true}
-        layout={returnLayout("Latent Space")}
-        config={{ responsive: true }}
-        style={{ width: "100%" }}
-      />
-    );
-  }
+  return (
+    <Card className="mb-3">
+      <Card.Header>
+        <Card.Text>Latent Space</Card.Text>
+      </Card.Header>
+      <Card.Body>
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            aspectRatio: "1 / 1",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Plot
+            data={[vaeDataPlot]}
+            useResizeHandler={true}
+            layout={returnLayout("Latent Space")}
+            config={{ responsive: true }}
+            style={{ width: "100%", height: "100%" }}
+          />
+        </div>
+      </Card.Body>
+    </Card>
+  );
 };
 
 export default LatentGraph;

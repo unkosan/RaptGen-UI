@@ -74,7 +74,7 @@ const BicGraph: React.FC<BicProps> = (props) => {
             useResizeHandler={true}
             layout={layout}
             config={{ responsive: true }}
-            style={{ width: "100%" }}
+            style={{ width: "100%", height: "100%" }}
           />
         </div>
       </Card.Body>
