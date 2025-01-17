@@ -43,7 +43,7 @@ const ParamsTable: React.FC<{ params: JobItem["params"] }> = ({ params }) => {
           { item: "Number of trials", value: params.n_trials_per_component },
         ]}
         downloadable
-        style={{ minHeight: 255 }}
+        style={{ minHeight: 251 }}
       />
     </Card>
   );

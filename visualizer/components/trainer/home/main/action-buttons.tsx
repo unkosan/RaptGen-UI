@@ -22,7 +22,7 @@ export const StopButton: React.FC<{
             Cancel
           </Button>
           <Button
-            variant="warning"
+            variant="primary"
             onClick={async () => {
               await apiClient.postSuspend({ uuid });
               await updateFunc(uuid);
@@ -35,7 +35,7 @@ export const StopButton: React.FC<{
       </Modal>
       <Badge
         pill
-        bg="warning"
+        bg="primary"
         className="mx-1"
         onClick={() => {
           setIsModalOpen(true);
@@ -68,7 +68,7 @@ export const ResumeButton: React.FC<{
             Cancel
           </Button>
           <Button
-            variant="success"
+            variant="primary"
             onClick={async () => {
               await apiClient.postResume({ uuid });
               await updateFunc(uuid);
@@ -81,7 +81,7 @@ export const ResumeButton: React.FC<{
       </Modal>
       <Badge
         pill
-        bg="success"
+        bg="primary"
         className="mx-1"
         onClick={() => {
           setIsModalOpen(true);
@@ -174,7 +174,7 @@ export const RenameButton: React.FC<{
             Cancel
           </Button>
           <Button
-            variant="success"
+            variant="primary"
             onClick={async () => {
               await apiClient.patchItem(
                 { target: "name", value: name },
@@ -192,7 +192,7 @@ export const RenameButton: React.FC<{
       </Modal>
       <Badge
         pill
-        bg="success"
+        bg="primary"
         className="mx-1"
         onClick={() => {
           setIsModalOpen(true);
