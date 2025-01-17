@@ -53,7 +53,7 @@ const returnLayout = (title: string): Partial<Layout> => {
     },
     hoverlabel: {
       font: {
-        family: "Courier New",
+        family: "monospace",
       },
     },
     clickmode: "event+select",

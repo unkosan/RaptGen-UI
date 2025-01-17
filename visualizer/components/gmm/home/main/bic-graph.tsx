@@ -46,6 +46,11 @@ const BicGraph: React.FC<BicProps> = (props) => {
       ],
     },
     height: hues.size * 30 + 200,
+    hoverlabel: {
+      font: {
+        family: "monospace",
+      },
+    },
     margin: {
       l: 50,
       r: 50,
