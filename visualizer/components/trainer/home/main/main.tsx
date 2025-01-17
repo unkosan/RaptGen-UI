@@ -202,31 +202,16 @@ const ChildPane: React.FC<{
         </div>
       ) : childItem.status === "pending" ? null : (
         <>
-          <Card className="mb-3">
-            <Card.Header className="d-flex justify-content-between">
-              <span>Latent Space</span>
-              <span>
-                <DownloadCurrentCodesButton
-                  randomRegions={childItem.latent.random_regions}
-                  duplicates={childItem.latent.duplicates}
-                  coordsX={childItem.latent.coords_x}
-                  coordsY={childItem.latent.coords_y}
-                />
-              </span>
-            </Card.Header>
-            <Card.Body>
-              <LatentGraph
-                title={""}
-                vaeData={{
-                  coordsX: childItem.latent.coords_x,
-                  coordsY: childItem.latent.coords_y,
-                  randomRegions: childItem.latent.random_regions,
-                  duplicates: childItem.latent.duplicates,
-                  minCount: 1,
-                }}
-              />
-            </Card.Body>
-          </Card>
+          <LatentGraph
+            title={""}
+            vaeData={{
+              coordsX: childItem.latent.coords_x,
+              coordsY: childItem.latent.coords_y,
+              randomRegions: childItem.latent.random_regions,
+              duplicates: childItem.latent.duplicates,
+              minCount: 1,
+            }}
+          />
 
           <Card className="mb-3">
             <Card.Header className="d-flex justify-content-between">

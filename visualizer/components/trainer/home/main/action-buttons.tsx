@@ -214,9 +214,8 @@ type LatentDataType = {
 };
 export const DownloadCurrentCodesButton: React.FC<LatentDataType> = (props) => {
   return (
-    <Badge
-      pill
-      bg="success"
+    <Button
+      variant="success"
       className="mx-1"
       onClick={() => {
         const csvHeader = "random_region, x, y, duplicate";
@@ -247,8 +246,8 @@ export const DownloadCurrentCodesButton: React.FC<LatentDataType> = (props) => {
       }}
       style={{ cursor: "pointer" }}
     >
-      Download Latent Codes
-    </Badge>
+      Download Latent Points
+    </Button>
   );
 };
 

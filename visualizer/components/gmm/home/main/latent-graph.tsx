@@ -2,8 +2,8 @@ import { cloneDeep, zip } from "lodash";
 import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import dynamic from "next/dynamic";
 import { Layout, PlotData } from "plotly.js";
-import { useMemo } from "react";
-import { Card } from "react-bootstrap";
+import { useMemo, useState } from "react";
+import { Card, Form, InputGroup, Tab, Tabs } from "react-bootstrap";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -65,8 +65,11 @@ type Props = {
 };
 
 const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
+  const [minCount, setMinCount] = useState(5);
+  const [validMinCount, setValidMinCount] = useState(true);
+
   const vaeDataPlot: Partial<PlotData> = useMemo(() => {
-    const { coordsX, coordsY, randomRegions, duplicates, minCount } = vaeData;
+    const { coordsX, coordsY, randomRegions, duplicates } = vaeData;
     const mask = duplicates.map((value) => value >= minCount);
     const trace: Partial<PlotData> = {
       x: coordsX.filter((_, index) => mask[index]),
@@ -91,7 +94,7 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
       zorder: -1, // to show behind GMM, this is implemented in @types/react-plotly
     } as Partial<PlotData>;
     return trace;
-  }, [vaeData]);
+  }, [vaeData, minCount]);
 
   const gmmDataPlot: Partial<PlotData>[] = useMemo(() => {
     if (gmmData.means.length === 0) {
@@ -150,30 +153,55 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
   }, [gmmData]);
 
   return (
-    <Card className="mb-3">
-      <Card.Header>
-        <Card.Text>Latent Space</Card.Text>
-      </Card.Header>
-      <Card.Body>
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            aspectRatio: "10 / 9",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Plot
-            data={[vaeDataPlot, ...gmmDataPlot]}
-            useResizeHandler={true}
-            layout={returnLayout("")}
-            config={{ responsive: true }}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
-      </Card.Body>
-    </Card>
+    // <RangeSlider value={0} min={0} max={1} step={0.01} />
+    <Tabs defaultActiveKey="latent-graph" id="gmm-latent-graph">
+      <Tab eventKey="latent-graph" title="Latent Space">
+        <Card className="mb-3">
+          <Card.Body>
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                aspectRatio: "10 / 9",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Plot
+                data={[vaeDataPlot, ...gmmDataPlot]}
+                useResizeHandler={true}
+                layout={returnLayout("")}
+                config={{ responsive: true }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </div>
+          </Card.Body>
+        </Card>
+      </Tab>
+      <Tab eventKey="plot-config" title="Plot Config">
+        <Card className="mb-3">
+          <Card.Body>
+            <InputGroup className="">
+              <InputGroup.Text>Minimum count</InputGroup.Text>
+              <Form.Control
+                type="number"
+                value={minCount}
+                onChange={(e) => {
+                  const minCount = parseInt(e.target.value);
+                  if (!isNaN(minCount) && minCount > 0) {
+                    setMinCount(minCount);
+                    setValidMinCount(true);
+                  } else {
+                    setValidMinCount(true);
+                  }
+                }}
+                isInvalid={!validMinCount}
+              />
+            </InputGroup>
+          </Card.Body>
+        </Card>
+      </Tab>
+    </Tabs>
   );
 };
 

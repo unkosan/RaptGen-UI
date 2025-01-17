@@ -3,8 +3,9 @@ import { RootState } from "./redux/store";
 import { PlotData, Layout } from "plotly.js";
 import { apiClient } from "~/services/api-client";
 import dynamic from "next/dynamic";
-import { Card } from "react-bootstrap";
+import { Card, Form, InputGroup, Tab, Tabs } from "react-bootstrap";
 import { useAsyncMemo } from "~/hooks/common";
+import { useState } from "react";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -50,6 +51,9 @@ const returnLayout = (title: string): Partial<Layout> => {
 };
 
 const LatentGraph: React.FC = () => {
+  const [minCount, setMinCount] = useState(5);
+  const [validMinCount, setValidMinCount] = useState(true);
+
   const params = useSelector((state: RootState) => state.params);
   const vaeDataPlot = useAsyncMemo(
     async () => {
@@ -65,7 +69,7 @@ const LatentGraph: React.FC = () => {
         queries: { vae_uuid: params.vaeId },
       });
 
-      const mask = res.duplicates.map((value) => value >= 5);
+      const mask = res.duplicates.map((value) => value >= minCount);
       const trace: Partial<PlotData> = {
         x: res.coord_x.filter((_, index) => mask[index]),
         y: res.coord_y.filter((_, index) => mask[index]),
@@ -87,7 +91,7 @@ const LatentGraph: React.FC = () => {
       };
       return trace;
     },
-    [params.vaeId],
+    [params.vaeId, minCount],
     {
       x: [],
       y: [],
@@ -97,30 +101,54 @@ const LatentGraph: React.FC = () => {
   );
 
   return (
-    <Card className="mb-3">
-      <Card.Header>
-        <Card.Text>Latent Space</Card.Text>
-      </Card.Header>
-      <Card.Body>
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            aspectRatio: "1 / 1",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Plot
-            data={[vaeDataPlot]}
-            useResizeHandler={true}
-            layout={returnLayout("Latent Space")}
-            config={{ responsive: true }}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
-      </Card.Body>
-    </Card>
+    <Tabs defaultActiveKey="latent-graph" id="gmm-latent-graph">
+      <Tab eventKey="latent-graph" title="Latent Space">
+        <Card className="mb-3">
+          <Card.Body>
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                aspectRatio: "10 / 9",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Plot
+                data={[vaeDataPlot]}
+                useResizeHandler={true}
+                layout={returnLayout("")}
+                config={{ responsive: true }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </div>
+          </Card.Body>
+        </Card>
+      </Tab>
+      <Tab eventKey="plot-config" title="Plot Config">
+        <Card className="mb-3">
+          <Card.Body>
+            <InputGroup className="">
+              <InputGroup.Text>Minimum count</InputGroup.Text>
+              <Form.Control
+                type="number"
+                value={minCount}
+                onChange={(e) => {
+                  const minCount = parseInt(e.target.value);
+                  if (!isNaN(minCount) && minCount > 0) {
+                    setMinCount(minCount);
+                    setValidMinCount(true);
+                  } else {
+                    setValidMinCount(true);
+                  }
+                }}
+                isInvalid={!validMinCount}
+              />
+            </InputGroup>
+          </Card.Body>
+        </Card>
+      </Tab>
+    </Tabs>
   );
 };
 
