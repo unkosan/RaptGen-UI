@@ -1,21 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
 
 import { apiClient } from "~/services/api-client";
-import CustomDataGrid from "~/components/common/custom-datagrid";
+import CustomDataGrid, {
+  EditorProps,
+} from "~/components/common/custom-datagrid";
 import { setEncoded } from "./redux/interaction-data";
-
-type EditorProps = {
-  value: string;
-  onComplete: () => void;
-  onCancel: () => void;
-  onChange: (value: string) => void;
-  onKeyDown: (e: React.KeyboardEvent) => void;
-  cellProps: any;
-};
 
 const IdEditor: React.FC<EditorProps> = (props) => {
   const [value, setValue] = useState(props.value);
@@ -142,7 +135,6 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
       sequences: [value],
     });
 
-    // const key: number = props.cellProps.data.key;
     const index: number = props.cellProps.data.key;
     const coordX = res.coords_x[0];
     const coordY = res.coords_y[0];
@@ -204,7 +196,7 @@ const SequenceEditor: React.FC<EditorProps> = (props) => {
       <Check2
         size={18}
         style={{
-          cursor: "pointer",
+          cursor: valid ? "pointer" : "not-allowed",
           marginInline: "0.2rem",
           color: valid ? "grey" : "lightgrey",
         }}
@@ -238,8 +230,6 @@ const Actions: React.FC<ActionsProps> = (props) => {
   const encodeData = useSelector(
     (state: RootState) => state.interactionData.encoded
   );
-
-  console.log("Actions", props, data, encodeData);
 
   const onClickShow = async () => {
     const newShown = encodeData.shown.map((e, i) => (i === index ? !e : e));

@@ -151,4 +151,14 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
   );
 };
 
+type EditorProps = {
+  value: string;
+  onComplete: () => void;
+  onCancel: () => void;
+  onChange: (value: string) => void;
+  onKeyDown: (e: React.KeyboardEvent) => void;
+  cellProps: any;
+};
+
 export default CustomDataGrid;
+export type { EditorProps };

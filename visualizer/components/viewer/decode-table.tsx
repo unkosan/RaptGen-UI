@@ -1,48 +1,49 @@
 import { EyeSlash, Eye, Check2, X, Trash } from "react-bootstrap-icons";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import { apiClient } from "~/services/api-client";
-import CustomDataGrid from "~/components/common/custom-datagrid";
+import CustomDataGrid, {
+  EditorProps,
+} from "~/components/common/custom-datagrid";
 import { setDecoded } from "./redux/interaction-data";
 
-type CoordEditorProps = {
-  value: number;
-  onComplete: () => void;
-  onCancel: () => void;
-  onChange: (value: number) => void;
-  onKeyDown: (e: React.KeyboardEvent) => void;
-  cellProps: any;
+const validStyle = (isValid: boolean) => {
+  return Object.assign(
+    {
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      background: "white",
+      color: "inherit",
+      alignItems: "center",
+      position: "absolute",
+      justifyContent: "space-between",
+      left: 0,
+      top: 0,
+    },
+    isValid
+      ? {}
+      : {
+          borderColor: "rgba(255, 0, 0, 0.5)",
+          boxShadow: "0 0 0 2px rgba(255, 0, 0, 0.2)",
+        }
+  ) as React.CSSProperties;
 };
 
-const CoordEditor: React.FC<CoordEditorProps> = (props) => {
+const CoordXEditor: React.FC<EditorProps> = (props) => {
+  const valueY = props.cellProps.data.coordY;
   const [valueX, setValueX] = useState<string>(props.cellProps.data.coordX);
-  const [valueY, setValueY] = useState<string>(props.cellProps.data.coordY);
   const [valid, setValid] = useState<boolean>(true);
 
-  const dispatch = useDispatch();
   const decodeData = useSelector(
     (state: RootState) => state.interactionData.decoded
   );
-
   const sessionId = useSelector(
     (state: RootState) => state.sessionConfig.sessionId
   );
-
-  const onChangeX: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setValueX(e.target.value);
-  };
-
-  const onChangeY: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setValueY(e.target.value);
-  };
-
-  useEffect(() => {
-    const xValid = !isNaN(parseFloat(valueX));
-    const yValid = !isNaN(parseFloat(valueY));
-    setValid(xValid && yValid);
-  }, [valueX, valueY]);
+  const dispatch = useDispatch();
 
   const onConfirmClick = async () => {
     const res = await apiClient.decode({
@@ -71,74 +72,118 @@ const CoordEditor: React.FC<CoordEditorProps> = (props) => {
     props.onComplete();
   };
 
-  const style = Object.assign(
-    {
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      background: "white",
-      color: "inherit",
-      alignItems: "center",
-      position: "absolute",
-      justifyContent: "space-between",
-      left: 0,
-      top: 0,
-    },
-    valid
-      ? {}
-      : {
-          borderColor: "rgba(255, 0, 0, 0.5)",
-          boxShadow: "0 0 0 2px rgba(255, 0, 0, 0.2)",
-        }
-  ) as React.CSSProperties;
-
   return (
     <div
-      style={style}
+      style={validStyle(valid)}
       className="inovua-react-toolkit-text-input InovuaReactDataGrid__cell__editor InovuaReactDataGrid__cell__editor--text  inovua-react-toolkit-text-input--ltr inovua-react-toolkit-text-input--theme-default-light inovua-react-toolkit-text-input--enable-clear-button inovua-react-toolkit-text-input--focused"
     >
-      <div style={{ flex: 1, display: "flex" }}>
-        &#40;
-        <input
-          value={valueX}
-          onChange={onChangeX}
-          style={{
-            width: 0,
-            flexShrink: 1,
-            flexGrow: 1,
-            border: "none",
-            background: "rgba(0, 0, 0, 0.1)",
-            color: "inherit",
-            outline: "none",
-            padding: "0 0.5rem",
-          }}
-        />
-        ,
-        <input
-          value={valueY}
-          onChange={onChangeY}
-          style={{
-            width: 0,
-            flexShrink: 1,
-            flexGrow: 1,
-            border: "none",
-            background: "rgba(0, 0, 0, 0.1)",
-            color: "inherit",
-            outline: "none",
-            padding: "0 0.5rem",
-          }}
-        />
-        &#41;
-      </div>
-
+      <input
+        value={valueX}
+        onChange={(e) => {
+          setValueX(e.target.value);
+          setValid(!isNaN(parseFloat(e.target.value)));
+        }}
+        style={{
+          width: 0,
+          flexShrink: 1,
+          flexGrow: 1,
+          border: "none",
+          background: "transparent",
+          color: "inherit",
+          outline: "none",
+          padding: "0 0.5rem",
+        }}
+      />
       <Check2
         size={18}
         style={{
-          cursor: "pointer",
+          cursor: valid ? "pointer" : "not-allowed",
           marginInline: "0.2rem",
           color: valid ? "grey" : "lightgrey",
         }}
-        onClick={valid ? onConfirmClick : () => {}}
+        onClick={valid ? onConfirmClick : undefined}
+      />
+      <X
+        size={20}
+        style={{ cursor: "pointer", marginInline: "0.2rem", color: "grey" }}
+        onClick={() => {
+          props.onCancel();
+        }}
+      />
+    </div>
+  );
+};
+
+const CoordYEditor: React.FC<EditorProps> = (props) => {
+  const valueX = props.cellProps.data.coordX;
+  const [valueY, setValueY] = useState<string>(props.cellProps.data.coordY);
+  const [valid, setValid] = useState<boolean>(true);
+
+  const dispatch = useDispatch();
+  const decodeData = useSelector(
+    (state: RootState) => state.interactionData.decoded
+  );
+  const sessionId = useSelector(
+    (state: RootState) => state.sessionConfig.sessionId
+  );
+
+  const onConfirmClick = async () => {
+    const res = await apiClient.decode({
+      session_uuid: sessionId,
+      coords_x: [parseFloat(valueX)],
+      coords_y: [parseFloat(valueY)],
+    });
+
+    const index: number = props.cellProps.data.key;
+    const sequence = res.sequences[0];
+    dispatch(
+      setDecoded({
+        ...decodeData,
+        coordsX: decodeData.coordsX.map((e, i) =>
+          i === index ? parseFloat(valueX) : e
+        ),
+        coordsY: decodeData.coordsY.map((e, i) =>
+          i === index ? parseFloat(valueY) : e
+        ),
+        randomRegions: decodeData.randomRegions.map((region, i) =>
+          i === index ? sequence : region
+        ),
+      })
+    );
+
+    props.onComplete();
+  };
+
+  return (
+    <div
+      style={validStyle(valid)}
+      className="inovua-react-toolkit-text-input InovuaReactDataGrid__cell__editor InovuaReactDataGrid__cell__editor--text  inovua-react-toolkit-text-input--ltr inovua-react-toolkit-text-input--theme-default-light inovua-react-toolkit-text-input--enable-clear-button inovua-react-toolkit-text-input--focused"
+    >
+      <input
+        value={valueY}
+        onChange={(e) => {
+          setValueY(e.target.value);
+          setValid(!isNaN(parseFloat(e.target.value)));
+        }}
+        style={{
+          width: 0,
+          flexShrink: 1,
+          flexGrow: 1,
+          border: "none",
+          background: "transparent",
+          color: "inherit",
+          outline: "none",
+          padding: "0 0.5rem",
+        }}
+      />
+      <Check2
+        size={18}
+        style={{
+          cursor: valid ? "pointer" : "not-allowed",
+          marginInline: "0.2rem",
+          color: valid ? "grey" : "lightgrey",
+        }}
+        onClick={valid ? onConfirmClick : undefined}
       />
       <X
         size={20}
@@ -236,18 +281,22 @@ const columns = [
   { name: "key", header: "Key", defaultVisible: false, editable: false },
   { name: "id", header: "ID", editable: false },
   {
-    name: "coord",
-    header: "Coord",
-    width: 160,
-    defaultFlex: 1,
-    editable: true,
-    renderEditor: (props: CoordEditorProps) => <CoordEditor {...props} />,
-  },
-  {
     name: "randomRegion",
     header: "Random Region",
     defaultFlex: 1,
     editable: false,
+  },
+  {
+    name: "coordX",
+    header: "Coord X",
+    editable: true,
+    renderEditor: (props: EditorProps) => <CoordXEditor {...props} />,
+  },
+  {
+    name: "coordY",
+    header: "Coord Y",
+    editable: true,
+    renderEditor: (props: EditorProps) => <CoordYEditor {...props} />,
   },
   {
     name: "actions",
@@ -274,7 +323,6 @@ const DecodeTable: React.FC = () => {
       coordY: coordY,
       randomRegion: decodeData.randomRegions[index],
       isShown: decodeData.shown[index],
-      coord: "(" + coordX.toFixed(3) + ", " + coordY.toFixed(3) + ")",
     };
   });
 
