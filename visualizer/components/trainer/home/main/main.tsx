@@ -21,7 +21,6 @@ import { TrainingParams } from "./training-params";
 import {
   ApplyViewerButton,
   DeleteButton,
-  DownloadCurrentCodesButton,
   DownloadLossesButton,
   RenameButton,
   ResumeButton,
@@ -57,11 +56,14 @@ const ParentPane: React.FC<{
         </div>
       </div>
       <p>
-        <div>Start time: {new Date(item.start * 1000).toLocaleString()}</div>
-        <div>The number of models to train: {item.reiteration}</div>
+        <span className="fw-semibold">Start time: </span>
+        {new Date(item.start * 1000).toLocaleString()}
+        <br />
+        <span className="fw-semibold">The number of models to train: </span>
+        {item.reiteration}
       </p>
       <p className="d-flex align-items-center">
-        <b className="me-2">Actions:</b>
+        <span className="me-2 fw-semibold">Actions: </span>
         {item.status === "progress" ? (
           <StopButton uuid={item.uuid} refreshFunc={refreshFunc} />
         ) : item.status === "suspend" ? (
@@ -176,7 +178,7 @@ const ChildPane: React.FC<{
       </Form.Group>
 
       <p>
-        <>Duration for training: </>
+        <span className="fw-semibold">Duration for training: </span>
         {formatDuration(intervalToDuration({ start: 0, end: net_duration }))}
         {suspend_duration ? (
           <>

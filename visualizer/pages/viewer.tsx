@@ -10,7 +10,6 @@ import SelectionTable from "~/components/viewer/selection-table";
 import "@inovua/reactdatagrid-community/index.css";
 import { Footer } from "~/components/common/footer";
 import DataSelector from "~/components/viewer/data-selector/data-selector";
-import ConfigSelector from "~/components/viewer/config-selector/config-selector";
 import VAEParamsTable from "~/components/viewer/vae-params-table";
 import GMMParamsTable from "~/components/viewer/gmm-params-table";
 import Encode from "~/components/viewer/encode/encode";
