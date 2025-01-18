@@ -182,11 +182,11 @@ const SelectVAE: React.FC = () => {
         </Modal.Header>
         <Modal.Body>
           <p>
-          Are you sure you want to delete the VAE model{" "}
-          <span className="fw-bold">
-            {models.find((model) => model.uuid === selectedId)?.name}
-          </span>
-          ?
+            Are you sure you want to delete the VAE model{" "}
+            <span className="fw-bold">
+              {models.find((model) => model.uuid === selectedId)?.name}
+            </span>
+            ?
           </p>
         </Modal.Body>
         <Modal.Footer>

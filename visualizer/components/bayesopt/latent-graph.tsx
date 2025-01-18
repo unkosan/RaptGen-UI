@@ -4,7 +4,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import React, { useMemo } from "react";
 import { cloneDeep } from "lodash";
-import { Card } from "react-bootstrap";
+import { Card, Tab, Tabs } from "react-bootstrap";
+import PlotConfig from "./plot-config";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -202,28 +203,32 @@ export const LatentGraph: React.FC = () => {
   }
 
   return (
-    <Card className="mb-3">
-      <Card.Header>
-        <Card.Text>Latent space</Card.Text>
-      </Card.Header>
-      <Card.Body>
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            aspectRatio: "10 / 9",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Plot
-            data={plots}
-            layout={returnLayout("Latent Space")}
-            useResizeHandler={true}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
-      </Card.Body>
-    </Card>
+    <Tabs defaultActiveKey="latent-graph" id="latent-graph">
+      <Tab eventKey="latent-graph" title="Latent Space">
+        <Card className="mb-3">
+          <Card.Body>
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                aspectRatio: "10 / 9",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Plot
+                data={plots}
+                layout={returnLayout("Latent Space")}
+                useResizeHandler={true}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </div>
+          </Card.Body>
+        </Card>
+      </Tab>
+      <Tab eventKey="plot-config" title="Plot Config">
+        <PlotConfig />
+      </Tab>
+    </Tabs>
   );
 };

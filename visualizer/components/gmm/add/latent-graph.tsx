@@ -128,8 +128,8 @@ const LatentGraph: React.FC = () => {
       <Tab eventKey="plot-config" title="Plot Config">
         <Card className="mb-3">
           <Card.Body>
-            <InputGroup className="">
-              <InputGroup.Text>Minimum count</InputGroup.Text>
+            <Form.Group className="">
+              <Form.Label>Minimum count</Form.Label>
               <Form.Control
                 type="number"
                 value={minCount}
@@ -144,7 +144,7 @@ const LatentGraph: React.FC = () => {
                 }}
                 isInvalid={!validMinCount}
               />
-            </InputGroup>
+            </Form.Group>
           </Card.Body>
         </Card>
       </Tab>

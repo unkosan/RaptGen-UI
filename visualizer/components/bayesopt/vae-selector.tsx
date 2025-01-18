@@ -137,87 +137,17 @@ const VaeSelector: React.FC = () => {
     }
   };
 
-  const onMinimumCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDirty();
-    setMinimumCount(parseInt(e.currentTarget.value));
-
-    if (isNaN(parseInt(e.currentTarget.value))) {
-      return;
-    }
-
-    try {
-      dispatch({
-        type: "graphConfig/set",
-        payload: {
-          ...graphConfig,
-          minCount: parseInt(e.currentTarget.value),
-        },
-      });
-    } catch (e) {
-      console.error(e);
-      return;
-    }
-  };
-
-  const onShowSelexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDirty();
-    setShowSelex(e.currentTarget.checked);
-
-    try {
-      dispatch({
-        type: "graphConfig/set",
-        payload: {
-          ...graphConfig,
-          showSelex: e.currentTarget.checked,
-        },
-      });
-    } catch (e) {
-      console.error(e);
-      return;
-    }
-  };
-
   return (
     <>
-      <Tabs defaultActiveKey="modelSelector">
-        <Tab eventKey="modelSelector" title="Data">
-          <Card className="mb-3">
-            <Card.Body>
-              <Form.Group>
-                <Form.Label>Selected VAE model</Form.Label>
-                <Form.Select value={selectedModel} onChange={onModelChange}>
-                  {models.map((model, i) => (
-                    <option key={i} value={model.uuid}>
-                      {model.name}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Card.Body>
-          </Card>
-        </Tab>
-        <Tab eventKey="modelConfig" title="Plot Config">
-          <Card className="mb-3">
-            <Card.Body>
-              <Form.Group className="mb-3">
-                <Form.Label>Minimum count</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={minimumCount}
-                  onChange={onMinimumCountChange}
-                />
-              </Form.Group>
-              <Form.Group>
-                <Form.Switch
-                  label="show SELEX dataset"
-                  checked={showSelex}
-                  onChange={onShowSelexChange}
-                />
-              </Form.Group>
-            </Card.Body>
-          </Card>
-        </Tab>
-      </Tabs>
+      <Form.Group className="mb-3">
+        <Form.Select value={selectedModel} onChange={onModelChange}>
+          {models.map((model, i) => (
+            <option key={i} value={model.uuid}>
+              {model.name}
+            </option>
+          ))}
+        </Form.Select>
+      </Form.Group>
     </>
   );
 };

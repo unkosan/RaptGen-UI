@@ -1,7 +1,7 @@
 import { Layout, PlotData } from "plotly.js";
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { Card, Tabs, Tab, InputGroup, Form } from "react-bootstrap";
+import { Card, Tabs, Tab, Form } from "react-bootstrap";
 import { DownloadCurrentCodesButton } from "./action-buttons";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -113,8 +113,8 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
       <Tab eventKey="plot-config" title="Plot Config">
         <Card className="mb-3">
           <Card.Body>
-            <InputGroup className="mb-3">
-              <InputGroup.Text>Minimum count</InputGroup.Text>
+            <Form.Group className="mb-3">
+              <Form.Label>Minimum count</Form.Label>
               <Form.Control
                 type="number"
                 value={minCount}
@@ -129,7 +129,7 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
                 }}
                 isInvalid={!validMinCount}
               />
-            </InputGroup>
+            </Form.Group>
             <DownloadCurrentCodesButton
               randomRegions={vaeData.randomRegions}
               duplicates={vaeData.duplicates}

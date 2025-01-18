@@ -153,7 +153,6 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
   }, [gmmData]);
 
   return (
-    // <RangeSlider value={0} min={0} max={1} step={0.01} />
     <Tabs defaultActiveKey="latent-graph" id="gmm-latent-graph">
       <Tab eventKey="latent-graph" title="Latent Space">
         <Card className="mb-3">
@@ -181,8 +180,8 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
       <Tab eventKey="plot-config" title="Plot Config">
         <Card className="mb-3">
           <Card.Body>
-            <InputGroup className="">
-              <InputGroup.Text>Minimum count</InputGroup.Text>
+            <Form.Group className="">
+              <Form.Label>Minimum count</Form.Label>
               <Form.Control
                 type="number"
                 value={minCount}
@@ -197,7 +196,7 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
                 }}
                 isInvalid={!validMinCount}
               />
-            </InputGroup>
+            </Form.Group>
           </Card.Body>
         </Card>
       </Tab>

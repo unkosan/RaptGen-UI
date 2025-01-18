@@ -7,14 +7,14 @@ const ConfigSelector: React.FC = () => {
   return (
     <Card className="mb-3">
       <Card.Body>
-        <Form.Group className="mb-3">
-          <ShowGMM />
-        </Form.Group>
         {/* <Form.Group className="mb-3">
         <ShowMeasured />
       </Form.Group> */}
-        <Form.Group className="">
+        <Form.Group className="mb-3">
           <FormMinCount />
+        </Form.Group>
+        <Form.Group className="">
+          <ShowGMM />
         </Form.Group>
       </Card.Body>
     </Card>

@@ -42,17 +42,6 @@ const BayesOptConfig: React.FC = () => {
     });
   };
 
-  const onChangeShowContour = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDirty();
-    dispatch({
-      type: "graphConfig/set",
-      payload: {
-        ...graphConfig,
-        showAcquisition: e.target.checked,
-      },
-    });
-  };
-
   return (
     <>
       <Form.Group className="mb-3">
@@ -82,13 +71,6 @@ const BayesOptConfig: React.FC = () => {
           type="number"
           onChange={onChangeBudget}
           value={bayesoptConfig.queryBudget}
-        />
-      </Form.Group>
-      <Form.Group className="mb-3">
-        <Form.Switch
-          onChange={onChangeShowContour}
-          checked={graphConfig.showAcquisition}
-          label="show contour plot"
         />
       </Form.Group>
     </>
