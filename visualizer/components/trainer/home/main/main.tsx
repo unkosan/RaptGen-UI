@@ -36,8 +36,8 @@ type Item = z.infer<typeof responseGetItem>;
 
 const ParentPane: React.FC<{
   item: Item;
-  updateFunc: (parentId: string | undefined) => Promise<void>;
-}> = ({ item, updateFunc }) => {
+  refreshFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ item, refreshFunc }) => {
   return (
     <>
       <div className="justify-content-between d-flex">
@@ -46,7 +46,7 @@ const ParentPane: React.FC<{
           <Button
             variant="primary"
             onClick={() => {
-              updateFunc(item.uuid);
+              refreshFunc(item.uuid);
             }}
           >
             <div className="align-items-center d-flex">
@@ -63,16 +63,16 @@ const ParentPane: React.FC<{
       <p className="d-flex align-items-center">
         <b className="me-2">Actions:</b>
         {item.status === "progress" ? (
-          <StopButton uuid={item.uuid} updateFunc={updateFunc} />
+          <StopButton uuid={item.uuid} refreshFunc={refreshFunc} />
         ) : item.status === "suspend" ? (
-          <ResumeButton uuid={item.uuid} updateFunc={updateFunc} />
+          <ResumeButton uuid={item.uuid} refreshFunc={refreshFunc} />
         ) : null}
 
-        <DeleteButton uuid={item.uuid} updateFunc={updateFunc} />
+        <DeleteButton uuid={item.uuid} refreshFunc={refreshFunc} />
         <RenameButton
           uuid={item.uuid}
           defaultName={item.name}
-          updateFunc={updateFunc}
+          refreshFunc={refreshFunc}
         />
       </p>
 
@@ -389,7 +389,7 @@ const Main: React.FC = () => {
 
   return (
     <div>
-      <ParentPane item={item} updateFunc={update} />
+      <ParentPane item={item} refreshFunc={update} />
       <ChildPane
         childItem={childItem}
         parentItem={item}

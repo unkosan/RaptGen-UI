@@ -4,8 +4,8 @@ import { apiClient } from "~/services/api-client";
 
 export const StopButton: React.FC<{
   uuid: string;
-  updateFunc: (parentId: string | undefined) => Promise<void>;
-}> = ({ uuid, updateFunc }) => {
+  refreshFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -25,7 +25,7 @@ export const StopButton: React.FC<{
             variant="primary"
             onClick={async () => {
               await apiClient.postSuspend({ uuid });
-              await updateFunc(uuid);
+              await refreshFunc(uuid);
               setIsModalOpen(false);
             }}
           >
@@ -50,8 +50,8 @@ export const StopButton: React.FC<{
 
 export const ResumeButton: React.FC<{
   uuid: string;
-  updateFunc: (parentId: string | undefined) => Promise<void>;
-}> = ({ uuid, updateFunc }) => {
+  refreshFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -71,7 +71,7 @@ export const ResumeButton: React.FC<{
             variant="primary"
             onClick={async () => {
               await apiClient.postResume({ uuid });
-              await updateFunc(uuid);
+              await refreshFunc(uuid);
               setIsModalOpen(false);
             }}
           >
@@ -96,8 +96,8 @@ export const ResumeButton: React.FC<{
 
 export const DeleteButton: React.FC<{
   uuid: string;
-  updateFunc: (parentId: string | undefined) => Promise<void>;
-}> = ({ uuid, updateFunc }) => {
+  refreshFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -119,7 +119,7 @@ export const DeleteButton: React.FC<{
               await apiClient.deleteItem(undefined, {
                 params: { parent_uuid: uuid },
               });
-              await updateFunc(uuid);
+              await refreshFunc(uuid);
               setIsModalOpen(false);
             }}
           >
@@ -145,8 +145,8 @@ export const DeleteButton: React.FC<{
 export const RenameButton: React.FC<{
   uuid: string;
   defaultName: string;
-  updateFunc: (parentId: string | undefined) => Promise<void>;
-}> = ({ uuid, defaultName, updateFunc }) => {
+  refreshFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, defaultName, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState(defaultName);
 
@@ -182,7 +182,7 @@ export const RenameButton: React.FC<{
                   params: { parent_uuid: uuid },
                 }
               );
-              await updateFunc(uuid);
+              await refreshFunc(uuid);
               setIsModalOpen(false);
             }}
           >

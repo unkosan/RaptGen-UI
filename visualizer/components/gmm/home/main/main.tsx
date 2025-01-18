@@ -21,7 +21,7 @@ const Main: React.FC = () => {
   const currentNumComponents = router.query.n_components as string | undefined;
   const [jobItem, setJobItem] = useState<JobItem | null>(null);
 
-  const reflesh = async () => {
+  const refresh = async () => {
     if (!currentUUID) {
       return;
     }
@@ -39,7 +39,7 @@ const Main: React.FC = () => {
   };
 
   useEffect(() => {
-    reflesh();
+    refresh();
   }, [currentUUID, currentNumComponents]);
 
   if (!currentUUID) {
@@ -55,7 +55,7 @@ const Main: React.FC = () => {
       <div className="justify-content-between d-flex">
         <h3>Experiment: {jobItem.name}</h3>
         <div>
-          <Button variant="primary" onClick={reflesh}>
+          <Button variant="primary" onClick={refresh}>
             <div className="align-items-center d-flex">
               <ArrowClockwise />
               <span className="ms-2">Refresh</span>
@@ -69,7 +69,7 @@ const Main: React.FC = () => {
       />
       <ActionButtons
         uuid={currentUUID}
-        refleshFunc={reflesh}
+        refreshFunc={refresh}
         jobName={jobItem.name}
         jobStatus={jobItem.status}
       />

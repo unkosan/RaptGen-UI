@@ -6,8 +6,8 @@ import { apiClient } from "~/services/api-client";
 export const RenameButton: React.FC<{
   uuid: string;
   defaultName: string;
-  refleshFunc: () => {};
-}> = ({ uuid, defaultName, refleshFunc }) => {
+  refreshFunc: () => {};
+}> = ({ uuid, defaultName, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState(defaultName);
 
@@ -48,7 +48,7 @@ export const RenameButton: React.FC<{
                   },
                 }
               );
-              await refleshFunc();
+              await refreshFunc();
               setIsModalOpen(false);
             }}
           >
@@ -123,8 +123,8 @@ export const DeleteButton: React.FC<{
 
 export const StopButton: React.FC<{
   uuid: string;
-  refleshFunc: () => {};
-}> = ({ uuid, refleshFunc }) => {
+  refreshFunc: () => {};
+}> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -144,7 +144,7 @@ export const StopButton: React.FC<{
             variant="primary"
             onClick={async () => {
               await apiClient.suspendGMMJobs({ uuid });
-              await refleshFunc();
+              await refreshFunc();
               setIsModalOpen(false);
             }}
           >
@@ -169,8 +169,8 @@ export const StopButton: React.FC<{
 
 export const ResumeButton: React.FC<{
   uuid: string;
-  refleshFunc: () => {};
-}> = ({ uuid, refleshFunc }) => {
+  refreshFunc: () => {};
+}> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -192,7 +192,7 @@ export const ResumeButton: React.FC<{
               await apiClient.resumeGMMJobs({
                 uuid: uuid,
               });
-              await refleshFunc();
+              await refreshFunc();
             }}
           >
             OK
@@ -218,20 +218,20 @@ export const ActionButtons: React.FC<{
   uuid: string;
   jobName: string;
   jobStatus: "success" | "failure" | "progress" | "suspend" | "pending";
-  refleshFunc: () => {};
-}> = ({ uuid, jobName, jobStatus, refleshFunc }) => {
+  refreshFunc: () => {};
+}> = ({ uuid, jobName, jobStatus, refreshFunc }) => {
   return (
     <p className="d-flex flex-row">
       <span className="fw-semibold">Actions:</span>
       {jobStatus === "progress" && (
-        <StopButton uuid={uuid} refleshFunc={refleshFunc} />
+        <StopButton uuid={uuid} refreshFunc={refreshFunc} />
       )}
       {jobStatus === "suspend" && (
-        <ResumeButton uuid={uuid} refleshFunc={refleshFunc} />
+        <ResumeButton uuid={uuid} refreshFunc={refreshFunc} />
       )}
       <RenameButton
         uuid={uuid}
-        refleshFunc={refleshFunc}
+        refreshFunc={refreshFunc}
         defaultName={jobName}
       />
       <DeleteButton uuid={uuid} />
