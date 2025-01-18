@@ -80,6 +80,7 @@ export const Summary: React.FC<{
   return (
     <CustomDataGrid
       idProperty="id"
+      className="mb-3"
       columns={columns}
       dataSource={data}
       rowStyle={{ fontFamily: "monospace" }}
