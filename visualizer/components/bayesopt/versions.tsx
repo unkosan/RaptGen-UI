@@ -242,7 +242,10 @@ const Versions: React.FC = () => {
       </div>
       <Stack direction="horizontal" className="mt-2" gap={3}>
         <Button variant="outline-primary" onClick={onNew}>
-          <PlusLg /> New
+          <div className="d-flex align-items-center">
+            <PlusLg />
+            &nbsp; New
+          </div>
         </Button>
         <Button
           variant="outline-primary"
