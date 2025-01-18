@@ -210,7 +210,7 @@ const Versions: React.FC = () => {
                     e.preventDefault();
                     e.stopPropagation();
                     setSelectedExperimentId(experiment.uuid);
-                    setSelectedExperimentName(experiment.name);
+                    setRenameTitle(experiment.name);
                     setIsRenameModalOpen(true);
                   }}
                   onMouseOver={(e) => {
@@ -265,7 +265,7 @@ const Versions: React.FC = () => {
           <Modal.Title>Save As</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Please enter the name of the experiment.
+          <p>Please enter the name of the experiment.</p>
           <Form.Group className="mt-3">
             <Form.Control
               type="text"
@@ -295,13 +295,12 @@ const Versions: React.FC = () => {
           <Modal.Title>Rename</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Please enter the new name of the experiment.
-          <hr />
-          Before: <span className="fw-bold">{selectedExperimentName}</span>
+          <p>Please enter the new name of the experiment.</p>
           <Form.Group className="mt-3">
             <Form.Control
               type="text"
               placeholder="Experiment name"
+              value={renameTitle}
               onChange={(e) => setRenameTitle(e.target.value)}
             />
           </Form.Group>
@@ -321,7 +320,7 @@ const Versions: React.FC = () => {
             onClick={() => onRename()}
             disabled={!renameTitle}
           >
-            Rename
+            OK
           </Button>
         </Modal.Footer>
       </Modal>
@@ -341,7 +340,7 @@ const Versions: React.FC = () => {
           >
             Close
           </Button>
-          <Button variant="primary" onClick={() => onDelete()}>
+          <Button variant="danger" onClick={() => onDelete()}>
             Delete
           </Button>
         </Modal.Footer>

@@ -29,7 +29,7 @@ export const StopButton: React.FC<{
               setIsModalOpen(false);
             }}
           >
-            Stop
+            OK
           </Button>
         </Modal.Footer>
       </Modal>
@@ -75,7 +75,7 @@ export const ResumeButton: React.FC<{
               setIsModalOpen(false);
             }}
           >
-            Resume
+            OK
           </Button>
         </Modal.Footer>
       </Modal>
@@ -186,7 +186,7 @@ export const RenameButton: React.FC<{
               setIsModalOpen(false);
             }}
           >
-            Rename
+            OK
           </Button>
         </Modal.Footer>
       </Modal>

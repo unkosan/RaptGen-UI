@@ -133,7 +133,7 @@ const SelectVAE: React.FC = () => {
           <Modal.Title>Rename VAE model</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Please enter a new name for the VAE model.
+          <p>Please enter a new name for the VAE model.</p>
           <Form.Control
             type="text"
             value={newName}
@@ -168,7 +168,7 @@ const SelectVAE: React.FC = () => {
             }}
             disabled={!newName}
           >
-            Rename
+            OK
           </Button>
         </Modal.Footer>
       </Modal>
@@ -181,11 +181,13 @@ const SelectVAE: React.FC = () => {
           <Modal.Title>Delete VAE model</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <p>
           Are you sure you want to delete the VAE model{" "}
           <span className="fw-bold">
             {models.find((model) => model.uuid === selectedId)?.name}
           </span>
           ?
+          </p>
         </Modal.Body>
         <Modal.Footer>
           <Button
