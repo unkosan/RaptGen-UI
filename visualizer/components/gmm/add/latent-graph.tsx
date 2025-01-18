@@ -102,7 +102,7 @@ const LatentGraph: React.FC = () => {
 
   return (
     <Tabs defaultActiveKey="latent-graph" id="gmm-latent-graph">
-      <Tab eventKey="latent-graph" title="Latent Space">
+      <Tab eventKey="latent-graph" title="Latent space">
         <Card className="mb-3">
           <Card.Body>
             <div
@@ -125,7 +125,7 @@ const LatentGraph: React.FC = () => {
           </Card.Body>
         </Card>
       </Tab>
-      <Tab eventKey="plot-config" title="Plot Config">
+      <Tab eventKey="plot-config" title="Plot config">
         <Card className="mb-3">
           <Card.Body>
             <Form.Group className="">

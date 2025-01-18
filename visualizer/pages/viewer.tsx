@@ -33,10 +33,10 @@ const Home: React.FC = () => {
                 <Tab eventKey="dataSelector" title="Data">
                   <DataSelector />
                 </Tab>
-                <Tab eventKey="vaeParamsTable" title="VAE Parameters">
+                <Tab eventKey="vaeParamsTable" title="VAE parameters">
                   <VAEParamsTable />
                 </Tab>
-                <Tab eventKey="gmmParamsTable" title="GMM Parameters">
+                <Tab eventKey="gmmParamsTable" title="GMM parameters">
                   <GMMParamsTable />
                 </Tab>
               </Tabs>

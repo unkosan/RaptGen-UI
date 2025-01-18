@@ -253,13 +253,13 @@ const Versions: React.FC = () => {
           onClick={onSave}
           disabled={!isDirty}
         >
-          save
+          Save
         </Button>
         <Button
           variant="outline-primary"
           onClick={() => setIsSaveAsModalOpen(true)}
         >
-          save as...
+          Save as...
         </Button>
       </Stack>
 

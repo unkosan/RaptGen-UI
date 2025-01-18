@@ -95,7 +95,7 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
 
   return (
     <Tabs defaultActiveKey="latent-space" id="latent-graph-tabs">
-      <Tab eventKey="latent-space" title="Latent Space">
+      <Tab eventKey="latent-space" title="Latent space">
         <Card className="mb-3">
           <Card.Body>
             <div style={{ aspectRatio: "1 / 1" }}>
@@ -110,7 +110,7 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
           </Card.Body>
         </Card>
       </Tab>
-      <Tab eventKey="plot-config" title="Plot Config">
+      <Tab eventKey="plot-config" title="Plot config">
         <Card className="mb-3">
           <Card.Body>
             <Form.Group className="mb-3">
