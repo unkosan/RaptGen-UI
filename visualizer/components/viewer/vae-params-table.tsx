@@ -43,6 +43,7 @@ const VAEParamsTable: React.FC = () => {
   return (
     <CustomDataGrid
       idProperty="id"
+      className="mb-3"
       columns={[
         {
           name: "parameter",

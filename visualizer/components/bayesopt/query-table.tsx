@@ -64,6 +64,7 @@ export const QueryTable: React.FC = () => {
   return (
     <>
       <CustomDataGrid
+        className="mb-2"
         columns={[
           { name: "id", header: "ID", defaultVisible: false },
           { name: "randomRegion", header: "Random Region", defaultFlex: 1 },
@@ -222,7 +223,7 @@ export const AddQueryButton: React.FC<AddQueryButtonProps> = ({
   };
 
   return (
-    <Button variant="primary" onClick={onClick} style={{ marginBottom: 10 }}>
+    <Button variant="primary" onClick={onClick} className="mb-3">
       Add to the Register values table
     </Button>
   );

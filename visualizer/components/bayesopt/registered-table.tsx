@@ -117,6 +117,7 @@ export const RegisteredTable: React.FC = () => {
   return (
     <>
       <CustomDataGrid
+        className="mb-2"
         columns={[
           {
             name: "seq_id",
@@ -321,7 +322,7 @@ export const RunBayesOptButton: React.FC<RunBayesOptButtonProps> = ({
   };
 
   return (
-    <Button variant="primary" style={{ marginBottom: 10 }} onClick={onClick}>
+    <Button variant="primary" onClick={onClick} className="mb-3">
       Run Bayes-Opt with checked data
     </Button>
   );

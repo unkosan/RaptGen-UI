@@ -9,10 +9,9 @@ const columnsCountTable = [
 ];
 
 const gridStyleCountTable = {
-  minHeight: 250,
+  minHeight: 243,
   width: "100%",
   zIndex: 1000,
-  marginBlock: "1rem",
 };
 
 const CountTable: React.FC = () => {
@@ -43,6 +42,7 @@ const CountTable: React.FC = () => {
   return (
     <CustomDataGrid
       idProperty="id"
+      className="mb-3"
       columns={columnsCountTable}
       dataSource={propertiesDataSource}
       style={gridStyleCountTable}

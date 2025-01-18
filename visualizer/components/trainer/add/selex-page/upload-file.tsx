@@ -16,7 +16,7 @@ const columns = [
   { name: "duplicate", header: "Duplicate", type: "number" },
 ];
 
-const gridStyle = { minHeight: 500, width: "100%", zIndex: 1000 };
+const gridStyle = { minHeight: 600, width: "100%", zIndex: 1000 };
 
 const UploadFile: React.FC<Props> = (props) => {
   const sequences = useSelector(
@@ -67,6 +67,7 @@ const UploadFile: React.FC<Props> = (props) => {
       </Form.Group>
       <CustomDataGrid
         idProperty="id"
+        className="mb-3"
         columns={columns}
         dataSource={dataSource}
         style={gridStyle}

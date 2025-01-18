@@ -9,10 +9,9 @@ const columnsSequenceTable = [
 ];
 
 const gridStyleSequenceTable = {
-  minHeight: 500,
+  minHeight: 800,
   width: "100%",
   zIndex: 1000,
-  marginBlock: "1rem",
 };
 
 const SequenceTable: React.FC = () => {
@@ -27,6 +26,7 @@ const SequenceTable: React.FC = () => {
   return (
     <CustomDataGrid
       idProperty="id"
+      className="mb-3"
       columns={columnsSequenceTable}
       dataSource={filteredDataSource}
       style={gridStyleSequenceTable}

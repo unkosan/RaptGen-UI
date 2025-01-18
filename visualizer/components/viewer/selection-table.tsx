@@ -67,6 +67,7 @@ const SelectionTable: React.FC = () => {
   return (
     <CustomDataGrid
       idProperty="index"
+      className="mb-3"
       columns={columns}
       dataSource={plotData}
       style={gridStyle}

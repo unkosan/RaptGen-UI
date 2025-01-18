@@ -329,6 +329,7 @@ const DecodeTable: React.FC = () => {
   return (
     <CustomDataGrid
       idProperty="key"
+      className="mb-3"
       columns={columns}
       dataSource={data}
       editable={true}

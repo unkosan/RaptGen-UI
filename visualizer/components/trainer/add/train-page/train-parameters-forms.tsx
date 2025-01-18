@@ -131,12 +131,12 @@ const TrainParametersForms: React.FC = () => {
               dispatch(setTrainConfig({ ...trainConfig, seed: value }));
             }}
           >
-            Random
+            Generate Random Value
           </Button>
         </InputGroup>
         <Form.Text className="text-muted">
-          The seed value is used to initialize the random number generator. If
-          you want to reproduce the same result, set the seed.
+          This is used to initialize the random number generator. If you want to
+          reproduce the same result, set the same seed.
         </Form.Text>
       </Form.Group>
 

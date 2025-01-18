@@ -141,7 +141,8 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
     <ClientOnly>
       <ReactDataGrid
         {...props}
-        style={{ ...props.style, marginBlockEnd: "1rem" }}
+        style={{ ...props.style }}
+        className={props.className}
         columns={columns}
         groups={props.copiable || props.downloadable ? group : undefined}
         cellSelection={cells}
