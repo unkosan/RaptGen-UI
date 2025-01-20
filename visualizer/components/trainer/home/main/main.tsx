@@ -21,7 +21,6 @@ import { TrainingParams } from "./training-params";
 import {
   ApplyViewerButton,
   DeleteButton,
-  DownloadCurrentCodesButton,
   DownloadLossesButton,
   RenameButton,
   ResumeButton,
@@ -36,8 +35,8 @@ type Item = z.infer<typeof responseGetItem>;
 
 const ParentPane: React.FC<{
   item: Item;
-  updateFunc: (parentId: string | undefined) => Promise<void>;
-}> = ({ item, updateFunc }) => {
+  refreshFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ item, refreshFunc }) => {
   return (
     <>
       <div className="justify-content-between d-flex">
@@ -46,7 +45,7 @@ const ParentPane: React.FC<{
           <Button
             variant="primary"
             onClick={() => {
-              updateFunc(item.uuid);
+              refreshFunc(item.uuid);
             }}
           >
             <div className="align-items-center d-flex">
@@ -57,22 +56,25 @@ const ParentPane: React.FC<{
         </div>
       </div>
       <p>
-        <div>Start time: {new Date(item.start * 1000).toLocaleString()}</div>
-        <div>The number of models to train: {item.reiteration}</div>
+        <span className="fw-semibold">Start time: </span>
+        {new Date(item.start * 1000).toLocaleString()}
+        <br />
+        <span className="fw-semibold">The number of models to train: </span>
+        {item.reiteration}
       </p>
       <p className="d-flex align-items-center">
-        <b className="me-2">Actions:</b>
+        <span className="me-2 fw-semibold">Actions: </span>
         {item.status === "progress" ? (
-          <StopButton uuid={item.uuid} updateFunc={updateFunc} />
+          <StopButton uuid={item.uuid} refreshFunc={refreshFunc} />
         ) : item.status === "suspend" ? (
-          <ResumeButton uuid={item.uuid} updateFunc={updateFunc} />
+          <ResumeButton uuid={item.uuid} refreshFunc={refreshFunc} />
         ) : null}
 
-        <DeleteButton uuid={item.uuid} updateFunc={updateFunc} />
+        <DeleteButton uuid={item.uuid} refreshFunc={refreshFunc} />
         <RenameButton
           uuid={item.uuid}
           defaultName={item.name}
-          updateFunc={updateFunc}
+          refreshFunc={refreshFunc}
         />
       </p>
 
@@ -176,7 +178,7 @@ const ChildPane: React.FC<{
       </Form.Group>
 
       <p>
-        <>Duration for training: </>
+        <span className="fw-semibold">Duration for training: </span>
         {formatDuration(intervalToDuration({ start: 0, end: net_duration }))}
         {suspend_duration ? (
           <>
@@ -202,31 +204,16 @@ const ChildPane: React.FC<{
         </div>
       ) : childItem.status === "pending" ? null : (
         <>
-          <Card className="mb-3">
-            <Card.Header className="d-flex justify-content-between">
-              <span>Latent Space</span>
-              <span>
-                <DownloadCurrentCodesButton
-                  randomRegions={childItem.latent.random_regions}
-                  duplicates={childItem.latent.duplicates}
-                  coordsX={childItem.latent.coords_x}
-                  coordsY={childItem.latent.coords_y}
-                />
-              </span>
-            </Card.Header>
-            <Card.Body>
-              <LatentGraph
-                title={""}
-                vaeData={{
-                  coordsX: childItem.latent.coords_x,
-                  coordsY: childItem.latent.coords_y,
-                  randomRegions: childItem.latent.random_regions,
-                  duplicates: childItem.latent.duplicates,
-                  minCount: 1,
-                }}
-              />
-            </Card.Body>
-          </Card>
+          <LatentGraph
+            title={""}
+            vaeData={{
+              coordsX: childItem.latent.coords_x,
+              coordsY: childItem.latent.coords_y,
+              randomRegions: childItem.latent.random_regions,
+              duplicates: childItem.latent.duplicates,
+              minCount: 1,
+            }}
+          />
 
           <Card className="mb-3">
             <Card.Header className="d-flex justify-content-between">
@@ -404,7 +391,7 @@ const Main: React.FC = () => {
 
   return (
     <div>
-      <ParentPane item={item} updateFunc={update} />
+      <ParentPane item={item} refreshFunc={update} />
       <ChildPane
         childItem={childItem}
         parentItem={item}

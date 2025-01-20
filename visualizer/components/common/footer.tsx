@@ -4,7 +4,7 @@ import { Github, House, JournalText } from "react-bootstrap-icons";
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="mt-auto bg-secondary">
+    <footer className="mt-auto bg-dark">
       <div className="container d-flex flex-wrap justify-content-between align-items-center py-3">
         <div className="col-md-4 d-flex align-items-center text-white">
           <span>© 2025 Hamada Lab. Released under the MIT License.</span>

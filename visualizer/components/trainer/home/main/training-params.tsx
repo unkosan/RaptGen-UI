@@ -20,6 +20,7 @@ export const TrainingParams: React.FC<{
   return (
     <CustomDataGrid
       idProperty="id"
+      className="mb-3"
       columns={columns}
       dataSource={Object.entries(props.value).map(([k, v], index) => ({
         id: index,

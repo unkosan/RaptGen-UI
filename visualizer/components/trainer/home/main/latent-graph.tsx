@@ -1,6 +1,8 @@
 import { Layout, PlotData } from "plotly.js";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { Card, Tabs, Tab, Form } from "react-bootstrap";
+import { DownloadCurrentCodesButton } from "./action-buttons";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const returnLayout = (title: string): Partial<Layout> => {
@@ -31,7 +33,7 @@ const returnLayout = (title: string): Partial<Layout> => {
     },
     hoverlabel: {
       font: {
-        family: "Courier New",
+        family: "monospace",
       },
     },
     clickmode: "event+select",
@@ -57,8 +59,11 @@ type Props = {
 };
 
 export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
+  const [minCount, setMinCount] = useState(5);
+  const [validMinCount, setValidMinCount] = useState(true);
+
   const vaeDataPlot: Partial<PlotData> = useMemo(() => {
-    const { coordsX, coordsY, randomRegions, duplicates, minCount } = vaeData;
+    const { coordsX, coordsY, randomRegions, duplicates } = vaeData;
     const mask = duplicates.map((value) => value >= minCount);
     const trace: Partial<PlotData> = {
       x: coordsX.filter((_, index) => mask[index]),
@@ -86,17 +91,54 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
         "<extra></extra>",
     };
     return trace;
-  }, [vaeData]);
+  }, [vaeData, minCount]);
 
   return (
-    <div style={{ aspectRatio: "1 / 1" }}>
-      <Plot
-        data={[vaeDataPlot]}
-        useResizeHandler={true}
-        layout={returnLayout(title)}
-        config={{ responsive: true }}
-        style={{ width: "100%", height: "100%" }}
-      />
-    </div>
+    <Tabs defaultActiveKey="latent-space" id="latent-graph-tabs">
+      <Tab eventKey="latent-space" title="Latent space">
+        <Card className="mb-3">
+          <Card.Body>
+            <div style={{ aspectRatio: "1 / 1" }}>
+              <Plot
+                data={[vaeDataPlot]}
+                useResizeHandler={true}
+                layout={returnLayout(title)}
+                config={{ responsive: true }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </div>
+          </Card.Body>
+        </Card>
+      </Tab>
+      <Tab eventKey="plot-config" title="Plot config">
+        <Card className="mb-3">
+          <Card.Body>
+            <Form.Group className="mb-3">
+              <Form.Label>Minimum count</Form.Label>
+              <Form.Control
+                type="number"
+                value={minCount}
+                onChange={(e) => {
+                  const minCount = parseInt(e.target.value);
+                  if (!isNaN(minCount) && minCount > 0) {
+                    setMinCount(minCount);
+                    setValidMinCount(true);
+                  } else {
+                    setValidMinCount(true);
+                  }
+                }}
+                isInvalid={!validMinCount}
+              />
+            </Form.Group>
+            <DownloadCurrentCodesButton
+              randomRegions={vaeData.randomRegions}
+              duplicates={vaeData.duplicates}
+              coordsX={vaeData.coordsX}
+              coordsY={vaeData.coordsY}
+            />
+          </Card.Body>
+        </Card>
+      </Tab>
+    </Tabs>
   );
 };
