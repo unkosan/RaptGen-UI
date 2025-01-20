@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { Layout, ViolinData } from "plotly.js";
+import { Layout, BoxPlotData } from "plotly.js";
 import { Card } from "react-bootstrap";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -12,22 +12,15 @@ type BicProps = {
 const BicGraph: React.FC<BicProps> = (props) => {
   const hues = new Set(props.n_components);
 
-  const bicData: Partial<ViolinData> = {
-    type: "violin",
+  const bicData: Partial<BoxPlotData> = {
+    type: "box",
     x: props.values,
     y: props.n_components,
     line: {
       color: "black",
     },
     opacity: 0.5,
-    side: "positive",
     orientation: "h",
-    points: "all",
-    box: {
-      visible: true,
-    },
-    width: 5,
-    jitter: 0.1,
     marker: {
       opacity: 0.5,
     },
