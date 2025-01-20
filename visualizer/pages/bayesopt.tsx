@@ -1,4 +1,4 @@
-import "bootswatch/dist/cosmo/bootstrap.min.css";
+import "bootswatch/dist/cerulean/bootstrap.min.css";
 import "@inovua/reactdatagrid-community/index.css";
 import { NextPage } from "next";
 import { Provider } from "react-redux";
