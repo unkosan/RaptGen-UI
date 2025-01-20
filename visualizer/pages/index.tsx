@@ -1,4 +1,4 @@
-import "bootswatch/dist/cosmo/bootstrap.min.css";
+import "bootswatch/dist/cerulean/bootstrap.min.css";
 import Head from "next/head";
 import { NextPage } from "next";
 import Navigator from "~/components/common/navigator";

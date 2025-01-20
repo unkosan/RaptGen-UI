@@ -1,4 +1,4 @@
-import "bootswatch/dist/cosmo/bootstrap.min.css";
+import "bootswatch/dist/cerulean/bootstrap.min.css";
 import { NextPage } from "next";
 import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
