@@ -15,7 +15,7 @@ import { responsePostEncode } from "~/services/route/session";
 import { experimentState } from "~/services/route/bayesopt";
 import { useSelector } from "react-redux";
 import { Footer } from "~/components/common/footer";
-import Versions from "~/components/bayesopt/versions";
+import Sessions from "~/components/bayesopt/sessions";
 import VaeSelector from "~/components/bayesopt/vae-selector";
 import InitialDataset from "~/components/bayesopt/initial-dataset";
 import BayesOptConfig from "~/components/bayesopt/bayes-opt-config";
@@ -392,7 +392,7 @@ const Home: React.FC = () => {
           <Row>
             <Col md={4}>
               <div>
-                <Versions />
+                <Sessions />
                 <hr />
                 <legend>VAE model</legend>
                 <VaeSelector />

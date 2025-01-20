@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import { useDispatch } from "react-redux";
 
-const Versions: React.FC = () => {
+const Sessions: React.FC = () => {
   const [list, setList] = useState<z.infer<typeof responseGetBayesoptItems>>(
     []
   );
@@ -178,7 +178,6 @@ const Versions: React.FC = () => {
 
   return (
     <>
-      <legend>Bayes-Opt experiments</legend>
       <div
         style={{
           height: "230px",
@@ -352,4 +351,4 @@ const Versions: React.FC = () => {
   );
 };
 
-export default Versions;
+export default Sessions;
