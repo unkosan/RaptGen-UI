@@ -60,15 +60,15 @@ Downloading is also supported. You can select which cluster to download.
 
 ### [VAE Trainer](docs/VAE_Trainer.md)
 
-Train a VAE model with the HT-SELEX data. 
+Train a VAE model with the HT-SELEX data.
 
-![VAE Trainer View](docs/images/vae_trainer.png)
+![VAE Trainer View](docs/images/vae-trainer.png)
 
 ### [GMM Trainer](docs/GMM_Trainer.md)
 
 Train a GMM model with the HT-SELEX data.
 
-![GMM Trainer View](docs/images/gmm.png)
+![GMM Trainer View](docs/images/gmm-trainer.png)
 
 ### [Bayesian Optimization](docs/BO.md)
 
