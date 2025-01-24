@@ -123,6 +123,59 @@ const PreprocessingForms: React.FC = () => {
       <legend>Preprocessing Parameters</legend>
 
       <Form.Group className="mb-3">
+        <Form.Label>Target Length</Form.Label>
+        <InputGroup>
+          <Form.Control
+            type="number"
+            placeholder="Positive integers only"
+            value={targetLength}
+            isInvalid={!isValidTargetLength}
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              setTargetLength(value);
+              dispatch(
+                setPreprocessingConfig({
+                  ...preprocessingConfig,
+                  targetLength: value,
+                })
+              );
+            }}
+          />
+          <Button
+            variant="outline-primary"
+            disabled={isLoadingTargetlen || fullSequences.length === 0}
+            onClick={async () => {
+              lockTargetlen();
+              const res = await apiClient.estimateTargetLength({
+                sequences: fullSequences,
+              });
+
+              if (res.status === "success") {
+                setTargetLength(res.data["target_length"]);
+                dispatch(
+                  setPreprocessingConfig({
+                    ...preprocessingConfig,
+                    targetLength: res.data["target_length"],
+                  })
+                );
+              }
+              unlockTargetlen();
+            }}
+          >
+            {isLoadingTargetlen ? (
+              <Spinner animation="border" size="sm" />
+            ) : (
+              "Estimate"
+            )}
+          </Button>
+        </InputGroup>
+        <Form.Text className="text-muted">
+          This value is used to filter out sequences which lengths are not
+          within the target. Adapters are included in the length calculation.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group className="mb-3">
         <Form.Label>Adapters</Form.Label>
         <InputGroup>
           <Form.Control
@@ -209,59 +262,6 @@ const PreprocessingForms: React.FC = () => {
             </Button>
           </OverlayTrigger>
         </InputGroup>
-      </Form.Group>
-
-      <Form.Group className="mb-3">
-        <Form.Label>Target Length</Form.Label>
-        <InputGroup>
-          <Form.Control
-            type="number"
-            placeholder="Allows a positive integer"
-            value={targetLength}
-            isInvalid={!isValidTargetLength}
-            onChange={(e) => {
-              const value = parseInt(e.target.value);
-              setTargetLength(value);
-              dispatch(
-                setPreprocessingConfig({
-                  ...preprocessingConfig,
-                  targetLength: value,
-                })
-              );
-            }}
-          />
-          <Button
-            variant="outline-primary"
-            disabled={isLoadingTargetlen || fullSequences.length === 0}
-            onClick={async () => {
-              lockTargetlen();
-              const res = await apiClient.estimateTargetLength({
-                sequences: fullSequences,
-              });
-
-              if (res.status === "success") {
-                setTargetLength(res.data["target_length"]);
-                dispatch(
-                  setPreprocessingConfig({
-                    ...preprocessingConfig,
-                    targetLength: res.data["target_length"],
-                  })
-                );
-              }
-              unlockTargetlen();
-            }}
-          >
-            {isLoadingTargetlen ? (
-              <Spinner animation="border" size="sm" />
-            ) : (
-              "Estimate"
-            )}
-          </Button>
-        </InputGroup>
-        <Form.Text className="text-muted">
-          This value is used to filter out sequences which lengths are not
-          within the target. Adapters are included in the length calculation.
-        </Form.Text>
       </Form.Group>
 
       <Form.Group className="mb-3">

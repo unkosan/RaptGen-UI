@@ -2,9 +2,11 @@
 
 In this page, you can train a GMM on the encoded HT-SELEX data.
 
-## GMM Trainer View
+## Access the GMM Trainer
 
-![alt text](images/image-5.png)
+Click the `GMM Trainer` link in the top menu or the one in the navigation bar.
+
+![alt text](images/gmm-trainer_access.png)
 
 ## How to Train
 
@@ -12,18 +14,17 @@ In this page, you can train a GMM on the encoded HT-SELEX data.
 
 start by clicking the `+ Add a New Training Job` button.
 
-![adding job](images/image-6.png)
-
+![adding job](images/gmm-trainer_add-button.png)
 
 ### Setting the parameters
 
 Set the preprocessing parameters for the training job. After setting the parameters, click the `Next` button.
 
-![alt text](images/image-7.png)
+![alt text](images/gmm-trainer_parameters.png)
 
 **The parameters**
 
-- ① Model Type: 
+- ① Model Type:
   - The type of the trained model. You can choose the model trained in the VAE Trainer.
 - ② GMM name:
   - the name of the GMM model.
@@ -48,18 +49,21 @@ The higher the number of the trials is, the more accurate the GMM model will be.
 
 Once the training is submitted, the training will be started. The training progress will be shown on the `Running` component.
 
-![alt text](images/image-8.png)
+![alt text](images/gmm-trainer_main-page-in-training.png)
 
 ### Add the model to the Model List
 
-After the training is finished, you can check the job result. By default, the best model is selected based on the BIC score.
+After the training is finished, `Add to viewer dataset` button will be enabled.
+Click the button to add the model to the dataset.
+By default, the best number of components is selected based on the BIC score.
+If you want to change the number of components, you can click the dropdown and select the desired one.
 
+![alt text](images/gmm-trainer_add-to-viewer-dataset-button.png)
 
-![alt text](images/image-9.png)
+When you click the button, the following dialog will be shown.
+Fill in the name of the model and click the `Add to Viewer Dataset` button.
 
-The plot shows the cluster of the GMM model and the embedded sequences.
-
-Add the model to the model list by clicking the `Add to viewer dataset` button. 
+![alt text](images/gmm-trainer_add-to-viewer-dataset-modal.png)
 
 ### Next Steps
 

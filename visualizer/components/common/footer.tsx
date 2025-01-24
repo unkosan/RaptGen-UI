@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { Github, House, JournalText } from "react-bootstrap-icons";
+import { Envelope, Github, JournalText } from "react-bootstrap-icons";
 
 export const Footer: React.FC = () => {
   return (
@@ -13,10 +13,12 @@ export const Footer: React.FC = () => {
           <li className="ms-3">
             <OverlayTrigger
               placement="top"
-              overlay={<Tooltip id="tooltip-home">Go to the top page</Tooltip>}
+              overlay={
+                <Tooltip id="tooltip-home">Mail to the maintainers</Tooltip>
+              }
             >
-              <Link href="/">
-                <House size={24} color="white" />
+              <Link href="mailto:ryota.nakano@hamadalab.com">
+                <Envelope size={24} color="white" />
               </Link>
             </OverlayTrigger>
           </li>
