@@ -49,7 +49,7 @@ Docker version 20.10.21, build baeda1f
 
 For now, four application is available. They are `Viewer`, `VAE Trainer`, `GMM Trainer`, and `Bayesian Optimization`. For more information, please refer to the following links.
 
-### Viewer
+### [Viewer](docs/Viewer.md)
 
 Visualize the latent map of the HT-SELEX data.
 
