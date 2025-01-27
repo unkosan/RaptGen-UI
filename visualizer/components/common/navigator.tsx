@@ -14,7 +14,10 @@ const Navigator: React.FC<Props> = ({ currentPage }) => {
   return (
     <Navbar bg="primary" variant="dark">
       <Container>
-        <Navbar.Brand href="/">RaptGen-UI</Navbar.Brand>
+        <Navbar.Brand href="/" className="d-flex align-items-center">
+          <img src="/white-logo.png" alt="logo" height="30" />
+          <span className="mx-2">RaptGen-UI</span>
+        </Navbar.Brand>
         <Nav className="ms-auto">
           <Nav.Link
             href="/viewer"
