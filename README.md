@@ -1,6 +1,7 @@
-# RaptGen UI
-
-The GUI for RaptGen developed with React and FastAPI.
+<p align="center">
+   <img src="docs/images/logo.png" width="400"><br>
+   The GUI for RaptGen developed with React and FastAPI
+</p>
 
 ## How to Launch
 
@@ -17,12 +18,12 @@ Docker version 20.10.21, build baeda1f
 
 1. Open your terminal. If you would like to run this application on a remote server, use SSH with port-forwarding.
    ```shell
-   $ ssh -L 3000:localhost:3000 [username@hostname.com / alias in ssh config]
+   $ ssh -L 3000:localhost:3000 username@hostname.com
    ```
    Otherwise, skip this step.
 2. Clone this repository wherever you want, then go into `RaptGen-UI` directory.
    ```shell
-   $ git clone https://github.com/unkosan/RaptGen-UI.git
+   $ git clone https://github.com/hmdlab/RaptGen-UI.git
    $ cd RaptGen-UI
    ```
 3. Export your UID and GID environmental variables with the following command (needed for the `worker` container to work successfully.)
@@ -49,7 +50,7 @@ Docker version 20.10.21, build baeda1f
 
 For now, four application is available. They are `Viewer`, `VAE Trainer`, `GMM Trainer`, and `Bayesian Optimization`. For more information, please refer to the following links.
 
-### Viewer
+### [Viewer](docs/Viewer.md)
 
 Visualize the latent map of the HT-SELEX data.
 
@@ -60,18 +61,18 @@ Downloading is also supported. You can select which cluster to download.
 
 ### [VAE Trainer](docs/VAE_Trainer.md)
 
-Train a VAE model with the HT-SELEX data. 
+Train a VAE model on HT-SELEX data.
 
-![VAE Trainer View](docs/images/vae_trainer.png)
+![View of VAE Trainer](docs/images/vae-trainer.png)
 
 ### [GMM Trainer](docs/GMM_Trainer.md)
 
-Train a GMM model with the HT-SELEX data.
+Train a GMM model on latent space of HT-SELEX data.
 
-![GMM Trainer View](docs/images/gmm.png)
+![View of GMM Trainer](docs/images/gmm-trainer.png)
 
 ### [Bayesian Optimization](docs/BO.md)
 
-Optimize the HT-SELEX data with Bayesian Optimization.
+Optimize aptamers using Bayesian Optimization.
 
-![Bayesian Optimization View](docs/images/bo.png)
+![View of Bayesian Optimization](docs/images/bo.png)

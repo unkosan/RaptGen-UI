@@ -1,86 +1,97 @@
 # VAE Trainer
 
-In this page, you can train a VAE model with the HT-SELEX data.
+This page allows you to train a VAE model using HT-SELEX data.
 
-## VAE Trainer View
+## Accessing the VAE Trainer Page
 
-The following screenshot show the view of the VAE Trainer.
+Navigate to the VAE Trainer by clicking the `VAE Trainer` link in the top menu or the navigation bar.
 
-![](images/vae_trainer_all.png)
+![Accessing the VAE Trainer page](images/vae-trainer_access.png)
 
-## How to Train
+## Training Process
 
-### Adding a new training job
+### Initiating a New Training Job
 
-Click the `+ Add a New Tranining Job` button.
-![](images/vae_trainer_01_add.png)
+Click the `+ Add a New Training Job` button located at the top left of the page.
+
+![Location of the button for adding training job for VAE](images/vae-trainer_add-button.png)
 
 ### Setting the parameters
-Set the preprocessing parameters for the training job. After setting the parameters, click the `Next` button.
-![](images/vae_trainer_02_parameter.png)
+
+Set the preprocessing parameters for your training job, then click the `Next` button.
+
+![Configuration page for preprocessing parameters](images/vae-trainer_preprocessing-parameters.png)
 
 **Preprocessing Parameters**
 
-- ① Model Type: 
-	- The type of the model. You can choose `RaptGen`.
-- ② Experiment Name: 
-	- The name of the experiment.
-- ③ Preprocessing Parameters - Adapters:
-	- The adapters for the sequences. You can run `Estimate` after setting the `Target Length` parameter. Note that the Estimate button will be enabled after setting the `Target Length` parameter (④).
-- ④ Preprocessing Prameters - Target Length : 
-	- The target length of the sequences. This includes the adapter length. Note that the estimate button will be enabled after loading SELEX sequences (⑦).
-- ⑤ Filtering Tolernace: 
-	- The tolerance for filtering the sequences.
-- ⑥ Minimum Count: 
-	- The minimum count of the sequences. The sequences with the count less than this value will be filtered.
-- ⑦ SELEX sequences: 
-	- The SELEX sequences for training. `.fasta` file and `.fastq` file are supported.
+- ① Model Type:
+  - The type of the model. Choose `RaptGen`.
+- ② Experiment Name:
+  - Assign a name to your experiment.
+- ③ Target Length:
+  - Specify the sequence length, including adapter length. The estimate button activates after loading SELEX sequences (⑦).
+- ④ Adapters:
+  - Set sequence adapters (constant region at 3' or 5' end). The `Estimate` button becomes available after setting the `Target Length` parameter (③).
+- ⑤ Filtering Tolernace:
+  - Set the tolerance for sequence filtering, which is the allowable difference between the target length and the length of the sequence.
+- ⑥ Minimum Count:
+  - Define the minimum sequence count. Sequences below this threshold will be filtered out.
+- ⑦ SELEX sequences:
+  - Upload your training sequences in `.fasta` or `.fastq` format.
 
+Next, set the training parameters and click the `Train` button.
 
-On the training parametersview, set the training parameters for the training job. After setting the parameters, click the `Train` button.
-![](images/vae_trainer_03_parameter_p2.png)
+![Configuration page for training parameters](images/vae-trainer_training-parameters.png)
 
 **Training Parameters**
 
-- ① Reiteration of Training: 
-	- The number of reiteration of the training. The training will be repeated with the same dataset for the number of times.
-- ② Device: 
-	- The device for the training. You can choose `CPU` or `cuda:X` for GPU(if available).
-- ③ Seed Value: 
-	- The seed value for the random number generator. If you want to reproduce the training, you can set the seed value. If you want to train the model with the different seed value, you can set the seed value to `-1`.
-- ④ Maximum Number of Epochs: 
-	- The maximum number of epochs for the training.
-- ⑤ Early Stopping Patience: 
-	- The patience for early stopping. If the validation loss does not decrease for the number of epochs, the training will be stopped.
-- ⑥ Beta Weighting Epochs: 
-	- The number of epochs for the beta weighting. The beta value will be increased from 0 to 1 for the number of epochs.
-- ⑦ Force Matching Epochs: 
-	- The number of epochs for the force matching. The force matching will be applied for the number of epochs. In the force matching term, the profile HMM model will be force to have less penalty match-to-match state transition score.
-- ⑧ Match Cost: 
-	- The match cost for the force matching. The match cost is the penalty for the match-to-match state transition score. The larger value will force the profile HMM model to have less penalty match-to-match state transition score.
-- ⑨ pHMM model length: 
-	- The length of the profile HMM model. The profile HMM model will be trained with the length of the pHMM model. Default value equals to the random region length.
+- ① Reiteration of Training:
+  - Specify how many times to repeat training with the same dataset. (Not epoch, but the number of training)
+- ② Device:
+  - Select `CPU` or `cuda:X` for GPU (if available).
+- ③ Seed Value:
+  - Set a seed for reproducibility. `Generate Random Seed` button in the right will generate a random seed.
+- ④ Maximum Number of Epochs:
+  - Set the maximum training epochs
+- ⑤ Early Stopping Patience:
+  - Define how many epochs without improvement of the validation loss before stopping the training.
+- ⑥ Beta Weighting Epochs:
+  - Specify epochs for increasing beta value from 0 to 1.
+- ⑦ Force Matching Epochs:
+  - Specify epochs for force-matching. During the force-matching phase, the profile HMM model will be forced to have less penalty on match-to-match state transition score.
+- ⑧ Match Cost:
+  - Define the intensity of the force-matching. The larger value will force the profile HMM model to have less penalty match-to-match state transition score.
+- ⑨ pHMM model length:
+  - Set the profile HMM model length. Default is random region length.
 
 ### Training the model
 
-Training job is submitted and added to the Running Jobs list. You can check the training progress in the Running Jobs list.
-![](images/vae_trainer_04_training.png)
+After submission, the job appears in the Running Jobs list. You can monitor progress, stop, delete, or rename jobs from this list.
 
-- To Stop, Delete or Rename the training job, you can click the `Stop`, `Delete`, or `Rename` button.
-- The current status of the experiment section shows the running status of the training job. The total number of jobs are the number of `reiteration of training` parameter.  
-	![current status of the experiment section](images/image.png)
-- The Training Parameters section shows the training parameters for the training job.  
-	![training parameters](images/image-1.png)
-- The Job information section shows the job information for the training job.  
-	![job information](images/image-2.png)
+![Overview of detail page of job in progress](images/vae-trainer_main-page-in-training.png)
 
-### Add the trained model to the Model List
-After the training is finished, Add the trained model to the Model List by clicking the `Add to Viewer Dataset` button.
-![alt text](images/image-3.png)
+- To stop, delete or rename the job, you can click the `Stop`, `Delete`, or `Rename` button, respectively.
+- The current status of the experiment section shows the job's progress and total number of jobs.
+  ![current status of the experiment section](images/vae-trainer_current-info.png)
+- The Training Parameters section displays the job's training parameters.  
+  ![training parameters](images/vae-trainer_training-params-list.png)
+- The Job information section provides details about the training job.  
+  ![job information](images/vae-trainer_job-info.png)
 
-Type the name to add the trained model to the Model List.
-![alt text](images/image-4.png)
+### Adding the Trained Model to the Model List
+
+Once training completes, add the model to the model list by clicking `Add to Viewer Dataset` button.
+
+![Button to add training job to the dataset](images/vae-trainer_add-to-viewer-dataset-button.png)
+
+Name your model in the pop-up modal and click the `Add to Viewer Dataset` button.
+
+![Modal for adding job to the dataset](images/vae-trainer_add-to-viewer-dataset-modal.png)
+
+The trained model will then be available in the Viewer, GMM Trainer and Bayes Optimization pages.
 
 ## Next Step
 
-- [Train GMM](GMM_Trainer.md)
+Proceed to the [GMM Trainer](GMM_Trainer.md) page to train a GMM model.
+
+If you have already trained a GMM model or have a initializing dataset in BO module, you can proceed to the [Bayesian Optimization](BO.md) page.

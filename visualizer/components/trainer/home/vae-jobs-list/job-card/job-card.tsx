@@ -77,7 +77,7 @@ const JobCard: React.FC<Props> = (props) => {
     const child = series[0];
     if (child.status === "progress" || child.status === "suspend") {
       content = (
-        <div className="d-flex justify-content-between">
+        <div className="d-flex justify-content-between mt-1">
           <ProgressBar
             now={(child.epochsCurrent / child.epochsTotal) * 100}
             className="w-100 align-self-center"

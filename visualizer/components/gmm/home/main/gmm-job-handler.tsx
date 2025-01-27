@@ -35,47 +35,49 @@ export const GmmNumComponentSelector: React.FC<{
         }}
       >
         <Modal.Header closeButton>
-          <Modal.Title>Publish</Modal.Title>
+          <Modal.Title>Apply to Viewer Dataset</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Please enter the name for publishing this experiment.
+          <p>
+            Please enter the name of the gmm to apply to the viewer dataset.
+          </p>
           <Form.Control
             type="text"
-            placeholder="Publish name"
+            placeholder="GMM Experiment Name"
             value={name}
             onChange={(e) => {
               setName(e.target.value);
             }}
           />
-          <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setIsModalOpen(false);
-                setName("");
-              }}
-            >
-              Close
-            </Button>
-            <Button
-              variant="primary"
-              disabled={!name}
-              onClick={async () => {
-                if (jobItem.status !== "success") {
-                  return;
-                }
-                await apiClient.publishGMMJobs({
-                  name: name,
-                  uuid: uuid,
-                  n_components: jobItem.gmm.current_n_components,
-                });
-                setIsModalOpen(false);
-              }}
-            >
-              Publish
-            </Button>
-          </Modal.Footer>
         </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setIsModalOpen(false);
+              setName("");
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            disabled={!name}
+            onClick={async () => {
+              if (jobItem.status !== "success") {
+                return;
+              }
+              await apiClient.publishGMMJobs({
+                name: name,
+                uuid: uuid,
+                n_components: jobItem.gmm.current_n_components,
+              });
+              setIsModalOpen(false);
+            }}
+          >
+            Add to Viewer Dataset
+          </Button>
+        </Modal.Footer>
       </Modal>
       <InputGroup className="mb-3">
         <InputGroup.Text>Number of components</InputGroup.Text>
