@@ -141,7 +141,8 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
     <ClientOnly>
       <ReactDataGrid
         {...props}
-        style={{ ...props.style, marginBlockEnd: "1rem" }}
+        style={{ ...props.style }}
+        className={props.className}
         columns={columns}
         groups={props.copiable || props.downloadable ? group : undefined}
         cellSelection={cells}
@@ -151,4 +152,14 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
   );
 };
 
+type EditorProps = {
+  value: string;
+  onComplete: () => void;
+  onCancel: () => void;
+  onChange: (value: string) => void;
+  onKeyDown: (e: React.KeyboardEvent) => void;
+  cellProps: any;
+};
+
 export default CustomDataGrid;
+export type { EditorProps };

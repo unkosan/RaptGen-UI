@@ -4,8 +4,8 @@ import { apiClient } from "~/services/api-client";
 
 export const StopButton: React.FC<{
   uuid: string;
-  updateFunc: (parentId: string | undefined) => Promise<void>;
-}> = ({ uuid, updateFunc }) => {
+  refreshFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -22,20 +22,20 @@ export const StopButton: React.FC<{
             Cancel
           </Button>
           <Button
-            variant="warning"
+            variant="primary"
             onClick={async () => {
               await apiClient.postSuspend({ uuid });
-              await updateFunc(uuid);
+              await refreshFunc(uuid);
               setIsModalOpen(false);
             }}
           >
-            Stop
+            OK
           </Button>
         </Modal.Footer>
       </Modal>
       <Badge
         pill
-        bg="warning"
+        bg="primary"
         className="mx-1"
         onClick={() => {
           setIsModalOpen(true);
@@ -50,8 +50,8 @@ export const StopButton: React.FC<{
 
 export const ResumeButton: React.FC<{
   uuid: string;
-  updateFunc: (parentId: string | undefined) => Promise<void>;
-}> = ({ uuid, updateFunc }) => {
+  refreshFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -68,20 +68,20 @@ export const ResumeButton: React.FC<{
             Cancel
           </Button>
           <Button
-            variant="success"
+            variant="primary"
             onClick={async () => {
               await apiClient.postResume({ uuid });
-              await updateFunc(uuid);
+              await refreshFunc(uuid);
               setIsModalOpen(false);
             }}
           >
-            Resume
+            OK
           </Button>
         </Modal.Footer>
       </Modal>
       <Badge
         pill
-        bg="success"
+        bg="primary"
         className="mx-1"
         onClick={() => {
           setIsModalOpen(true);
@@ -96,8 +96,8 @@ export const ResumeButton: React.FC<{
 
 export const DeleteButton: React.FC<{
   uuid: string;
-  updateFunc: (parentId: string | undefined) => Promise<void>;
-}> = ({ uuid, updateFunc }) => {
+  refreshFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -119,7 +119,7 @@ export const DeleteButton: React.FC<{
               await apiClient.deleteItem(undefined, {
                 params: { parent_uuid: uuid },
               });
-              await updateFunc(uuid);
+              await refreshFunc(uuid);
               setIsModalOpen(false);
             }}
           >
@@ -145,8 +145,8 @@ export const DeleteButton: React.FC<{
 export const RenameButton: React.FC<{
   uuid: string;
   defaultName: string;
-  updateFunc: (parentId: string | undefined) => Promise<void>;
-}> = ({ uuid, defaultName, updateFunc }) => {
+  refreshFunc: (parentId: string | undefined) => Promise<void>;
+}> = ({ uuid, defaultName, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState(defaultName);
 
@@ -174,7 +174,7 @@ export const RenameButton: React.FC<{
             Cancel
           </Button>
           <Button
-            variant="success"
+            variant="primary"
             onClick={async () => {
               await apiClient.patchItem(
                 { target: "name", value: name },
@@ -182,17 +182,17 @@ export const RenameButton: React.FC<{
                   params: { parent_uuid: uuid },
                 }
               );
-              await updateFunc(uuid);
+              await refreshFunc(uuid);
               setIsModalOpen(false);
             }}
           >
-            Rename
+            OK
           </Button>
         </Modal.Footer>
       </Modal>
       <Badge
         pill
-        bg="success"
+        bg="primary"
         className="mx-1"
         onClick={() => {
           setIsModalOpen(true);
@@ -214,9 +214,8 @@ type LatentDataType = {
 };
 export const DownloadCurrentCodesButton: React.FC<LatentDataType> = (props) => {
   return (
-    <Badge
-      pill
-      bg="success"
+    <Button
+      variant="success"
       className="mx-1"
       onClick={() => {
         const csvHeader = "random_region, x, y, duplicate";
@@ -247,8 +246,8 @@ export const DownloadCurrentCodesButton: React.FC<LatentDataType> = (props) => {
       }}
       style={{ cursor: "pointer" }}
     >
-      Download Latent Codes
-    </Badge>
+      Download Latent Points
+    </Button>
   );
 };
 

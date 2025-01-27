@@ -23,16 +23,23 @@ export const returnLayout = (title: string): Partial<Layout> => {
     },
     hoverlabel: {
       font: {
-        family: "Courier New",
+        family: "monospace",
       },
+    },
+    showlegend: true,
+    legend: {
+      xanchor: "right",
+      x: 1,
+      yanchor: "top",
+      y: 1,
     },
     clickmode: "event+select",
     margin: {
-      l: 20,
-      r: 20,
-      b: 20,
-      t: 20,
-      pad: 4,
+      l: 30,
+      r: 30,
+      b: 30,
+      t: 30,
+      pad: 5,
     },
   };
 };

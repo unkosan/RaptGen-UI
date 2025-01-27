@@ -2,72 +2,83 @@
 
 Optimize the HT-SELEX data with Bayesian Optimization.
 
-## Bayesian Optimization View
+## Accessing the Bayesian Optimization Page
 
-![alt text](images/image-10.png)
+Navigate to the Bayesian Optimization by clicking the `Bayesian Optimization` link in the top menu or the navigation bar.
 
-## How to Optimize
+![Accessing BO page](images/bo_access.png)
 
-To run the Bayesian Optimization, target data is required. Since the Bayesian Optimization is a black-box optimization, the target data should be the measurement of the target function. In this case, the target data is the affinity of the sequences. 
+## Bayesian Optimization Process
 
-Broadly, the Bayesian Optimization is runned in the following steps:
+The process involves the following steps:
 
-1. Measure the target function.
-   1. Measure the affinity of the sequences. You will need to prepare the sequence <> affinity data.
-2. set the optimization parameters.
-   1. Set the optimization parameters. You can set the optimization parameters left side of the view. See [Optimization Parameters](#optimization-parameters) for more details.
+1. Load initialization dataset.
+2. Configure optimization parameters.
+3. Measure target function (prepare sequence affinity data using methods like Surface Plasmon Resonance).
+4. Run Bayesian Optimization to get new candidate sequences.
+5. Repeat from step 3.
 
-### Optimization Parameters
+We will explain each step in detail in the following sections.
 
-#### VAE model
+### Loading the initialization dataset
 
-- Select Pane:
-  - `Selected VAE model`: The VAE model for the optimization. You can select the VAE model from the list.
-- Config Pane:
-  - `Minimum Count`: The minimum count to show data on the lataent map.
+When you access the Bayesian Optimization page, the following view will be shown.
+Please select the VAE model and initialization dataset.
+The centroid of the Gaussian Mixture Model (GMM) is selected for this explanation, but you can also use manually selected sequences.
 
-#### Initial Dataset
+![Initiate BO with GMM center or manually curated sequences](images/bo_initial-dataset.png)
 
-- upload csv dataset:
-  - the csv dataset for the initial dataset. The csv dataset should have the following columns with header:
-    - `random_regions`: The sequence of the DNA.
-    - `seq_id`: The affinity of the sequence.
-    - `target`: The target value of the sequence. This is the value to be optimized.
-      - the column name is not fixed. You can set the target column name on the `Bayes-Opt Configuration` component. 
-- or get from registered GMM centers:
-  - The GMM centers from the GMM model. You can select the GMM model from the list. The GMM models can be trained with the [GMM Trainer](GMM_Trainer.md).
-  - If you select the GMM centers, set the target value of the sequences manually.
+Options for initialization:
 
-#### Bayes-Opt Configuration
+- Upload CSV dataset:
+  - Columns must include
+    - `random_regions`: RNA sequences.
+    - `seq_id`: Sequence identifier.
+  - Other columns are optional. You can use them for the target value to be optimized.
+    - When multiple columns are there, you can select the target column name in the `Bayes-Opt Configuration` section.
+- Select from registered GMM centers:
+  - Choose a GMM model trained with the GMM Trainer.
+  - Set target values manually.
 
-- `Optimization method`: 
-  - The optimization method. You can choose `qEI` for multiple query Expected Improvement.
-- `The name of the value to optimize`: 
-  - Select the column of the uploaded csv. This is the column name of the target value in the csv dataset. If you select the GMM centers for initial optimization, this column name do not affect the optimization.
-- `Query budget`: 
-  - The number of queries for the optimization. The optimization will be stopped after the number of queries.
+### Configuring Bayesian Optimization
 
-### Iterative Optimization
+![Configuration section on BO page](images/bo_bayesopt-configuration.png)
 
-After setting the optimization parameters, see the right side of the view. 
+Set the following parameters:
 
-![alt text](images/image-11.png)
+- `Optimization method`:
+  - Choose `qEI` for multiple query Expected Improvement.
+- `The name of the value to optimize`:
+  - Select the target column from the uploaded CSV.
+  - If you selected the GMM centers for the initial optimization, the column name does not affect the optimization.
+- `Query budget`:
+  - Set the number of candidate sequences to be measured.
 
-The "Registered values" component shows the imported dataset. 
+### Measuring the target function
 
-#### Running the Optimization with registered data
+Review the `Registered values` table showing sequences and their latent coordinates.
+If using GMM centers, fill in target values in the `value` column.
 
-![alt text](images/image-12.png)
+![Registering sequences for BO](images/bo_registered-values-table.png)
 
-To run the optimization, first, select the sequences to optimize. You can select the sequences by clicking the checkbox on the left side of the view.
+Select entries for optimization by checking the boxes on the left side of the table.
 
-After selecting the sequences, click the `Run Bayes-Opt with checked data` button. The optimization will be started and the result will be shown on the `Latent Space` component and `Query points by Bayesian Optimization` component.
+### Running the Optimization
 
-#### Optimization Result
+After setting the optimization parameters, click the `Run Bayes-Opt with checked data` button.
+Results appear in the `Latent Space` and `Query points by Bayesian Optimization` sections.
 
-The following components will be shown after the optimization.
+![Query results shown in table](images/bo_after-running-bayesopt.png)
 
-- `Latent Space`: The latent space of the sequences. The sequences are colored by the target value. The contour shows the acquisition function of the Bayesian Optimization.
-![alt text](images/image-13.png)
-- `Query points by Bayesian Optimization`: The query points by the Bayesian Optimization. The query points are shown on the latent space. To add the query points for next optimization, click the `Add to the registered values table` button.
-![alt text](images/image-14.png)
+The `Latent Space` section shows coordinates of queried sequences as green dots, and the acquisition function as the contour.
+
+Select candidate sequences from the `Query points` table, and click the `Add to the registered values table` button for the next optimization round.
+
+## Saving the session
+
+![Saving and loading sessions](images/bo_session.png)
+
+For parallel processing, you can save and load optimization sessions:
+
+- Save: Click `Save` or `Save as...` and enter a session name.
+- Load: Select a saved session from the list at the top left of the page.

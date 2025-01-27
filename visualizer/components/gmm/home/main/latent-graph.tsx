@@ -2,14 +2,14 @@ import { cloneDeep, zip } from "lodash";
 import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import dynamic from "next/dynamic";
 import { Layout, PlotData } from "plotly.js";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Card, Form, InputGroup, Tab, Tabs } from "react-bootstrap";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const returnLayout = (title: string): Partial<Layout> => {
   return {
-    height: 800,
-    title: title,
+    // title: title,
     plot_bgcolor: "#EDEDED",
     xaxis: {
       color: "#FFFFFF",
@@ -35,10 +35,17 @@ const returnLayout = (title: string): Partial<Layout> => {
     },
     hoverlabel: {
       font: {
-        family: "Courier New",
+        family: "monospace",
       },
     },
     clickmode: "event+select",
+    margin: {
+      l: 30,
+      r: 30,
+      b: 30,
+      t: 30,
+      pad: 5,
+    },
   };
 };
 
@@ -58,8 +65,11 @@ type Props = {
 };
 
 const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
+  const [minCount, setMinCount] = useState(5);
+  const [validMinCount, setValidMinCount] = useState(true);
+
   const vaeDataPlot: Partial<PlotData> = useMemo(() => {
-    const { coordsX, coordsY, randomRegions, duplicates, minCount } = vaeData;
+    const { coordsX, coordsY, randomRegions, duplicates } = vaeData;
     const mask = duplicates.map((value) => value >= minCount);
     const trace: Partial<PlotData> = {
       x: coordsX.filter((_, index) => mask[index]),
@@ -84,7 +94,7 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
       zorder: -1, // to show behind GMM, this is implemented in @types/react-plotly
     } as Partial<PlotData>;
     return trace;
-  }, [vaeData]);
+  }, [vaeData, minCount]);
 
   const gmmDataPlot: Partial<PlotData>[] = useMemo(() => {
     if (gmmData.means.length === 0) {
@@ -143,13 +153,54 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
   }, [gmmData]);
 
   return (
-    <Plot
-      data={[vaeDataPlot, ...gmmDataPlot]}
-      useResizeHandler={true}
-      layout={returnLayout("")}
-      config={{ responsive: true }}
-      style={{ width: "100%" }}
-    />
+    <Tabs defaultActiveKey="latent-graph" id="gmm-latent-graph">
+      <Tab eventKey="latent-graph" title="Latent Space">
+        <Card className="mb-3">
+          <Card.Body>
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                aspectRatio: "10 / 9",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Plot
+                data={[vaeDataPlot, ...gmmDataPlot]}
+                useResizeHandler={true}
+                layout={returnLayout("")}
+                config={{ responsive: true }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </div>
+          </Card.Body>
+        </Card>
+      </Tab>
+      <Tab eventKey="plot-config" title="Plot Config">
+        <Card className="mb-3">
+          <Card.Body>
+            <Form.Group className="">
+              <Form.Label>Minimum count</Form.Label>
+              <Form.Control
+                type="number"
+                value={minCount}
+                onChange={(e) => {
+                  const minCount = parseInt(e.target.value);
+                  if (!isNaN(minCount) && minCount > 0) {
+                    setMinCount(minCount);
+                    setValidMinCount(true);
+                  } else {
+                    setValidMinCount(true);
+                  }
+                }}
+                isInvalid={!validMinCount}
+              />
+            </Form.Group>
+          </Card.Body>
+        </Card>
+      </Tab>
+    </Tabs>
   );
 };
 
