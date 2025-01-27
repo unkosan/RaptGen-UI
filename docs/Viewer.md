@@ -2,71 +2,90 @@
 
 Interactive viewer for the trained model.
 
-## Access to Viewer Page
+## Accessing the Viewer Page
 
-Click the `Viewer` link in the top menu or the one in the navigation bar.
+Navigate to the Viewer by clicking the `Viewer` link in the top menu or the navigation bar.
 
-![](images/viewer_access.png)
+![Accessing the Viewer page](images/viewer_access.png)
 
 ## Features
 
-![](images/viewer_overview.png)
+![Overview of the viewer page](images/viewer_overview.png)
 
-This page has the following features.
+The Viewer page offers four main functionalities.
 
-- Encode sequences to the latent space.
-- Decode the points in latent space to the sequences.
-- Download the sequences.
-- Interactively select the points in latent space.
+- Encoding sequences into latent space
+- Decoding points from latent space into sequences
+- Downloading sequences.
+- Interactive selection of points in latent space
 
-We will explain each feature in the following sections.
+Let's explore each feature in detail.
 
 ## Encoding sequences
 
-Encoding sequences can be done by entering the sequence in the form or by uploading a file in `.fasta` format.
-Each entry must be a sequence of `A`, `C`, `G`, `T`, or `U`. Ambiguous base `N` is not allowed.
+You can encode sequences in two ways.
 
-When you fill in the form, click `+` button to encode and add the sequence to the table.
-Encoding results are shown in the `Encoded seqeunces` table in the buttom of the latent plot.
+- Enter the sequence directly into the provided form.
+- Upload a file in `.fasta` format.
 
-![](images/viewer_encoded-sequences.png)
+After entering a sequence in the form, click the `+` button to encode and add it to the table.
+The results appear in the `Encoded sequences` table below the latent plot.
 
-In the encoded sequences table, you can modify, delete, and toggle to show the sequences. If you want to delete the sequence or toggle the visibility, click the trash icon or the eye icon, respectively. If you want to modify the sequence, double click the cell in the `Random Region` column.
+![Table for encoded sequences](images/viewer_encoded-sequences.png)
+
+In the `Encoded sequences` table, you have option to:
+
+- Modify sequences: Double-click the cell in the `Random Region` column.
+- Delete sequences: Click the trash icon.
+- Toggle visibility in latent plot: Click the eye icon.
+
+> [!WARNING]
+> Each sequence must consist of `A`, `C`, `G`, `T`, or `U`. The ambiguous base `N` is not permitted.
 
 ## Decoding points in latent space
 
-Decoding module has two panels. The top panel is to select x and y coordinates of the points in the latent space, and the bottom panel is to show the result of decoding.
+The decoding module consists of two panels:
 
-In the top panel, there is a toggle button to switch visibility of the grid lines. This is useful when you want to know the coordinates of the points in the latent space.
+- Input panel: Select x and y coordinates of the points in the latent space.
+- Output panel: View the decoded sequence and associated information.
 
-In the bottom panel, you can see the decoded sequence and the `+` button in the right. Click it to add the sequence to the `Decoded points` table.
+The input panel includes a toggle for grid line visibility, helping you pinpoint exact coordinates in the latent space.
 
-![](images/viewer_decoded-points.png)
+In the output panel, you will see the decoded sequence and a `+` button in the right. Clicking this button adds the sequence to the `Decoded points` table.
 
-Coordinates in the `Decoded points` table can be modified by double clicking the cell. If you want to delete sequences or toggle the visibility, click the trash icon or the eye icon, respectively.
+![Table for decoded points](images/viewer_decoded-points.png)
 
-Weblogos at the specified coordinate is shown when you click `Weblogo` toggle button. This is calculated from the raw output parameters of the pHMM decoder.
-x-axis is the position in the sequence, and y-axis is the log probability of the base at the position.
+The `Decoded points` table allows you to:
 
-`Secondary structure` toggle button shows the secondary structure of the decoded sequence, which includes the 3' and 5' flanking constant regions.
+- Modify coordinates: Double-click the respective cell in the `x` and `y` columns.
+- Delete sequences: Click the trash icon.
+- Toggle visibility in latent plot: Click the eye icon.
+
+Additional features in the output panel:
+
+- `Weblogo` toggle: Displays the weblogo at the specified coordinate, calculated from the pHMM decoder's raw output values. The x-axis represents sequence position, while the y-axis shows the score (log probability) of the base at each position.
+- `Secondary structure` toggle: Reveals the secondary structure of the decoded sequence, including 3'' and 5' flanking constant regions.
 
 ## Downloading clusters
 
-To download the sequences in the specified cluster, select the cluster from the dropdown menu and click the `Download` button.
+To download sequences from a specific cluster:
 
-You can download the sequences in `.fasta` format, when you toggled on the `Download as Fasta format` switch.
+1. Select the desired cluster from the dropdown menu.
+2. Click the `Download` button.
 
-If you want to download the sequences with generative probability, toggle on the `Download as probabilities` switch. In this case, the sequences and the probabilities are downloaded in the `.csv` format.
+Download options:
+
+- Toggle `Download as Fasta format`: Downloads the sequences in `.fasta` format.
+- Toggle `Download as probabilities`: Downloads the sequences and the probabilities in `.csv` format.
 
 ## Interactively selecting points in latent space
 
-This feature is implemented with the [plotly.js](https://plotly.com/javascript/) library.
-First, click the `Box Select` or `Lasso Select` button to change the selection mode.
+This feature utilizes the [plotly.js](https://plotly.com/javascript/) library for an interactive experience.
 
-![](images/viewer_select-mode.png)
+To select points:
 
-Then, click and drag the mouse to select the points in the latent space. Unselected points are shown in gray.
-
-![](images/viewer_selected-points.png)
-
-Selected points are shown in `Selected points` table. You can save the selected points as a file by clicking the `Download All` button.
+1. Choose either the `Box Select` or `Lasso Select` button to change the selection mode.
+   ![Location of button to change into lasso select mode](images/viewer_select-mode.png)
+2. Click and drag your mouse to select points in the latent space. Unselected points are shown in gray, helping you focus on your selection.
+   ![Partial data is selected in latent space](images/viewer_selected-points.png)
+   Selected points are shown in `Selected points` table. You can save the selected points by clicking the `Download All` button in the table.
