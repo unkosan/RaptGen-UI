@@ -1,5 +1,6 @@
 <p align="center">
-<img src="docs/images/logo.png" width="500"><br>
+   <img src="docs/images/logo.png" width="400"><br>
+   The GUI for RaptGen developed with React and FastAPI
 </p>
 
 ## How to Launch
