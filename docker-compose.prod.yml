@@ -3,8 +3,6 @@ services:
   db:
     image: postgres
     container_name: db
-    # ports:
-    #   - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -34,8 +32,6 @@ services:
       dockerfile: cpu.dockerfile
     container_name: backend
     tty: true
-    ports:
-      - 8000:8000
     volumes:
       - ./raptgen:/app
     environment:
@@ -45,8 +41,6 @@ services:
   redis:
     image: redis
     container_name: redis
-    ports:
-      - 8030:6379
 
   worker:
     build:
