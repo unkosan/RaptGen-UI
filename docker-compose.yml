@@ -13,14 +13,14 @@ services:
 
   visualizer:
     build:
-      context: ./visualizer
+      context: ./frontend
       dockerfile: dockerfile
     container_name: frontend
     tty: true
     ports:
       - 18042:18042
     volumes:
-      - ./visualizer:/app
+      - ./frontend:/app
       - /etc/localtime:/etc/localtime
     environment:
       - WATCHPACK_POLLING=true
@@ -28,12 +28,12 @@ services:
 
   back:
     build:
-      context: ./raptgen
+      context: ./backend
       dockerfile: cpu.dockerfile
     container_name: backend
     tty: true
     volumes:
-      - ./raptgen:/app
+      - ./backend:/app
     environment:
       - PYTHONPATH=/app
     command: sh -c "uvicorn --host 0.0.0.0 api:app"
@@ -44,14 +44,14 @@ services:
 
   worker:
     build:
-      context: ./raptgen
+      context: ./backend
       dockerfile: cpu.dockerfile
     container_name: worker
     tty: true
     depends_on:
       - redis
     volumes:
-      - ./raptgen:/app
+      - ./backend:/app
     environment:
       - PYTHONPATH=/app
     command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"

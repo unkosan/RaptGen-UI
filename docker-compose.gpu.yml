@@ -13,26 +13,26 @@ services:
 
   visualizer:
     build:
-      context: ./visualizer
+      context: ./frontend
       dockerfile: dockerfile
     container_name: frontend
     tty: true
     ports:
       - 18042:18042
     volumes:
-      - ./visualizer:/app
+      - ./frontend:/app
     environment:
       - WATCHPACK_POLLING=true
     command: sh -c "yarn install; yarn next build; yarn next start --port 18042"
 
   back:
     build:
-      context: ./raptgen
+      context: ./backend
       dockerfile: gpu.dockerfile
     container_name: backend
     tty: true
     volumes:
-      - ./raptgen:/app
+      - ./backend:/app
       - /etc/localtime:/etc/localtime
     environment:
       - PYTHONPATH=/app
@@ -51,14 +51,14 @@ services:
 
   worker:
     build:
-      context: ./raptgen
+      context: ./backend
       dockerfile: gpu.dockerfile
     container_name: worker
     tty: true
     depends_on:
       - redis
     volumes:
-      - ./raptgen:/app
+      - ./backend:/app
     environment:
       - PYTHONPATH=/app
     command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"
