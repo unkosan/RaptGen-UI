@@ -3,8 +3,8 @@ services:
   db:
     image: postgres
     container_name: db
-    # ports:
-    #   - 5432:5432
+    ports:
+      - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -20,13 +20,13 @@ services:
     container_name: frontend
     tty: true
     ports:
-      - 3000:3000
+      - 18042:18042
     volumes:
       - ./visualizer:/app
       - /etc/localtime:/etc/localtime
     environment:
       - WATCHPACK_POLLING=true
-    command: sh -c "yarn install; yarn run dev"
+    command: sh -c "yarn install; yarn run dev --port 18042"
 
   back:
     build:
@@ -40,7 +40,6 @@ services:
       - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
-    # command: sh
     command: sh -c "uvicorn --reload --host 0.0.0.0 api:app"
 
   redis:

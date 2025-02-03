@@ -18,13 +18,13 @@ services:
     container_name: frontend
     tty: true
     ports:
-      - 3000:3000
+      - 18042:18042
     volumes:
       - ./visualizer:/app
       - /etc/localtime:/etc/localtime
     environment:
       - WATCHPACK_POLLING=true
-    command: sh -c "yarn install; yarn next build; yarn next start"
+    command: sh -c "yarn install; yarn next build; yarn next start --port 18042"
 
   back:
     build:

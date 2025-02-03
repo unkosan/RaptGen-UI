@@ -18,7 +18,7 @@ Docker version 20.10.21, build baeda1f
 
 1. Open your terminal. If you would like to run this application on a remote server, use SSH with port-forwarding.
    ```shell
-   $ ssh -L 3000:localhost:3000 username@hostname.com
+   $ ssh -L 18042:localhost:18042 username@hostname.com
    ```
    Otherwise, skip this step.
 2. Clone this repository wherever you want, then go into `RaptGen-UI` directory.
@@ -39,7 +39,7 @@ Docker version 20.10.21, build baeda1f
    $ docker compose -f docker-compose.prod.yml up -d
    ```
 5. Please wait before all the containers are ready. This may take a few minutes. Even if Docker says they are ready, it may take some extra time for the `frontend` container to be working.
-6. Access http://localhost:3000 with your favorite internet browser.
+6. Access http://localhost:18042 with your favorite internet browser.
 7. If you would like to stop the containers, please type the following command. This stops containers and all data will be retained in `db` container.
    ```shell
    $ docker compose stop
