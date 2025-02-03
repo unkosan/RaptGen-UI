@@ -36,7 +36,6 @@ services:
       - /etc/localtime:/etc/localtime
     environment:
       - PYTHONPATH=/app
-    user: "${UID}:${GID}"
     command: sh -c "uvicorn --host 0.0.0.0 api:app"
     deploy:
       resources:
@@ -62,7 +61,6 @@ services:
       - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
-    user: "${UID}:${GID}"
     command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"
     deploy:
       resources:
