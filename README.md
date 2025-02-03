@@ -40,9 +40,10 @@ Docker version 20.10.21, build baeda1f
    ```shell
    $ docker compose stop
    ```
-   > [!WARNING]
-   > If you send `down` command, containers and database will be removed.
-   > If you want to keep the data, please make sure to use `stop` command.
+
+> [!WARNING]
+> If you send `down` command, containers and database will be removed.
+> If you want to keep the data, please make sure to use `stop` command.
 
 ## Overview
 
