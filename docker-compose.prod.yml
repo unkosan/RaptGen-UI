@@ -54,5 +54,4 @@ services:
       - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
-    user: "${UID}:${GID}"
     command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"

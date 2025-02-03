@@ -61,7 +61,6 @@ services:
     environment:
       - PYTHONPATH=/app
       - CUDA_LAUNCH_BLOCKING=1
-    user: "${UID}:${GID}"
     command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"
 
   flower:
