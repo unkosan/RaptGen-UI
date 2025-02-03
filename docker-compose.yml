@@ -3,8 +3,8 @@ services:
   db:
     image: postgres
     container_name: db
-    # ports:
-    #   - 5432:5432
+    ports:
+      - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -15,14 +15,14 @@ services:
 
   visualizer:
     build:
-      context: ./frontend
+      context: ./visualizer
       dockerfile: dockerfile
     container_name: frontend
     tty: true
     ports:
       - 18042:18042
     volumes:
-      - ./frontend:/app
+      - ./visualizer:/app
       - /etc/localtime:/etc/localtime
     environment:
       - WATCHPACK_POLLING=true
@@ -30,14 +30,14 @@ services:
 
   back:
     build:
-      context: ./backend
+      context: ./raptgen
       dockerfile: cpu.dockerfile
     container_name: backend
     tty: true
     ports:
       - 8000:8000
     volumes:
-      - ./backend:/app
+      - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
     command: sh -c "uvicorn --reload --host 0.0.0.0 api:app"
@@ -50,14 +50,14 @@ services:
 
   worker:
     build:
-      context: ./backend
+      context: ./raptgen
       dockerfile: cpu.dockerfile
     container_name: worker
     tty: true
     depends_on:
       - redis
     volumes:
-      - ./backend:/app
+      - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
       - CUDA_LAUNCH_BLOCKING=1
@@ -66,14 +66,14 @@ services:
 
   flower:
     build:
-      context: ./backend
+      context: ./raptgen
       dockerfile: cpu.dockerfile
     container_name: flower
     tty: true
     depends_on:
       - redis
     volumes:
-      - ./backend:/app
+      - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
     command: sh -c "celery --app=tasks.celery flower --port=5555"
