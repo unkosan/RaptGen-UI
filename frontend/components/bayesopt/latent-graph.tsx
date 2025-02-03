@@ -7,7 +7,10 @@ import { cloneDeep } from "lodash";
 import { Card, Tab, Tabs } from "react-bootstrap";
 import PlotConfig from "./plot-config";
 
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+const Plot = dynamic(
+  () => import("react-plotly.js").then((mod) => mod.default),
+  { ssr: false }
+);
 
 const returnLayout = (title: string): Partial<Layout> => {
   return {
