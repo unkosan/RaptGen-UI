@@ -18,8 +18,8 @@ jobs:
       - name: Build docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./raptgen
-          file: ./raptgen/cpu.dockerfile
+          context: ./backend
+          file: ./backend/cpu.dockerfile
           tags: fastapi-image
           push: false
 
@@ -27,7 +27,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: fastapi-image
-          options: -v ${{ github.workspace }}/raptgen:/app
+          options: -v ${{ github.workspace }}/backend:/app
           run: |
             python -c "from api import print_spec; from pathlib import Path; Path('openapi_spec.json').write_text(print_spec())"
 
@@ -39,7 +39,7 @@ jobs:
       - name: Build ReDoc HTML
         run: |
           yarn add redoc-cli
-          npx @redocly/cli build-docs raptgen/openapi_spec.json
+          npx @redocly/cli build-docs backend/openapi_spec.json
           mkdir out
           mv redoc-static.html out/index.html
 
