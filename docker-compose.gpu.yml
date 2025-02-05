@@ -11,7 +11,7 @@ services:
     volumes:
       - ./initdb:/docker-entrypoint-initdb.d
 
-  visualizer:
+  frontend:
     build:
       context: ./frontend
       dockerfile: dockerfile
@@ -25,7 +25,7 @@ services:
       - WATCHPACK_POLLING=true
     command: sh -c "yarn install; yarn next build; yarn next start --port 18042"
 
-  back:
+  backend:
     build:
       context: ./backend
       dockerfile: gpu.dockerfile
