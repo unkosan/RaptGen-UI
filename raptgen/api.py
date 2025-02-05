@@ -5,7 +5,7 @@ from routers import session, test, data, upload, training, optimization, gmm
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",
+    "http://localhost:18042",
     "http://localhost:8000",
     "*",  # for testing
 ]

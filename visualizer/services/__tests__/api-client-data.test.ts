@@ -6,7 +6,7 @@ import { uuids } from "~/mock/route/asset/uuids";
 const server = setupServer(...handlers);
 
 export const mockURL = (path: string) => {
-  return `http://localhost:3000/api${path}`;
+  return `http://localhost:18042/api${path}`;
 };
 
 describe("data service", () => {

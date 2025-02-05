@@ -6,7 +6,7 @@ import { bayesoptHandlers } from "./route/bayesopt";
 import { gmmHandlers } from "./route/gmm";
 
 export const mockURL = (path: string) => {
-  return `http://localhost:3000/api${path}`;
+  return `http://localhost:18042/api${path}`;
 };
 
 export const handlers = [

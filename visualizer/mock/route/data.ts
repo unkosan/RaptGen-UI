@@ -5,7 +5,7 @@ import { gmm } from "./asset/gmm-values";
 import { uuids } from "./asset/uuids";
 
 export const mockURL = (path: string) => {
-  return `http://localhost:3000/api${path}`;
+  return `http://localhost:18042/api${path}`;
 };
 
 const errorMsg = {

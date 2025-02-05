@@ -1,7 +1,7 @@
-<p align="center">
-   <img src="docs/images/logo.png" width="400"><br>
+<div align="center">
+   <img src="docs/images/logo.png" alt="RaptGen-UI" width="400"><br>
    The GUI for RaptGen developed with React and FastAPI
-</p>
+</div>
 
 ## How to Launch
 
@@ -18,7 +18,7 @@ Docker version 20.10.21, build baeda1f
 
 1. Open your terminal. If you would like to run this application on a remote server, use SSH with port-forwarding.
    ```shell
-   $ ssh -L 3000:localhost:3000 username@hostname.com
+   $ ssh -L 18042:localhost:18042 username@hostname.com
    ```
    Otherwise, skip this step.
 2. Clone this repository wherever you want, then go into `RaptGen-UI` directory.
@@ -26,36 +26,34 @@ Docker version 20.10.21, build baeda1f
    $ git clone https://github.com/hmdlab/RaptGen-UI.git
    $ cd RaptGen-UI
    ```
-3. Export your UID and GID environmental variables with the following command (needed for the `worker` container to work successfully.)
+3. Build and run containers with following docker-compose.
    ```shell
-   $ export UID GID
+   $ docker compose up -d
    ```
-4. Build and run containers with docker-compose. If you have GPU devices which supports CUDA, run with `docker-compose.gpu.yml` file.
+   If you have GPU devices which supports CUDA, run with `docker-compose.gpu.yml` file instead.
    ```shell
    $ docker compose -f docker-compose.gpu.yml up -d
    ```
-   Otherwise, you need to assign `docker-compose.prod.yml` file.
-   ```shell
-   $ docker compose -f docker-compose.prod.yml up -d
-   ```
-5. Please wait before all the containers are ready. This may take a few minutes. Even if Docker says they are ready, it may take some extra time for the `frontend` container to be working.
-6. Access http://localhost:3000 with your favorite internet browser.
-7. If you would like to stop the containers, please type the following command. This stops containers and all data will be retained in `db` container.
+4. Please wait before all the containers are ready. This may take a few minutes. Even if Docker says they are ready, it may take some extra time for the `frontend` container to be working.
+5. Access http://localhost:18042 with your favorite internet browser.
+6. If you would like to stop the containers, please type the following command. This stops containers and all data will be retained in `db` container.
    ```shell
    $ docker compose stop
    ```
-   If you send `down` command, all data will be lost (containers are removed.)
 
-## Usage
+> [!WARNING]
+> If you send `down` command, containers and database will be removed.
+> If you want to keep the data, please make sure to use `stop` command.
 
-For now, four application is available. They are `Viewer`, `VAE Trainer`, `GMM Trainer`, and `Bayesian Optimization`. For more information, please refer to the following links.
+## Overview
+
+For now, `Viewer`, `VAE Trainer`, `GMM Trainer`, and `Bayesian Optimization` modules are available.
+
+For more information about its usage, please click the following links.
 
 ### [Viewer](docs/Viewer.md)
 
 Visualize the latent map of the HT-SELEX data.
-
-You can encode a single nucleotide sequence or batch sequences from fasta file. However decoding from a batch coordinates file is not supported.
-Downloading is also supported. You can select which cluster to download.
 
 ![View of Viewer](docs/images/viewer.png)
 
@@ -76,3 +74,34 @@ Train a GMM model on latent space of HT-SELEX data.
 Optimize aptamers using Bayesian Optimization.
 
 ![View of Bayesian Optimization](docs/images/bo.png)
+
+## Tech Stacks
+
+**Frontend**
+<br>
+<img src="https://img.shields.io/badge/TypeScript--007ACC.svg?logo=typescript&style=flat">
+<img src="https://img.shields.io/badge/Next.js--000000.svg?logo=next.js&style=flat">
+<img src="https://img.shields.io/badge/Bootstrap--7952B3.svg?logo=bootstrap&style=flat">
+<img src="https://img.shields.io/badge/Redux--764ABC.svg?logo=redux&style=flat">
+<img src="https://img.shields.io/badge/Plotly.js--3F4F75.svg?logo=plotly&style=flat">
+<img src="https://img.shields.io/badge/ReactDataGrid--42B883.svg?logo=react&style=flat">
+
+**Backend**
+<br>
+<img src="https://img.shields.io/badge/Python--3776AB.svg?logo=python&style=flat">
+<img src="https://img.shields.io/badge/FastAPI--009688.svg?logo=fastapi&style=flat">
+<img src="https://img.shields.io/badge/PyTorch--EE4C2C.svg?logo=pytorch&style=flat">
+<img src="https://img.shields.io/badge/Celery--37814A.svg?logo=celery&style=flat">
+
+**Database**
+<br>
+<img src="https://img.shields.io/badge/PostgreSQL--4169E1.svg?logo=postgresql&style=flat">
+<img src="https://img.shields.io/badge/Redis--DC382D.svg?logo=redis&style=flat">
+
+**Deployment**
+<br>
+<img src="https://img.shields.io/badge/Docker Compose--2496ED.svg?logo=docker&style=flat">
+
+## License
+
+This project is licensed under the MIT License.

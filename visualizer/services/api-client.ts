@@ -7,7 +7,7 @@ import { apiUpload } from "./route/upload";
 import { apiBayesopt } from "./route/bayesopt";
 import { apiGMM } from "./route/gmm";
 
-export const apiClient = new Zodios("http://localhost:3000/api", [
+export const apiClient = new Zodios("http://localhost:18042/api", [
   ...apiData,
   ...apiSession,
   ...apiTool,

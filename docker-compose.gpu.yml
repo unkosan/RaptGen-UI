@@ -3,8 +3,6 @@ services:
   db:
     image: postgres
     container_name: db
-    # ports:
-    #   - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -20,12 +18,12 @@ services:
     container_name: frontend
     tty: true
     ports:
-      - 3000:3000
+      - 18042:18042
     volumes:
       - ./visualizer:/app
     environment:
       - WATCHPACK_POLLING=true
-    command: sh -c "yarn install; yarn next build; yarn next start"
+    command: sh -c "yarn install; yarn next build; yarn next start --port 18042"
 
   back:
     build:
@@ -33,14 +31,11 @@ services:
       dockerfile: gpu.dockerfile
     container_name: backend
     tty: true
-    ports:
-      - 8000:8000
     volumes:
       - ./raptgen:/app
       - /etc/localtime:/etc/localtime
     environment:
       - PYTHONPATH=/app
-    user: "${UID}:${GID}"
     command: sh -c "uvicorn --host 0.0.0.0 api:app"
     deploy:
       resources:
@@ -53,8 +48,6 @@ services:
   redis:
     image: redis
     container_name: redis
-    ports:
-      - 8030:6379
 
   worker:
     build:
@@ -68,7 +61,6 @@ services:
       - ./raptgen:/app
     environment:
       - PYTHONPATH=/app
-    user: "${UID}:${GID}"
     command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"
     deploy:
       resources:
