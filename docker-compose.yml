@@ -28,12 +28,12 @@ services:
 
   back:
     build:
-      context: ./raptgen
+      context: ./backend
       dockerfile: cpu.dockerfile
     container_name: backend
     tty: true
     volumes:
-      - ./raptgen:/app
+      - ./backend:/app
     environment:
       - PYTHONPATH=/app
     command: sh -c "uvicorn --host 0.0.0.0 api:app"
@@ -44,14 +44,14 @@ services:
 
   worker:
     build:
-      context: ./raptgen
+      context: ./backend
       dockerfile: cpu.dockerfile
     container_name: worker
     tty: true
     depends_on:
       - redis
     volumes:
-      - ./raptgen:/app
+      - ./backend:/app
     environment:
       - PYTHONPATH=/app
     command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"

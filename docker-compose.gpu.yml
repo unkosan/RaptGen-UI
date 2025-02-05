@@ -27,12 +27,12 @@ services:
 
   back:
     build:
-      context: ./raptgen
+      context: ./backend
       dockerfile: gpu.dockerfile
     container_name: backend
     tty: true
     volumes:
-      - ./raptgen:/app
+      - ./backend:/app
       - /etc/localtime:/etc/localtime
     environment:
       - PYTHONPATH=/app
@@ -51,14 +51,14 @@ services:
 
   worker:
     build:
-      context: ./raptgen
+      context: ./backend
       dockerfile: gpu.dockerfile
     container_name: worker
     tty: true
     depends_on:
       - redis
     volumes:
-      - ./raptgen:/app
+      - ./backend:/app
     environment:
       - PYTHONPATH=/app
     command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"
