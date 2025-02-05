@@ -13,14 +13,14 @@ services:
 
   visualizer:
     build:
-      context: ./visualizer
+      context: ./frontend
       dockerfile: dockerfile
     container_name: frontend
     tty: true
     ports:
       - 18042:18042
     volumes:
-      - ./visualizer:/app
+      - ./frontend:/app
     environment:
       - WATCHPACK_POLLING=true
     command: sh -c "yarn install; yarn next build; yarn next start --port 18042"
