@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Build docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./raptgen
-          file: ./raptgen/cpu.dockerfile
+          context: ./backend
+          file: ./backend/cpu.dockerfile
           tags: fastapi-image
           push: false
 
@@ -27,12 +27,12 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: fastapi-image
-          options: -v ${{ github.workspace }}/raptgen:/app
+          options: -v ${{ github.workspace }}/backend:/app
           run: |
             python -c "from api import print_spec; from pathlib import Path; Path('openapi_spec.json').write_text(print_spec())"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "18"
 
@@ -44,7 +44,7 @@ jobs:
           mv redoc-static.html out/index.html
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
 
@@ -61,4 +61,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
