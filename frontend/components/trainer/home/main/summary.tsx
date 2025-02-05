@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { responseGetItem } from "~/services/route/train";
-import Button from "@inovua/reactdatagrid-community/packages/Button";
 import { CustomDataGrid } from "~/components/common/custom-datagrid";
-import { useRouter } from "next/router";
-import { Badge } from "react-bootstrap";
+import { JobStatusToLabel } from "~/components/common/status-to-label";
 
 type SummaryType = z.infer<typeof responseGetItem>["summary"];
 
@@ -25,40 +23,11 @@ const columns = [
     header: "Status",
     width: 90,
     render: (props: CellProps) => {
-      switch (props.data.status) {
-        case "success":
-          return (
-            <center>
-              <Badge pill bg="success">
-                {props.data.status}
-              </Badge>
-            </center>
-          );
-        case "progress":
-          return (
-            <center>
-              <Badge pill bg="primary">
-                {props.data.status}
-              </Badge>
-            </center>
-          );
-        case "failure":
-          return (
-            <center>
-              <Badge pill bg="danger">
-                {props.data.status}
-              </Badge>
-            </center>
-          );
-        default:
-          return (
-            <center>
-              <Badge pill bg="warning">
-                {props.data.status}
-              </Badge>
-            </center>
-          );
-      }
+      return (
+        <center>
+          <JobStatusToLabel status={props.data.status} />
+        </center>
+      );
     },
   },
   { name: "total_epochs", header: "Total Epochs", defaultFlex: 1 },

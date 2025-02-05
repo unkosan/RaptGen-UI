@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { apiClient } from "~/services/api-client";
 import { formatDuration, intervalToDuration } from "date-fns";
 
@@ -13,6 +13,7 @@ import {
   Form,
   InputGroup,
   Row,
+  Spinner,
 } from "react-bootstrap";
 import { Summary } from "./summary";
 import { LatentGraph } from "./latent-graph";
@@ -29,13 +30,29 @@ import {
 import _ from "lodash";
 import { useRouter } from "next/router";
 import { ArrowClockwise } from "react-bootstrap-icons";
+import { JobStatusToLabel } from "~/components/common/status-to-label";
+import { useAsyncMemo, useIsLoading } from "~/hooks/common";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
-type Item = z.infer<typeof responseGetItem>;
+type ParentItem = z.infer<typeof responseGetItem>;
+
+const ParamsParentJob: React.FC<{
+  item: ParentItem;
+}> = ({ item }) => {
+  return (
+    <p>
+      <span className="fw-semibold">Start time: </span>
+      {new Date(item.start * 1000).toLocaleString()}
+      <br />
+      <span className="fw-semibold">The number of models to train: </span>
+      {item.reiteration}
+    </p>
+  );
+};
 
 const ParentPane: React.FC<{
-  item: Item;
-  refreshFunc: (parentId: string | undefined) => Promise<void>;
+  item: ParentItem;
+  refreshFunc: () => void;
 }> = ({ item, refreshFunc }) => {
   return (
     <>
@@ -45,7 +62,7 @@ const ParentPane: React.FC<{
           <Button
             variant="primary"
             onClick={() => {
-              refreshFunc(item.uuid);
+              refreshFunc();
             }}
           >
             <div className="align-items-center d-flex">
@@ -55,13 +72,7 @@ const ParentPane: React.FC<{
           </Button>
         </div>
       </div>
-      <p>
-        <span className="fw-semibold">Start time: </span>
-        {new Date(item.start * 1000).toLocaleString()}
-        <br />
-        <span className="fw-semibold">The number of models to train: </span>
-        {item.reiteration}
-      </p>
+      <ParamsParentJob item={item} />
       <p className="d-flex align-items-center">
         <span className="me-2 fw-semibold">Actions: </span>
         {item.status === "progress" ? (
@@ -92,108 +103,107 @@ const ParentPane: React.FC<{
   );
 };
 
-const ChildPane: React.FC<{
-  childItem: ChildItem | null;
-  parentItem: Item;
-  currentRunning: number[];
-  optimalModel: number | null;
-}> = ({ childItem, parentItem, currentRunning, optimalModel }) => {
+const ParamsChildJob: React.FC<{
+  item: ChildItem;
+}> = ({ item }) => {
+  const net_duration =
+    item.status === "progress"
+      ? Date.now() - (item.datetime_start - item.duration_suspend) * 1000
+      : item.status === "pending"
+      ? 0
+      : (item.datetime_laststop - item.datetime_start - item.duration_suspend) *
+        1000;
+  const suspend_duration =
+    item.status === "suspend"
+      ? Date.now() + (item.duration_suspend - item.datetime_laststop) * 1000
+      : item.duration_suspend * 1000;
+
+  return (
+    <p>
+      {/* <span className="fw-semibold">Status: </span>
+      <JobStatusToLabel status={item.status} />
+      <br /> */}
+      <span className="fw-semibold">Duration for training: </span>
+      {formatDuration(intervalToDuration({ start: 0, end: net_duration }))}
+      {suspend_duration ? (
+        <>
+          {" "}
+          (Suspended for{" "}
+          {formatDuration(
+            intervalToDuration({
+              start: 0,
+              end: suspend_duration,
+            })
+          )}
+          )
+        </>
+      ) : null}
+    </p>
+  );
+};
+
+const ChildJobHandler: React.FC<{
+  childItem: ChildItem;
+  parentItem: ParentItem;
+}> = ({ childItem, parentItem }) => {
   const [published, setPublished] = useState<boolean>(false);
   const router = useRouter();
 
+  return (
+    <Form.Group>
+      <InputGroup className="mb-3">
+        <InputGroup.Text>Target model ID</InputGroup.Text>
+        <Form.Control
+          as="select"
+          onChange={(e) => {
+            router.push(
+              `?experiment=${parentItem.uuid}&job=${e.currentTarget.value}`,
+              undefined,
+              {
+                scroll: false,
+              }
+            );
+          }}
+          value={childItem.id}
+        >
+          {parentItem.summary.indices.map((index) => {
+            return (
+              <option key={index} value={index}>
+                {index}
+              </option>
+            );
+          })}
+        </Form.Control>
+        {childItem.status === "success" ? (
+          <ApplyViewerButton
+            uuid={parentItem.uuid}
+            childId={
+              isNaN(parseInt(router.query.job as string))
+                ? undefined
+                : parseInt(router.query.job as string)
+            }
+            disabled={childItem.is_added_viewer_dataset || published}
+            setDisabled={setPublished}
+          />
+        ) : null}
+      </InputGroup>
+    </Form.Group>
+  );
+};
+
+const ChildPane: React.FC<{
+  childItem: ChildItem | null;
+  parentItem: ParentItem;
+}> = ({ childItem, parentItem }) => {
   if (childItem === null) {
     return <div>Please select a model</div>;
   }
 
-  const net_duration =
-    childItem.status === "progress"
-      ? Date.now() -
-        (childItem.datetime_start - childItem.duration_suspend) * 1000
-      : childItem.status === "pending"
-      ? 0
-      : (childItem.datetime_laststop -
-          childItem.datetime_start -
-          childItem.duration_suspend) *
-        1000;
-  const suspend_duration =
-    childItem.status === "suspend"
-      ? Date.now() +
-        (childItem.duration_suspend - childItem.datetime_laststop) * 1000
-      : childItem.duration_suspend * 1000;
-
   return (
     <>
       <legend>Job information</legend>
-      <Form.Group>
-        <InputGroup className="mb-3">
-          <InputGroup.Text>Target model ID</InputGroup.Text>
-          <Form.Control
-            as="select"
-            onChange={(e) => {
-              router.push(
-                `?experiment=${parentItem.uuid}&job=${e.currentTarget.value}`,
-                undefined,
-                {
-                  scroll: false,
-                }
-              );
-            }}
-            value={childItem.id}
-          >
-            {parentItem.summary.indices.map((index) => {
-              if (currentRunning.includes(index)) {
-                return (
-                  <option key={index} value={index}>
-                    {index} (in progress)
-                  </option>
-                );
-              } else if (optimalModel === index) {
-                return (
-                  <option key={index} value={index}>
-                    {index} (optimal)
-                  </option>
-                );
-              } else {
-                return (
-                  <option key={index} value={index}>
-                    {index}
-                  </option>
-                );
-              }
-            })}
-          </Form.Control>
-          {childItem.status === "success" ? (
-            <ApplyViewerButton
-              uuid={parentItem.uuid}
-              childId={
-                isNaN(parseInt(router.query.job as string))
-                  ? undefined
-                  : parseInt(router.query.job as string)
-              }
-              disabled={childItem.is_added_viewer_dataset || published}
-              setDisabled={setPublished}
-            />
-          ) : null}
-        </InputGroup>
-      </Form.Group>
-
-      <p>
-        <span className="fw-semibold">Duration for training: </span>
-        {formatDuration(intervalToDuration({ start: 0, end: net_duration }))}
-        {suspend_duration ? (
-          <>
-            {" "}
-            (Suspended for{" "}
-            {formatDuration(
-              intervalToDuration({
-                start: 0,
-                end: suspend_duration,
-              })
-            )}
-            )
-          </>
-        ) : null}
-      </p>
+      <ChildJobHandler childItem={childItem} parentItem={parentItem} />
+      <ParamsChildJob item={childItem} />
 
       {childItem.status === "failure" ? (
         <div>
@@ -246,158 +256,143 @@ const ChildPane: React.FC<{
   );
 };
 
+const calculateDefaultChildModelId = (item: ParentItem): number => {
+  const summary = item.summary;
+  switch (item.status) {
+    case "progress":
+    case "suspend":
+    case "failure":
+    case "pending":
+      const firstOccurrence = summary.statuses.indexOf(item.status);
+      if (firstOccurrence === -1) {
+        return 0;
+      } else {
+        return summary.indices[firstOccurrence];
+      }
+    case "success":
+      const nlls = summary.minimum_NLLs.flatMap((value, index) => {
+        return value === null || isNaN(value) ? [Infinity] : [value];
+      });
+      const successIndex = _.minBy(nlls);
+      if (successIndex === undefined) {
+        return 0;
+      } else {
+        return summary.indices[successIndex];
+      }
+    default:
+      return 0;
+  }
+};
+
 const Main: React.FC = () => {
   // retrieved from page config in redux. not always available
   const router = useRouter();
   const parentId = router.query.experiment as string | undefined;
   const childId = router.query.job as string | undefined;
 
+  const [reloadFlag, setReloadFlag] = useState(false);
+  const [loadingParent, lockParent, unlockParent] = useIsLoading();
+  const [loadingChild, lockChild, unlockChild] = useIsLoading();
+
   // items shown on the page
-  const [item, setItem] = React.useState<Item | null>(null);
-  const [childItem, setChildItem] = React.useState<ChildItem | null>(null);
-
-  // current running model
-  const [currentModels, setCurrentModels] = React.useState<number[]>([]);
-  // most optimal model
-  const [optimalModel, setOptimalModel] = React.useState<number | null>(null);
-
-  // Update information of the parent job if avaiable
-  const update = async (parentId: string | undefined) => {
-    if (parentId) {
+  const parentItem: ParentItem | null = useAsyncMemo(
+    async () => {
+      if (parentId === undefined) {
+        return null;
+      }
+      lockParent();
       const item = await apiClient.getItem({
         params: {
           parent_uuid: parentId,
         },
       });
-      setItem(item);
-    } else {
-      setItem(null);
-      setChildItem(null);
-    }
-  };
-  useEffect(() => {
-    update(parentId);
-  }, [parentId]);
+      unlockParent();
+      return item;
+    },
+    [parentId, reloadFlag],
+    null
+  );
 
-  // Update information of the child job
-  useEffect(() => {
-    if (parentId === undefined || item === null) return;
+  const childItem: ChildItem | null = useAsyncMemo(
+    async () => {
+      if (parentItem === null) {
+        return null;
+      } // parentItem must be available
 
-    if (parentId !== item.uuid) return;
-
-    const summary = item.summary;
-    const status = item.status;
-
-    const runningIndices = summary.statuses.flatMap((value, index) => {
-      return value === "progress" || value === "suspend" ? [index] : [];
-    });
-    setCurrentModels(runningIndices);
-
-    const successIndices: number[] = summary.statuses.flatMap(
-      (value, index) => {
-        return value === "success" ? [index] : [];
-      }
-    );
-    const nlls = summary.minimum_NLLs.flatMap((value, index) => {
-      return value === null ? [Infinity] : [value];
-    });
-    const validNLLs = nlls.map((value) => (isNaN(value) ? Infinity : value));
-    const argmin = _.minBy(successIndices, (index) => validNLLs[index]);
-    if (argmin === undefined) {
-      setOptimalModel(null);
-    } else {
-      setOptimalModel(argmin);
-    }
-
-    if (childId === undefined) {
-      (async () => {
-        switch (status) {
-          case "progress":
-          case "suspend":
-            setChildItem(
-              runningIndices.length === 0
-                ? null
-                : await apiClient.getChildItem({
-                    params: {
-                      parent_uuid: parentId,
-                      child_id: summary.indices[runningIndices[0]],
-                    },
-                  })
-            );
-            break;
-          case "success":
-            setChildItem(
-              await apiClient.getChildItem({
-                params: {
-                  parent_uuid: parentId,
-                  child_id: summary.indices[argmin as number],
-                },
-              })
-            );
-            break;
-          case "failure":
-            setChildItem(
-              await apiClient.getChildItem({
-                params: {
-                  parent_uuid: parentId,
-                  child_id: summary.indices[0],
-                },
-              })
-            );
-            break;
-          case "pending":
-            const pendIndex = summary.statuses.findIndex(
-              (value) => value === "pending"
-            );
-            setChildItem(
-              pendIndex === -1
-                ? null
-                : await apiClient.getChildItem({
-                    params: {
-                      parent_uuid: parentId,
-                      child_id: summary.indices[pendIndex],
-                    },
-                  })
-            );
-            break;
-          default:
-            setChildItem(null);
-        }
-      })();
-    } else if (parseInt(childId) < item.reiteration) {
-      // when a parent and a child is specified
-      apiClient
-        .getChildItem({
+      lockChild();
+      if (
+        childId === undefined ||
+        isNaN(parseInt(childId)) ||
+        parentItem.reiteration <= parseInt(childId)
+      ) {
+        // return null;
+        const defaultChildId = calculateDefaultChildModelId(parentItem);
+        const item = await apiClient.getChildItem({
           params: {
-            parent_uuid: parentId,
+            parent_uuid: parentItem.uuid,
+            child_id: defaultChildId,
+          },
+        });
+        unlockChild();
+        return item;
+      } // if valid childId is not available, default item is set
+      else {
+        const item = await apiClient.getChildItem({
+          params: {
+            parent_uuid: parentItem.uuid,
             child_id: parseInt(childId),
           },
-        })
-        .then((childItem) => {
-          setChildItem(childItem);
-        })
-        .catch((err) => {
-          console.log(err);
-          setChildItem(null);
         });
-    } else {
-      setChildItem(null);
-    }
-  }, [childId, item, parentId]);
+        unlockChild();
+        return item;
+      }
+    },
+    [parentItem, childId, reloadFlag],
+    null
+  );
 
-  if (!item) {
+  const update = () => {
+    setReloadFlag(!reloadFlag);
+  };
+
+  if (parentId === undefined) {
     return <div>Please click the entry on the left</div>;
+  }
+
+  if (loadingParent) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full">
+        <Spinner
+          animation="border"
+          variant="primary"
+          role="status"
+          className="mx-auto"
+        />
+        <div className="ms-2 fs-3">Loading...</div>
+      </div>
+    );
   }
 
   return (
     <div>
-      <ParentPane item={item} refreshFunc={update} />
-      <ChildPane
-        childItem={childItem}
-        parentItem={item}
-        currentRunning={currentModels}
-        optimalModel={optimalModel}
-      />
+      {loadingParent || !parentItem ? null : (
+        <ParentPane item={parentItem} refreshFunc={update} />
+      )}
+      {loadingChild || !childItem || !parentItem ? (
+        <div className="d-flex justify-content-center h-full w-full">
+          <div className="mx-auto d-flex align-items-center">
+            <Spinner
+              animation="border"
+              variant="primary"
+              role="status"
+              className="mx-auto"
+            />
+            <div className="ms-2 fs-3">Loading...</div>
+          </div>
+        </div>
+      ) : (
+        <ChildPane childItem={childItem} parentItem={parentItem} />
+      )}
     </div>
   );
 };
