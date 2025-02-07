@@ -1,15 +1,7 @@
 import "bootswatch/dist/cerulean/bootstrap.min.css";
 import { NextPage } from "next";
 import Head from "next/head";
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Row,
-  Spinner,
-  Container,
-} from "react-bootstrap";
+import { Alert, Button, Col, Row, Spinner, Container } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
 import VaeJobsList from "~/components/trainer/home/vae-jobs-list/vae-jobs-list";
 import { Provider } from "react-redux";
@@ -33,7 +25,6 @@ import {
 } from "~/components/trainer/home/job-params";
 import {
   DeleteButton,
-  DownloadLossesButton,
   RenameButton,
   ResumeButton,
   StopButton,
@@ -133,32 +124,16 @@ const ChildPane: React.FC<{
               minCount: 1,
             }}
           />
-
-          <Card className="mb-3">
-            <Card.Header className="d-flex justify-content-between">
-              <span>Loss Transition</span>
-              <span>
-                <DownloadLossesButton
-                  trainLoss={childItem.losses.train_loss}
-                  testLoss={childItem.losses.test_loss}
-                  testReconLoss={childItem.losses.test_recon}
-                  testKldLoss={childItem.losses.test_kld}
-                />
-              </span>
-            </Card.Header>
-            <Card.Body>
-              <LossesGraph
-                title=""
-                lossData={{
-                  epochs: childItem.losses.train_loss.map((_, index) => index),
-                  trainLosses: childItem.losses.train_loss,
-                  testLosses: childItem.losses.test_loss,
-                  testRecons: childItem.losses.test_recon,
-                  testKlds: childItem.losses.test_kld,
-                }}
-              />
-            </Card.Body>
-          </Card>
+          <LossesGraph
+            title=""
+            lossData={{
+              epochs: childItem.losses.train_loss.map((_, index) => index),
+              trainLosses: childItem.losses.train_loss,
+              testLosses: childItem.losses.test_loss,
+              testRecons: childItem.losses.test_recon,
+              testKlds: childItem.losses.test_kld,
+            }}
+          />
         </>
       )}
     </>
@@ -193,11 +168,26 @@ const calculateDefaultChildModelId = (item: ParentItem): number => {
   }
 };
 
-const Home: React.FC = () => {
-  const router = useRouter();
-  const parentId = router.query.experiment as string | undefined;
-  const childId = router.query.job as string | undefined;
+const LoadingPane: React.FC<{ label: string }> = ({ label }) => {
+  return (
+    <div className="d-flex justify-content-center h-full w-full">
+      <div className="mx-auto d-flex align-items-center">
+        <Spinner
+          animation="border"
+          variant="primary"
+          role="status"
+          className="mx-auto"
+        />
+        <div className="ms-2 fs-3">{label}</div>
+      </div>
+    </div>
+  );
+};
 
+const DetailPane: React.FC<{
+  parentId: string | undefined;
+  childId: string | undefined;
+}> = ({ parentId, childId }) => {
   const [reloadFlag, setReloadFlag] = useState(false);
   const [loadingParent, lockParent, unlockParent] = useIsLoading();
   const [loadingChild, lockChild, unlockChild] = useIsLoading();
@@ -259,13 +249,41 @@ const Home: React.FC = () => {
     null
   );
 
-  const update = () => {
-    setReloadFlag(!reloadFlag);
-  };
-
   if (parentId === undefined) {
     return <div>Please click the entry on the left</div>;
   }
+
+  if (loadingParent || !parentItem) {
+    return <LoadingPane label="Loading Job Group..." />;
+  }
+
+  if (loadingChild) {
+    return (
+      <>
+        <ParentPane
+          item={parentItem}
+          refreshFunc={() => setReloadFlag(!reloadFlag)}
+        />
+        <LoadingPane label="Loading Job..." />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <ParentPane
+        item={parentItem}
+        refreshFunc={() => setReloadFlag(!reloadFlag)}
+      />
+      <ChildPane childItem={childItem} parentItem={parentItem} />
+    </>
+  );
+};
+
+const Home: React.FC = () => {
+  const router = useRouter();
+  const parentId = router.query.experiment as string | undefined;
+  const childId = router.query.job as string | undefined;
 
   return (
     <div className="vh-100 d-flex flex-column">
@@ -280,26 +298,7 @@ const Home: React.FC = () => {
               <VaeJobsList />
             </Col>
             <Col>
-              <div>
-                {loadingParent || !parentItem ? null : (
-                  <ParentPane item={parentItem} refreshFunc={update} />
-                )}
-                {loadingChild || !childItem || !parentItem ? (
-                  <div className="d-flex justify-content-center h-full w-full">
-                    <div className="mx-auto d-flex align-items-center">
-                      <Spinner
-                        animation="border"
-                        variant="primary"
-                        role="status"
-                        className="mx-auto"
-                      />
-                      <div className="ms-2 fs-3">Loading...</div>
-                    </div>
-                  </div>
-                ) : (
-                  <ChildPane childItem={childItem} parentItem={parentItem} />
-                )}
-              </div>
+              <DetailPane parentId={parentId} childId={childId} />
             </Col>
           </Row>
         </Container>
