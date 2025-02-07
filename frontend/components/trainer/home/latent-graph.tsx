@@ -1,51 +1,9 @@
-import { Layout, PlotData } from "plotly.js";
+import { PlotData } from "plotly.js";
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { Card, Tabs, Tab, Form } from "react-bootstrap";
-import { DownloadCurrentCodesButton } from "./action-buttons";
+import { Card, Tabs, Tab, Form, Button } from "react-bootstrap";
+import { latentGraphLayout } from "~/components/common/graph-layout";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
-
-const returnLayout = (title: string): Partial<Layout> => {
-  return {
-    title: title,
-    plot_bgcolor: "#EDEDED",
-    xaxis: {
-      color: "#FFFFFF",
-      tickfont: {
-        color: "#000000",
-      },
-      range: [-3.5, 3.5],
-      gridcolor: "#FFFFFF",
-    },
-    yaxis: {
-      color: "#FFFFFF",
-      tickfont: {
-        color: "#000000",
-      },
-      range: [-3.5, 3.5],
-      gridcolor: "#FFFFFF",
-    },
-    legend: {
-      yanchor: "top",
-      y: 1,
-      x: 0,
-      bgcolor: "rgba(255,255,255,0.8)",
-    },
-    hoverlabel: {
-      font: {
-        family: "monospace",
-      },
-    },
-    clickmode: "event+select",
-    margin: {
-      l: 20,
-      r: 20,
-      b: 20,
-      t: 20,
-      pad: 4,
-    },
-  };
-};
 
 type Props = {
   title: string;
@@ -93,6 +51,34 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
     return trace;
   }, [vaeData, minCount]);
 
+  const onClickSave = () => {
+    const csvHeader = "random_region, x, y, duplicate";
+    let csvData = "";
+    for (let i = 0; i < vaeData.randomRegions.length; i++) {
+      csvData +=
+        vaeData.randomRegions[i] +
+        "," +
+        vaeData.coordsX[i] +
+        "," +
+        vaeData.coordsY[i] +
+        "," +
+        vaeData.duplicates[i] +
+        "\n";
+    }
+    // download csv file
+    const blob = new Blob([csvHeader + "\n" + csvData], {
+      type: "text/csv",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.setAttribute("hidden", "");
+    a.setAttribute("href", url);
+    a.setAttribute("download", "latent_points.csv");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
     <Tabs defaultActiveKey="latent-space" id="latent-graph-tabs">
       <Tab eventKey="latent-space" title="Latent space">
@@ -102,7 +88,7 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
               <Plot
                 data={[vaeDataPlot]}
                 useResizeHandler={true}
-                layout={returnLayout(title)}
+                layout={latentGraphLayout(title)}
                 config={{ responsive: true }}
                 style={{ width: "100%", height: "100%" }}
               />
@@ -130,12 +116,14 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
                 isInvalid={!validMinCount}
               />
             </Form.Group>
-            <DownloadCurrentCodesButton
-              randomRegions={vaeData.randomRegions}
-              duplicates={vaeData.duplicates}
-              coordsX={vaeData.coordsX}
-              coordsY={vaeData.coordsY}
-            />
+            <Button
+              variant="success"
+              className="mx-1"
+              style={{ cursor: "pointer" }}
+              onClick={onClickSave}
+            >
+              Download Latent Points
+            </Button>
           </Card.Body>
         </Card>
       </Tab>

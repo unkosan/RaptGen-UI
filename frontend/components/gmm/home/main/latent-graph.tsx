@@ -3,51 +3,10 @@ import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import dynamic from "next/dynamic";
 import { Layout, PlotData } from "plotly.js";
 import { useMemo, useState } from "react";
-import { Card, Form, InputGroup, Tab, Tabs } from "react-bootstrap";
+import { Card, Form, Tab, Tabs } from "react-bootstrap";
+import { latentGraphLayout } from "~/components/common/graph-layout";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
-
-const returnLayout = (title: string): Partial<Layout> => {
-  return {
-    // title: title,
-    plot_bgcolor: "#EDEDED",
-    xaxis: {
-      color: "#FFFFFF",
-      tickfont: {
-        color: "#000000",
-      },
-      range: [-3.5, 3.5],
-      gridcolor: "#FFFFFF",
-    },
-    yaxis: {
-      color: "#FFFFFF",
-      tickfont: {
-        color: "#000000",
-      },
-      range: [-3.5, 3.5],
-      gridcolor: "#FFFFFF",
-    },
-    legend: {
-      yanchor: "top",
-      y: 1,
-      x: 0,
-      bgcolor: "rgba(255,255,255,0.8)",
-    },
-    hoverlabel: {
-      font: {
-        family: "monospace",
-      },
-    },
-    clickmode: "event+select",
-    margin: {
-      l: 30,
-      r: 30,
-      b: 30,
-      t: 30,
-      pad: 5,
-    },
-  };
-};
 
 type Props = {
   title: string;
@@ -169,7 +128,7 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
               <Plot
                 data={[vaeDataPlot, ...gmmDataPlot]}
                 useResizeHandler={true}
-                layout={returnLayout("")}
+                layout={latentGraphLayout("")}
                 config={{ responsive: true }}
                 style={{ width: "100%", height: "100%" }}
               />

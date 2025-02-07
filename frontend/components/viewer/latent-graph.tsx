@@ -17,6 +17,7 @@ import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 import { setSelectedPoints } from "./redux/selected-points";
 import ConfigSelector from "./config-selector/config-selector";
+import { latentGraphLayout } from "../common/graph-layout";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 interface PlotDatumAmend extends PlotDatum {
@@ -25,48 +26,6 @@ interface PlotDatumAmend extends PlotDatum {
 interface PlotSelectionEventAmend extends PlotSelectionEvent {
   points: PlotDatumAmend[];
 }
-
-const returnLayout = (title: string): Partial<Layout> => {
-  return {
-    // title: title,
-    plot_bgcolor: "#EDEDED",
-    xaxis: {
-      color: "#FFFFFF",
-      tickfont: {
-        color: "#000000",
-      },
-      range: [-3.5, 3.5],
-      gridcolor: "#FFFFFF",
-    },
-    yaxis: {
-      color: "#FFFFFF",
-      tickfont: {
-        color: "#000000",
-      },
-      range: [-3.5, 3.5],
-      gridcolor: "#FFFFFF",
-    },
-    legend: {
-      yanchor: "top",
-      y: 1,
-      x: 0,
-      bgcolor: "rgba(255,255,255,0.8)",
-    },
-    hoverlabel: {
-      font: {
-        family: "monospace",
-      },
-    },
-    clickmode: "event+select",
-    margin: {
-      l: 30,
-      r: 30,
-      b: 30,
-      t: 30,
-      pad: 5,
-    },
-  };
-};
 
 const calculateTraces = (mu: number[], sigma: number[][]) => {
   sigma = cloneDeep(sigma);
@@ -136,7 +95,8 @@ const LatentGraph: React.FC = () => {
   );
   const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
 
-  const layout = returnLayout(sessionConfig.vaeName);
+  // const layout = latentGraphLayout(sessionConfig.vaeName);
+  const layout = latentGraphLayout("");
 
   const dispatch = useDispatch();
 
