@@ -1,16 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Data,
-  Layout,
-  PlotData,
-  PlotDatum,
-  PlotSelectionEvent,
-} from "plotly.js";
+import { Data, PlotData, PlotDatum, PlotSelectionEvent } from "plotly.js";
 import dynamic from "next/dynamic";
 import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import { cloneDeep, zip } from "lodash";
-import { Card, Spinner, Tab, Tabs } from "react-bootstrap";
+import { Card, Tab, Tabs } from "react-bootstrap";
 
 import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import { useDispatch } from "react-redux";
@@ -449,12 +443,9 @@ const LatentGraph: React.FC = () => {
         <Card className="mb-3">
           <Card.Body>
             <div
+              className="justify-content-center align-items-center w-100"
               style={{
-                position: "relative",
-                width: "100%",
                 aspectRatio: "1 / 1",
-                justifyContent: "center",
-                alignItems: "center",
               }}
             >
               {isLoading ? (
@@ -471,8 +462,8 @@ const LatentGraph: React.FC = () => {
                   ]}
                   layout={layout}
                   useResizeHandler={true}
-                  style={{ width: "100%", height: "100%" }}
                   onSelected={handleSelected}
+                  className="w-100 h-100"
                 />
               )}
             </div>

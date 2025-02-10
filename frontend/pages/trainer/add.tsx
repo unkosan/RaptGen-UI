@@ -60,7 +60,7 @@ const Home: React.FC = () => {
       <main>
         <Navigator currentPage="vae-trainer" />
         <Container>
-          <h1 style={{ marginTop: "1rem" }}>VAE Trainer</h1>
+          <h1>VAE Trainer</h1>
           <hr />
           <div
             style={{

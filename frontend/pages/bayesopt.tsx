@@ -387,11 +387,13 @@ const Home: React.FC = () => {
       <main>
         <InitializeExperimentComponent />
         <Container>
-          <h1 style={{ marginTop: "1rem" }}>Bayesian Optimization</h1>
+          <div className="py-2" />
+          <h1>Bayesian Optimization</h1>
           <hr />
           <Row>
             <Col md={4}>
               <div>
+                <legend>Session</legend>
                 <Sessions />
                 <hr />
                 <legend>VAE model</legend>

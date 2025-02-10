@@ -32,7 +32,8 @@ const Home: React.FC = () => {
       <Navigator currentPage="" />
       <main>
         <Container>
-          <h1 style={{ marginTop: "1rem" }}>Home</h1>
+          <div className="py-2" />
+          <h1>Home</h1>
           <hr />
           <Row className="my-3">
             <Col>

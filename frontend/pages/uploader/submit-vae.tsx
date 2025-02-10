@@ -22,7 +22,8 @@ const Home: React.FC = () => {
       <main>
         <Navigator currentPage="uploader" />
         <Container>
-          <h1 style={{ marginTop: "1rem" }}>Uploader</h1>
+          <div className="py-2" />
+          <h1>Uploader</h1>
           <hr />
           This page is under construction.
           {/* <Row>

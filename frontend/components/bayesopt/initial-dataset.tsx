@@ -238,7 +238,7 @@ const InitialDataset: React.FC = () => {
           <OverlayTrigger
             overlay={
               <Tooltip>
-                <div style={{ textAlign: "left" }}>
+                <div className="text-start">
                   Upload csv file with headers. The header must contain
                   <code>&apos;random_region&apos;</code> and{" "}
                   <code>&apos;seq_id&apos;</code>
@@ -266,7 +266,7 @@ const InitialDataset: React.FC = () => {
           <OverlayTrigger
             overlay={
               <Tooltip>
-                <div style={{ textAlign: "left" }}>
+                <div className="text-start">
                   Decode sequences from GMM centers and reembed them for initial
                   dataset. If a decoded sequence has <code>&apos;N&apos;</code>{" "}
                   token, it will be removed and then reembedded.

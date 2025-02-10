@@ -58,21 +58,13 @@ const BicGraph: React.FC<BicProps> = (props) => {
         <Card.Text>BIC Distribution</Card.Text>
       </Card.Header>
       <Card.Body>
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            aspectRatio: "3 / 2",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
+        <div className="justify-content-center align-items-center w-100">
           <Plot
             data={[bicData]}
             useResizeHandler={true}
             layout={layout}
             config={{ responsive: true }}
-            style={{ width: "100%", height: "100%" }}
+            className="w-100"
           />
         </div>
       </Card.Body>

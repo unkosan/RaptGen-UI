@@ -105,7 +105,7 @@ const ChildPane: React.FC<{
           <ChildJobParams item={childItem} />
           <Alert variant="danger">
             <Alert.Heading>Runtime Error</Alert.Heading>
-            <div style={{ fontFamily: "monospace" }}>{childItem.error_msg}</div>
+            <div className="font-monospace">{childItem.error_msg}</div>
           </Alert>
         </>
       );
@@ -273,7 +273,8 @@ const Home: React.FC = () => {
       <Navigator currentPage="vae-trainer" />
       <main>
         <Container>
-          <h1 style={{ marginTop: "1rem" }}>VAE Trainer</h1>
+          <div className="py-2" />
+          <h1>VAE Trainer</h1>
           <hr />
           <Row>
             <Col md={4}>

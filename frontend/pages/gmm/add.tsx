@@ -17,7 +17,8 @@ const Home: React.FC = () => {
       <Navigator currentPage="gmm-trainer" />
       <main>
         <Container>
-          <h1 style={{ marginTop: "1rem" }}>GMM Trainer</h1>
+          <div className="py-2" />
+          <h1>GMM Trainer</h1>
           <hr />
           <Row>
             <Col md={4}>

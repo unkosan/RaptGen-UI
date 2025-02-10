@@ -24,7 +24,8 @@ const Home: React.FC = () => {
       <Navigator currentPage="viewer" />
       <main>
         <Container>
-          <h1 style={{ marginTop: "1rem" }}>Viewer</h1>
+          <div className="py-2" />
+          <h1>Viewer</h1>
           <hr />
           <Row>
             <Col md={4}>

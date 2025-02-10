@@ -83,13 +83,18 @@ export const LatentGraph: React.FC<Props> = ({ title, vaeData }) => {
       <Tab eventKey="latent-space" title="Latent space">
         <Card className="mb-3">
           <Card.Body>
-            <div style={{ aspectRatio: "1 / 1" }}>
+            <div
+              className="justify-content-center align-items-center w-100"
+              style={{
+                aspectRatio: "1 / 1",
+              }}
+            >
               <Plot
                 data={[vaeDataPlot]}
                 useResizeHandler={true}
                 layout={latentGraphLayout(title)}
                 config={{ responsive: true }}
-                style={{ width: "100%", height: "100%" }}
+                className="w-100 h-100"
               />
             </div>
           </Card.Body>

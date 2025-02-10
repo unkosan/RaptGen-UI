@@ -78,7 +78,7 @@ export const QueryTable: React.FC = () => {
                 <OverlayTrigger
                   overlay={
                     <Tooltip>
-                      <div style={{ textAlign: "left" }}>
+                      <div className="text-start">
                         <span className="font-monospace">Original X</span>
                         means the raw value of the X coordinate returned by the
                         Bayesian optimization. This value is reembedded through
@@ -106,7 +106,7 @@ export const QueryTable: React.FC = () => {
                 <OverlayTrigger
                   overlay={
                     <Tooltip>
-                      <div style={{ textAlign: "left" }}>
+                      <div className="text-start">
                         <span className="font-monospace">Original Y</span>
                         means the raw value of the Y coordinate returned by the
                         Bayesian optimization. This value is reembedded through

@@ -74,12 +74,9 @@ const LatentGraph: React.FC = () => {
         <Card className="mb-3">
           <Card.Body>
             <div
+              className="justify-content-center align-items-center w-100"
               style={{
-                position: "relative",
-                width: "100%",
-                aspectRatio: "10 / 9",
-                justifyContent: "center",
-                alignItems: "center",
+                aspectRatio: "1 / 1",
               }}
             >
               {isLoading ? (
@@ -90,7 +87,7 @@ const LatentGraph: React.FC = () => {
                   useResizeHandler={true}
                   layout={latentGraphLayout("")}
                   config={{ responsive: true }}
-                  style={{ width: "100%", height: "100%" }}
+                  className="w-100 h-100"
                 />
               )}
             </div>

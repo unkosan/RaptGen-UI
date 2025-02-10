@@ -116,12 +116,9 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
         <Card className="mb-3">
           <Card.Body>
             <div
+              className="justify-content-center align-items-center w-100"
               style={{
-                position: "relative",
-                width: "100%",
-                aspectRatio: "10 / 9",
-                justifyContent: "center",
-                alignItems: "center",
+                aspectRatio: "1 / 1",
               }}
             >
               <Plot
@@ -129,7 +126,7 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
                 useResizeHandler={true}
                 layout={latentGraphLayout("")}
                 config={{ responsive: true }}
-                style={{ width: "100%", height: "100%" }}
+                className="w-100 h-100"
               />
             </div>
           </Card.Body>

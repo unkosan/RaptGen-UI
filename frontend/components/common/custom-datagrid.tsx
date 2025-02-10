@@ -104,19 +104,23 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
         <>
           {props.copiable && (
             <>
-              <Button disabled={props.copyButtonDisabled} onClick={onCopy}>
+              <Button
+                disabled={props.copyButtonDisabled}
+                onClick={onCopy}
+                className="me-2"
+              >
                 <span className="d-flex align-items-center">
                   <Clipboard className="me-2" />
                   Copy selected cells
                 </span>
               </Button>
-              <span style={{ marginInline: 4 }} />
             </>
           )}
           {props.downloadable && (
             <Button
               disabled={props.downloadButtonDisabled}
               onClick={onDownload}
+              className="me-2"
             >
               <span className="d-flex align-items-center">
                 <Download className="me-2" />
