@@ -12,7 +12,6 @@ type Props = {
     coordsY: number[];
     randomRegions: string[];
     duplicates: number[];
-    minCount: number;
   };
 };
 

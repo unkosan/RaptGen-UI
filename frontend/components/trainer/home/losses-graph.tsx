@@ -1,6 +1,7 @@
 import { Layout, PlotData } from "plotly.js";
 import { useMemo } from "react";
 import dynamic from "next/dynamic";
+import { Badge, Card } from "react-bootstrap";
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export const returnLayout = (title: string): Partial<Layout> => {
@@ -109,15 +110,63 @@ export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
     return [traceTrainLosses, traceTestLosses, traceTestRecons, traceTestKlds];
   }, [lossData]);
 
+  const onClickSave = () => {
+    const csvHeader = "epoch, train_loss, test_loss, test_recon, test_kld";
+    let csvData = "";
+    for (let i = 0; i < lossData.trainLosses.length; i++) {
+      csvData +=
+        i +
+        "," +
+        lossData.trainLosses[i] +
+        "," +
+        lossData.testLosses[i] +
+        "," +
+        lossData.testRecons[i] +
+        "," +
+        lossData.testKlds[i] +
+        "\n";
+    }
+    // download csv file
+    const blob = new Blob([csvHeader + "\n" + csvData], {
+      type: "text/csv",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.setAttribute("hidden", "");
+    a.setAttribute("href", url);
+    a.setAttribute("download", "losses.csv");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
-    <div style={{ aspectRatio: "2 / 1" }}>
-      <Plot
-        data={lossDataPlot}
-        useResizeHandler={true}
-        layout={returnLayout(title)}
-        config={{ responsive: true }}
-        style={{ width: "100%", height: "100%" }}
-      />
-    </div>
+    <Card className="mb-3">
+      <Card.Header className="d-flex justify-content-between">
+        <span>Loss Transition</span>
+        <span>
+          <Badge
+            pill
+            bg="success"
+            className="mx-1"
+            onClick={onClickSave}
+            style={{ cursor: "pointer" }}
+          >
+            Download Loss Transitions
+          </Badge>
+        </span>
+      </Card.Header>
+      <Card.Body>
+        <div style={{ aspectRatio: "2 / 1" }}>
+          <Plot
+            data={lossDataPlot}
+            useResizeHandler={true}
+            layout={returnLayout(title)}
+            config={{ responsive: true }}
+            style={{ width: "100%", height: "100%" }}
+          />
+        </div>
+      </Card.Body>
+    </Card>
   );
 };

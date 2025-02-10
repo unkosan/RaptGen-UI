@@ -205,97 +205,50 @@ export const RenameButton: React.FC<{
   );
 };
 
-// download latent points to csv file
-type LatentDataType = {
-  randomRegions: string[];
-  coordsX: number[];
-  coordsY: number[];
-  duplicates: number[];
-};
-export const DownloadCurrentCodesButton: React.FC<LatentDataType> = (props) => {
-  return (
-    <Button
-      variant="success"
-      className="mx-1"
-      onClick={() => {
-        const csvHeader = "random_region, x, y, duplicate";
-        let csvData = "";
-        for (let i = 0; i < props.randomRegions.length; i++) {
-          csvData +=
-            props.randomRegions[i] +
-            "," +
-            props.coordsX[i] +
-            "," +
-            props.coordsY[i] +
-            "," +
-            props.duplicates[i] +
-            "\n";
-        }
-        // download csv file
-        const blob = new Blob([csvHeader + "\n" + csvData], {
-          type: "text/csv",
-        });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.setAttribute("hidden", "");
-        a.setAttribute("href", url);
-        a.setAttribute("download", "latent_points.csv");
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }}
-      style={{ cursor: "pointer" }}
-    >
-      Download Latent Points
-    </Button>
-  );
-};
-
-// download losses transition to csv file
-type LossesDataType = {
-  trainLoss: number[];
-  testLoss: number[];
-  testReconLoss: number[];
-  testKldLoss: number[];
-};
-export const DownloadLossesButton: React.FC<LossesDataType> = (props) => {
-  return (
-    <Badge
-      pill
-      bg="success"
-      className="mx-1"
-      onClick={() => {
-        const csvHeader = "epoch, train_loss, test_loss, test_recon, test_kld";
-        let csvData = "";
-        for (let i = 0; i < props.trainLoss.length; i++) {
-          csvData +=
-            i +
-            "," +
-            props.trainLoss[i] +
-            "," +
-            props.testLoss[i] +
-            "," +
-            props.testReconLoss[i] +
-            "," +
-            props.testKldLoss[i] +
-            "\n";
-        }
-        // download csv file
-        const blob = new Blob([csvHeader + "\n" + csvData], {
-          type: "text/csv",
-        });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.setAttribute("hidden", "");
-        a.setAttribute("href", url);
-        a.setAttribute("download", "losses.csv");
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }}
-      style={{ cursor: "pointer" }}
-    >
-      Download Loss Transtions
-    </Badge>
-  );
+export const ActionButtons: React.FC<{
+  uuid: string;
+  name: string;
+  status: string;
+  refreshFunc: () => void;
+}> = ({ uuid, name, status, refreshFunc }) => {
+  switch (status) {
+    case "suspend":
+      return (
+        <p className="d-flex align-items-center">
+          <span className="me-2 fw-semibold">Actions: </span>
+          <ResumeButton uuid={uuid} refreshFunc={refreshFunc} />
+          <DeleteButton uuid={uuid} refreshFunc={refreshFunc} />
+          <RenameButton
+            uuid={uuid}
+            defaultName={name}
+            refreshFunc={refreshFunc}
+          />
+        </p>
+      );
+    case "progress":
+      return (
+        <p className="d-flex align-items-center">
+          <span className="me-2 fw-semibold">Actions: </span>
+          <StopButton uuid={uuid} refreshFunc={refreshFunc} />
+          <DeleteButton uuid={uuid} refreshFunc={refreshFunc} />
+          <RenameButton
+            uuid={uuid}
+            defaultName={name}
+            refreshFunc={refreshFunc}
+          />
+        </p>
+      );
+    default:
+      return (
+        <p className="d-flex align-items-center">
+          <span className="me-2 fw-semibold">Actions: </span>
+          <DeleteButton uuid={uuid} refreshFunc={refreshFunc} />
+          <RenameButton
+            uuid={uuid}
+            defaultName={name}
+            refreshFunc={refreshFunc}
+          />
+        </p>
+      );
+  }
 };

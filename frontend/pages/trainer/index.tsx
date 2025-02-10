@@ -1,7 +1,7 @@
 import "bootswatch/dist/cerulean/bootstrap.min.css";
 import { NextPage } from "next";
 import Head from "next/head";
-import { Alert, Button, Col, Row, Spinner, Container } from "react-bootstrap";
+import { Alert, Button, Col, Row, Container } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
 import VaeJobsList from "~/components/trainer/home/vae-jobs-list/vae-jobs-list";
 import { Provider } from "react-redux";
@@ -23,17 +23,13 @@ import {
   ChildJobParams,
   ParentJobParams,
 } from "~/components/trainer/home/job-params";
-import {
-  DeleteButton,
-  RenameButton,
-  ResumeButton,
-  StopButton,
-} from "~/components/trainer/home/action-buttons";
+import { ActionButtons } from "~/components/trainer/home/action-buttons";
 import { Summary } from "~/components/trainer/home/summary";
 import { TrainingParams } from "~/components/trainer/home/training-params";
 import { ChildJobHandler } from "~/components/trainer/home/child-job-handler";
 import { LatentGraph } from "~/components/trainer/home/latent-graph";
 import { LossesGraph } from "~/components/trainer/home/losses-graph";
+import LoadingPane from "~/components/common/loading-pane";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type ParentItem = z.infer<typeof responseGetItem>;
@@ -61,21 +57,12 @@ const ParentPane: React.FC<{
         </div>
       </div>
       <ParentJobParams item={item} />
-      <p className="d-flex align-items-center">
-        <span className="me-2 fw-semibold">Actions: </span>
-        {item.status === "progress" ? (
-          <StopButton uuid={item.uuid} refreshFunc={refreshFunc} />
-        ) : item.status === "suspend" ? (
-          <ResumeButton uuid={item.uuid} refreshFunc={refreshFunc} />
-        ) : null}
-
-        <DeleteButton uuid={item.uuid} refreshFunc={refreshFunc} />
-        <RenameButton
-          uuid={item.uuid}
-          defaultName={item.name}
-          refreshFunc={refreshFunc}
-        />
-      </p>
+      <ActionButtons
+        uuid={item.uuid}
+        name={item.name}
+        status={item.status}
+        refreshFunc={refreshFunc}
+      />
 
       <Row>
         <Col>
@@ -99,21 +86,34 @@ const ChildPane: React.FC<{
     return <div>Please select a model</div>;
   }
 
-  return (
-    <>
-      <legend>Job information</legend>
-      <ChildJobHandler childItem={childItem} parentItem={parentItem} />
-      <ChildJobParams item={childItem} />
-
-      {childItem.status === "failure" ? (
-        <div>
+  switch (childItem.status) {
+    case "pending":
+      return (
+        <>
+          <ChildJobHandler childItem={childItem} parentItem={parentItem} />
+          <ChildJobParams item={childItem} />
+          <Alert variant="info">
+            <Alert.Heading>Pending</Alert.Heading>
+            <p>The job is pending. Please wait for a while.</p>
+          </Alert>
+        </>
+      );
+    case "failure":
+      return (
+        <>
+          <ChildJobHandler childItem={childItem} parentItem={parentItem} />
+          <ChildJobParams item={childItem} />
           <Alert variant="danger">
             <Alert.Heading>Runtime Error</Alert.Heading>
             <div style={{ fontFamily: "monospace" }}>{childItem.error_msg}</div>
           </Alert>
-        </div>
-      ) : childItem.status === "pending" ? null : (
+        </>
+      );
+    default:
+      return (
         <>
+          <ChildJobHandler childItem={childItem} parentItem={parentItem} />
+          <ChildJobParams item={childItem} />
           <LatentGraph
             title={""}
             vaeData={{
@@ -121,7 +121,6 @@ const ChildPane: React.FC<{
               coordsY: childItem.latent.coords_y,
               randomRegions: childItem.latent.random_regions,
               duplicates: childItem.latent.duplicates,
-              minCount: 1,
             }}
           />
           <LossesGraph
@@ -135,9 +134,8 @@ const ChildPane: React.FC<{
             }}
           />
         </>
-      )}
-    </>
-  );
+      );
+  }
 };
 
 const calculateDefaultChildModelId = (item: ParentItem): number => {
@@ -259,6 +257,7 @@ const DetailPane: React.FC<{
         item={parentItem}
         refreshFunc={() => setReloadFlag(!reloadFlag)}
       />
+      <legend>Job information</legend>
       <ChildPane childItem={childItem} parentItem={parentItem} />
     </>
   );

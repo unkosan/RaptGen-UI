@@ -57,7 +57,6 @@ const OptimalGmmPane: React.FC<{
               coordsY: item.latent.coords_y,
               randomRegions: item.latent.random_regions,
               duplicates: item.latent.duplicates,
-              minCount: 1,
             }}
             gmmData={{
               means: item.gmm.means,
@@ -85,7 +84,6 @@ const OptimalGmmPane: React.FC<{
               coordsY: item.latent.coords_y,
               randomRegions: item.latent.random_regions,
               duplicates: item.latent.duplicates,
-              minCount: 1,
             }}
             gmmData={{
               means: item.gmm.means,
