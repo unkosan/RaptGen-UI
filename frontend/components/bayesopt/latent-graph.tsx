@@ -7,6 +7,7 @@ import { cloneDeep } from "lodash";
 import { Card, Tab, Tabs } from "react-bootstrap";
 import PlotConfig from "./plot-config";
 import { latentGraphLayout } from "../common/graph-layout";
+import LoadingPane from "../common/loading-pane";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -20,6 +21,8 @@ export const LatentGraph: React.FC = () => {
   const acquisitionData = useSelector(
     (state: RootState) => state.acquisitionValues
   );
+
+  const isLoading = useSelector((state: RootState) => state.isLoading);
 
   const acquisitionDataPlot: Partial<PlotData> = useMemo(() => {
     let acquisitionDataPlot = cloneDeep(acquisitionData);
@@ -172,12 +175,16 @@ export const LatentGraph: React.FC = () => {
                 aspectRatio: "10 / 9",
               }}
             >
-              <Plot
-                data={plots}
-                layout={latentGraphLayout("")}
-                useResizeHandler={true}
-                className="w-100 h-100"
-              />
+              {isLoading ? (
+                <LoadingPane label="Loading..." />
+              ) : (
+                <Plot
+                  data={plots}
+                  layout={latentGraphLayout("")}
+                  useResizeHandler={true}
+                  className="w-100 h-100"
+                />
+              )}
             </div>
           </Card.Body>
         </Card>
