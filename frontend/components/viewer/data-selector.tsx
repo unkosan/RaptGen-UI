@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { Form, ListGroup, Modal, Stack } from "react-bootstrap";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../redux/store";
+import { Card, Form, ListGroup, Modal, Stack, Button } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "./redux/store";
 import { apiClient } from "~/services/api-client";
 import { useRouter } from "next/router";
 import { Pencil, XLg } from "react-bootstrap-icons";
-import { Button } from "react-bootstrap";
-
-import { setSessionConfigByVaeIdName } from "../redux/session-config";
+import { setSessionConfigByVaeIdName, setGmmId } from "./redux/session-config";
 
 const SelectVAE: React.FC = () => {
   const [id, setId] = useState<string>("");
@@ -223,4 +221,74 @@ const SelectVAE: React.FC = () => {
   );
 };
 
-export default SelectVAE;
+const SelectGMM: React.FC = () => {
+  const [models, setModels] = useState<
+    {
+      uuid: string;
+      name: string;
+    }[]
+  >([]);
+  const [id, setId] = useState<string>("");
+
+  const dispatch = useDispatch();
+  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
+
+  useEffect(() => {
+    (async () => {
+      if (!sessionConfig.vaeId) {
+        return;
+      }
+
+      const res = await apiClient.getGMMModelNames({
+        queries: {
+          vae_uuid: sessionConfig.vaeId,
+        },
+      });
+      setModels(res.entries);
+
+      if (res.entries.length > 0) {
+        setId(res.entries[0].uuid);
+        dispatch(setGmmId(res.entries[0].uuid));
+      } else {
+        setId("");
+        dispatch(setGmmId(""));
+      }
+    })();
+  }, [sessionConfig.vaeId]);
+
+  const onChangeGMM = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setId(e.target.value);
+    dispatch(setGmmId(e.target.value));
+  };
+
+  return (
+    <>
+      <Form.Select value={id} onChange={onChangeGMM}>
+        {models.map((model, index) => (
+          <option key={index} value={model.uuid}>
+            {model.name}
+          </option>
+        ))}
+      </Form.Select>
+    </>
+  );
+};
+
+const DataSelector: React.FC = () => {
+  return (
+    <Card className="mb-3">
+      <Card.Body>
+        <Form.Group className="mb-3">
+          <Form.Label>Selected VAE Model</Form.Label>
+          <SelectVAE />
+        </Form.Group>
+        <Form.Group className="">
+          <Form.Label>Selected GMM Model</Form.Label>
+          <SelectGMM />
+        </Form.Group>
+      </Card.Body>
+    </Card>
+  );
+};
+
+export default DataSelector;

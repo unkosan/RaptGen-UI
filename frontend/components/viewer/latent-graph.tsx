@@ -16,7 +16,7 @@ import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 import { setSelectedPoints } from "./redux/selected-points";
-import ConfigSelector from "./config-selector/config-selector";
+import ConfigSelector from "./config-selector";
 import { latentGraphLayout } from "../common/graph-layout";
 import LoadingPane from "../common/loading-pane";
 
