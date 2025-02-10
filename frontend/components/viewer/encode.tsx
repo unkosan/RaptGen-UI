@@ -3,8 +3,9 @@ import { RootState } from "./redux/store";
 import { useState, useEffect } from "react";
 import { apiClient } from "~/services/api-client";
 import { setEncoded } from "./redux/interaction-data";
-import { Button, Card, Form, InputGroup } from "react-bootstrap";
-import { Plus } from "react-bootstrap-icons";
+import { Button, Card, Form, InputGroup, Spinner } from "react-bootstrap";
+import { PlusLg } from "react-bootstrap-icons";
+import { useIsLoading } from "~/hooks/common";
 // import ManualEncodeForm from "./manual-encode-form";
 // import FastaUploader from "./fasta-uploader";
 
@@ -88,6 +89,7 @@ const FastaUploader: React.FC = () => {
 const ManualEncodeForm: React.FC = () => {
   const [value, setValue] = useState<string>("");
   const [isValid, setIsValid] = useState<boolean>(false);
+  const [isLoading, lock, unlock] = useIsLoading();
 
   const dispatch = useDispatch();
   const sessionId = useSelector(
@@ -114,6 +116,8 @@ const ManualEncodeForm: React.FC = () => {
       return;
     }
 
+    lock();
+
     const encodeRes = await apiClient.encode({
       session_uuid: sessionId,
       sequences: [value],
@@ -129,6 +133,7 @@ const ManualEncodeForm: React.FC = () => {
       })
     );
     setValue("");
+    unlock();
   };
 
   return (
@@ -139,8 +144,18 @@ const ManualEncodeForm: React.FC = () => {
         value={value}
         isInvalid={!(isValid || value === "")}
       />
-      <Button id="addSeqButton" disabled={!isValid} onClick={onAdd}>
-        <Plus size={25} />
+      <Button
+        id="addSeqButton"
+        disabled={!isValid || isLoading}
+        onClick={onAdd}
+      >
+        {isLoading ? (
+          <Spinner animation="border" size="sm" />
+        ) : (
+          <div className="d-flex align-items-center">
+            <PlusLg />
+          </div>
+        )}
       </Button>
       <Form.Control.Feedback type="invalid">
         Please enter a valid sequence.

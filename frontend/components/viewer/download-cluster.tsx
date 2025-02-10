@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Alert, Card, Form, InputGroup } from "react-bootstrap";
+import { Alert, Card, Form, InputGroup, Spinner } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import { cloneDeep } from "lodash";
 import { det, inv, matrix, multiply, subtract, transpose } from "mathjs";
 import { Button } from "react-bootstrap";
 import { apiClient } from "~/services/api-client";
-import { useAsyncMemo } from "~/hooks/common";
+import { useAsyncMemo, useIsLoading } from "~/hooks/common";
 
 const calcProb = (
   weight: number,
@@ -51,6 +51,8 @@ const DownloadCluster: React.FC = () => {
 
   const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
 
+  const [isLoading, lock, unlock] = useIsLoading();
+
   const gmm = useAsyncMemo(
     async () => {
       if (!sessionConfig.gmmId) {
@@ -82,6 +84,7 @@ const DownloadCluster: React.FC = () => {
   }
 
   const onDownload = async () => {
+    lock();
     const selex = await apiClient.getSelexData({
       queries: {
         vae_uuid: sessionConfig.vaeId,
@@ -181,6 +184,8 @@ const DownloadCluster: React.FC = () => {
         }
       }
     }
+
+    unlock();
   };
 
   return (
@@ -211,7 +216,9 @@ const DownloadCluster: React.FC = () => {
               </option>
             ))}
           </Form.Select>
-          <Button onClick={onDownload}>Download</Button>
+          <Button onClick={onDownload} disabled={isLoading}>
+            {isLoading ? <Spinner animation="border" size="sm" /> : "Download"}
+          </Button>
         </InputGroup>
       </Card.Body>
     </Card>

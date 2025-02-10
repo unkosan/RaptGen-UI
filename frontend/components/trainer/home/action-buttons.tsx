@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Badge, Button, Form, Modal } from "react-bootstrap";
+import { Badge, Button, Form, Modal, Spinner } from "react-bootstrap";
+import { useIsLoading } from "~/hooks/common";
 import { apiClient } from "~/services/api-client";
 
 export const StopButton: React.FC<{
@@ -7,6 +8,7 @@ export const StopButton: React.FC<{
   refreshFunc: () => void;
 }> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, lock, unlock] = useIsLoading();
 
   return (
     <>
@@ -24,12 +26,15 @@ export const StopButton: React.FC<{
           <Button
             variant="primary"
             onClick={async () => {
+              lock();
               await apiClient.postSuspend({ uuid });
               await refreshFunc();
+              unlock();
               setIsModalOpen(false);
             }}
+            disabled={isLoading}
           >
-            OK
+            {isLoading ? <Spinner animation="border" size="sm" /> : "OK"}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -53,6 +58,7 @@ export const ResumeButton: React.FC<{
   refreshFunc: () => void;
 }> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, lock, unlock] = useIsLoading();
 
   return (
     <>
@@ -70,12 +76,15 @@ export const ResumeButton: React.FC<{
           <Button
             variant="primary"
             onClick={async () => {
+              lock();
               await apiClient.postResume({ uuid });
               await refreshFunc();
+              unlock();
               setIsModalOpen(false);
             }}
+            disabled={isLoading}
           >
-            OK
+            {isLoading ? <Spinner animation="border" size="sm" /> : "OK"}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -99,6 +108,7 @@ export const DeleteButton: React.FC<{
   refreshFunc: () => void;
 }> = ({ uuid, refreshFunc }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, lock, unlock] = useIsLoading();
 
   return (
     <>
@@ -116,14 +126,17 @@ export const DeleteButton: React.FC<{
           <Button
             variant="danger"
             onClick={async () => {
+              lock();
               await apiClient.deleteItem(undefined, {
                 params: { parent_uuid: uuid },
               });
               await refreshFunc();
+              unlock();
               setIsModalOpen(false);
             }}
+            disabled={isLoading}
           >
-            Delete
+            {isLoading ? <Spinner animation="border" size="sm" /> : "Delete"}
           </Button>
         </Modal.Footer>
       </Modal>

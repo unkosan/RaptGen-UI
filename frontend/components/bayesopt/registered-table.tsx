@@ -1,4 +1,4 @@
-import { Button } from "react-bootstrap";
+import { Button, Spinner } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import CustomDataGrid from "~/components/common/custom-datagrid";
 import { RootState } from "./redux/store";
@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 import { TypeEditInfo } from "@inovua/reactdatagrid-community/types";
 import { TypeOnSelectionChangeArg } from "@inovua/reactdatagrid-community/types/TypeDataGridProps";
 import { apiClient } from "~/services/api-client";
+import { useIsLoading } from "~/hooks/common";
 
 const gridStyle = { minHeight: 400, width: "100%", zIndex: 950 };
 
@@ -115,43 +116,41 @@ export const RegisteredTable: React.FC = () => {
   });
 
   return (
-    <>
-      <CustomDataGrid
-        className="mb-2"
-        columns={[
-          {
-            name: "seq_id",
-            header: "ID",
-            defaultVisible: true,
-            editable: true,
-          },
-          {
-            name: "random_region",
-            header: "Random Region",
-            defaultFlex: 1,
-            editable: false,
-          },
-          ...displayColumns,
-          { name: "coord_X", header: "X", editable: false },
-          { name: "coord_Y", header: "Y", editable: false },
-        ]}
-        idProperty="seq_id"
-        dataSource={dataSource}
-        style={gridStyle}
-        rowStyle={{ fontFamily: "monospace" }}
-        checkboxColumn
-        pagination
-        downloadable
-        editable
-        onEditComplete={onEditComplete}
-        defaultSelected={registeredData.staged.map((value, index) => {
-          return value ? index : -1;
-        })}
-        onSelectionChange={onSelectionChange}
-        checkboxOnlyRowSelect
-        copiable
-      />
-    </>
+    <CustomDataGrid
+      className="mb-2"
+      columns={[
+        {
+          name: "seq_id",
+          header: "ID",
+          defaultVisible: true,
+          editable: true,
+        },
+        {
+          name: "random_region",
+          header: "Random Region",
+          defaultFlex: 1,
+          editable: false,
+        },
+        ...displayColumns,
+        { name: "coord_X", header: "X", editable: false },
+        { name: "coord_Y", header: "Y", editable: false },
+      ]}
+      idProperty="seq_id"
+      dataSource={dataSource}
+      style={gridStyle}
+      rowStyle={{ fontFamily: "monospace" }}
+      checkboxColumn
+      pagination
+      downloadable
+      editable
+      onEditComplete={onEditComplete}
+      defaultSelected={registeredData.staged.map((value, index) => {
+        return value ? index : -1;
+      })}
+      onSelectionChange={onSelectionChange}
+      checkboxOnlyRowSelect
+      copiable
+    />
   );
 };
 
@@ -175,6 +174,7 @@ export const RunBayesOptButton: React.FC<RunBayesOptButtonProps> = ({
   const sessionId = useSelector(
     (state: RootState) => state.sessionConfig.sessionId
   );
+  const [isloading, lock, unlock] = useIsLoading();
 
   const validate = () => {
     console.log(bayesoptConfig);
@@ -217,9 +217,9 @@ export const RunBayesOptButton: React.FC<RunBayesOptButtonProps> = ({
   };
 
   const onClick = async () => {
-    console.log("Run Bayes-Opt");
-
     if (!validate()) return;
+
+    lock();
 
     let coordX: number[] = [];
     let coordY: number[] = [];
@@ -257,9 +257,6 @@ export const RunBayesOptButton: React.FC<RunBayesOptButtonProps> = ({
       },
       values: [values],
     });
-
-    console.log(resBayesopt.acquisition_data);
-    console.log(resBayesopt.query_data);
 
     let coords_original = [];
     for (let i = 0; i < resBayesopt.query_data.coords_x.length; i++) {
@@ -317,13 +314,23 @@ export const RunBayesOptButton: React.FC<RunBayesOptButtonProps> = ({
       setActiveTab("query-table");
     } catch (e) {
       console.error(e);
-      return;
+    } finally {
+      unlock();
     }
   };
 
   return (
-    <Button variant="primary" onClick={onClick} className="mb-3">
-      Run Bayes-Opt with checked data
+    <Button
+      variant="primary"
+      onClick={onClick}
+      className="mb-3"
+      disabled={isloading}
+    >
+      {isloading ? (
+        <Spinner animation="border" size="sm" />
+      ) : (
+        "Run Bayes-Opt with checked data"
+      )}
     </Button>
   );
 };

@@ -1,8 +1,16 @@
 import { range } from "lodash";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { Alert, Button, Form, InputGroup, Modal } from "react-bootstrap";
+import {
+  Alert,
+  Button,
+  Form,
+  InputGroup,
+  Modal,
+  Spinner,
+} from "react-bootstrap";
 import { z } from "zod";
+import { useIsLoading } from "~/hooks/common";
 import { apiClient } from "~/services/api-client";
 import { responseGetGMMJobsItems } from "~/services/route/gmm";
 
@@ -14,6 +22,8 @@ export const GmmNumComponentSelector: React.FC<{
   const [name, setName] = useState<string>("");
 
   const router = useRouter();
+
+  const [isLoading, lock, unlock] = useIsLoading();
 
   const numComponents = range(
     jobItem.params.minimum_n_components,
@@ -62,20 +72,22 @@ export const GmmNumComponentSelector: React.FC<{
           </Button>
           <Button
             variant="primary"
-            disabled={!name}
+            disabled={!name || isLoading}
             onClick={async () => {
               if (jobItem.status !== "success") {
                 return;
               }
+              lock();
               await apiClient.publishGMMJobs({
                 name: name,
                 uuid: uuid,
                 n_components: jobItem.gmm.current_n_components,
               });
+              unlock();
               setIsModalOpen(false);
             }}
           >
-            Add to Viewer Dataset
+            {isLoading ? <Spinner animation="border" size="sm" /> : "OK"}
           </Button>
         </Modal.Footer>
       </Modal>

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Badge, InputGroup, Tooltip } from "react-bootstrap";
+import { Badge, InputGroup, Spinner, Tooltip } from "react-bootstrap";
 import { Button, Form, OverlayTrigger } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 import { RootState } from "./redux/store";
+import { useIsLoading } from "~/hooks/common";
 
 const parseCsv = (text: string) => {
   const lines = text.split(/\r\n|\n|\r/);
@@ -82,6 +83,8 @@ const InitialDataset: React.FC = () => {
   >([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
 
+  const [isLoading, lock, unlock] = useIsLoading();
+
   // retrieve GMM model names
   useEffect(() => {
     (async () => {
@@ -102,6 +105,7 @@ const InitialDataset: React.FC = () => {
   // when gmm model is selected
   const onClickApplyGMM = async () => {
     if (selectedModel === "") return;
+    lock();
     try {
       const resModel = await apiClient.getGMMModel({
         queries: {
@@ -152,7 +156,8 @@ const InitialDataset: React.FC = () => {
       });
     } catch (e) {
       console.error(e);
-      return;
+    } finally {
+      unlock();
     }
   };
 
@@ -294,8 +299,12 @@ const InitialDataset: React.FC = () => {
               </option>
             ))}
           </Form.Control>
-          <Button variant="outline-primary" onClick={onClickApplyGMM}>
-            Load
+          <Button
+            variant="outline-primary"
+            onClick={onClickApplyGMM}
+            disabled={isLoading}
+          >
+            {isLoading ? <Spinner animation="border" size="sm" /> : "Load"}
           </Button>
         </InputGroup>
       </Form.Group>

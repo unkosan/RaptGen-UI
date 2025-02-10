@@ -10,12 +10,14 @@ import {
   Form,
   InputGroup,
   Image,
+  Spinner,
 } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
 import { apiClient } from "~/services/api-client";
 import { setDecodeGrid, setDecoded } from "./redux/interaction-data";
 import { setGraphConfig } from "./redux/graph-config";
-import { Plus } from "react-bootstrap-icons";
+import { PlusLg } from "react-bootstrap-icons";
+import { useIsLoading } from "~/hooks/common";
 
 const useBlockTime = (millisecond: number): [boolean, () => void] => {
   const [lock, setLock] = useState<boolean>(false);
@@ -191,6 +193,8 @@ const ResultViewer: React.FC = () => {
 
   const [lock, setLock] = useBlockTime(400);
 
+  const [isLoading, loadingLock, loadingUnlock] = useIsLoading();
+
   useEffect(() => {
     (async () => {
       if (!vaeId) {
@@ -256,6 +260,7 @@ const ResultViewer: React.FC = () => {
 
   // add button
   const onAdd = async () => {
+    loadingLock();
     dispatch(
       setDecoded({
         ids: decodeData.ids.concat(`manual-${decodeData.ids.length}`),
@@ -265,6 +270,7 @@ const ResultViewer: React.FC = () => {
         shown: decodeData.shown.concat(true),
       })
     );
+    loadingUnlock();
   };
 
   return (
@@ -273,8 +279,17 @@ const ResultViewer: React.FC = () => {
       <Card.Body>
         <InputGroup className="mb-3">
           <Form.Control value={gridPoint.randomRegion} readOnly />
-          <Button disabled={gridPoint.randomRegion === ""} onClick={onAdd}>
-            <Plus size={25} />
+          <Button
+            disabled={gridPoint.randomRegion === "" || isLoading}
+            onClick={onAdd}
+          >
+            {isLoading ? (
+              <Spinner animation="border" size="sm" />
+            ) : (
+              <div className="d-flex align-items-center">
+                <PlusLg />
+              </div>
+            )}
           </Button>
         </InputGroup>
         <Accordion>

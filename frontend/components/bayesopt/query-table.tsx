@@ -1,4 +1,10 @@
-import { Badge, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
+import {
+  Badge,
+  Button,
+  OverlayTrigger,
+  Spinner,
+  Tooltip,
+} from "react-bootstrap";
 import { useSelector } from "react-redux";
 import CustomDataGrid from "~/components/common/custom-datagrid";
 import { RootState } from "./redux/store";
@@ -7,6 +13,7 @@ import { cloneDeep } from "lodash";
 import { useDispatch } from "react-redux";
 import { TypeOnSelectionChangeArg } from "@inovua/reactdatagrid-community/types/TypeDataGridProps";
 import { QueriedValues } from "./redux/queried-values";
+import { useIsLoading } from "~/hooks/common";
 
 const gridStyle = { minHeight: 400, width: "100%", zIndex: 950 };
 
@@ -159,9 +166,10 @@ export const AddQueryButton: React.FC<AddQueryButtonProps> = ({
   );
   const queryData = useSelector((state: RootState) => state.queriedValues);
 
+  const [isLoading, lock, unlock] = useIsLoading();
+
   const onClick = () => {
-    console.log("Add to the Register values table");
-    console.log(queryData);
+    lock();
 
     let newRegisteredData = cloneDeep(registeredData);
     let newQueryData: QueriedValues = {
@@ -219,12 +227,22 @@ export const AddQueryButton: React.FC<AddQueryButtonProps> = ({
       type: "isDirty/set",
       payload: true,
     });
+    unlock();
     setActiveTab("registered-table");
   };
 
   return (
-    <Button variant="primary" onClick={onClick} className="mb-3">
-      Add to the Register values table
+    <Button
+      variant="primary"
+      onClick={onClick}
+      className="mb-3"
+      disabled={isLoading}
+    >
+      {isLoading ? (
+        <Spinner animation="border" size="sm" />
+      ) : (
+        "Add to the Register values table"
+      )}
     </Button>
   );
 };

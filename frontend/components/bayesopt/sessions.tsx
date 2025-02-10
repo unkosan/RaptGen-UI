@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { Button, Form, ListGroup, Modal, Stack } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  ListGroup,
+  Modal,
+  Spinner,
+  Stack,
+} from "react-bootstrap";
 import { PlusLg, Pencil, XLg } from "react-bootstrap-icons";
 import { z } from "zod";
 import { apiClient } from "~/services/api-client";
@@ -8,6 +15,7 @@ import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import { useDispatch } from "react-redux";
+import { useIsLoading } from "~/hooks/common";
 
 const Sessions: React.FC = () => {
   const [list, setList] = useState<z.infer<typeof responseGetBayesoptItems>>(
@@ -38,6 +46,8 @@ const Sessions: React.FC = () => {
   const [selectedExperimentId, setSelectedExperimentId] = useState<string>("");
   const [selectedExperimentName, setSelectedExperimentName] =
     useState<string>("");
+
+  const [isLoading, lock, unlock] = useIsLoading();
 
   const router = useRouter();
   const dispatch = useDispatch();
@@ -113,6 +123,8 @@ const Sessions: React.FC = () => {
       return;
     }
 
+    lock();
+
     const states = getStates();
     await apiClient.updateExperiment(states, {
       params: { uuid },
@@ -122,9 +134,12 @@ const Sessions: React.FC = () => {
       type: "isDirty/set",
       payload: false,
     });
+    unlock();
   };
 
   const onSaveAs = async () => {
+    lock();
+
     const states = getStates();
     const res = await apiClient.submitExperiment({
       ...states,
@@ -135,6 +150,7 @@ const Sessions: React.FC = () => {
       type: "isDirty/set",
       payload: false,
     });
+    unlock();
     router.push(`?uuid=${res.uuid}`);
   };
 
@@ -148,6 +164,8 @@ const Sessions: React.FC = () => {
   const onRename = async () => {
     if (!selectedExperimentId) return;
 
+    lock();
+
     await apiClient.patchExperiment(
       {
         target: "experiment_name",
@@ -158,11 +176,16 @@ const Sessions: React.FC = () => {
       }
     );
     updateList();
+
+    unlock();
+
     setIsRenameModalOpen(false);
   };
 
   const onDelete = async () => {
     if (!selectedExperimentId) return;
+
+    lock();
 
     await apiClient.deleteExperiment(undefined, {
       params: { uuid: selectedExperimentId },
@@ -173,6 +196,9 @@ const Sessions: React.FC = () => {
     }
 
     updateList();
+
+    unlock();
+
     setIsDeleteModalOpen(false);
   };
 
@@ -286,8 +312,12 @@ const Sessions: React.FC = () => {
           >
             Close
           </Button>
-          <Button variant="primary" onClick={onSaveAs} disabled={!saveAsTitle}>
-            Save
+          <Button
+            variant="primary"
+            onClick={onSaveAs}
+            disabled={!saveAsTitle || isLoading}
+          >
+            {isLoading ? <Spinner animation="border" size="sm" /> : "Save"}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -320,9 +350,9 @@ const Sessions: React.FC = () => {
           <Button
             variant="primary"
             onClick={() => onRename()}
-            disabled={!renameTitle}
+            disabled={!renameTitle || isLoading}
           >
-            OK
+            {isLoading ? <Spinner animation="border" size="sm" /> : "OK"}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -342,8 +372,12 @@ const Sessions: React.FC = () => {
           >
             Close
           </Button>
-          <Button variant="danger" onClick={() => onDelete()}>
-            Delete
+          <Button
+            variant="danger"
+            onClick={() => onDelete()}
+            disabled={isLoading}
+          >
+            {isLoading ? <Spinner animation="border" size="sm" /> : "Delete"}
           </Button>
         </Modal.Footer>
       </Modal>

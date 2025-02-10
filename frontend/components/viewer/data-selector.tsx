@@ -1,11 +1,20 @@
 import { useEffect, useState } from "react";
-import { Card, Form, ListGroup, Modal, Stack, Button } from "react-bootstrap";
+import {
+  Card,
+  Form,
+  ListGroup,
+  Modal,
+  Stack,
+  Button,
+  Spinner,
+} from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./redux/store";
 import { apiClient } from "~/services/api-client";
 import { useRouter } from "next/router";
 import { Pencil, XLg } from "react-bootstrap-icons";
 import { setSessionConfigByVaeIdName, setGmmId } from "./redux/session-config";
+import { useIsLoading } from "~/hooks/common";
 
 const SelectVAE: React.FC = () => {
   const [id, setId] = useState<string>("");
@@ -23,6 +32,8 @@ const SelectVAE: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string>("");
   const [newName, setNewName] = useState<string>("");
+
+  const [isLoading, lock, unlock] = useIsLoading();
 
   const reloadModels = async () => {
     const res = await apiClient.getVAEModelNames();
@@ -150,6 +161,7 @@ const SelectVAE: React.FC = () => {
           <Button
             variant="primary"
             onClick={async () => {
+              lock();
               await apiClient.patchVaeItems(
                 {
                   target: "name",
@@ -162,11 +174,12 @@ const SelectVAE: React.FC = () => {
                 }
               );
               await reloadModels();
+              unlock();
               setIsRenameModelOpen(false);
             }}
-            disabled={!newName}
+            disabled={!newName || isLoading}
           >
-            OK
+            {isLoading ? <Spinner animation="border" size="sm" /> : "OK"}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -199,12 +212,14 @@ const SelectVAE: React.FC = () => {
           <Button
             variant="danger"
             onClick={async () => {
+              lock();
               await apiClient.deleteVaeItems(undefined, {
                 params: {
                   vae_uuid: selectedId,
                 },
               });
               await reloadModels();
+              unlock();
               setIsDeleteModalOpen(false);
               if (selectedId === id) {
                 router.push(``, undefined, {
@@ -212,8 +227,9 @@ const SelectVAE: React.FC = () => {
                 });
               }
             }}
+            disabled={isLoading}
           >
-            Delete
+            {isLoading ? <Spinner animation="border" size="sm" /> : "Delete"}
           </Button>
         </Modal.Footer>
       </Modal>
