@@ -1,7 +1,7 @@
 import { cloneDeep, zip } from "lodash";
 import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import dynamic from "next/dynamic";
-import { Layout, PlotData } from "plotly.js";
+import { PlotData } from "plotly.js";
 import { useMemo, useState } from "react";
 import { Card, Form, Tab, Tabs } from "react-bootstrap";
 import { latentGraphLayout } from "~/components/common/graph-layout";
@@ -15,7 +15,6 @@ type Props = {
     coordsY: number[];
     randomRegions: string[];
     duplicates: number[];
-    minCount: number;
   };
   gmmData: {
     means: number[][];

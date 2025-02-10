@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, Form, Tab, Tabs } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
@@ -13,8 +13,6 @@ const VaeSelector: React.FC = () => {
     }[]
   >([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
-  const [minimumCount, setMinimumCount] = useState<number>(5);
-  const [showSelex, setShowSelex] = useState<boolean>(true);
 
   const dispatch = useDispatch();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
@@ -34,8 +32,6 @@ const VaeSelector: React.FC = () => {
   // if redux store is changed, update local state
   useEffect(() => {
     setSelectedModel(sessionConfig.vaeId);
-    setMinimumCount(graphConfig.minCount);
-    setShowSelex(graphConfig.showSelex);
   }, [sessionConfig, graphConfig]);
 
   const setDirty = () => {
@@ -51,6 +47,10 @@ const VaeSelector: React.FC = () => {
     setSelectedModel(uuid);
 
     try {
+      dispatch({
+        type: "isLoading/set",
+        payload: true,
+      });
       const resStart = await apiClient.startSession({
         queries: {
           vae_uuid: uuid,
@@ -130,6 +130,11 @@ const VaeSelector: React.FC = () => {
           coordX: [],
           coordY: [],
         },
+      });
+
+      dispatch({
+        type: "isLoading/set",
+        payload: false,
       });
     } catch (e) {
       console.error(e);

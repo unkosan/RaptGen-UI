@@ -18,6 +18,7 @@ import { apiClient } from "~/services/api-client";
 import { setSelectedPoints } from "./redux/selected-points";
 import ConfigSelector from "./config-selector/config-selector";
 import { latentGraphLayout } from "../common/graph-layout";
+import LoadingPane from "../common/loading-pane";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 interface PlotDatumAmend extends PlotDatum {
@@ -457,22 +458,7 @@ const LatentGraph: React.FC = () => {
               }}
             >
               {isLoading ? (
-                <div
-                  className="d-flex justify-content-center"
-                  style={{
-                    height: "100%",
-                  }}
-                >
-                  <div className="mx-auto d-flex align-items-center">
-                    <Spinner
-                      animation="border"
-                      variant="primary"
-                      role="status"
-                      className="mx-auto"
-                    />
-                    <div className="ms-2 fs-3">Loading...</div>
-                  </div>
-                </div>
+                <LoadingPane label="Loading..." />
               ) : (
                 <Plot
                   data={[

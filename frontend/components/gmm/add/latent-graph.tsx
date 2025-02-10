@@ -4,15 +4,17 @@ import { PlotData } from "plotly.js";
 import { apiClient } from "~/services/api-client";
 import dynamic from "next/dynamic";
 import { Card, Form, Tab, Tabs } from "react-bootstrap";
-import { useAsyncMemo } from "~/hooks/common";
+import { useAsyncMemo, useIsLoading } from "~/hooks/common";
 import { useState } from "react";
 import { latentGraphLayout } from "~/components/common/graph-layout";
+import LoadingPane from "~/components/common/loading-pane";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 const LatentGraph: React.FC = () => {
   const [minCount, setMinCount] = useState(5);
   const [validMinCount, setValidMinCount] = useState(true);
+  const [isLoading, lock, unlock] = useIsLoading();
 
   const params = useSelector((state: RootState) => state.params);
   const vaeDataPlot = useAsyncMemo(
@@ -25,6 +27,9 @@ const LatentGraph: React.FC = () => {
           mode: "markers",
         } as Partial<PlotData>;
       }
+
+      lock();
+
       const res = await apiClient.getSelexData({
         queries: { vae_uuid: params.vaeId },
       });
@@ -49,6 +54,9 @@ const LatentGraph: React.FC = () => {
           "Random Region: %{customdata}" +
           "<extra></extra>",
       };
+
+      unlock();
+
       return trace;
     },
     [params.vaeId, minCount],
@@ -74,13 +82,17 @@ const LatentGraph: React.FC = () => {
                 alignItems: "center",
               }}
             >
-              <Plot
-                data={[vaeDataPlot]}
-                useResizeHandler={true}
-                layout={latentGraphLayout("")}
-                config={{ responsive: true }}
-                style={{ width: "100%", height: "100%" }}
-              />
+              {isLoading ? (
+                <LoadingPane label="Loading..." />
+              ) : (
+                <Plot
+                  data={[vaeDataPlot]}
+                  useResizeHandler={true}
+                  layout={latentGraphLayout("")}
+                  config={{ responsive: true }}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              )}
             </div>
           </Card.Body>
         </Card>
