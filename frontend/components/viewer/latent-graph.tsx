@@ -1,18 +1,19 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Data, PlotData, PlotDatum, PlotSelectionEvent } from "plotly.js";
 import dynamic from "next/dynamic";
 import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
-import { cloneDeep, zip } from "lodash";
-import { Card, Tab, Tabs } from "react-bootstrap";
+import { zip } from "lodash";
+import { Card, Form, Tab, Tabs } from "react-bootstrap";
 
-import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 import { setSelectedPoints } from "./redux/selected-points";
-import ConfigSelector from "./config-selector";
 import { latentGraphLayout } from "../common/graph-layout";
 import LoadingPane from "../common/loading-pane";
+import { useAsyncMemo, useIsLoading } from "~/hooks/common";
+import calculateTraces from "~/hooks/calculate-traces";
+import { setGraphConfig } from "./redux/graph-config";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 interface PlotDatumAmend extends PlotDatum {
@@ -22,60 +23,61 @@ interface PlotSelectionEventAmend extends PlotSelectionEvent {
   points: PlotDatumAmend[];
 }
 
-const calculateTraces = (mu: number[], sigma: number[][]) => {
-  sigma = cloneDeep(sigma);
-  const eig = eigs(sigma);
-  let [lambda1, lambda2] = eig.values as number[];
-  let [v1, v2] = transpose(eig.vectors) as number[][];
+const ConfigSelector: React.FC = () => {
+  const [showGMM, setShowGMM] = useState<boolean>(true);
+  const [minCount, setMinCount] = useState<number>(5);
+  const [isValid, setIsValid] = useState<boolean>(true);
 
-  if (lambda1 < lambda2) {
-    [lambda1, lambda2] = [lambda2, lambda1];
-    [v1, v2] = [v2, v1];
-  }
+  const dispatch = useDispatch();
+  const graphConfig = useSelector((state: RootState) => state.graphConfig);
 
-  const [v1x, v1y] = v1;
-  const theta = atan2(v1y, v1x);
-  const width = 2 * Math.sqrt(lambda1);
-  const height = 2 * Math.sqrt(lambda2);
-
-  const trace = range(0, 2 * pi, 0.01, true)
-    .map((t) => {
-      const x =
-        mu[0] + width * cos(t) * cos(theta) - height * sin(t) * sin(theta);
-      const y =
-        mu[1] + width * cos(t) * sin(theta) + height * sin(t) * cos(theta);
-      return [x, y];
-    })
-    .toArray() as number[][];
-
-  return trace;
-};
-
-function useAsyncMemo<T>(
-  asyncFunction: () => Promise<T>,
-  deps: any[],
-  defaultValue: T
-): T {
-  const [value, setValue] = useState<T>(defaultValue);
-  const func = useCallback(asyncFunction, deps);
   useEffect(() => {
-    func().then(setValue);
-  }, [func, ...deps]);
-  return value;
-}
+    if (isValid) {
+      dispatch(
+        setGraphConfig({
+          ...graphConfig,
+          minCount,
+        })
+      );
+    }
+  }, [isValid, minCount]);
 
-function useIsLoading(): [boolean, () => void, () => void] {
-  const [currentJobs, setCurrentJobs] = useState(0);
-  const lock = useCallback(() => {
-    setCurrentJobs((prev) => prev + 1);
-  }, []);
-  const unlock = useCallback(() => {
-    setCurrentJobs((prev) => prev - 1);
-  }, [currentJobs]);
-  const isLoading = currentJobs > 0;
+  useEffect(() => {
+    dispatch(
+      setGraphConfig({
+        ...graphConfig,
+        showGMM,
+      })
+    );
+  }, [showGMM]);
 
-  return [isLoading, lock, unlock];
-}
+  return (
+    <Card className="mb-3">
+      <Card.Body>
+        <Form.Group className="mb-3">
+          <Form.Label>Minimum Count</Form.Label>
+          <Form.Control
+            type="number"
+            value={minCount}
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              setIsValid(!isNaN(value) && value >= 1);
+              setMinCount(value);
+            }}
+            isInvalid={!isValid}
+          />
+        </Form.Group>
+        <Form.Group className="">
+          <Form.Switch
+            label="Show GMM"
+            checked={showGMM}
+            onChange={(e) => setShowGMM(e.target.checked)}
+          />
+        </Form.Group>
+      </Card.Body>
+    </Card>
+  );
+};
 
 const LatentGraph: React.FC = () => {
   const graphConfig = useSelector((state: RootState) => state.graphConfig);

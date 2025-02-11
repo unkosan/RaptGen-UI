@@ -7,6 +7,8 @@ import {
   Stack,
   Button,
   Spinner,
+  Tabs,
+  Tab,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./redux/store";
@@ -15,6 +17,127 @@ import { useRouter } from "next/router";
 import { Pencil, XLg } from "react-bootstrap-icons";
 import { setSessionConfigByVaeIdName, setGmmId } from "./redux/session-config";
 import { useIsLoading } from "~/hooks/common";
+import CustomDataGrid from "../common/custom-datagrid";
+
+const VAEParamsTable: React.FC = () => {
+  const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
+    {} as { [keys: string]: string }
+  );
+
+  const vaeId = useSelector((state: RootState) => state.sessionConfig.vaeId);
+
+  useEffect(() => {
+    (async () => {
+      if (vaeId === "") {
+        setParamsList({} as { [keys: string]: string });
+        return;
+      }
+
+      try {
+        const res = await apiClient.getVAEModelParameters({
+          queries: {
+            vae_uuid: vaeId,
+          },
+        });
+
+        setParamsList(res);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [vaeId]);
+
+  const gridStyle = {
+    minHeight: 300,
+    width: "100%",
+    zIndex: 1000,
+  };
+
+  return (
+    <CustomDataGrid
+      idProperty="id"
+      className="mb-3"
+      columns={[
+        {
+          name: "parameter",
+          header: "Parameter",
+          defaultFlex: 1,
+        },
+        {
+          name: "value",
+          header: "Value",
+          defaultFlex: 1,
+        },
+      ]}
+      dataSource={Object.keys(paramsList).map((key) => ({
+        id: key,
+        parameter: key,
+        value: paramsList[key],
+      }))}
+      rowStyle={{ fontFamily: "monospace" }}
+      rowHeight={35}
+      style={gridStyle}
+    />
+  );
+};
+
+const GMMParamsTable: React.FC = () => {
+  const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
+    {} as { [keys: string]: string }
+  );
+
+  const gmmId = useSelector((state: RootState) => state.sessionConfig.gmmId);
+
+  useEffect(() => {
+    (async () => {
+      if (gmmId === "") {
+        setParamsList({} as { [keys: string]: string });
+        return;
+      }
+
+      const res = await apiClient.getGMMModelParameters({
+        queries: {
+          gmm_uuid: gmmId,
+        },
+      });
+
+      setParamsList(res);
+    })();
+  }, [gmmId]);
+
+  const gridStyle = {
+    minHeight: 300,
+    width: "100%",
+    zIndex: 1000,
+  };
+
+  return (
+    <CustomDataGrid
+      idProperty="id"
+      className="mb-3"
+      columns={[
+        {
+          name: "parameter",
+          header: "Parameter",
+          defaultFlex: 1,
+        },
+        {
+          name: "value",
+          header: "Value",
+          defaultFlex: 1,
+        },
+      ]}
+      dataSource={Object.keys(paramsList).map((key) => ({
+        id: key,
+        parameter: key,
+        value: paramsList[key],
+      }))}
+      rowStyle={{ fontFamily: "monospace" }}
+      rowHeight={35}
+      style={gridStyle}
+    />
+  );
+};
 
 const SelectVAE: React.FC = () => {
   const [id, setId] = useState<string>("");
@@ -292,18 +415,28 @@ const SelectGMM: React.FC = () => {
 
 const DataSelector: React.FC = () => {
   return (
-    <Card className="mb-3">
-      <Card.Body>
-        <Form.Group className="mb-3">
-          <Form.Label>Selected VAE Model</Form.Label>
-          <SelectVAE />
-        </Form.Group>
-        <Form.Group className="">
-          <Form.Label>Selected GMM Model</Form.Label>
-          <SelectGMM />
-        </Form.Group>
-      </Card.Body>
-    </Card>
+    <Tabs defaultActiveKey="dataSelector" id="dataControl">
+      <Tab eventKey="dataSelector" title="Data">
+        <Card className="mb-3">
+          <Card.Body>
+            <Form.Group className="mb-3">
+              <Form.Label>Selected VAE Model</Form.Label>
+              <SelectVAE />
+            </Form.Group>
+            <Form.Group className="">
+              <Form.Label>Selected GMM Model</Form.Label>
+              <SelectGMM />
+            </Form.Group>
+          </Card.Body>
+        </Card>
+      </Tab>
+      <Tab eventKey="vaeParamsTable" title="VAE parameters">
+        <VAEParamsTable />
+      </Tab>
+      <Tab eventKey="gmmParamsTable" title="GMM parameters">
+        <GMMParamsTable />
+      </Tab>
+    </Tabs>
   );
 };
 

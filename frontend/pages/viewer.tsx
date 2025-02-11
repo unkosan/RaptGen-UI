@@ -4,19 +4,15 @@ import { Provider } from "react-redux";
 import { store } from "~/components/viewer/redux/store";
 import Head from "next/head";
 import Navigator from "~/components/common/navigator";
-import { Col, Container, Row, SSRProvider, Tab, Tabs } from "react-bootstrap";
+import { Col, Container, Row, SSRProvider } from "react-bootstrap";
 import LatentGraph from "~/components/viewer/latent-graph";
-import SelectionTable from "~/components/viewer/selection-table";
 import "@inovua/reactdatagrid-community/index.css";
 import { Footer } from "~/components/common/footer";
 import DataSelector from "~/components/viewer/data-selector";
-import VAEParamsTable from "~/components/viewer/vae-params-table";
-import GMMParamsTable from "~/components/viewer/gmm-params-table";
 import Encode from "~/components/viewer/encode";
 import Decode from "~/components/viewer/decode";
-import EncodeTable from "~/components/viewer/encode-table";
-import DecodeTable from "~/components/viewer/decode-table";
 import DownloadCluster from "~/components/viewer/download-cluster";
+import DataTable from "~/components/viewer/data-table";
 
 const Home: React.FC = () => {
   return (
@@ -30,17 +26,7 @@ const Home: React.FC = () => {
           <Row>
             <Col md={4}>
               <legend>Data and properties</legend>
-              <Tabs defaultActiveKey="dataSelector" id="dataControl">
-                <Tab eventKey="dataSelector" title="Data">
-                  <DataSelector />
-                </Tab>
-                <Tab eventKey="vaeParamsTable" title="VAE parameters">
-                  <VAEParamsTable />
-                </Tab>
-                <Tab eventKey="gmmParamsTable" title="GMM parameters">
-                  <GMMParamsTable />
-                </Tab>
-              </Tabs>
+              <DataSelector />
               <legend>Encode sequences</legend>
               <Encode />
               <legend>Decode latent points</legend>
@@ -50,17 +36,7 @@ const Home: React.FC = () => {
             </Col>
             <Col>
               <LatentGraph />
-              <Tabs defaultActiveKey="selected-points" id="interaction-table">
-                <Tab eventKey="selected-points" title="Selected points">
-                  <SelectionTable />
-                </Tab>
-                <Tab eventKey="encoded-sequences" title="Encoded sequences">
-                  <EncodeTable />
-                </Tab>
-                <Tab eventKey="decoded-points" title="Decoded points">
-                  <DecodeTable />
-                </Tab>
-              </Tabs>
+              <DataTable />
             </Col>
           </Row>
         </Container>
