@@ -14,7 +14,10 @@ const sessionConfigSlice = createSlice({
     sessionId: "",
   },
   reducers: {
-    set: (state: SessionConfig, action: PayloadAction<SessionConfig>) => {
+    setSessionConfig: (
+      state: SessionConfig,
+      action: PayloadAction<SessionConfig>
+    ) => {
       return action.payload;
     },
     //   extraReducers: (builder) => {
@@ -61,3 +64,4 @@ const sessionConfigReducer = sessionConfigSlice.reducer;
 export default sessionConfigReducer;
 // export { fetchSessionIdThunk };
 export type { SessionConfig };
+export const { setSessionConfig } = sessionConfigSlice.actions;

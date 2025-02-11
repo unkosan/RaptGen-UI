@@ -22,7 +22,10 @@ const queriedValuesSlice = createSlice({
     staged: [],
   } as QueriedValues,
   reducers: {
-    set: (state: QueriedValues, action: PayloadAction<QueriedValues>) => {
+    setQueriedValues: (
+      state: QueriedValues,
+      action: PayloadAction<QueriedValues>
+    ) => {
       return action.payload;
     },
   },
@@ -32,3 +35,4 @@ const queriedValuesReducer = queriedValuesSlice.reducer;
 
 export default queriedValuesReducer;
 export type { QueriedValues };
+export const { setQueriedValues } = queriedValuesSlice.actions;

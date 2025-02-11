@@ -5,7 +5,6 @@ import { Alert, Button, Col, Row, Container } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
 import VaeJobsList from "~/components/trainer/home/vae-jobs-list/vae-jobs-list";
 import { Provider } from "react-redux";
-import { store } from "~/components/trainer/home/redux/store";
 import "@inovua/reactdatagrid-community/index.css";
 import Footer from "~/components/common/footer";
 import AddJobButton from "~/components/trainer/home/add-job-button";
@@ -301,9 +300,7 @@ const PageRoot: NextPage = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Provider store={store}>
-        <Home />
-      </Provider>
+      <Home />
     </>
   );
 };

@@ -14,7 +14,7 @@ const acquisitionValuesSlice = createSlice({
     coordY: [],
   } as AcquisitionValues,
   reducers: {
-    set: (
+    setAcquisitionValues: (
       state: AcquisitionValues,
       action: PayloadAction<AcquisitionValues>
     ) => {
@@ -27,3 +27,4 @@ const acquisitionValuesReducer = acquisitionValuesSlice.reducer;
 
 export default acquisitionValuesReducer;
 export type { AcquisitionValues };
+export const { setAcquisitionValues } = acquisitionValuesSlice.actions;

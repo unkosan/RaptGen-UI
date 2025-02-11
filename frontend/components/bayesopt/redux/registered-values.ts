@@ -28,7 +28,10 @@ const registeredValuesSlice = createSlice({
     value: [],
   } as RegisteredValues,
   reducers: {
-    set: (state: RegisteredValues, action: PayloadAction<RegisteredValues>) => {
+    setRegisteredValues: (
+      state: RegisteredValues,
+      action: PayloadAction<RegisteredValues>
+    ) => {
       return action.payload;
     },
   },
@@ -38,3 +41,4 @@ const registeredValuesReducer = registeredValuesSlice.reducer;
 
 export default registeredValuesReducer;
 export type { RegisteredValues };
+export const { setRegisteredValues } = registeredValuesSlice.actions;

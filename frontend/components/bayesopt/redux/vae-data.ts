@@ -14,7 +14,10 @@ const vaeDataSlice = createSlice({
   name: "vaeData",
   initialState: [] as VaeDataEntry[],
   reducers: {
-    set: (state: VaeDataEntry[], action: PayloadAction<VaeDataEntry[]>) => {
+    setVaeData: (
+      state: VaeDataEntry[],
+      action: PayloadAction<VaeDataEntry[]>
+    ) => {
       return action.payload;
     },
   },
@@ -24,3 +27,4 @@ const vaeDataReducer = vaeDataSlice.reducer;
 
 export default vaeDataReducer;
 export type { VaeDataEntry };
+export const { setVaeData } = vaeDataSlice.actions;

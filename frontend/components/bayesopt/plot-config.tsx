@@ -3,6 +3,8 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "./redux/store";
 import { Card, Form } from "react-bootstrap";
+import { setIsDirty } from "./redux/is-dirty";
+import { setGraphConfig } from "./redux/graph-config";
 
 export const PlotConfig: React.FC = () => {
   const [minCount, setMinCount] = useState(1);
@@ -12,10 +14,7 @@ export const PlotConfig: React.FC = () => {
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
 
   const setDirty = () => {
-    dispatch({
-      type: "isDirty/set",
-      payload: true,
-    });
+    dispatch(setIsDirty(true));
   };
 
   const onMinCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,13 +26,12 @@ export const PlotConfig: React.FC = () => {
     }
 
     try {
-      dispatch({
-        type: "graphConfig/set",
-        payload: {
+      dispatch(
+        setGraphConfig({
           ...graphConfig,
           minCount: parseInt(e.currentTarget.value),
-        },
-      });
+        })
+      );
     } catch (e) {
       console.error(e);
       return;
@@ -45,13 +43,12 @@ export const PlotConfig: React.FC = () => {
     setShowSelex(e.currentTarget.checked);
 
     try {
-      dispatch({
-        type: "graphConfig/set",
-        payload: {
+      dispatch(
+        setGraphConfig({
           ...graphConfig,
           showSelex: e.currentTarget.checked,
-        },
-      });
+        })
+      );
     } catch (e) {
       console.error(e);
       return;
@@ -60,13 +57,12 @@ export const PlotConfig: React.FC = () => {
 
   const onChangeShowContour = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDirty();
-    dispatch({
-      type: "graphConfig/set",
-      payload: {
+    dispatch(
+      setGraphConfig({
         ...graphConfig,
         showAcquisition: e.target.checked,
-      },
-    });
+      })
+    );
   };
 
   return (

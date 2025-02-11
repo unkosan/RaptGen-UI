@@ -9,6 +9,10 @@ import { TypeEditInfo } from "@inovua/reactdatagrid-community/types";
 import { TypeOnSelectionChangeArg } from "@inovua/reactdatagrid-community/types/TypeDataGridProps";
 import { apiClient } from "~/services/api-client";
 import { useIsLoading } from "~/hooks/common";
+import { setRegisteredValues } from "./redux/registered-values";
+import { setIsDirty } from "./redux/is-dirty";
+import { setQueriedValues } from "./redux/queried-values";
+import { setAcquisitionValues } from "./redux/acquisition-values";
 
 const gridStyle = { minHeight: 400, width: "100%", zIndex: 950 };
 
@@ -37,14 +41,8 @@ export const RegisteredTable: React.FC = () => {
         newData.value[meltedIndex] = parseFloat(e.value);
       }
 
-      dispatch({
-        type: "registeredValues/set",
-        payload: newData,
-      });
-      dispatch({
-        type: "isDirty/set",
-        payload: true,
-      });
+      dispatch(setRegisteredValues(newData));
+      dispatch(setIsDirty(true));
     },
     [registeredData]
   );
@@ -70,14 +68,8 @@ export const RegisteredTable: React.FC = () => {
         });
       }
 
-      dispatch({
-        type: "registeredValues/set",
-        payload: newData,
-      });
-      dispatch({
-        type: "isDirty/set",
-        payload: true,
-      });
+      dispatch(setRegisteredValues(newData));
+      dispatch(setIsDirty(true));
     },
     [registeredData]
   );
@@ -282,14 +274,9 @@ export const RunBayesOptButton: React.FC<RunBayesOptButtonProps> = ({
         sequences: randomRegion,
       });
 
-      dispatch({
-        type: "isDirty/set",
-        payload: true,
-      });
-
-      dispatch({
-        type: "queriedValues/set",
-        payload: {
+      dispatch(setIsDirty(true));
+      dispatch(
+        setQueriedValues({
           wholeSelected: queryData.wholeSelected,
           randomRegion: randomRegion,
           coordX: resEncode.coords_x,
@@ -299,17 +286,15 @@ export const RunBayesOptButton: React.FC<RunBayesOptButtonProps> = ({
           staged: new Array(resDecode.sequences.length).fill(
             queryData.wholeSelected
           ),
-        },
-      });
-
-      dispatch({
-        type: "acquisitionValues/set",
-        payload: {
+        })
+      );
+      dispatch(
+        setAcquisitionValues({
           acquisitionValues: resBayesopt.acquisition_data.values,
           coordX: resBayesopt.acquisition_data.coords_x,
           coordY: resBayesopt.acquisition_data.coords_y,
-        },
-      });
+        })
+      );
 
       setActiveTab("query-table");
     } catch (e) {

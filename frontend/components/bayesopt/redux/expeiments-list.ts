@@ -16,7 +16,10 @@ const experimentsListSlice = createSlice({
     uuid: [],
   } as ExperimentsList,
   reducers: {
-    set: (state: ExperimentsList, action: PayloadAction<ExperimentsList>) => {
+    setExperimentsList: (
+      state: ExperimentsList,
+      action: PayloadAction<ExperimentsList>
+    ) => {
       return action.payload;
     },
   },
@@ -26,3 +29,4 @@ const experimentsListReducer = experimentsListSlice.reducer;
 
 export default experimentsListReducer;
 export type { ExperimentsList };
+export const { setExperimentsList } = experimentsListSlice.actions;

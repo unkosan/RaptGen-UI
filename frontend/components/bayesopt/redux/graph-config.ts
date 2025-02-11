@@ -17,7 +17,10 @@ const graphConfigSlice = createSlice({
     showAcquisition: true,
   },
   reducers: {
-    set: (state: GraphConfig, action: PayloadAction<GraphConfig>) => {
+    setGraphConfig: (
+      state: GraphConfig,
+      action: PayloadAction<GraphConfig>
+    ) => {
       return action.payload;
     },
   },
@@ -27,3 +30,4 @@ const graphConfigReducer = graphConfigSlice.reducer;
 
 export default graphConfigReducer;
 export type { GraphConfig };
+export const { setGraphConfig } = graphConfigSlice.actions;

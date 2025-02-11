@@ -14,7 +14,10 @@ const bayesoptConfigSlice = createSlice({
     queryBudget: 0,
   },
   reducers: {
-    set: (state: BayesoptConfig, action: PayloadAction<BayesoptConfig>) => {
+    setBayesoptConfig: (
+      state: BayesoptConfig,
+      action: PayloadAction<BayesoptConfig>
+    ) => {
       return {
         ...state,
         ...action.payload,
@@ -27,3 +30,4 @@ const bayesoptConfigReducer = bayesoptConfigSlice.reducer;
 
 export default bayesoptConfigReducer;
 export type { BayesoptConfig };
+export const { setBayesoptConfig } = bayesoptConfigSlice.actions;

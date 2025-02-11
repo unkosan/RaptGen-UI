@@ -2,6 +2,8 @@ import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "./redux/store";
+import { setIsDirty } from "./redux/is-dirty";
+import { setBayesoptConfig } from "./redux/bayesopt-config";
 
 const BayesOptConfig: React.FC = () => {
   const dispatch = useDispatch();
@@ -11,35 +13,29 @@ const BayesOptConfig: React.FC = () => {
   const bayesoptConfig = useSelector(
     (state: RootState) => state.bayesoptConfig
   );
-  const graphConfig = useSelector((state: RootState) => state.graphConfig);
 
   const setDirty = () => {
-    dispatch({
-      type: "isDirty/set",
-      payload: true,
-    });
+    dispatch(setIsDirty(true));
   };
 
   const onChangeColumnName = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setDirty();
-    dispatch({
-      type: "bayesoptConfig/set",
-      payload: {
+    dispatch(
+      setBayesoptConfig({
         ...bayesoptConfig,
         targetColumn: event.target.value,
-      },
-    });
+      })
+    );
   };
 
   const onChangeBudget = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDirty();
-    dispatch({
-      type: "bayesoptConfig/set",
-      payload: {
+    dispatch(
+      setBayesoptConfig({
         ...bayesoptConfig,
         queryBudget: Number(e.target.value),
-      },
-    });
+      })
+    );
   };
 
   return (

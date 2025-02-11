@@ -4,7 +4,7 @@ const isDirtySlice = createSlice({
   name: "isDirty",
   initialState: false,
   reducers: {
-    set: (state: boolean, action: PayloadAction<boolean>) => {
+    setIsDirty: (state: boolean, action: PayloadAction<boolean>) => {
       return action.payload;
     },
   },
@@ -13,3 +13,4 @@ const isDirtySlice = createSlice({
 const isDirtyReducer = isDirtySlice.reducer;
 
 export default isDirtyReducer;
+export const { setIsDirty } = isDirtySlice.actions;

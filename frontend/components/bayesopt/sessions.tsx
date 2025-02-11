@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import { useDispatch } from "react-redux";
 import { useIsLoading } from "~/hooks/common";
+import { setIsDirty } from "./redux/is-dirty";
 
 const Sessions: React.FC = () => {
   const [list, setList] = useState<z.infer<typeof responseGetBayesoptItems>>(
@@ -130,10 +131,7 @@ const Sessions: React.FC = () => {
       params: { uuid },
     });
 
-    dispatch({
-      type: "isDirty/set",
-      payload: false,
-    });
+    dispatch(setIsDirty(false));
     unlock();
   };
 
@@ -146,10 +144,7 @@ const Sessions: React.FC = () => {
       experiment_name: saveAsTitle,
     });
     setIsSaveAsModalOpen(false);
-    dispatch({
-      type: "isDirty/set",
-      payload: false,
-    });
+    dispatch(setIsDirty(false));
     unlock();
     router.push(`?uuid=${res.uuid}`);
   };

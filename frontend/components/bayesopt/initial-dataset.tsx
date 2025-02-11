@@ -6,6 +6,9 @@ import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 import { RootState } from "./redux/store";
 import { useIsLoading } from "~/hooks/common";
+import { setRegisteredValues } from "./redux/registered-values";
+import { setBayesoptConfig } from "./redux/bayesopt-config";
+import { setIsDirty } from "./redux/is-dirty";
 
 const parseCsv = (text: string) => {
   const lines = text.split(/\r\n|\n|\r/);
@@ -130,9 +133,8 @@ const InitialDataset: React.FC = () => {
 
       setDirty();
 
-      dispatch({
-        type: "registeredValues/set",
-        payload: {
+      dispatch(
+        setRegisteredValues({
           id: new Array(randomRegions.length)
             .fill("")
             .map((_, i) => `MoG No.${i + 1}`),
@@ -144,16 +146,16 @@ const InitialDataset: React.FC = () => {
           sequenceIndex: randomRegions.map((_, i) => i),
           column: new Array(randomRegions.length).fill("value"),
           value: new Array(randomRegions.length).fill(null),
-        },
-      });
+          wholeSelected: false,
+        })
+      );
 
-      dispatch({
-        type: "bayesoptConfig/set",
-        payload: {
+      dispatch(
+        setBayesoptConfig({
           ...bayesoptConfig,
           targetColumn: "value",
-        },
-      });
+        })
+      );
     } catch (e) {
       console.error(e);
     } finally {
@@ -197,9 +199,8 @@ const InitialDataset: React.FC = () => {
 
         setDirty();
 
-        dispatch({
-          type: "registeredValues/set",
-          payload: {
+        dispatch(
+          setRegisteredValues({
             id,
             randomRegion,
             coordX: res.coords_x,
@@ -209,17 +210,17 @@ const InitialDataset: React.FC = () => {
             sequenceIndex,
             column,
             value,
-          },
-        });
+            wholeSelected: false,
+          })
+        );
 
-        dispatch({
-          type: "bayesoptConfig/set",
-          payload: {
+        dispatch(
+          setBayesoptConfig({
             targetColumn: columnNames[0],
             optimizationType: "qEI",
             queryBudget: 3,
-          },
-        });
+          })
+        );
       } catch (e) {
         console.error(e);
         return;
@@ -229,10 +230,7 @@ const InitialDataset: React.FC = () => {
   };
 
   const setDirty = () => {
-    dispatch({
-      type: "isDirty/set",
-      payload: true,
-    });
+    dispatch(setIsDirty(true));
   };
 
   return (

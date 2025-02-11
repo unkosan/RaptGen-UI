@@ -25,6 +25,15 @@ import {
   RunBayesOptButton,
 } from "~/components/bayesopt/registered-table";
 import { AddQueryButton, QueryTable } from "~/components/bayesopt/query-table";
+import { setIsLoading } from "~/components/bayesopt/redux/is-loading";
+import { setIsDirty } from "~/components/bayesopt/redux/is-dirty";
+import { setBayesoptConfig } from "~/components/bayesopt/redux/bayesopt-config";
+import { setAcquisitionValues } from "~/components/bayesopt/redux/acquisition-values";
+import { setGraphConfig } from "~/components/bayesopt/redux/graph-config";
+import { setRegisteredValues } from "~/components/bayesopt/redux/registered-values";
+import { setQueriedValues } from "~/components/bayesopt/redux/queried-values";
+import { setSessionConfig } from "~/components/bayesopt/redux/session-config";
+import { setVaeData } from "~/components/bayesopt/redux/vae-data";
 
 const InitializeExperimentComponent: React.FC = () => {
   const router = useRouter();
@@ -34,10 +43,7 @@ const InitializeExperimentComponent: React.FC = () => {
   // check if uuid is given or not, and set isLoading and isDirty
   useEffect(() => {
     (async () => {
-      dispatch({
-        type: "isLoading/set",
-        payload: true,
-      });
+      dispatch(setIsLoading(true));
 
       if (uuid && typeof uuid === "string") {
         try {
@@ -50,14 +56,8 @@ const InitializeExperimentComponent: React.FC = () => {
         await initializeExperiment();
       }
 
-      dispatch({
-        type: "isLoading/set",
-        payload: false,
-      });
-      dispatch({
-        type: "isDirty/set",
-        payload: false,
-      });
+      dispatch(setIsLoading(false));
+      dispatch(setIsDirty(false));
     })();
   }, [uuid]);
 
@@ -104,37 +104,33 @@ const InitializeExperimentComponent: React.FC = () => {
       },
     } as z.infer<typeof experimentState>;
 
-    dispatch({
-      type: "bayesoptConfig/set",
-      payload: {
+    dispatch(
+      setBayesoptConfig({
         targetColumn: response.optimization_config.target_column_name,
         queryBudget: response.optimization_config.query_budget,
         optimizationType: response.optimization_config.method_name,
-      },
-    });
+      })
+    );
 
-    dispatch({
-      type: "acquisitionValues/set",
-      payload: {
+    dispatch(
+      setAcquisitionValues({
         acquisitionValues: response.acquisition_mesh.values,
         coordX: response.acquisition_mesh.coords_x,
         coordY: response.acquisition_mesh.coords_y,
-      },
-    });
+      })
+    );
 
-    dispatch({
-      type: "graphConfig/set",
-      payload: {
+    dispatch(
+      setGraphConfig({
         vaeName: response.VAE_name,
         minCount: response.plot_config.minimum_count,
         showSelex: response.plot_config.show_training_data,
         showAcquisition: true,
-      },
-    });
+      })
+    );
 
-    dispatch({
-      type: "registeredValues/set",
-      payload: {
+    dispatch(
+      setRegisteredValues({
         id: response.registered_values_table.ids,
         randomRegion: response.registered_values_table.sequences,
         coordX: [],
@@ -146,20 +142,21 @@ const InitializeExperimentComponent: React.FC = () => {
         sequenceIndex: [],
         column: [],
         value: [],
-      },
-    });
+        wholeSelected: false,
+      })
+    );
 
-    dispatch({
-      type: "queriedValues/set",
-      payload: {
+    dispatch(
+      setQueriedValues({
         randomRegion: response.query_table.sequences,
         coordX: [],
         coordY: [],
         coordOriginalX: response.query_table.coords_x_original,
         coordOriginalY: response.query_table.coords_y_original,
         staged: new Array(response.query_table.sequences.length).fill(false),
-      },
-    });
+        wholeSelected: false,
+      })
+    );
 
     if (response.VAE_uuid === "") {
       console.log("No VAE model found");
@@ -169,31 +166,31 @@ const InitializeExperimentComponent: React.FC = () => {
     const resSessionId = await apiClient.startSession({
       queries: { vae_uuid: response.VAE_uuid },
     });
-    dispatch({
-      type: "sessionConfig/set",
-      payload: {
+    dispatch(
+      setSessionConfig({
         vaeId: response.VAE_uuid,
         sessionId: resSessionId.uuid,
-      },
-    });
+      })
+    );
 
     const resCoords = await apiClient.getSelexData({
       queries: { vae_uuid: response.VAE_uuid },
     });
-    dispatch({
-      type: "vaeData/set",
-      payload: resCoords.random_regions.map((value, index) => {
-        return {
-          key: index,
-          randomRegion: value,
-          duplicates: resCoords.duplicates[index],
-          coordX: resCoords.coord_x[index],
-          coordY: resCoords.coord_y[index],
-          isSelected: false,
-          isShown: true,
-        };
-      }),
-    });
+    dispatch(
+      setVaeData(
+        resCoords.random_regions.map((value, index) => {
+          return {
+            key: index,
+            randomRegion: value,
+            duplicates: resCoords.duplicates[index],
+            coordX: resCoords.coord_x[index],
+            coordY: resCoords.coord_y[index],
+            isSelected: false,
+            isShown: true,
+          };
+        })
+      )
+    );
   };
 
   // restore experiment and set redux store
@@ -208,58 +205,55 @@ const InitializeExperimentComponent: React.FC = () => {
     if (resSessionId.uuid === "") {
       throw "Failed to start session";
     }
-    dispatch({
-      type: "sessionConfig/set",
-      payload: {
+    dispatch(
+      setSessionConfig({
         vaeId: response.VAE_uuid,
         sessionId: resSessionId.uuid,
-      },
-    });
+      })
+    );
 
-    dispatch({
-      type: "bayesoptConfig/set",
-      payload: {
+    dispatch(
+      setBayesoptConfig({
         targetColumn: response.optimization_config.target_column_name,
         queryBudget: response.optimization_config.query_budget,
         optimizationType: response.optimization_config.method_name,
-      },
-    });
+      })
+    );
 
-    dispatch({
-      type: "acquisitionValues/set",
-      payload: {
+    dispatch(
+      setAcquisitionValues({
         acquisitionValues: response.acquisition_mesh.values,
         coordX: response.acquisition_mesh.coords_x,
         coordY: response.acquisition_mesh.coords_y,
-      },
-    });
+      })
+    );
 
-    dispatch({
-      type: "graphConfig/set",
-      payload: {
+    dispatch(
+      setGraphConfig({
         vaeName: response.VAE_name,
         minCount: response.plot_config.minimum_count,
         showSelex: response.plot_config.show_training_data,
         showAcquisition: true,
-      },
-    });
+      })
+    );
 
     // set selex data
     const resSelex = await apiClient.getSelexData({
       queries: { vae_uuid: response.VAE_uuid },
     });
-    dispatch({
-      type: "vaeData/set",
-      payload: Array.from({ length: resSelex.coord_x.length }, (_, i) => ({
-        key: i,
-        randomRegion: resSelex.random_regions[i],
-        coordX: resSelex.coord_x[i],
-        coordY: resSelex.coord_y[i],
-        duplicates: resSelex.duplicates[i],
-        isSelected: false,
-        isShown: false,
-      })),
-    });
+    dispatch(
+      setVaeData(
+        Array.from({ length: resSelex.coord_x.length }, (_, i) => ({
+          key: i,
+          randomRegion: resSelex.random_regions[i],
+          coordX: resSelex.coord_x[i],
+          coordY: resSelex.coord_y[i],
+          duplicates: resSelex.duplicates[i],
+          isSelected: false,
+          isShown: false,
+        }))
+      )
+    );
 
     // set registered values
     let resCoords: z.infer<typeof responsePostEncode> = {
@@ -292,14 +286,12 @@ const InitializeExperimentComponent: React.FC = () => {
         sequenceIds.push(i);
       }
     }
-    dispatch({
-      type: "registeredValues/set",
-      payload: {
+    dispatch(
+      setRegisteredValues({
         id: response.registered_values_table.ids,
         randomRegion: response.registered_values_table.sequences,
         coordX: resCoords.coords_x,
         coordY: resCoords.coords_y,
-        // staged: response.registered_values[0].staged,
         staged: new Array(
           response.registered_values_table.sequences.length
         ).fill(false),
@@ -307,8 +299,9 @@ const InitializeExperimentComponent: React.FC = () => {
         sequenceIndex: sequenceIds,
         column: columns,
         value: values,
-      },
-    });
+        wholeSelected: false,
+      })
+    );
 
     // set query values
     let resQueryCoords: z.infer<typeof responsePostEncode> = {
@@ -321,17 +314,17 @@ const InitializeExperimentComponent: React.FC = () => {
         sequences: response.query_table.sequences,
       });
     }
-    dispatch({
-      type: "queriedValues/set",
-      payload: {
+    dispatch(
+      setQueriedValues({
         randomRegion: response.query_table.sequences,
         coordX: resQueryCoords.coords_x,
         coordY: resQueryCoords.coords_y,
         coordOriginalX: response.query_table.coords_x_original,
         coordOriginalY: response.query_table.coords_y_original,
         staged: new Array(response.query_table.sequences.length).fill(false),
-      },
-    });
+        wholeSelected: false,
+      })
+    );
   };
 
   return <></>;

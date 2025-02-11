@@ -4,6 +4,14 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
 import { RootState } from "./redux/store";
+import { setIsDirty } from "./redux/is-dirty";
+import { setIsLoading } from "./redux/is-loading";
+import { setSessionConfig } from "./redux/session-config";
+import { setGraphConfig } from "./redux/graph-config";
+import { setVaeData } from "./redux/vae-data";
+import { setRegisteredValues } from "./redux/registered-values";
+import { setQueriedValues } from "./redux/queried-values";
+import { setAcquisitionValues } from "./redux/acquisition-values";
 
 const VaeSelector: React.FC = () => {
   const [models, setModels] = useState<
@@ -35,10 +43,7 @@ const VaeSelector: React.FC = () => {
   }, [sessionConfig, graphConfig]);
 
   const setDirty = () => {
-    dispatch({
-      type: "isDirty/set",
-      payload: true,
-    });
+    dispatch(setIsDirty(true));
   };
 
   const onModelChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -47,10 +52,7 @@ const VaeSelector: React.FC = () => {
     setSelectedModel(uuid);
 
     try {
-      dispatch({
-        type: "isLoading/set",
-        payload: true,
-      });
+      dispatch(setIsLoading(true));
       const resStart = await apiClient.startSession({
         queries: {
           vae_uuid: uuid,
@@ -61,20 +63,8 @@ const VaeSelector: React.FC = () => {
           session_uuid: sessionConfig.sessionId,
         },
       });
-      dispatch({
-        type: "sessionConfig/set",
-        payload: {
-          sessionId: resStart.uuid,
-          vaeId: uuid,
-        },
-      });
-      dispatch({
-        type: "graphConfig/set",
-        payload: {
-          ...graphConfig,
-          vaeId: uuid,
-        },
-      });
+      dispatch(setSessionConfig);
+      dispatch(setGraphConfig);
 
       // retrieve SELEX data
       const resSelex = await apiClient.getSelexData({
@@ -82,18 +72,19 @@ const VaeSelector: React.FC = () => {
           vae_uuid: uuid,
         },
       });
-      dispatch({
-        type: "vaeData/set",
-        payload: Array.from({ length: resSelex.coord_x.length }, (_, i) => ({
-          key: i,
-          randomRegion: resSelex.random_regions[i],
-          coordX: resSelex.coord_x[i],
-          coordY: resSelex.coord_y[i],
-          duplicates: resSelex.duplicates[i],
-          isSelected: false,
-          isShown: false,
-        })),
-      });
+      dispatch(
+        setVaeData(
+          Array.from({ length: resSelex.coord_x.length }, (_, i) => ({
+            key: i,
+            randomRegion: resSelex.random_regions[i],
+            coordX: resSelex.coord_x[i],
+            coordY: resSelex.coord_y[i],
+            duplicates: resSelex.duplicates[i],
+            isSelected: false,
+            isShown: false,
+          }))
+        )
+      );
 
       // update registered table with re-encoded data
       if (registeredValues.randomRegion.length !== 0) {
@@ -101,41 +92,36 @@ const VaeSelector: React.FC = () => {
           session_uuid: resStart.uuid,
           sequences: registeredValues.randomRegion,
         });
-        dispatch({
-          type: "registeredValues/set",
-          payload: {
+        dispatch(
+          setRegisteredValues({
             ...registeredValues,
             coordX: resRegistered.coords_x,
             coordY: resRegistered.coords_y,
-          },
-        });
+          })
+        );
       }
 
       // reset queried values and acquisition values
-      dispatch({
-        type: "queriedValues/set",
-        payload: {
+      dispatch(
+        setQueriedValues({
+          wholeSelected: false,
           randomRegion: [],
           coordX: [],
           coordY: [],
           coordOriginalX: [],
           coordOriginalY: [],
           staged: [],
-        },
-      });
-      dispatch({
-        type: "acquisitionValues/set",
-        payload: {
+        })
+      );
+      dispatch(
+        setAcquisitionValues({
           acquisitionValues: [],
           coordX: [],
           coordY: [],
-        },
-      });
+        })
+      );
 
-      dispatch({
-        type: "isLoading/set",
-        payload: false,
-      });
+      dispatch(setIsLoading(false));
     } catch (e) {
       console.error(e);
       return;

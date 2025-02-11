@@ -4,8 +4,8 @@ import { RootState } from "./redux/store";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { apiClient } from "~/services/api-client";
-import IntegerForm from "~/components/uploader/sidebar-vae/optional-params/integer-form";
-import TextForm from "~/components/uploader/sidebar-vae/optional-params/text-form";
+import { setParams } from "./redux/params";
+import { setParamsValid } from "./redux/paramsValid";
 
 const Forms: React.FC = () => {
   const params = useSelector((state: RootState) => state.params);
@@ -29,20 +29,18 @@ const Forms: React.FC = () => {
 
       if (res.entries.length > 0) {
         try {
-          dispatch({
-            type: "params/set",
-            payload: {
+          dispatch(
+            setParams({
               ...params,
               vaeId: res.entries[0].uuid,
-            },
-          });
-          dispatch({
-            type: "paramsValid/set",
-            payload: {
+            })
+          );
+          dispatch(
+            setParamsValid({
               ...paramsValid,
               vaeId: true,
-            },
-          });
+            })
+          );
         } catch (e) {
           console.error(e);
         }
@@ -58,14 +56,13 @@ const Forms: React.FC = () => {
         params.minNumComponents >= 1 &&
         params.maxNumComponents >= 1
       ) {
-        dispatch({
-          type: "paramsValid/set",
-          payload: {
+        dispatch(
+          setParamsValid({
             ...paramsValid,
             minNumComponents: true,
             maxNumComponents: true,
-          },
-        });
+          })
+        );
       }
       return;
     }
@@ -81,20 +78,18 @@ const Forms: React.FC = () => {
           onChange={(e) => {
             const uuid = e.target.value;
             try {
-              dispatch({
-                type: "params/set",
-                payload: {
+              dispatch(
+                setParams({
                   ...params,
                   vaeId: uuid,
-                },
-              });
-              dispatch({
-                type: "paramsValid/set",
-                payload: {
+                })
+              );
+              dispatch(
+                setParamsValid({
                   ...paramsValid,
                   vaeId: true,
-                },
-              });
+                })
+              );
             } catch (e) {
               console.error(e);
             }
@@ -107,133 +102,150 @@ const Forms: React.FC = () => {
           ))}
         </Form.Select>
       </Form.Group>
-      <TextForm
-        label="GMM name"
-        placeholder="Please enter the name of the GMM."
-        value={params.gmmName}
-        setValue={(name) =>
-          dispatch({
-            type: "params/set",
-            payload: {
-              ...params,
-              gmmName: name,
-            },
-          })
-        }
-        isValid={paramsValid.gmmName}
-        setIsValid={(isValid) =>
-          dispatch({
-            type: "paramsValid/set",
-            payload: {
-              ...paramsValid,
-              gmmName: isValid,
-            },
-          })
-        }
-        predicate={(value) => value.length > 0}
-      />
+      <Form.Group className="mb-3">
+        <Form.Label>Model name</Form.Label>
+        <Form.Control
+          type="text"
+          placeholder="Please enter the name of the VAE model."
+          defaultValue={params.gmmName}
+          onChange={(e) => {
+            const name = e.target.value.trim();
+            const isValid = name.length > 0;
+            dispatch(
+              setParamsValid({
+                ...paramsValid,
+                gmmName: isValid,
+              })
+            );
+            if (isValid) {
+              dispatch(
+                setParams({
+                  ...params,
+                  gmmName: name,
+                })
+              );
+            }
+          }}
+          isInvalid={!paramsValid.gmmName}
+        />
+      </Form.Group>
 
       <legend>Parameters</legend>
-      <IntegerForm
-        label="Minimum number of GMM components"
-        placeholder="Need to be a positive integer"
-        value={params.minNumComponents}
-        setValue={(n) =>
-          dispatch({
-            type: "params/set",
-            payload: {
-              ...params,
-              minNumComponents: n,
-            },
-          })
-        }
-        isValid={paramsValid.minNumComponents}
-        setIsValid={(isValid) =>
-          dispatch({
-            type: "paramsValid/set",
-            payload: {
-              ...paramsValid,
-              minNumComponents: isValid,
-            },
-          })
-        }
-        predicate={(value) => value >= 1 && value <= params.maxNumComponents}
-      />
-      <IntegerForm
-        label="Maximum number of GMM components"
-        placeholder="Need to be a positive integer"
-        value={params.maxNumComponents}
-        setValue={(n) =>
-          dispatch({
-            type: "params/set",
-            payload: {
-              ...params,
-              maxNumComponents: n,
-            },
-          })
-        }
-        isValid={paramsValid.maxNumComponents}
-        setIsValid={(isValid) =>
-          dispatch({
-            type: "paramsValid/set",
-            payload: {
-              ...paramsValid,
-              maxNumComponents: isValid,
-            },
-          })
-        }
-        predicate={(value) => value >= 1 && value >= params.minNumComponents}
-      />
-      <IntegerForm
-        label="Step size of the search"
-        placeholder="Need to be a positive integer"
-        value={params.stepSize}
-        setValue={(n) =>
-          dispatch({
-            type: "params/set",
-            payload: {
-              ...params,
-              stepSize: n,
-            },
-          })
-        }
-        isValid={paramsValid.stepSize}
-        setIsValid={(isValid) =>
-          dispatch({
-            type: "paramsValid/set",
-            payload: {
-              ...paramsValid,
-              stepSize: isValid,
-            },
-          })
-        }
-        predicate={(value) => value >= 1}
-      />
-      <IntegerForm
-        label="Number of trials on each number of components"
-        placeholder="Need to be a positive integer"
-        value={params.numTrials}
-        setValue={(n) =>
-          dispatch({
-            type: "params/set",
-            payload: {
-              ...params,
-              numTrials: n,
-            },
-          })
-        }
-        isValid={paramsValid.numTrials}
-        setIsValid={(isValid) =>
-          dispatch({
-            type: "paramsValid/set",
-            payload: {
-              ...paramsValid,
-              numTrials: isValid,
-            },
-          })
-        }
-        predicate={(value) => value >= 1}
-      />
+      <Form.Group className="mb-3">
+        <Form.Label>Minimum number of GMM components</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="Need to be a positive integer"
+          defaultValue={params.minNumComponents}
+          onChange={(e) => {
+            const numComponents = parseInt(e.target.value);
+            const isValid =
+              !isNaN(numComponents) &&
+              numComponents >= 1 &&
+              numComponents <= params.maxNumComponents;
+            dispatch(
+              setParamsValid({
+                ...paramsValid,
+                minNumComponents: isValid,
+              })
+            );
+            if (isValid) {
+              dispatch(
+                setParams({
+                  ...params,
+                  minNumComponents: numComponents,
+                })
+              );
+            }
+          }}
+          isInvalid={!paramsValid.minNumComponents}
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Maximum number of GMM components</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="Need to be a positive integer"
+          defaultValue={params.maxNumComponents}
+          onChange={(e) => {
+            const numComponents = parseInt(e.target.value);
+            const isValid =
+              !isNaN(numComponents) && numComponents >= params.minNumComponents;
+            dispatch(
+              setParamsValid({
+                ...paramsValid,
+                maxNumComponents: isValid,
+              })
+            );
+            if (isValid) {
+              dispatch(
+                setParams({
+                  ...params,
+                  maxNumComponents: numComponents,
+                })
+              );
+            }
+          }}
+          isInvalid={!paramsValid.maxNumComponents}
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Step size of the search</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="Need to be a positive integer"
+          defaultValue={params.stepSize}
+          onChange={(e) => {
+            const stepSize = parseInt(e.target.value);
+            const isValid = !isNaN(stepSize) && stepSize >= 1;
+            dispatch(
+              setParamsValid({
+                ...paramsValid,
+                stepSize: isValid,
+              })
+            );
+            if (isValid) {
+              dispatch(
+                setParams({
+                  ...params,
+                  stepSize: stepSize,
+                })
+              );
+            }
+          }}
+          isInvalid={!paramsValid.stepSize}
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Number of trials on each number of components</Form.Label>
+        <Form.Control
+          type="number"
+          placeholder="Need to be a positive integer"
+          defaultValue={params.numTrials}
+          onChange={(e) => {
+            const numTrials = parseInt(e.target.value);
+            const isValid = !isNaN(numTrials) && numTrials >= 1;
+            dispatch(
+              setParamsValid({
+                ...paramsValid,
+                numTrials: isValid,
+              })
+            );
+            if (isValid) {
+              dispatch(
+                setParams({
+                  ...params,
+                  numTrials: numTrials,
+                })
+              );
+            }
+          }}
+          isInvalid={!paramsValid.numTrials}
+        />
+      </Form.Group>
     </>
   );
 };

@@ -12,8 +12,10 @@ import React, { useCallback } from "react";
 import { cloneDeep } from "lodash";
 import { useDispatch } from "react-redux";
 import { TypeOnSelectionChangeArg } from "@inovua/reactdatagrid-community/types/TypeDataGridProps";
-import { QueriedValues } from "./redux/queried-values";
+import { QueriedValues, setQueriedValues } from "./redux/queried-values";
 import { useIsLoading } from "~/hooks/common";
+import { setIsDirty } from "./redux/is-dirty";
+import { setRegisteredValues } from "./redux/registered-values";
 
 const gridStyle = { minHeight: 400, width: "100%", zIndex: 950 };
 
@@ -56,14 +58,8 @@ export const QueryTable: React.FC = () => {
         });
       }
 
-      dispatch({
-        type: "queriedValues/set",
-        payload: newData,
-      });
-      dispatch({
-        type: "isDirty/set",
-        payload: true,
-      });
+      dispatch(setQueriedValues(newData));
+      dispatch(setIsDirty(true));
     },
     [queryData]
   );
@@ -215,18 +211,9 @@ export const AddQueryButton: React.FC<AddQueryButtonProps> = ({
       }
     }
 
-    dispatch({
-      type: "registeredValues/set",
-      payload: newRegisteredData,
-    });
-    dispatch({
-      type: "queriedValues/set",
-      payload: newQueryData,
-    });
-    dispatch({
-      type: "isDirty/set",
-      payload: true,
-    });
+    dispatch(setRegisteredValues(newRegisteredData));
+    dispatch(setQueriedValues(newQueryData));
+    dispatch(setIsDirty(true));
     unlock();
     setActiveTab("registered-table");
   };

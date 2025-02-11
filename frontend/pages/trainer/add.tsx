@@ -60,6 +60,7 @@ const Home: React.FC = () => {
       <main>
         <Navigator currentPage="vae-trainer" />
         <Container>
+          <div className="py-2" />
           <h1>VAE Trainer</h1>
           <hr />
           <div

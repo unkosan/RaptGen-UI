@@ -20,7 +20,10 @@ const paramsValidSlice = createSlice({
     numTrials: true,
   },
   reducers: {
-    set: (state: ParamsValid, action: PayloadAction<ParamsValid>) => {
+    setParamsValid: (
+      state: ParamsValid,
+      action: PayloadAction<ParamsValid>
+    ) => {
       return action.payload;
     },
   },
@@ -30,3 +33,4 @@ const paramsReducer = paramsValidSlice.reducer;
 
 export default paramsReducer;
 export type { ParamsValid };
+export const { setParamsValid } = paramsValidSlice.actions;

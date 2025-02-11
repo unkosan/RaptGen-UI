@@ -20,7 +20,7 @@ const paramsSlice = createSlice({
     numTrials: 10,
   },
   reducers: {
-    set: (state: Params, action: PayloadAction<Params>) => {
+    setParams: (state: Params, action: PayloadAction<Params>) => {
       return action.payload;
     },
   },
@@ -30,3 +30,4 @@ const paramsReducer = paramsSlice.reducer;
 
 export default paramsReducer;
 export type { Params };
+export const { setParams } = paramsSlice.actions;
