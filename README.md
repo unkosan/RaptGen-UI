@@ -5,9 +5,10 @@
 
 ## Overview
 
-<div align="center">
+<p align="center">
    <img src="docs/images/overview.png" alt="Overview of RaptGen-UI pipeline"><br>
-</div>
+</p>
+
 RaptGen-UI is a web-based user-friendly interface for RaptGen, a powerful Latent Space Bayesian Optimization (LSBO) method for identifying and optimizing aptamers from high-throughput SELEX data. For more information about RaptGen, please refer to the [RaptGen repository](https://github.com/hmdlab/RaptGen).
 
 Currently, RaptGen-UI supports four modules: Viewer, VAE Trainer, GMM Trainer, and Bayesian Optimization.
