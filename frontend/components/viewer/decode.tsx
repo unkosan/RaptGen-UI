@@ -207,7 +207,6 @@ const ResultViewer: React.FC = () => {
         },
       });
 
-      console.log(res);
       setForward(res.forward_adapter || "");
       setReverse(res.reverse_adapter || "");
     })();

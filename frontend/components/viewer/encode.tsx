@@ -6,8 +6,6 @@ import { setEncoded } from "./redux/interaction-data";
 import { Button, Card, Form, InputGroup, Spinner } from "react-bootstrap";
 import { PlusLg } from "react-bootstrap-icons";
 import { useIsLoading } from "~/hooks/common";
-// import ManualEncodeForm from "./manual-encode-form";
-// import FastaUploader from "./fasta-uploader";
 
 const parser = (text: string) => {
   const regex = /^>\s*([^\n\r]+)[\n\r]+([ACGTUacgtu\n\r]+)$/gm;

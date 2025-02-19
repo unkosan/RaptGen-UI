@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Card,
   Form,
@@ -16,37 +16,12 @@ import { apiClient } from "~/services/api-client";
 import { useRouter } from "next/router";
 import { Pencil, XLg } from "react-bootstrap-icons";
 import { setSessionConfigByVaeIdName, setGmmId } from "./redux/session-config";
-import { useIsLoading } from "~/hooks/common";
+import { useAsyncMemo, useIsLoading } from "~/hooks/common";
 import CustomDataGrid from "../common/custom-datagrid";
 
-const VAEParamsTable: React.FC = () => {
-  const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
-    {} as { [keys: string]: string }
-  );
-
-  const vaeId = useSelector((state: RootState) => state.sessionConfig.vaeId);
-
-  useEffect(() => {
-    (async () => {
-      if (vaeId === "") {
-        setParamsList({} as { [keys: string]: string });
-        return;
-      }
-
-      try {
-        const res = await apiClient.getVAEModelParameters({
-          queries: {
-            vae_uuid: vaeId,
-          },
-        });
-
-        setParamsList(res);
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-  }, [vaeId]);
-
+const ParamsTable: React.FC<{
+  params: { [keys: string]: string };
+}> = ({ params }) => {
   const gridStyle = {
     minHeight: 300,
     width: "100%",
@@ -69,10 +44,10 @@ const VAEParamsTable: React.FC = () => {
           defaultFlex: 1,
         },
       ]}
-      dataSource={Object.keys(paramsList).map((key) => ({
+      dataSource={Object.keys(params).map((key) => ({
         id: key,
         parameter: key,
-        value: paramsList[key],
+        value: params[key],
       }))}
       rowStyle={{ fontFamily: "monospace" }}
       rowHeight={35}
@@ -81,122 +56,20 @@ const VAEParamsTable: React.FC = () => {
   );
 };
 
-const GMMParamsTable: React.FC = () => {
-  const [paramsList, setParamsList] = useState<{ [keys: string]: string }>(
-    {} as { [keys: string]: string }
-  );
-
-  const gmmId = useSelector((state: RootState) => state.sessionConfig.gmmId);
-
-  useEffect(() => {
-    (async () => {
-      if (gmmId === "") {
-        setParamsList({} as { [keys: string]: string });
-        return;
-      }
-
-      const res = await apiClient.getGMMModelParameters({
-        queries: {
-          gmm_uuid: gmmId,
-        },
-      });
-
-      setParamsList(res);
-    })();
-  }, [gmmId]);
-
-  const gridStyle = {
-    minHeight: 300,
-    width: "100%",
-    zIndex: 1000,
-  };
-
-  return (
-    <CustomDataGrid
-      idProperty="id"
-      className="mb-3"
-      columns={[
-        {
-          name: "parameter",
-          header: "Parameter",
-          defaultFlex: 1,
-        },
-        {
-          name: "value",
-          header: "Value",
-          defaultFlex: 1,
-        },
-      ]}
-      dataSource={Object.keys(paramsList).map((key) => ({
-        id: key,
-        parameter: key,
-        value: paramsList[key],
-      }))}
-      rowStyle={{ fontFamily: "monospace" }}
-      rowHeight={35}
-      style={gridStyle}
-    />
-  );
-};
-
-const SelectVAE: React.FC = () => {
-  const [id, setId] = useState<string>("");
-  const [models, setModels] = useState<
-    {
-      uuid: string;
-      name: string;
-    }[]
-  >([]);
-
-  const dispatch = useDispatch<AppDispatch>();
+const VAEPicker: React.FC<{
+  entries: {
+    uuid: string;
+    name: string;
+  }[];
+  uuid: string;
+  refreshFunc: () => void;
+}> = ({ entries, uuid, refreshFunc }) => {
   const router = useRouter();
-  const { uuid } = router.query;
   const [isRenameModelOpen, setIsRenameModelOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string>("");
   const [newName, setNewName] = useState<string>("");
-
   const [isLoading, lock, unlock] = useIsLoading();
-
-  const reloadModels = async () => {
-    const res = await apiClient.getVAEModelNames();
-    setModels(res.entries);
-
-    if (res.entries.length > 0) {
-      if (
-        typeof uuid === "string" &&
-        res.entries.some((model) => model.uuid === uuid)
-      ) {
-        setId(uuid);
-      } else {
-        setId(res.entries[0].uuid);
-      }
-    } else {
-      setId("");
-    }
-  };
-
-  // retrieve VAE model names
-  useEffect(() => {
-    reloadModels();
-  }, [uuid]);
-
-  // start session
-  useEffect(() => {
-    (async () => {
-      if (id === "") {
-        return;
-      }
-
-      const vaeName = models.find((model) => model.uuid === id)?.name;
-      dispatch(
-        setSessionConfigByVaeIdName({
-          vaeId: id,
-          vaeName: vaeName,
-        })
-      );
-    })();
-  }, [id]);
 
   return (
     <div
@@ -207,11 +80,11 @@ const SelectVAE: React.FC = () => {
       }}
     >
       <ListGroup variant="flush">
-        {models.map((model, index) => (
+        {entries.map((model, index) => (
           <ListGroup.Item
             action
             key={index}
-            active={model.uuid === id}
+            active={model.uuid === uuid}
             onClick={(e) => {
               // default behavior of the button is to submit the form
               e.preventDefault();
@@ -296,7 +169,7 @@ const SelectVAE: React.FC = () => {
                   },
                 }
               );
-              await reloadModels();
+              refreshFunc();
               unlock();
               setIsRenameModelOpen(false);
             }}
@@ -318,7 +191,7 @@ const SelectVAE: React.FC = () => {
           <p>
             Are you sure you want to delete the VAE model{" "}
             <span className="fw-bold">
-              {models.find((model) => model.uuid === selectedId)?.name}
+              {entries.find((model) => model.uuid === selectedId)?.name}
             </span>
             ?
           </p>
@@ -341,10 +214,10 @@ const SelectVAE: React.FC = () => {
                   vae_uuid: selectedId,
                 },
               });
-              await reloadModels();
+              refreshFunc();
               unlock();
               setIsDeleteModalOpen(false);
-              if (selectedId === id) {
+              if (selectedId === uuid) {
                 router.push(``, undefined, {
                   shallow: true,
                 });
@@ -360,60 +233,104 @@ const SelectVAE: React.FC = () => {
   );
 };
 
-const SelectGMM: React.FC = () => {
-  const [models, setModels] = useState<
-    {
-      uuid: string;
-      name: string;
-    }[]
-  >([]);
-  const [id, setId] = useState<string>("");
+const DataSelector: React.FC = () => {
+  const router = useRouter();
+  const uuid = router.query.uuid;
+  const vaeId = useSelector((state: RootState) => state.sessionConfig.vaeId);
+  const gmmId = useSelector((state: RootState) => state.sessionConfig.gmmId);
+  const [refreshFlag, setRefreshFlag] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
 
-  const dispatch = useDispatch();
-  const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
-
-  useEffect(() => {
-    (async () => {
-      if (!sessionConfig.vaeId) {
-        return;
+  const vaeEntries = useAsyncMemo(
+    async () => {
+      if (!router.isReady) {
+        return [];
       }
 
+      const res = await apiClient.getVAEModelNames();
+      const name = res.entries.find((entry) => entry.uuid === uuid)?.name;
+      if (uuid && name) {
+        dispatch(
+          setSessionConfigByVaeIdName({
+            vaeId: uuid.toString(),
+            vaeName: name,
+          })
+        );
+      } else if (res.entries.length) {
+        router.push(`?uuid=${res.entries[0].uuid}`, undefined, {
+          shallow: true,
+        });
+      } else {
+        dispatch(
+          setSessionConfigByVaeIdName({
+            vaeId: "",
+            vaeName: "",
+          })
+        );
+      }
+      return res.entries;
+    },
+    [router.isReady, uuid, refreshFlag],
+    []
+  );
+
+  const gmmEntries = useAsyncMemo(
+    async () => {
+      if (!vaeId) {
+        return [];
+      }
       const res = await apiClient.getGMMModelNames({
         queries: {
-          vae_uuid: sessionConfig.vaeId,
+          vae_uuid: vaeId,
         },
       });
-      setModels(res.entries);
+      dispatch(setGmmId(res.entries.length ? res.entries[0].uuid : ""));
+      return res.entries;
+    },
+    [vaeId],
+    []
+  );
 
-      if (res.entries.length > 0) {
-        setId(res.entries[0].uuid);
-        dispatch(setGmmId(res.entries[0].uuid));
-      } else {
-        setId("");
-        dispatch(setGmmId(""));
+  const vaeParams = useAsyncMemo(
+    async () => {
+      if (!vaeId) {
+        return {};
       }
-    })();
-  }, [sessionConfig.vaeId]);
+      const records: Object = await apiClient.getVAEModelParameters({
+        queries: {
+          vae_uuid: vaeId,
+        },
+      });
+      return Object.fromEntries(
+        Object.entries(records).map(([key, value]) => [key, String(value)])
+      );
+    },
+    [vaeId],
+    {}
+  );
+
+  const gmmParams = useAsyncMemo(
+    async () => {
+      if (!gmmId) {
+        return {};
+      }
+      const records = await apiClient.getGMMModelParameters({
+        queries: {
+          gmm_uuid: gmmId,
+        },
+      });
+      return Object.fromEntries(
+        Object.entries(records).map(([key, value]) => [key, String(value)])
+      );
+    },
+    [gmmId],
+    {}
+  );
 
   const onChangeGMM = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setId(e.target.value);
     dispatch(setGmmId(e.target.value));
   };
 
-  return (
-    <>
-      <Form.Select value={id} onChange={onChangeGMM}>
-        {models.map((model, index) => (
-          <option key={index} value={model.uuid}>
-            {model.name}
-          </option>
-        ))}
-      </Form.Select>
-    </>
-  );
-};
-
-const DataSelector: React.FC = () => {
   return (
     <Tabs defaultActiveKey="dataSelector" id="dataControl">
       <Tab eventKey="dataSelector" title="Data">
@@ -421,20 +338,32 @@ const DataSelector: React.FC = () => {
           <Card.Body>
             <Form.Group className="mb-3">
               <Form.Label>Selected VAE Model</Form.Label>
-              <SelectVAE />
+              <VAEPicker
+                entries={vaeEntries}
+                uuid={vaeId}
+                refreshFunc={() => {
+                  setRefreshFlag(!refreshFlag);
+                }}
+              />
             </Form.Group>
             <Form.Group className="">
               <Form.Label>Selected GMM Model</Form.Label>
-              <SelectGMM />
+              <Form.Select value={gmmId} onChange={onChangeGMM}>
+                {gmmEntries.map((model, index) => (
+                  <option key={index} value={model.uuid}>
+                    {model.name}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
           </Card.Body>
         </Card>
       </Tab>
       <Tab eventKey="vaeParamsTable" title="VAE parameters">
-        <VAEParamsTable />
+        <ParamsTable params={vaeParams} />
       </Tab>
       <Tab eventKey="gmmParamsTable" title="GMM parameters">
-        <GMMParamsTable />
+        <ParamsTable params={gmmParams} />
       </Tab>
     </Tabs>
   );
