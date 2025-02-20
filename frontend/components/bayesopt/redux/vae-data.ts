@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-type VaeDataEntry = {
+interface VaeDataEntry {
   key: number;
   randomRegion: string;
   duplicates: number;
@@ -8,7 +8,7 @@ type VaeDataEntry = {
   coordY: number;
   isSelected: boolean;
   isShown: boolean;
-};
+}
 
 const vaeDataSlice = createSlice({
   name: "vaeData",

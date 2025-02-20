@@ -3,11 +3,10 @@ import { Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { apiClient } from "~/services/api-client";
-import { RootState } from "./redux/store";
+import { AppDispatch, RootState } from "./redux/store";
 import { setIsDirty } from "./redux/is-dirty";
 import { setIsLoading } from "./redux/is-loading";
-import { setSessionConfig } from "./redux/session-config";
-import { setGraphConfig } from "./redux/graph-config";
+import { setSessionConfigByVaeIdName } from "./redux/session-config";
 import { setVaeData } from "./redux/vae-data";
 import { setRegisteredValues } from "./redux/registered-values";
 import { setQueriedValues } from "./redux/queried-values";
@@ -22,7 +21,7 @@ const VaeSelector: React.FC = () => {
   >([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
   const registeredValues = useSelector(
@@ -48,23 +47,23 @@ const VaeSelector: React.FC = () => {
 
   const onModelChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const uuid = e.target.value;
+    const name = models.find((model) => model.uuid === uuid)?.name;
+    if (!uuid || !name) return;
+
     setDirty();
     setSelectedModel(uuid);
 
     try {
       dispatch(setIsLoading(true));
-      const resStart = await apiClient.startSession({
-        queries: {
-          vae_uuid: uuid,
-        },
-      });
-      const resEnd = await apiClient.endSession({
-        queries: {
-          session_uuid: sessionConfig.sessionId,
-        },
-      });
-      dispatch(setSessionConfig);
-      dispatch(setGraphConfig);
+      const res = await dispatch(
+        setSessionConfigByVaeIdName({
+          vaeId: uuid,
+          vaeName: name,
+        })
+      );
+
+      // get session Id
+      const sessionId: string = (res.payload as any).sessionId;
 
       // retrieve SELEX data
       const resSelex = await apiClient.getSelexData({
@@ -89,7 +88,7 @@ const VaeSelector: React.FC = () => {
       // update registered table with re-encoded data
       if (registeredValues.randomRegion.length !== 0) {
         const resRegistered = await apiClient.encode({
-          session_uuid: resStart.uuid,
+          session_uuid: sessionId,
           sequences: registeredValues.randomRegion,
         });
         dispatch(

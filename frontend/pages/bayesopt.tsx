@@ -10,7 +10,11 @@ import { z } from "zod";
 import Head from "next/head";
 import Navigator from "~/components/common/navigator";
 import { Col, Container, Row, SSRProvider, Tab, Tabs } from "react-bootstrap";
-import { RootState, store } from "~/components/bayesopt/redux/store";
+import {
+  AppDispatch,
+  RootState,
+  store,
+} from "~/components/bayesopt/redux/store";
 import { responsePostEncode } from "~/services/route/session";
 import { experimentState } from "~/services/route/bayesopt";
 import { useSelector } from "react-redux";
@@ -32,13 +36,16 @@ import { setAcquisitionValues } from "~/components/bayesopt/redux/acquisition-va
 import { setGraphConfig } from "~/components/bayesopt/redux/graph-config";
 import { setRegisteredValues } from "~/components/bayesopt/redux/registered-values";
 import { setQueriedValues } from "~/components/bayesopt/redux/queried-values";
-import { setSessionConfig } from "~/components/bayesopt/redux/session-config";
+import {
+  setSessionConfig,
+  setSessionConfigByVaeIdName,
+} from "~/components/bayesopt/redux/session-config";
 import { setVaeData } from "~/components/bayesopt/redux/vae-data";
 
 const InitializeExperimentComponent: React.FC = () => {
   const router = useRouter();
   const uuid = router.query.uuid;
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   // check if uuid is given or not, and set isLoading and isDirty
   useEffect(() => {
@@ -163,15 +170,13 @@ const InitializeExperimentComponent: React.FC = () => {
       return;
     }
 
-    const resSessionId = await apiClient.startSession({
-      queries: { vae_uuid: response.VAE_uuid },
-    });
-    dispatch(
-      setSessionConfig({
+    const res = await dispatch(
+      setSessionConfigByVaeIdName({
         vaeId: response.VAE_uuid,
-        sessionId: resSessionId.uuid,
+        vaeName: response.VAE_name,
       })
     );
+    const sessionId: string = (res.payload as any).sessionId;
 
     const resCoords = await apiClient.getSelexData({
       queries: { vae_uuid: response.VAE_uuid },
@@ -206,9 +211,9 @@ const InitializeExperimentComponent: React.FC = () => {
       throw "Failed to start session";
     }
     dispatch(
-      setSessionConfig({
+      setSessionConfigByVaeIdName({
         vaeId: response.VAE_uuid,
-        sessionId: resSessionId.uuid,
+        vaeName: response.VAE_name,
       })
     );
 

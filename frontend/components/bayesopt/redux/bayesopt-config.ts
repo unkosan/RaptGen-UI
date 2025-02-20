@@ -1,10 +1,10 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-type BayesoptConfig = {
+interface BayesoptConfig {
   optimizationType: string;
   targetColumn: string;
   queryBudget: number;
-};
+}
 
 const bayesoptConfigSlice = createSlice({
   name: "bayesoptConfig",
