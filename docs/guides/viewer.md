@@ -6,11 +6,11 @@ Interactive viewer for the trained model.
 
 Navigate to the Viewer by clicking the `Viewer` link in the top menu or the navigation bar.
 
-![Accessing the Viewer page](images/viewer_access.png)
+![Accessing the Viewer page](../assets/images/viewer/access.png)
 
 ## Features
 
-![Overview of the viewer page](images/viewer_overview.png)
+![Overview of the viewer page](../assets/images/viewer/overview.png)
 
 The Viewer page offers four main functionalities.
 
@@ -31,7 +31,7 @@ You can encode sequences in two ways.
 After entering a sequence in the form, click the `+` button to encode and add it to the table.
 The results appear in the `Encoded sequences` table below the latent plot.
 
-![Table for encoded sequences](images/viewer_encoded-sequences.png)
+![Table for encoded sequences](../assets/images/viewer/encoded-sequences.png)
 
 In the `Encoded sequences` table, you have option to:
 
@@ -39,8 +39,9 @@ In the `Encoded sequences` table, you have option to:
 - Delete sequences: Click the trash icon.
 - Toggle visibility in latent plot: Click the eye icon.
 
-> [!WARNING]
-> Each sequence must consist of `A`, `C`, `G`, `T`, or `U`. The ambiguous base `N` is not permitted.
+
+!!! Warning
+    Each sequence must consist of `A`, `C`, `G`, `T`, or `U`. The ambiguous base `N` is not permitted.
 
 ## Decoding points in latent space
 
@@ -53,7 +54,7 @@ The input panel includes a toggle for grid line visibility, helping you pinpoint
 
 In the output panel, you will see the decoded sequence and a `+` button in the right. Clicking this button adds the sequence to the `Decoded points` table.
 
-![Table for decoded points](images/viewer_decoded-points.png)
+![Table for decoded points](../assets/images/viewer/decoded-points.png)
 
 The `Decoded points` table allows you to:
 
@@ -85,7 +86,7 @@ This feature utilizes the [plotly.js](https://plotly.com/javascript/) library fo
 To select points:
 
 1. Choose either the `Box Select` or `Lasso Select` button to change the selection mode.
-   ![Location of button to change into lasso select mode](images/viewer_select-mode.png)
+   ![Location of button to change into lasso select mode](../assets/images/viewer/select-mode.png)
 2. Click and drag your mouse to select points in the latent space. Unselected points are shown in gray, helping you focus on your selection.
-   ![Partial data is selected in latent space](images/viewer_selected-points.png)
+   ![Partial data is selected in latent space](../assets/images/viewer/selected-points.png)
    Selected points are shown in `Selected points` table. You can save the selected points by clicking the `Download All` button in the table.

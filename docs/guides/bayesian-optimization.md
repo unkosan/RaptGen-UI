@@ -6,7 +6,7 @@ Optimize the HT-SELEX data with Bayesian Optimization.
 
 Navigate to the Bayesian Optimization by clicking the `Bayesian Optimization` link in the top menu or the navigation bar.
 
-![Accessing BO page](images/bo_access.png)
+![Accessing BO page](../assets/images/bo/access.png)
 
 ## Bayesian Optimization Process
 
@@ -26,7 +26,7 @@ When you access the Bayesian Optimization page, the following view will be shown
 Please select the VAE model and initialization dataset.
 The centroid of the Gaussian Mixture Model (GMM) is selected for this explanation, but you can also use manually selected sequences.
 
-![Initiate BO with GMM center or manually curated sequences](images/bo_initial-dataset.png)
+![Initiate BO with GMM center or manually curated sequences](../assets/images/bo/initial-dataset.png)
 
 Options for initialization:
 
@@ -42,7 +42,7 @@ Options for initialization:
 
 ### Configuring Bayesian Optimization
 
-![Configuration section on BO page](images/bo_bayesopt-configuration.png)
+![Configuration section on BO page](../assets/images/bo/bayesopt-configuration.png)
 
 Set the following parameters:
 
@@ -59,7 +59,7 @@ Set the following parameters:
 Review the `Registered values` table showing sequences and their latent coordinates.
 If using GMM centers, fill in target values in the `value` column.
 
-![Registering sequences for BO](images/bo_registered-values-table.png)
+![Registering sequences for BO](../assets/images/bo/registered-values-table.png)
 
 Select entries for optimization by checking the boxes on the left side of the table.
 
@@ -68,7 +68,7 @@ Select entries for optimization by checking the boxes on the left side of the ta
 After setting the optimization parameters, click the `Run Bayes-Opt with checked data` button.
 Results appear in the `Latent Space` and `Query points by Bayesian Optimization` sections.
 
-![Query results shown in table](images/bo_after-running-bayesopt.png)
+![Query results shown in table](../assets/images/bo/after-running-bayesopt.png)
 
 The `Latent Space` section shows coordinates of queried sequences as green dots, and the acquisition function as the contour.
 
@@ -76,7 +76,7 @@ Select candidate sequences from the `Query points` table, and click the `Add to 
 
 ## Saving the session
 
-![Saving and loading sessions](images/bo_session.png)
+![Saving and loading sessions](../assets/images/bo/session.png)
 
 For parallel processing, you can save and load optimization sessions:
 

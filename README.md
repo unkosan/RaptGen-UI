@@ -18,10 +18,10 @@ Users first need to upload their data and then run VAE Trainer module. After tha
 
 For more information about its usage, please click the following links.
 
-- [Viewer](docs/Viewer.md)
-- [VAE Trainer](docs/VAE_Trainer.md)
-- [GMM Trainer](docs/GMM_Trainer.md)
-- [Bayesian Optimization](docs/BO.md)
+- [Viewer](docs/viewer.md)
+- [VAE Trainer](docs/vae-trainer.md)
+- [GMM Trainer](docs/gmm-trainer.md)
+- [Bayesian Optimization](docs/bayesian-optimization.md)
 
 ## How to Launch
 
@@ -65,59 +65,6 @@ Docker version 20.10.21, build baeda1f
 > If you send `down` command, containers and database will be removed.
 > If you want to keep the data, please make sure to use `stop` command.
 
-## Built With
-
-**Frontend**
-
-- [![TypeScript][TypeScript]][TypeScript-url]
-- [![Bootstrap][Bootstrap]][Bootstrap-url]
-- [![Redux][Redux]][Redux-url]
-- [![Plotly][Plotly]][Plotly-url]
-- [![ReactDataGrid][ReactDataGrid]][ReactDataGrid-url]
-
-**Backend**
-
-- [![Python][Python]][Python-url]
-- [![FastAPI][FastAPI]][FastAPI-url]
-- [![PyTorch][PyTorch]][PyTorch-url]
-- [![Celery][Celery]][Celery-url]
-
-**Database**
-
-- [![PostgreSQL][PostgreSQL]][PostgreSQL-url]
-- [![Redis][Redis]][Redis-url]
-
-**Deployment**
-
-- [![Docker Compose][Docker Compose]][Docker Compose-url]
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
-<!-- Links -->
-
-[TypeScript]: https://img.shields.io/badge/Next.js-000000.svg?logo=next.js&style=flat&logoColor=white
-[Bootstrap]: https://img.shields.io/badge/Bootstrap-7952B3.svg?logo=bootstrap&style=flat&logoColor=white
-[Redux]: https://img.shields.io/badge/Redux-764ABC.svg?logo=redux&style=flat&logoColor=white
-[Plotly]: https://img.shields.io/badge/Plotly.js-3F4F75.svg?logo=plotly&style=flat&logoColor=white
-[ReactDataGrid]: https://img.shields.io/badge/ReactDataGrid-42B883.svg?logo=react&style=flat&logoColor=white
-[Python]: https://img.shields.io/badge/Python-3776AB.svg?logo=python&style=flat&logoColor=white
-[FastAPI]: https://img.shields.io/badge/FastAPI-009688.svg?logo=fastapi&style=flat&logoColor=white
-[PyTorch]: https://img.shields.io/badge/PyTorch-EE4C2C.svg?logo=pytorch&style=flat&logoColor=white
-[Celery]: https://img.shields.io/badge/Celery-37814A.svg?logo=celery&style=flat&logoColor=white
-[PostgreSQL]: https://img.shields.io/badge/PostgreSQL-4169E1.svg?logo=postgresql&style=flat&logoColor=white
-[Redis]: https://img.shields.io/badge/Redis-DC382D.svg?logo=redis&style=flat&logoColor=white
-[Docker Compose]: https://img.shields.io/badge/Docker%20Compose-2496ED.svg?logo=docker&style=flat&logoColor=white
-[TypeScript-url]: https://www.typescriptlang.org/
-[Bootstrap-url]: https://getbootstrap.com/
-[Redux-url]: https://redux.js.org/
-[Plotly-url]: https://plotly.com/javascript/
-[ReactDataGrid-url]: https://adazzle.github.io/react-data-grid/
-[Python-url]: https://www.python.org/
-[FastAPI-url]: https://fastapi.tiangolo.com/
-[PyTorch-url]: https://pytorch.org/
-[Celery-url]: https://docs.celeryq.dev/en/stable/
-[PostgreSQL-url]: https://www.postgresql.org/
-[Redis-url]: https://redis.io/
-[Docker Compose-url]: https://docs.docker.com/compose/

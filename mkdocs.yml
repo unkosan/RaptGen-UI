@@ -1,0 +1,53 @@
+site_name: RaptGen-UI
+repo_url: https://github.com/unkosan/RaptGen-UI
+repo_name: unkosan/RaptGen-UI
+
+nav:
+  - Home: index.md
+  - Installation: setup.md
+  - About: about.md
+  - Guides:
+      - VAE Trainer: guides/vae-trainer.md
+      - Viewer: guides/viewer.md
+      - GMM Trainer: guides/gmm-trainer.md
+      - Bayesian Optimization: guides/bayesian-optimization.md
+
+theme:
+  name: material
+  logo: assets/images/logo-white.png
+  favicon: assets/images/favicon.ico
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Auto
+
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+
+markdown_extensions:
+  - admonition
+
+extra:
+  social:
+    - icon: fontawesome/solid/book-open
+      link: https://biorxiv.org/
+      name: Preprint
+    - icon: fontawesome/solid/envelope
+      link: mailto:ryota.nakano@hamadalab.com
+      name: Mail to maintainer
+    - icon: fontawesome/brands/github
+      link: https://github.com/unkosan/RaptGen-UI
+      name: GitHub Repository

@@ -6,7 +6,7 @@ In this page, you can train a GMM on the encoded HT-SELEX data.
 
 Navigate to the GMM Trainer by clicking the `GMM Trainer` link in the top menu or the navigation bar.
 
-![Accessing the GMM Trainer page](images/gmm-trainer_access.png)
+![Accessing the GMM Trainer page](../assets/images/gmm-trainer/access.png)
 
 ## Training Process
 
@@ -14,28 +14,22 @@ Navigate to the GMM Trainer by clicking the `GMM Trainer` link in the top menu o
 
 Begin by clicking the `+ Add a New Training Job` button.
 
-![Location of the button for adding training job for GMM](images/gmm-trainer_add-button.png)
+![Location of the button for adding training job for GMM](../assets/images/gmm-trainer/add-button.png)
 
 ### Configuring Parameters
 
 Set the preprocessing parameters for your training job, then click the `Next` button.
 
-![Parameters for GMM training](images/gmm-trainer_parameters.png)
+![Parameters for GMM training](../assets/images/gmm-trainer/parameters.png)
 
 **Parameters**
 
-- ① Model Type:
-  - Select the VAE model registered in the database.
-- ② GMM name:
-  - Assign a name to your GMM model.
-- ③ Minumum number of GMM components:
-  - Set the lower limit for GMM components.
-- ④ Maximum number of GMM components:
-  - Set the upper limit for GMM components.
-- ⑤ Step size of the search:
-  - Define the increment for searching GMM components.
-- ⑥ Number of trials on each number of components:
-  - Specify the number of iterations for each number of GMM commponents.
+1. **Model Type**: Select the VAE model registered in the database.
+2. **GMM name**: Assign a name to your GMM model.
+3. **Minimum number of GMM components**: Set the lower limit for GMM components.
+4. **Maximum number of GMM components**: Set the upper limit for GMM components.
+5. **Step size of the search**: Define the increment for searching GMM components.
+6. **Number of trials on each number of components**: Specify the number of iterations for each number of GMM commponents.
 
 The GMM training is runned multiple times to select the best BIC model among the models trained with the different number of GMM components. The number of the training is determined by the following formula:
 
@@ -49,20 +43,20 @@ More trials increase accuracy, but it takes longer to train.
 
 After submission, the training begins, and progress is displayed in the `Running` job list.
 
-![Location of GMM training job information](images/gmm-trainer_main-page-in-training.png)
+![Location of GMM training job information](../assets/images/gmm-trainer/main-page-in-training.png)
 
 ### Add the model to the Model List
 
 Once training completes, the `Add to Viewer Dataset` button becomes active. Click it to add the model to the dataset.
 By default, the best number of components is selected based on the BIC score. You can change this using the dropdown menu.
 
-![Adding successful GMM training job to the database](images/gmm-trainer_add-to-viewer-dataset-button.png)
+![Adding successful GMM training job to the database](../assets/images/gmm-trainer/add-to-viewer-dataset-button.png)
 
 When you click the button, the following dialog will be shown.
 Fill in the name of the model and click the `Add to Viewer Dataset` button.
 
-![Modal for adding job to the dataset](images/gmm-trainer_add-to-viewer-dataset-modal.png)
+![Modal for adding job to the dataset](../assets/images/gmm-trainer/add-to-viewer-dataset-modal.png)
 
-### Next Steps
+## Next Step
 
-Proceed to the [Bayesian Optimization](BO.md) page to optimize aptamer sequence on latent space.
+Proceed to the [Bayesian Optimization](bayesian-optimization.md) page to optimize aptamer sequence on latent space.
