@@ -1,5 +1,5 @@
 <div align="center">
-   <img src="docs/images/logo.png" alt="RaptGen-UI" width="400"><br>
+   <img src="docs/assets/images/logo-full.png" alt="RaptGen-UI" width="400"><br>
    The GUI for RaptGen developed with React and FastAPI
 </div>
 
@@ -10,7 +10,7 @@ RaptGen-UI is a web-based user-friendly interface for RaptGen, a powerful Latent
 ## Overview
 
 <p align="center">
-   <img src="docs/images/overview.png" alt="Overview of RaptGen-UI pipeline"><br>
+   <img src="docs/assets/images/overview.png" alt="Overview of RaptGen-UI pipeline"><br>
 </p>
 
 Currently, RaptGen-UI supports four modules: Viewer, VAE Trainer, GMM Trainer, and Bayesian Optimization.
