@@ -13,6 +13,7 @@ import Encode from "~/components/viewer/encode";
 import Decode from "~/components/viewer/decode";
 import DownloadCluster from "~/components/viewer/download-cluster";
 import DataTable from "~/components/viewer/data-table";
+import ModelPicker from "~/components/viewer/model-picker/model-picker";
 
 const Home: React.FC = () => {
   return (
@@ -26,7 +27,8 @@ const Home: React.FC = () => {
           <Row>
             <Col md={4}>
               <legend>Data and properties</legend>
-              <DataSelector />
+              {/* <DataSelector /> */}
+              <ModelPicker />
               <legend>Encode sequences</legend>
               <Encode />
               <legend>Decode latent points</legend>
