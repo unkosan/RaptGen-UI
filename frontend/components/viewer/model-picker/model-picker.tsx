@@ -7,8 +7,8 @@ import {
   useEntriesVAE,
   useParamsGMM,
   useParamsVAE,
-} from "./hooks/fetchers";
-import { usePickGMM, usePickVAE } from "./hooks/dispatchers";
+} from "./hooks/use-fetchers";
+import { usePickGMM, usePickVAE } from "./hooks/use-dispatchers";
 
 const ModelPicker: React.FC = () => {
   const { modelId: vaeId } = usePickVAE();

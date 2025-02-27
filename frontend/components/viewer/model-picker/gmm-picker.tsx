@@ -1,5 +1,5 @@
 import { Form } from "react-bootstrap";
-import { usePickGMM } from "./hooks/dispatchers";
+import { usePickGMM } from "./hooks/use-dispatchers";
 
 /**
  * GMM model picker. Renders a dropdown menu of GMM models.

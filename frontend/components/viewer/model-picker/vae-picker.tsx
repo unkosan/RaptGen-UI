@@ -4,7 +4,7 @@ import { ListGroup, Stack } from "react-bootstrap";
 import { Pencil, XLg } from "react-bootstrap-icons";
 import { apiClient } from "~/services/api-client";
 import { DeleteModal, RenameModal } from "./modals";
-import { usePickVAE } from "./hooks/dispatchers";
+import { usePickVAE } from "./hooks/use-dispatchers";
 
 /**
  * VAE model picker. Renders a list of VAE models.

@@ -33,7 +33,6 @@ export const usePickVAE = () => {
         setSessionId(sessionId);
       } catch (error) {
         console.error(error);
-        throw error;
       }
     })();
   };
@@ -53,7 +52,11 @@ export const usePickGMM = () => {
 
   const modelId = useSelector((state: RootState) => state.sessionConfig.gmmId);
   const setModelId = (uuid: string) => {
-    dispatch(setGmmId(uuid));
+    try {
+      dispatch(setGmmId(uuid));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return { modelId, setModelId };

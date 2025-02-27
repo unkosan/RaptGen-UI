@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { apiClient } from "~/services/api-client";
-import { usePickGMM, usePickVAE } from "./dispatchers";
+import { usePickGMM, usePickVAE } from "./use-dispatchers";
 
 /**
  * Retrieves VAE model entries from the backend.
