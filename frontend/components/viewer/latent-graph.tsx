@@ -305,9 +305,7 @@ const LatentGraph: React.FC = () => {
         color: "#14c714",
       },
       hovertemplate:
-        "<b>Decode Point</b><br>" +
-        "<b>Coord:</b> (%{x:.4f}, %{y:.4f})<br>" +
-        `<b>Seq:</b> ${grid.randomRegion}`,
+        "<b>Decode Point</b><br>" + "<b>Coord:</b> (%{x:.4f}, %{y:.4f})<br>",
     };
 
     return [decodeLineX, decodeLineY, decodeCrossPoint];
