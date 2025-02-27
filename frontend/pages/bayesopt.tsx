@@ -36,10 +36,7 @@ import { setAcquisitionValues } from "~/components/bayesopt/redux/acquisition-va
 import { setGraphConfig } from "~/components/bayesopt/redux/graph-config";
 import { setRegisteredValues } from "~/components/bayesopt/redux/registered-values";
 import { setQueriedValues } from "~/components/bayesopt/redux/queried-values";
-import {
-  setSessionConfig,
-  setSessionConfigByVaeIdName,
-} from "~/components/bayesopt/redux/session-config";
+import { setSessionConfigByVaeIdName } from "~/components/bayesopt/redux/session-config";
 import { setVaeData } from "~/components/bayesopt/redux/vae-data";
 
 const InitializeExperimentComponent: React.FC = () => {

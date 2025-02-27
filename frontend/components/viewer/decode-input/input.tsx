@@ -1,77 +1,11 @@
-import { useEffect, useState } from "react";
-import { useBlockTime } from "../decode-output/hooks/hooks";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
 import { Card, Form, InputGroup } from "react-bootstrap";
 import RangeSlider from "react-bootstrap-range-slider";
-import { apiClient } from "~/services/api-client";
-import { setDecodeGrid } from "../redux/interaction-data";
-import { setGraphConfig } from "../redux/graph-config";
+import { useCoords, useGridConfig } from "./hooks/use-decoder-input";
 
 const DecoderInput: React.FC = () => {
-  const [pointX, setPointX] = useState<number>(0);
-  const [pointY, setPointY] = useState<number>(0);
-  const [isValidX, setIsValidX] = useState<boolean>(true);
-  const [isValidY, setIsValidY] = useState<boolean>(true);
-
-  const [sequence, setSequence] = useState<string>("");
-
-  const [lock, setLock] = useBlockTime(200);
-
-  const dispatch = useDispatch();
-  const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig.sessionId
-  );
-  const graphConfig2 = useSelector((state: RootState) => state.graphConfig);
-
-  const onChangeX = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
-    setIsValidX(!isNaN(value));
-    setPointX(value);
-    setLock();
-  };
-  const onChangeY = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
-    setIsValidY(!isNaN(value));
-    setPointY(value);
-    setLock();
-  };
-
-  useEffect(() => {
-    (async () => {
-      if (lock || !isValidX || !isValidY || !sessionId) {
-        return;
-      }
-      const resDecode = await apiClient.decode({
-        session_uuid: sessionId,
-        coords_x: [pointX],
-        coords_y: [pointY],
-      });
-
-      const sequence: string = resDecode.sequences[0];
-      setSequence(sequence);
-    })();
-  }, [pointX, pointY, isValidX, isValidY, sessionId, lock]);
-
-  useEffect(() => {
-    dispatch(
-      setDecodeGrid({
-        coordX: pointX,
-        coordY: pointY,
-        randomRegion: sequence,
-      })
-    );
-  }, [sequence, pointX, pointY]);
-
-  const onChangeShowGrid = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(
-      setGraphConfig({
-        ...graphConfig2,
-        showDecodeGrid: e.target.checked,
-      })
-    );
-  };
+  const { pointX, pointY, isValidX, isValidY, onChangeX, onChangeY } =
+    useCoords();
+  const { showGrid, onChangeShowGrid } = useGridConfig();
 
   return (
     <Card className="mb-3">
@@ -79,7 +13,7 @@ const DecoderInput: React.FC = () => {
       <Card.Body>
         <Form.Switch
           label="Show Grid Line"
-          checked={graphConfig2.showDecodeGrid}
+          checked={showGrid}
           onChange={onChangeShowGrid}
           className="mb-2"
         />
