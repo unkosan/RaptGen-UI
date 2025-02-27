@@ -1,4 +1,6 @@
 import "bootswatch/dist/cerulean/bootstrap.min.css";
+import "@inovua/reactdatagrid-community/index.css";
+import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { NextPage } from "next";
 import { Provider } from "react-redux";
 import { store } from "~/components/viewer/redux/store";
@@ -6,13 +8,13 @@ import Head from "next/head";
 import Navigator from "~/components/common/navigator";
 import { Col, Container, Row, SSRProvider } from "react-bootstrap";
 import LatentGraph from "~/components/viewer/latent-graph";
-import "@inovua/reactdatagrid-community/index.css";
 import { Footer } from "~/components/common/footer";
 import Encode from "~/components/viewer/encode";
-import Decode from "~/components/viewer/decode";
 import DownloadCluster from "~/components/viewer/download-cluster";
 import ModelPicker from "~/components/viewer/model-picker/model-picker";
 import InteractionTables from "~/components/viewer/interaction-tables/interaction-tables";
+import DecoderInput from "~/components/viewer/decode-input/input";
+import DecoderOutput from "~/components/viewer/decode-output/output";
 
 const Home: React.FC = () => {
   return (
@@ -30,7 +32,8 @@ const Home: React.FC = () => {
               <legend>Encode sequences</legend>
               <Encode />
               <legend>Decode latent points</legend>
-              <Decode />
+              <DecoderInput />
+              <DecoderOutput />
               <legend>Download clusters</legend>
               <DownloadCluster />
             </Col>
