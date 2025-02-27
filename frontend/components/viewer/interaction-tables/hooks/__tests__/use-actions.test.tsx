@@ -1,7 +1,8 @@
-import { renderHook, act } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 import { useDispatch, useSelector } from "react-redux";
 import { useDecoderActions, useEncoderActions } from "../use-actions";
 import { setDecoded, setEncoded } from "../../../redux/interaction-data";
+import { act } from "react-dom/test-utils";
 
 // Mock Redux hooks
 jest.mock("react-redux", () => ({

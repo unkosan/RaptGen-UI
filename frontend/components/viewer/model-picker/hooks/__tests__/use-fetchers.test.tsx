@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 import {
   useEntriesVAE,
   useEntriesGMM,
@@ -7,6 +7,7 @@ import {
 } from "../use-fetchers";
 import { usePickVAE, usePickGMM } from "../use-dispatchers";
 import { apiClient } from "~/services/api-client";
+import { act } from "react-dom/test-utils";
 
 // Mock Next.js router
 jest.mock("next/router", () => ({
@@ -71,16 +72,17 @@ describe("useEntriesVAE", () => {
     });
 
     // Render the hook
-    const { result, waitForNextUpdate } = renderHook(() => useEntriesVAE());
+    const { result } = renderHook(() => useEntriesVAE());
 
     // Wait for the effect to run
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.entries).toEqual(mockEntries);
+    });
 
     // Verify the API was called
     expect(apiClient.getVAEModelNames).toHaveBeenCalled();
 
     // Verify the entries were returned
-    expect(result.current.entries).toEqual(mockEntries);
     expect(result.current.isLoading).toBe(false);
 
     // Verify router.push was called with the first entry
@@ -111,10 +113,12 @@ describe("useEntriesVAE", () => {
     });
 
     // Render the hook
-    const { result, waitForNextUpdate } = renderHook(() => useEntriesVAE());
+    const { result } = renderHook(() => useEntriesVAE());
 
     // Wait for the effect to run
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.entries).toEqual(mockEntries);
+    });
 
     // Verify setModelId was called with the correct parameters
     expect(mockSetModelId).toHaveBeenCalledWith("vae-2", "VAE Model 2");
@@ -130,16 +134,15 @@ describe("useEntriesVAE", () => {
     });
 
     // Render the hook
-    const { result, waitForNextUpdate } = renderHook(() => useEntriesVAE());
+    const { result } = renderHook(() => useEntriesVAE());
 
     // Wait for the effect to run
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.entries).toEqual([]);
+    });
 
     // Verify setModelId was called with empty strings
     expect(mockSetModelId).toHaveBeenCalledWith("", "");
-
-    // Verify the empty entries array was returned
-    expect(result.current.entries).toEqual([]);
   });
 
   it("should handle API error gracefully", async () => {
@@ -151,13 +154,12 @@ describe("useEntriesVAE", () => {
     const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
     // Render the hook
-    const { result, waitForNextUpdate } = renderHook(() => useEntriesVAE());
+    const { result } = renderHook(() => useEntriesVAE());
 
     // Wait for the effect to run
-    await waitForNextUpdate();
-
-    // Verify the error was logged
-    expect(consoleSpy).toHaveBeenCalledWith(mockError);
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+    });
 
     // Verify an empty array was returned and loading state is false
     expect(result.current.entries).toEqual([]);
@@ -174,10 +176,12 @@ describe("useEntriesVAE", () => {
     });
 
     // Render the hook
-    const { result, waitForNextUpdate } = renderHook(() => useEntriesVAE());
+    const { result } = renderHook(() => useEntriesVAE());
 
     // Wait for the effect to run
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.entries).toEqual(mockEntries);
+    });
 
     // Clear the mocks to check for subsequent calls
     jest.clearAllMocks();
@@ -188,10 +192,9 @@ describe("useEntriesVAE", () => {
     });
 
     // Wait for the effect to run again
-    await waitForNextUpdate();
-
-    // Verify the API was called again
-    expect(apiClient.getVAEModelNames).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(apiClient.getVAEModelNames).toHaveBeenCalled();
+    });
   });
 });
 
@@ -235,12 +238,12 @@ describe("useEntriesGMM", () => {
     });
 
     // Render the hook with a valid vaeId
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useEntriesGMM("vae-1")
-    );
+    const { result } = renderHook(() => useEntriesGMM("vae-1"));
 
     // Wait for the effect to run
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.entries).toEqual(mockEntries);
+    });
 
     // Verify the API was called with the correct parameters
     expect(apiClient.getGMMModelNames).toHaveBeenCalledWith({
@@ -248,7 +251,6 @@ describe("useEntriesGMM", () => {
     });
 
     // Verify the entries were returned
-    expect(result.current.entries).toEqual(mockEntries);
     expect(result.current.isLoading).toBe(false);
 
     // Verify setModelId was called with the first entry's uuid
@@ -264,15 +266,12 @@ describe("useEntriesGMM", () => {
     const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
     // Render the hook with a valid vaeId
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useEntriesGMM("vae-1")
-    );
+    const { result } = renderHook(() => useEntriesGMM("vae-1"));
 
     // Wait for the effect to run
-    await waitForNextUpdate();
-
-    // Verify the error was logged
-    expect(consoleSpy).toHaveBeenCalledWith(mockError);
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+    });
 
     // Verify an empty array was returned and loading state is false
     expect(result.current.entries).toEqual([]);
@@ -311,12 +310,12 @@ describe("useParamsVAE", () => {
     );
 
     // Render the hook with a valid vaeId
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useParamsVAE("vae-1")
-    );
+    const { result } = renderHook(() => useParamsVAE("vae-1"));
 
     // Wait for the effect to run
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(Object.keys(result.current.records).length).toBeGreaterThan(0);
+    });
 
     // Verify the API was called with the correct parameters
     expect(apiClient.getVAEModelParameters).toHaveBeenCalledWith({
@@ -341,15 +340,12 @@ describe("useParamsVAE", () => {
     const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
     // Render the hook with a valid vaeId
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useParamsVAE("vae-1")
-    );
+    const { result } = renderHook(() => useParamsVAE("vae-1"));
 
     // Wait for the effect to run
-    await waitForNextUpdate();
-
-    // Verify the error was logged
-    expect(consoleSpy).toHaveBeenCalledWith(mockError);
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+    });
 
     // Verify empty records were returned and loading state is false
     expect(result.current.records).toEqual({});
@@ -388,12 +384,12 @@ describe("useParamsGMM", () => {
     );
 
     // Render the hook with a valid gmmId
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useParamsGMM("gmm-1")
-    );
+    const { result } = renderHook(() => useParamsGMM("gmm-1"));
 
     // Wait for the effect to run
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(Object.keys(result.current.records).length).toBeGreaterThan(0);
+    });
 
     // Verify the API was called with the correct parameters
     expect(apiClient.getGMMModelParameters).toHaveBeenCalledWith({
@@ -418,15 +414,12 @@ describe("useParamsGMM", () => {
     const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
     // Render the hook with a valid gmmId
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useParamsGMM("gmm-1")
-    );
+    const { result } = renderHook(() => useParamsGMM("gmm-1"));
 
     // Wait for the effect to run
-    await waitForNextUpdate();
-
-    // Verify the error was logged
-    expect(consoleSpy).toHaveBeenCalledWith(mockError);
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(mockError);
+    });
 
     // Verify empty records were returned and loading state is false
     expect(result.current.records).toEqual({});

@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   useTextInputWithValidation,
@@ -9,6 +9,7 @@ import {
 } from "../use-editors";
 import { apiClient } from "~/services/api-client";
 import { setDecoded, setEncoded } from "../../../redux/interaction-data";
+import { act } from "react-dom/test-utils";
 
 // Mock React Redux
 jest.mock("react-redux", () => ({

@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 import { useSelector } from "react-redux";
 import {
   useDecodeTableData,
@@ -22,7 +22,7 @@ describe("useDecodeTableData", () => {
     jest.clearAllMocks();
   });
 
-  it("should transform decoded data into table format", () => {
+  it("should transform decoded data into table format", async () => {
     // Setup Redux store mock data
     const mockDecodedData = {
       ids: ["id1", "id2", "id3"],
@@ -41,38 +41,40 @@ describe("useDecodeTableData", () => {
     const { result } = renderHook(() => useDecodeTableData());
 
     // Check that the data was transformed correctly
-    expect(result.current.data).toEqual([
-      {
-        key: 0,
-        id: "id1",
-        coordX: 1.1,
-        coordY: 4.4,
-        randomRegion: "AUGU",
-        isShown: true,
-      },
-      {
-        key: 1,
-        id: "id2",
-        coordX: 2.2,
-        coordY: 5.5,
-        randomRegion: "GCCA",
-        isShown: false,
-      },
-      {
-        key: 2,
-        id: "id3",
-        coordX: 3.3,
-        coordY: 6.6,
-        randomRegion: "UACG",
-        isShown: true,
-      },
-    ]);
+    await waitFor(() => {
+      expect(result.current.data).toEqual([
+        {
+          key: 0,
+          id: "id1",
+          coordX: 1.1,
+          coordY: 4.4,
+          randomRegion: "AUGU",
+          isShown: true,
+        },
+        {
+          key: 1,
+          id: "id2",
+          coordX: 2.2,
+          coordY: 5.5,
+          randomRegion: "GCCA",
+          isShown: false,
+        },
+        {
+          key: 2,
+          id: "id3",
+          coordX: 3.3,
+          coordY: 6.6,
+          randomRegion: "UACG",
+          isShown: true,
+        },
+      ]);
+    });
 
     // Verify that useSelector was called
     expect(useSelector).toHaveBeenCalled();
   });
 
-  it("should handle empty decoded data", () => {
+  it("should handle empty decoded data", async () => {
     // Setup Redux store mock data with empty arrays
     const mockEmptyData = {
       ids: [],
@@ -89,7 +91,9 @@ describe("useDecodeTableData", () => {
     const { result } = renderHook(() => useDecodeTableData());
 
     // Check that we get an empty array
-    expect(result.current.data).toEqual([]);
+    await waitFor(() => {
+      expect(result.current.data).toEqual([]);
+    });
   });
 });
 
@@ -98,7 +102,7 @@ describe("useEncodeTableData", () => {
     jest.clearAllMocks();
   });
 
-  it("should transform encoded data into table format", () => {
+  it("should transform encoded data into table format", async () => {
     // Setup Redux store mock data
     const mockEncodedData = {
       ids: ["id1", "id2"],
@@ -117,30 +121,32 @@ describe("useEncodeTableData", () => {
     const { result } = renderHook(() => useEncodeTableData());
 
     // Check that the data was transformed correctly
-    expect(result.current.data).toEqual([
-      {
-        key: 0,
-        id: "id1",
-        randomRegion: "AUCG",
-        coordX: 1.1,
-        coordY: 3.3,
-        isShown: true,
-      },
-      {
-        key: 1,
-        id: "id2",
-        randomRegion: "GCAU",
-        coordX: 2.2,
-        coordY: 4.4,
-        isShown: false,
-      },
-    ]);
+    await waitFor(() => {
+      expect(result.current.data).toEqual([
+        {
+          key: 0,
+          id: "id1",
+          randomRegion: "AUCG",
+          coordX: 1.1,
+          coordY: 3.3,
+          isShown: true,
+        },
+        {
+          key: 1,
+          id: "id2",
+          randomRegion: "GCAU",
+          coordX: 2.2,
+          coordY: 4.4,
+          isShown: false,
+        },
+      ]);
+    });
 
     // Verify that useSelector was called
     expect(useSelector).toHaveBeenCalled();
   });
 
-  it("should handle empty encoded data", () => {
+  it("should handle empty encoded data", async () => {
     // Setup Redux store mock data with empty arrays
     const mockEmptyData = {
       ids: [],
@@ -157,7 +163,9 @@ describe("useEncodeTableData", () => {
     const { result } = renderHook(() => useEncodeTableData());
 
     // Check that we get an empty array
-    expect(result.current.data).toEqual([]);
+    await waitFor(() => {
+      expect(result.current.data).toEqual([]);
+    });
   });
 });
 
@@ -166,7 +174,7 @@ describe("useSelectedTableData", () => {
     jest.clearAllMocks();
   });
 
-  it("should transform selected points into table format and compute unique hues", () => {
+  it("should transform selected points into table format and compute unique hues", async () => {
     // Setup Redux store mock data
     const mockSelectedPoints = {
       ids: ["id1", "id2", "id3"],
@@ -186,47 +194,51 @@ describe("useSelectedTableData", () => {
     const { result } = renderHook(() => useSelectedTableData());
 
     // Check that the data was transformed correctly
-    expect(result.current.data).toEqual([
-      {
-        index: 0,
-        id: "id1",
-        hue: "hue1",
-        coordX: 1.1,
-        coordY: 4.4,
-        randomRegion: "AUGU",
-        duplicates: 0,
-      },
-      {
-        index: 1,
-        id: "id2",
-        hue: "hue2",
-        coordX: 2.2,
-        coordY: 5.5,
-        randomRegion: "GCCA",
-        duplicates: 1,
-      },
-      {
-        index: 2,
-        id: "id3",
-        hue: "hue1",
-        coordX: 3.3,
-        coordY: 6.6,
-        randomRegion: "UACG",
-        duplicates: 2,
-      },
-    ]);
+    await waitFor(() => {
+      expect(result.current.data).toEqual([
+        {
+          index: 0,
+          id: "id1",
+          hue: "hue1",
+          coordX: 1.1,
+          coordY: 4.4,
+          randomRegion: "AUGU",
+          duplicates: 0,
+        },
+        {
+          index: 1,
+          id: "id2",
+          hue: "hue2",
+          coordX: 2.2,
+          coordY: 5.5,
+          randomRegion: "GCCA",
+          duplicates: 1,
+        },
+        {
+          index: 2,
+          id: "id3",
+          hue: "hue1",
+          coordX: 3.3,
+          coordY: 6.6,
+          randomRegion: "UACG",
+          duplicates: 2,
+        },
+      ]);
+    });
 
     // Verify that uniq was called with the right parameters
     expect(uniq).toHaveBeenCalledWith(["hue1", "hue2", "hue1"]);
 
     // Check that the hues were uniquified
-    expect(result.current.hues).toEqual(["hue1", "hue2"]);
+    await waitFor(() => {
+      expect(result.current.hues).toEqual(["hue1", "hue2"]);
+    });
 
     // Verify that useSelector was called
     expect(useSelector).toHaveBeenCalled();
   });
 
-  it("should handle empty selected points data", () => {
+  it("should handle empty selected points data", async () => {
     // Setup Redux store mock data with empty arrays
     const mockEmptyData = {
       ids: [],
@@ -244,8 +256,10 @@ describe("useSelectedTableData", () => {
     const { result } = renderHook(() => useSelectedTableData());
 
     // Check that we get an empty array
-    expect(result.current.data).toEqual([]);
-    expect(result.current.hues).toEqual([]);
+    await waitFor(() => {
+      expect(result.current.data).toEqual([]);
+      expect(result.current.hues).toEqual([]);
+    });
 
     // Verify uniq was called with an empty array
     expect(uniq).toHaveBeenCalledWith([]);

@@ -1,7 +1,8 @@
-import { renderHook, act } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 import { usePickVAE, usePickGMM } from "../use-dispatchers";
 import { useDispatch, useSelector } from "react-redux";
 import * as sessionConfigActions from "../../../redux/session-config";
+import { act } from "react-dom/test-utils";
 
 // Mock Redux hooks
 jest.mock("react-redux", () => ({
@@ -40,10 +41,12 @@ describe("usePickVAE", () => {
     });
   });
 
-  it("should return modelId from Redux state", () => {
+  it("should return modelId from Redux state", async () => {
     const { result } = renderHook(() => usePickVAE());
 
-    expect(result.current.modelId).toBe("test-vae-id");
+    await waitFor(() => {
+      expect(result.current.modelId).toBe("test-vae-id");
+    });
     expect(useSelector).toHaveBeenCalled();
   });
 
@@ -57,9 +60,11 @@ describe("usePickVAE", () => {
 
     const { result } = renderHook(() => usePickVAE());
 
-    // Call the setModelId function
-    act(() => {
+    // Call the setModelId function and wait for async operations to complete
+    await act(async () => {
       result.current.setModelId("new-vae-id", "Test VAE");
+      // Wait for the promise to resolve
+      await mockDispatchResult;
     });
 
     // Verify that the action creator was called with the correct arguments
@@ -69,9 +74,6 @@ describe("usePickVAE", () => {
     });
 
     expect(mockDispatch).toHaveBeenCalled();
-
-    // Wait for useEffect to run after state update
-    await mockDispatchResult;
   });
 
   it("should handle error during model ID setting", async () => {
@@ -84,13 +86,12 @@ describe("usePickVAE", () => {
 
     const { result } = renderHook(() => usePickVAE());
 
-    // Call the setModelId function
-    act(() => {
+    // Call the setModelId function and wait for the promise to reject
+    await act(async () => {
       result.current.setModelId("error-vae-id", "Error VAE");
+      // Wait for the promise to reject
+      await new Promise(process.nextTick);
     });
-
-    // Wait for the promise to reject
-    await new Promise(process.nextTick);
 
     // Verify error was logged
     expect(consoleSpy).toHaveBeenCalledWith(mockError);
@@ -113,14 +114,16 @@ describe("usePickGMM", () => {
     });
   });
 
-  it("should return modelId from Redux state", () => {
+  it("should return modelId from Redux state", async () => {
     const { result } = renderHook(() => usePickGMM());
 
-    expect(result.current.modelId).toBe("test-gmm-id");
+    await waitFor(() => {
+      expect(result.current.modelId).toBe("test-gmm-id");
+    });
     expect(useSelector).toHaveBeenCalled();
   });
 
-  it("should dispatch setGmmId action when setModelId is called", () => {
+  it("should dispatch setGmmId action when setModelId is called", async () => {
     const { result } = renderHook(() => usePickGMM());
 
     // Call the setModelId function
