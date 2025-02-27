@@ -8,12 +8,11 @@ import { Col, Container, Row, SSRProvider } from "react-bootstrap";
 import LatentGraph from "~/components/viewer/latent-graph";
 import "@inovua/reactdatagrid-community/index.css";
 import { Footer } from "~/components/common/footer";
-import DataSelector from "~/components/viewer/data-selector";
 import Encode from "~/components/viewer/encode";
 import Decode from "~/components/viewer/decode";
 import DownloadCluster from "~/components/viewer/download-cluster";
-import DataTable from "~/components/viewer/data-table";
 import ModelPicker from "~/components/viewer/model-picker/model-picker";
+import InteractionTables from "~/components/viewer/interaction-tables/interaction-tables";
 
 const Home: React.FC = () => {
   return (
@@ -27,7 +26,6 @@ const Home: React.FC = () => {
           <Row>
             <Col md={4}>
               <legend>Data and properties</legend>
-              {/* <DataSelector /> */}
               <ModelPicker />
               <legend>Encode sequences</legend>
               <Encode />
@@ -38,7 +36,7 @@ const Home: React.FC = () => {
             </Col>
             <Col>
               <LatentGraph />
-              <DataTable />
+              <InteractionTables />
             </Col>
           </Row>
         </Container>
