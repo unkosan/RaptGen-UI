@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import { useBlockTime } from "./hooks/hooks";
-import { useDispatch } from "react-redux";
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import {
@@ -12,13 +10,24 @@ import {
   InputGroup,
   Spinner,
 } from "react-bootstrap";
-import { apiClient } from "~/services/api-client";
-import { useIsLoading } from "~/hooks/common";
-import { setDecoded } from "../redux/interaction-data";
 import { PlusLg } from "react-bootstrap-icons";
 
+// Custom hooks
+import { useBlockTime } from "./hooks/use-block-time";
+import { useVaeParameters } from "./hooks/use-vae-parameters";
+import { useWeblogoImage } from "./hooks/use-weblogo-image";
+import { useSecondaryStructureImage } from "./hooks/use-secondary-structure-image";
+import { useDecodedPointActions } from "./hooks/use-decoded-point-actions";
+import { useSequenceDecoder } from "./hooks/use-sequence-decoder";
+
+/**
+ * DecoderOutput Component
+ *
+ * Displays the decoded sequence for a selected grid point and provides
+ * visualization options like Weblogo and Secondary Structure.
+ */
 const DecoderOutput: React.FC = () => {
-  const dispatch = useDispatch();
+  // Redux state selectors
   const gridPoint = useSelector(
     (state: RootState) => state.interactionData.decodeGrid
   );
@@ -30,132 +39,89 @@ const DecoderOutput: React.FC = () => {
     (state: RootState) => state.interactionData.decoded
   );
 
-  const [showWeblogo, setShowWeblogo] = useState<boolean>(false);
-  const [showSecondaryStructure, setShowSecondaryStructure] =
-    useState<boolean>(false);
+  // Time-based locking mechanism to prevent rapid API calls
+  const { lock, setLock } = useBlockTime(1000);
 
-  const [weblogoBase64, setWeblogoBase64] = useState<string>("");
-  const [secondaryStructureBase64, setSecondaryStructureBase64] =
-    useState<string>("");
+  // Get VAE adapter sequences
+  const { forward, reverse } = useVaeParameters(vaeId);
 
-  const [forward, setForward] = useState<string>("");
-  const [reverse, setReverse] = useState<string>("");
+  // Fetch the decoded sequence for the current grid point
+  const { isLoading: isDecoding, sequence } = useSequenceDecoder(
+    gridPoint,
+    sessionId,
+    lock
+  );
 
-  const [lock, setLock] = useBlockTime(400);
+  // Fetch visualization data with integrated toggle functionality
+  const { weblogoBase64, showWeblogo, toggleWeblogo } = useWeblogoImage(
+    sessionId,
+    gridPoint,
+    lock
+  );
 
-  const [isLoading, loadingLock, loadingUnlock] = useIsLoading();
+  const {
+    secondaryStructureBase64,
+    showSecondaryStructure,
+    toggleSecondaryStructure,
+  } = useSecondaryStructureImage(gridPoint, forward, reverse, sequence, lock);
 
-  useEffect(() => {
-    (async () => {
-      if (!vaeId) {
-        return;
-      }
+  // Actions for adding decoded points to the table
+  const { isLoading: isAdding, onAdd } = useDecodedPointActions(
+    gridPoint,
+    sequence,
+    decodeData
+  );
 
-      const res = await apiClient.getVAEModelParameters({
-        queries: {
-          vae_uuid: vaeId,
-        },
-      });
-
-      setForward(res.forward_adapter || "");
-      setReverse(res.reverse_adapter || "");
-    })();
-  }, [vaeId]);
-
+  // Set lock when grid point changes to prevent rapid API calls
   useEffect(() => {
     setLock();
-  }, [gridPoint]);
+  }, [gridPoint, setLock]);
 
-  // weblogo image
-  useEffect(() => {
-    (async () => {
-      if (lock || !showWeblogo || !sessionId) {
-        return;
-      }
-      const res = await apiClient.getWeblogo(
-        {
-          session_uuid: sessionId,
-          coords_x: [gridPoint.coordX],
-          coords_y: [gridPoint.coordY],
-        },
-        {
-          responseType: "arraybuffer",
-        }
-      );
+  // Determine if the add button should be disabled
+  const isAddButtonDisabled = sequence === "" || isDecoding || isAdding;
 
-      const base64 = Buffer.from(res, "binary").toString("base64");
-      setWeblogoBase64(base64);
-    })();
-  }, [sessionId, gridPoint, showWeblogo, lock]);
-
-  // secondary structure image
-  useEffect(() => {
-    (async () => {
-      if (lock || !showSecondaryStructure) {
-        return;
-      }
-      const res = await apiClient.getSecondaryStructureImage({
-        queries: {
-          sequence:
-            forward + gridPoint.randomRegion.replace(/\_/g, "") + reverse,
-        },
-        responseType: "arraybuffer",
-      });
-
-      const base64 = Buffer.from(res, "binary").toString("base64");
-      setSecondaryStructureBase64(base64);
-    })();
-  }, [gridPoint, showSecondaryStructure, lock]);
-
-  // add button
-  const onAdd = async () => {
-    loadingLock();
-    dispatch(
-      setDecoded({
-        ids: decodeData.ids.concat(`manual-${decodeData.ids.length}`),
-        coordsX: decodeData.coordsX.concat(gridPoint.coordX),
-        coordsY: decodeData.coordsY.concat(gridPoint.coordY),
-        randomRegions: decodeData.randomRegions.concat(gridPoint.randomRegion),
-        shown: decodeData.shown.concat(true),
-      })
+  // Render add button content based on loading state
+  const renderAddButtonContent = () => {
+    if (isDecoding || isAdding) {
+      return <Spinner animation="border" size="sm" />;
+    }
+    return (
+      <div className="d-flex align-items-center">
+        <PlusLg />
+      </div>
     );
-    loadingUnlock();
   };
 
   return (
     <Card className="mb-3">
       <Card.Header>Point Decoder Output</Card.Header>
       <Card.Body>
+        {/* Sequence display with add button */}
         <InputGroup className="mb-3">
-          <Form.Control value={gridPoint.randomRegion} readOnly />
+          <Form.Control value={sequence} readOnly />
           <Button
-            disabled={gridPoint.randomRegion === "" || isLoading}
+            disabled={isAddButtonDisabled}
             onClick={onAdd}
+            title="Add to decoded points"
           >
-            {isLoading ? (
-              <Spinner animation="border" size="sm" />
-            ) : (
-              <div className="d-flex align-items-center">
-                <PlusLg />
-              </div>
-            )}
+            {renderAddButtonContent()}
           </Button>
         </InputGroup>
-        <Accordion>
+
+        {/* Weblogo visualization */}
+        <Accordion className="mb-3">
           <Accordion.Item eventKey="0">
-            <Accordion.Header onClick={() => setShowWeblogo(!showWeblogo)}>
-              Weblogo
-            </Accordion.Header>
+            <Accordion.Header onClick={toggleWeblogo}>Weblogo</Accordion.Header>
             <Accordion.Body>
               <Image src={`data:image/png;base64, ${weblogoBase64}`} fluid />
             </Accordion.Body>
           </Accordion.Item>
         </Accordion>
+
+        {/* Secondary structure visualization */}
         <Accordion>
           <Accordion.Item eventKey="0">
-            <Accordion.Header
-              onClick={() => setShowSecondaryStructure(!showSecondaryStructure)}
-            >
+            <Accordion.Header onClick={toggleSecondaryStructure}>
               Secondary Structure
             </Accordion.Header>
             <Accordion.Body>
