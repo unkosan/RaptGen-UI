@@ -10,11 +10,11 @@ import { Col, Container, Row, SSRProvider } from "react-bootstrap";
 import LatentGraph from "~/components/viewer/latent-graph";
 import { Footer } from "~/components/common/footer";
 import Encode from "~/components/viewer/encode";
-import DownloadCluster from "~/components/viewer/download-cluster";
 import ModelPicker from "~/components/viewer/model-picker/model-picker";
 import InteractionTables from "~/components/viewer/interaction-tables/interaction-tables";
 import DecoderInput from "~/components/viewer/decode-input/input";
 import DecoderOutput from "~/components/viewer/decode-output/output";
+import Downloader from "~/components/viewer/downloader/downloader";
 
 const Home: React.FC = () => {
   return (
@@ -35,7 +35,7 @@ const Home: React.FC = () => {
               <DecoderInput />
               <DecoderOutput />
               <legend>Download clusters</legend>
-              <DownloadCluster />
+              <Downloader />
             </Col>
             <Col>
               <LatentGraph />
