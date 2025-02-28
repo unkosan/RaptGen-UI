@@ -1,49 +1,6 @@
-import { cloneDeep } from "lodash";
-import { det, inv, matrix, multiply, subtract, transpose } from "mathjs";
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "~/services/api-client";
-
-/**
- * Calculates the probability of a point belonging to a Gaussian
- * @param weight The weight of the Gaussian
- * @param mean Centroid of the Gaussian
- * @param covariance Covariance matrix of the Gaussian
- * @param coords Coordinates of the point
- * @returns The probability of the point belonging to the Gaussian
- */
-const calcurateProbability = (
-  weight: number,
-  mean: number[],
-  covariance: number[][],
-  coords: number[]
-) => {
-  const coval = matrix(cloneDeep(covariance));
-  const coef = 1 / (2 * Math.PI * Math.sqrt(det(coval)));
-  const invcov = inv(coval);
-
-  const diff = matrix(subtract(coords, mean));
-  const expMat = multiply(
-    transpose(diff),
-    multiply(invcov, diff)
-  ) as unknown as number;
-  const exp = -0.5 * expMat;
-
-  const prob = weight * coef * Math.exp(exp);
-  return prob;
-};
-
-const downloadFileFromText = (text: string, filename: string) => {
-  const link = document.createElement("a");
-  link.setAttribute(
-    "href",
-    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
-  );
-  link.setAttribute("download", filename);
-  link.style.display = "none";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+import { calcurateProbability, downloadFileFromText } from "./utils";
 
 /**
  * This hook fetches the GMM parameters from the server.
@@ -115,7 +72,7 @@ const useCachedSELEX = (vaeId: string) => {
     return;
   }, [vaeId]);
 
-  const fetchSelex = async () => {
+  const fetchSelex = useCallback(async () => {
     if (selexData.randomRegions.length > 0) {
       return selexData;
     }
@@ -132,7 +89,7 @@ const useCachedSELEX = (vaeId: string) => {
     };
     setSelexData(processedSelexData);
     return processedSelexData;
-  };
+  }, [vaeId, selexData]);
 
   return {
     fetchSelex,
@@ -146,7 +103,6 @@ export const useDownloader = (
   vaeId: string,
   vaeName: string
 ) => {
-  // const [isLoading, setIsLoading] = useState(false);
   const [isSavingCSV, setIsSavingCSV] = useState(false);
   const [isSavingFASTA, setIsSavingFASTA] = useState(false);
   const { gmmParams } = useGaussianMixtureModel(gmmId);
@@ -234,7 +190,7 @@ export const useDownloader = (
         return;
       }
     },
-    [gmmParams, vaeId, vaeName]
+    [gmmParams, fetchSelex, vaeName, vaeId]
   );
 
   /**
@@ -301,7 +257,7 @@ export const useDownloader = (
         return;
       }
     },
-    [gmmParams, vaeId, vaeName]
+    [gmmParams, fetchSelex, vaeName, vaeId]
   );
 
   return {
