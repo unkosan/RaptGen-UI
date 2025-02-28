@@ -9,12 +9,12 @@ import Navigator from "~/components/common/navigator";
 import { Col, Container, Row, SSRProvider } from "react-bootstrap";
 import LatentGraph from "~/components/viewer/latent-graph";
 import { Footer } from "~/components/common/footer";
-import Encode from "~/components/viewer/encode";
 import ModelPicker from "~/components/viewer/model-picker/model-picker";
 import InteractionTables from "~/components/viewer/interaction-tables/interaction-tables";
 import DecoderInput from "~/components/viewer/decode-input/input";
 import DecoderOutput from "~/components/viewer/decode-output/output";
 import Downloader from "~/components/viewer/downloader/downloader";
+import EncodeInput from "~/components/viewer/encode-input/encode-input";
 
 const Home: React.FC = () => {
   return (
@@ -30,7 +30,7 @@ const Home: React.FC = () => {
               <legend>Data and properties</legend>
               <ModelPicker />
               <legend>Encode sequences</legend>
-              <Encode />
+              <EncodeInput />
               <legend>Decode latent points</legend>
               <DecoderInput />
               <DecoderOutput />
