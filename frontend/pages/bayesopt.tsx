@@ -2,9 +2,8 @@ import "bootswatch/dist/cerulean/bootstrap.min.css";
 import "@inovua/reactdatagrid-community/index.css";
 import { NextPage } from "next";
 import { Provider } from "react-redux";
-import { useRouter } from "next/router";
-import { apiClient } from "~/services/api-client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useConfirmNavigation } from "~/hooks/use-confirm-navigation";
 import Head from "next/head";
 import Navigator from "~/components/common/navigator";
 import {
@@ -16,13 +15,12 @@ import {
   Tab,
   Tabs,
 } from "react-bootstrap";
-import { RootState, store } from "~/components/bayesopt/redux/store";
-import { useSelector } from "react-redux";
+import { store } from "~/components/bayesopt/redux/store";
 import { Footer } from "~/components/common/footer";
-import Sessions from "~/components/bayesopt/sessions";
+import Sessions from "~/components/bayesopt/sessions/index";
 import VaeSelector from "~/components/bayesopt/vae-selector";
 import InitialDataset from "~/components/bayesopt/initial-dataset";
-import BayesOptConfig from "~/components/bayesopt/bayes-opt-config";
+import BayesOptConfig from "~/components/bayesopt/bayes-opt-config/index";
 import { LatentGraph } from "~/components/bayesopt/latent-graph";
 import {
   RegisteredTable,
@@ -32,48 +30,13 @@ import { AddQueryButton, QueryTable } from "~/components/bayesopt/query-table";
 import { useExperimentInitializer } from "~/components/bayesopt/experiment-initializer/hooks/use-experiment-initializer";
 
 const App: React.FC = () => {
-  const router = useRouter();
-  const isDirty = useSelector((state: RootState) => state.isDirty);
-  const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig.sessionId
-  );
+  // Use the hook for navigation confirmation and session cleanup
+  useConfirmNavigation();
+
+  // State for tab management
   const [activeTableTab, setActiveTableTab] = useState<
     "registered-table" | "query-table"
   >("registered-table");
-
-  const pageChangeHandler = () => {
-    if (isDirty) {
-      if (!confirm("Discard changes?")) {
-        throw "cancelled";
-      }
-    }
-  };
-  const beforeUnload = (e: BeforeUnloadEvent) => {
-    if (isDirty) {
-      e.preventDefault();
-      e.returnValue = "Discard changes?";
-    }
-  };
-  const unload = async () => {
-    if (sessionId !== "") {
-      await apiClient.endSession({
-        queries: {
-          session_uuid: sessionId,
-        },
-      });
-    }
-  };
-
-  useEffect(() => {
-    router.events.on("routeChangeStart", pageChangeHandler);
-    window.addEventListener("beforeunload", beforeUnload);
-    window.addEventListener("unload", unload);
-    return () => {
-      router.events.off("routeChangeStart", pageChangeHandler);
-      window.removeEventListener("beforeunload", beforeUnload);
-      window.removeEventListener("unload", unload);
-    };
-  }, [isDirty]);
 
   const { isLoading } = useExperimentInitializer();
 
