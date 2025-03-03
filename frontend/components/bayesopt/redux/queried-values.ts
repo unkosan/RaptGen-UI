@@ -1,7 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 interface QueriedValues {
-  wholeSelected: boolean; // whether all values are selected by master checkbox.
+  masterboxChecked: boolean;
   randomRegion: string[];
   coordX: number[];
   coordY: number[];
@@ -13,7 +13,7 @@ interface QueriedValues {
 const queriedValuesSlice = createSlice({
   name: "queriedValues",
   initialState: {
-    wholeSelected: false,
+    masterboxChecked: false,
     randomRegion: [],
     coordX: [],
     coordY: [],
