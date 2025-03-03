@@ -146,7 +146,7 @@ const InitialDataset: React.FC = () => {
           sequenceIndex: randomRegions.map((_, i) => i),
           column: new Array(randomRegions.length).fill("value"),
           value: new Array(randomRegions.length).fill(null),
-          wholeSelected: false,
+          masterboxChecked: false,
         })
       );
 
@@ -210,7 +210,7 @@ const InitialDataset: React.FC = () => {
             sequenceIndex,
             column,
             value,
-            wholeSelected: false,
+            masterboxChecked: false,
           })
         );
 

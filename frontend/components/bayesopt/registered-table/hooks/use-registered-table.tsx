@@ -47,7 +47,7 @@ export const useRegisteredTable = () => {
       let newData = cloneDeep(registeredData);
       if (e.selected === true) {
         // masterbox checked
-        newData.wholeSelected = true;
+        newData.masterboxChecked = true;
         const unselected =
           e.unselected === null // all entries are selected
             ? []
@@ -58,7 +58,7 @@ export const useRegisteredTable = () => {
         });
       } else {
         // masterbox unchecked
-        newData.wholeSelected = false;
+        newData.masterboxChecked = false;
         const selected = Object.keys(e.selected as Object);
         // id saved as keys of object
         newData.staged = newData.id.map((value, index) => {

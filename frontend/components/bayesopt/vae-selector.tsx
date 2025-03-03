@@ -103,7 +103,7 @@ const VaeSelector: React.FC = () => {
       // reset queried values and acquisition values
       dispatch(
         setQueriedValues({
-          wholeSelected: false,
+          masterboxChecked: false,
           randomRegion: [],
           coordX: [],
           coordY: [],

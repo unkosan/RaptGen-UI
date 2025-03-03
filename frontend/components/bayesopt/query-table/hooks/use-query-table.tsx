@@ -29,7 +29,7 @@ export const useQueryTable = () => {
       let newData = cloneDeep(queryData);
       if (e.selected === true) {
         // masterbox checked
-        newData.wholeSelected = true;
+        newData.masterboxChecked = true;
         const unselected =
           e.unselected === null // all entries are selected
             ? []
@@ -42,7 +42,7 @@ export const useQueryTable = () => {
         });
       } else {
         // masterbox unchecked
-        newData.wholeSelected = false;
+        newData.masterboxChecked = false;
         // selected entries are saved as keys in e.selected
         const selected = Object.keys(e.selected as Object).map((value) =>
           parseInt(value)

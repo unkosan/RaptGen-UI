@@ -141,7 +141,7 @@ export const useExperimentInitializer = () => {
         sequenceIndex: [],
         column: [],
         value: [],
-        wholeSelected: false,
+        masterboxChecked: false,
       })
     );
 
@@ -153,7 +153,7 @@ export const useExperimentInitializer = () => {
         coordOriginalX: response.query_table.coords_x_original,
         coordOriginalY: response.query_table.coords_y_original,
         staged: new Array(response.query_table.sequences.length).fill(false),
-        wholeSelected: false,
+        masterboxChecked: false,
       })
     );
 
@@ -296,7 +296,7 @@ export const useExperimentInitializer = () => {
         sequenceIndex: sequenceIds,
         column: columns,
         value: values,
-        wholeSelected: false,
+        masterboxChecked: false,
       })
     );
 
@@ -319,7 +319,7 @@ export const useExperimentInitializer = () => {
         coordOriginalX: response.query_table.coords_x_original,
         coordOriginalY: response.query_table.coords_y_original,
         staged: new Array(response.query_table.sequences.length).fill(false),
-        wholeSelected: false,
+        masterboxChecked: false,
       })
     );
   };

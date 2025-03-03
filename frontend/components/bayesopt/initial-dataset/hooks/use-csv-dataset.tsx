@@ -84,7 +84,7 @@ export const useCsvDataset = () => {
               sequenceIndex,
               column,
               value,
-              wholeSelected: false,
+              masterboxChecked: false,
             })
           );
 

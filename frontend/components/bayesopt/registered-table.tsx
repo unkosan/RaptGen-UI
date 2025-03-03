@@ -52,7 +52,7 @@ export const RegisteredTable: React.FC = () => {
       let newData = cloneDeep(registeredData);
       if (e.selected === true) {
         // if selected all value by clicking the master checkbox
-        newData.wholeSelected = true;
+        newData.masterboxChecked = true;
         const unselected =
           e.unselected === null // and if there is no unselected value by clicking the per-row checkbox
             ? []
@@ -61,7 +61,7 @@ export const RegisteredTable: React.FC = () => {
           return !unselected.includes(value);
         });
       } else {
-        newData.wholeSelected = false;
+        newData.masterboxChecked = false;
         const selected = Object.keys(e.selected as Object);
         newData.staged = newData.id.map((value, index) => {
           return selected.includes(value);
@@ -277,14 +277,14 @@ export const RunBayesOptButton: React.FC<RunBayesOptButtonProps> = ({
       dispatch(setIsDirty(true));
       dispatch(
         setQueriedValues({
-          wholeSelected: queryData.wholeSelected,
+          masterboxChecked: queryData.masterboxChecked,
           randomRegion: randomRegion,
           coordX: resEncode.coords_x,
           coordY: resEncode.coords_y,
           coordOriginalX: resBayesopt.query_data.coords_x,
           coordOriginalY: resBayesopt.query_data.coords_y,
           staged: new Array(resDecode.sequences.length).fill(
-            queryData.wholeSelected
+            queryData.masterboxChecked
           ),
         })
       );

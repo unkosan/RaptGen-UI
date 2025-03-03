@@ -100,7 +100,7 @@ export const useGmmDataset = () => {
           sequenceIndex: randomRegions.map((_, i) => i),
           column: new Array(randomRegions.length).fill("value"),
           value: new Array(randomRegions.length).fill(null),
-          wholeSelected: false,
+          masterboxChecked: false,
         })
       );
 

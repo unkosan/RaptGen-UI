@@ -20,7 +20,7 @@ export const useAddQueryButton = () => {
 
     let newRegisteredData = cloneDeep(registeredData);
     let newQueryData: QueriedValues = {
-      wholeSelected: queryData.wholeSelected,
+      masterboxChecked: queryData.masterboxChecked,
       randomRegion: [],
       coordX: [],
       coordY: [],
@@ -39,7 +39,7 @@ export const useAddQueryButton = () => {
         newRegisteredData.randomRegion.push(queryData.randomRegion[i]);
         newRegisteredData.coordX.push(queryData.coordX[i]);
         newRegisteredData.coordY.push(queryData.coordY[i]);
-        newRegisteredData.staged.push(registeredData.wholeSelected);
+        newRegisteredData.staged.push(registeredData.masterboxChecked);
         for (let j = 0; j < registeredData.columnNames.length; j++) {
           // All values are null for initialization
           newRegisteredData.sequenceIndex.push(currIndex);
@@ -53,7 +53,7 @@ export const useAddQueryButton = () => {
         newQueryData.coordY.push(queryData.coordY[i]);
         newQueryData.coordOriginalX.push(queryData.coordOriginalX[i]);
         newQueryData.coordOriginalY.push(queryData.coordOriginalY[i]);
-        newQueryData.staged.push(queryData.wholeSelected);
+        newQueryData.staged.push(queryData.masterboxChecked);
       }
     }
 

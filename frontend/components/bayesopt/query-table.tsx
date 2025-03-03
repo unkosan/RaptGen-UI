@@ -38,7 +38,7 @@ export const QueryTable: React.FC = () => {
     (e: TypeOnSelectionChangeArg) => {
       let newData = cloneDeep(queryData);
       if (e.selected === true) {
-        newData.wholeSelected = true;
+        newData.masterboxChecked = true;
         const unselected =
           e.unselected === null
             ? []
@@ -49,7 +49,7 @@ export const QueryTable: React.FC = () => {
           return !unselected.includes(index);
         });
       } else {
-        newData.wholeSelected = false;
+        newData.masterboxChecked = false;
         const selected = Object.keys(e.selected as Object).map((value) =>
           parseInt(value)
         );
@@ -169,7 +169,7 @@ export const AddQueryButton: React.FC<AddQueryButtonProps> = ({
 
     let newRegisteredData = cloneDeep(registeredData);
     let newQueryData: QueriedValues = {
-      wholeSelected: queryData.wholeSelected,
+      masterboxChecked: queryData.masterboxChecked,
       randomRegion: [],
       coordX: [],
       coordY: [],
@@ -187,7 +187,7 @@ export const AddQueryButton: React.FC<AddQueryButtonProps> = ({
         newRegisteredData.randomRegion.push(queryData.randomRegion[i]);
         newRegisteredData.coordX.push(queryData.coordX[i]);
         newRegisteredData.coordY.push(queryData.coordY[i]);
-        if (registeredData.wholeSelected) {
+        if (registeredData.masterboxChecked) {
           newRegisteredData.staged.push(true);
         } else {
           newRegisteredData.staged.push(false);
@@ -203,7 +203,7 @@ export const AddQueryButton: React.FC<AddQueryButtonProps> = ({
         newQueryData.coordY.push(queryData.coordY[i]);
         newQueryData.coordOriginalX.push(queryData.coordOriginalX[i]);
         newQueryData.coordOriginalY.push(queryData.coordOriginalY[i]);
-        if (queryData.wholeSelected) {
+        if (queryData.masterboxChecked) {
           newQueryData.staged.push(true);
         } else {
           newQueryData.staged.push(false);

@@ -128,14 +128,14 @@ export const useRunBayesOptButton = () => {
       dispatch(setIsDirty(true));
       dispatch(
         setQueriedValues({
-          wholeSelected: queryData.wholeSelected,
+          masterboxChecked: queryData.masterboxChecked,
           randomRegion: randomRegion,
           coordX: resEncode.coords_x,
           coordY: resEncode.coords_y,
           coordOriginalX: query_data.coords_x,
           coordOriginalY: query_data.coords_y,
           staged: new Array(decodedSequences.length).fill(
-            queryData.wholeSelected
+            queryData.masterboxChecked
           ),
         })
       );
