@@ -22,7 +22,8 @@ export const LatentGraph: React.FC = () => {
     (state: RootState) => state.acquisitionValues
   );
 
-  const isLoading = useSelector((state: RootState) => state.isLoading);
+  // const isLoading = useSelector((state: RootState) => state.isLoading);
+  const isLoading = false;
 
   const acquisitionDataPlot: Partial<PlotData> = useMemo(() => {
     let acquisitionDataPlot = cloneDeep(acquisitionData);
