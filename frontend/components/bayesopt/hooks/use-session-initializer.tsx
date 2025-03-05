@@ -6,7 +6,6 @@ import { apiClient } from "~/services/api-client";
 import { experimentState } from "~/services/route/bayesopt";
 import { responsePostEncode } from "~/services/route/session";
 import { AppDispatch } from "../redux/store";
-import { setIsLoading } from "../redux/is-loading";
 import { setIsDirty } from "../redux/is-dirty";
 import { setBayesoptConfig } from "../redux/bayesopt-config";
 import { setAcquisitionValues } from "../redux/acquisition-values";
@@ -15,22 +14,23 @@ import { setRegisteredValues } from "../redux/registered-values";
 import { setQueriedValues } from "../redux/queried-values";
 import { setSessionConfigByVaeIdName } from "../redux/session-config";
 
-export const useExperimentInitializer = () => {
-  const router = useRouter();
-  const uuid = router.query.uuid;
+export const useSessionInitializer = () => {
+  const { query, isReady } = useRouter();
+  const { uuid } = query;
   const dispatch = useDispatch<AppDispatch>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const init = async () => {
-      if (!router.isReady) {
+      if (!isReady) {
         return;
       }
 
       setIsLoading(true);
 
       if (typeof uuid !== "string" || uuid === "") {
+        // if not provided or invalid uuid
         try {
           await initializeExperiment();
         } catch (e) {
@@ -40,34 +40,33 @@ export const useExperimentInitializer = () => {
           dispatch(setIsDirty(false));
         }
         return;
-      }
-
-      try {
-        await restoreExperiment(uuid);
-      } catch (e) {
-        console.error(e);
+      } else {
+        // if valid uuid
         try {
-          await initializeExperiment();
+          await restoreExperiment(uuid);
         } catch (e) {
           console.error(e);
+          try {
+            await initializeExperiment();
+          } catch (e) {
+            console.error(e);
+          }
+        } finally {
+          setIsLoading(false);
+          dispatch(setIsDirty(false));
         }
-      } finally {
-        setIsLoading(false);
-        dispatch(setIsDirty(false));
       }
     };
     init();
-  }, [uuid, router.isReady, dispatch]);
+  }, [uuid, isReady, dispatch]);
 
   // initialize new experiment and set redux store
   const initializeExperiment = async () => {
-    const resVaeNames = await apiClient.getVAEModelNames();
+    const { entries } = await apiClient.getVAEModelNames();
 
     const response = {
-      VAE_uuid:
-        resVaeNames.entries.length > 0 ? resVaeNames.entries[0].uuid : "",
-      VAE_name:
-        resVaeNames.entries.length > 0 ? resVaeNames.entries[0].name : "",
+      VAE_uuid: entries.length > 0 ? entries[0].uuid : "",
+      VAE_name: entries.length > 0 ? entries[0].name : "",
       plot_config: {
         minimum_count: 5,
         show_training_data: true,

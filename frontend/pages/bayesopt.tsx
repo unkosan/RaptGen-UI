@@ -6,15 +6,7 @@ import { useState } from "react";
 import { useConfirmNavigation } from "~/components/bayesopt/hooks/use-confirm-navigation";
 import Head from "next/head";
 import Navigator from "~/components/common/navigator";
-import {
-  Col,
-  Container,
-  Row,
-  SSRProvider,
-  Spinner,
-  Tab,
-  Tabs,
-} from "react-bootstrap";
+import { Col, Container, Row, SSRProvider, Tab, Tabs } from "react-bootstrap";
 import { store } from "~/components/bayesopt/redux/store";
 import { Footer } from "~/components/common/footer";
 import Sessions from "~/components/bayesopt/sessions/index";
@@ -24,7 +16,8 @@ import BayesOptConfig from "~/components/bayesopt/bayes-opt-config/index";
 import LatentGraph from "~/components/bayesopt/latent-graph/index";
 import RegisteredTable from "~/components/bayesopt/registered-table/index";
 import QueryTable from "~/components/bayesopt/query-table/index";
-import { useExperimentInitializer } from "~/components/bayesopt/hooks/use-experiment-initializer";
+import { useSessionInitializer } from "~/components/bayesopt/hooks/use-session-initializer";
+import LoadingPane from "~/components/common/loading-pane";
 
 const App: React.FC = () => {
   // Use the hook for navigation confirmation and session cleanup
@@ -35,32 +28,19 @@ const App: React.FC = () => {
     "registered-table" | "query-table"
   >("registered-table");
 
-  const { isLoading } = useExperimentInitializer();
+  const { isLoading } = useSessionInitializer();
 
-  // If still loading, show the initializer and a loading spinner
-  if (isLoading) {
-    return (
-      <main className="flex-grow-1 d-flex justify-content-center align-items-center">
-        <div className="text-center">
-          <Spinner
-            animation="border"
-            role="status"
-            variant="primary"
-            style={{ width: "3rem", height: "3rem" }}
-          />
-          <h4 className="mt-3">Loading session...</h4>
-        </div>
-      </main>
-    );
-  }
-
-  // Once loaded, show the full UI
   return (
     <main>
       <Container>
         <div className="py-2" />
         <h1>Bayesian Optimization</h1>
         <hr />
+        {isLoading ? (
+          <div className="my-2">
+            <LoadingPane label="Loading session..." />
+          </div>
+        ) : null}
         <Row>
           <Col md={4}>
             <div>

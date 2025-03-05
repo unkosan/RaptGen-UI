@@ -19,7 +19,6 @@ export const useVaeSelector = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
-  const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
   const registeredValues = useSelector(
     (state: RootState) => state.registeredValues
@@ -36,7 +35,7 @@ export const useVaeSelector = () => {
   // if redux store is changed, update local state
   useEffect(() => {
     setSelectedModel(sessionConfig.vaeId);
-  }, [sessionConfig, graphConfig]);
+  }, [sessionConfig.vaeId]);
 
   const setDirty = () => {
     dispatch(setIsDirty(true));

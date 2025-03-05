@@ -55,10 +55,13 @@ const Sessions: React.FC = () => {
               action
               key={i}
               active={currentUUID === experiment.uuid}
-              disabled={currentUUID === experiment.uuid}
               onClick={(e) => {
                 e.preventDefault();
-                router.push(`?uuid=${experiment.uuid}`);
+                if (currentUUID === experiment.uuid) {
+                  router.reload();
+                } else {
+                  router.push(`?uuid=${experiment.uuid}`);
+                }
               }}
             >
               <Stack direction="horizontal" gap={3}>
