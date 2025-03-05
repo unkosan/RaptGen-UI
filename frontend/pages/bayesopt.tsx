@@ -17,7 +17,6 @@ import LatentGraph from "~/components/bayesopt/latent-graph/index";
 import RegisteredTable from "~/components/bayesopt/registered-table/index";
 import QueryTable from "~/components/bayesopt/query-table/index";
 import { useSessionInitializer } from "~/components/bayesopt/hooks/use-session-initializer";
-import LoadingPane from "~/components/common/loading-pane";
 
 const App: React.FC = () => {
   // Use the hook for navigation confirmation and session cleanup
@@ -36,11 +35,6 @@ const App: React.FC = () => {
         <div className="py-2" />
         <h1>Bayesian Optimization</h1>
         <hr />
-        {isLoading ? (
-          <div className="my-2">
-            <LoadingPane label="Loading session..." />
-          </div>
-        ) : null}
         <Row>
           <Col md={4}>
             <div>
@@ -56,7 +50,7 @@ const App: React.FC = () => {
             </div>
           </Col>
           <Col>
-            <LatentGraph />
+            <LatentGraph isLoading={isLoading} />
             <Tabs
               defaultActiveKey={"registered-table"}
               activeKey={activeTableTab}

@@ -15,7 +15,9 @@ import { RootState } from "../redux/store";
 // Dynamic import of Plot to avoid SSR issues
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
-export const LatentSpacePlot: React.FC = () => {
+export const LatentSpacePlot: React.FC<{ isLoading: boolean }> = ({
+  isLoading: forceIsLoading,
+}) => {
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
   const sessionConfig = useSelector((state: RootState) => state.sessionConfig);
 
@@ -42,7 +44,7 @@ export const LatentSpacePlot: React.FC = () => {
             aspectRatio: "10 / 9",
           }}
         >
-          {isLoading ? (
+          {isLoading || forceIsLoading ? (
             <LoadingPane label="Loading..." />
           ) : (
             <Plot
