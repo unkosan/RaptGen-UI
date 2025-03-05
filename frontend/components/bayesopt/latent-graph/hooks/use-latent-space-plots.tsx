@@ -187,6 +187,7 @@ export const useQueryDataPlot = () => {
       },
       customdata: queryData.randomRegion.map((d) => [d]),
       hovertemplate:
+        "<b>Query Point</b><br>" +
         "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
         "<b>Seq</b>: %{customdata[0]}",
     };

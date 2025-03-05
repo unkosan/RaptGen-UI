@@ -167,10 +167,10 @@ export const useGmmDataPlot = (
             },
             hovertemplate:
               `<b>MoG No.${i}</b><br>` +
-              `<b>Weight:</b> ${weightStr}<br>` +
-              `<b>Mean:</b> ${meanStr}<br>` +
-              `<b>Coval:</b> ${covalStr}<br>` +
-              `<b>Decoded Centroid:</b> ${centroidSequence[i]}<br>`,
+              `<b>Weight</b>: ${weightStr}<br>` +
+              `<b>Mean</b>: ${meanStr}<br>` +
+              `<b>Coval</b>: ${covalStr}<br>` +
+              `<b>Decoded Sequence</b>: ${centroidSequence[i]}<br>`,
           };
 
           const label: Partial<PlotData> = {
@@ -184,10 +184,10 @@ export const useGmmDataPlot = (
             textposition: "inside",
             hovertemplate:
               `<b>MoG No.${i}</b><br>` +
-              `<b>Weight:</b> ${weightStr}<br>` +
-              `<b>Mean:</b> ${meanStr}<br>` +
-              `<b>Coval:</b> ${covalStr}<br>` +
-              `<b>Decoded Sequence:</b> ${centroidSequence[i]}<br>`,
+              `<b>Weight</b>: ${weightStr}<br>` +
+              `<b>Mean</b>: ${meanStr}<br>` +
+              `<b>Coval</b>: ${covalStr}<br>` +
+              `<b>Decoded Sequence</b>: ${centroidSequence[i]}<br>`,
           };
           plots.push(...[circle, label]);
         }
@@ -242,8 +242,8 @@ export const useEncodeDataPlot = () => {
       hovertemplate:
         "<b>Encoded Data</b><br>" +
         "<b>ID</b>: %{customdata[0]}<br>" +
-        "<b>Coord:</b> (%{x:.4f}, %{y:.4f})<br>" +
-        "<b>Seq:</b> %{customdata[1]}",
+        "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
+        "<b>Seq</b>: %{customdata[1]}",
     };
   }, [encodeData]);
 
@@ -284,8 +284,8 @@ export const useDecodeDataPlot = () => {
       hovertemplate:
         "<b>Decoded Data</b><br>" +
         "<b>ID</b>: %{customdata[0]}<br>" +
-        "<b>Coord:</b> (%{x:.4f}, %{y:.4f})<br>" +
-        "<b>Seq:</b> %{customdata[1]}",
+        "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
+        "<b>Seq</b>: %{customdata[1]}",
     };
   }, [decodeData]);
 
@@ -345,7 +345,7 @@ export const useGridDataPlot = () => {
         color: "#14c714",
       },
       hovertemplate:
-        "<b>Decode Point</b><br>" + "<b>Coord:</b> (%{x:.4f}, %{y:.4f})<br>",
+        "<b>Decode Point</b><br>" + "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>",
     };
 
     return [decodeLineX, decodeLineY, decodeCrossPoint];
