@@ -8,7 +8,6 @@ import bayesoptConfigReducer from "./bayesopt-config";
 import experimentsListReducer from "./expeiments-list";
 import acquisitionValuesReducer from "./acquisition-values";
 import isDirtyReducer from "./is-dirty";
-import isLoadingReducer from "./is-loading";
 
 export const store = configureStore({
   reducer: {
@@ -20,7 +19,6 @@ export const store = configureStore({
     experimentsData: experimentsListReducer,
     acquisitionValues: acquisitionValuesReducer,
     isDirty: isDirtyReducer,
-    isLoading: isLoadingReducer,
   },
 });
 
