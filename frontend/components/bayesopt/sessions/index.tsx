@@ -55,6 +55,7 @@ const Sessions: React.FC = () => {
               action
               key={i}
               active={currentUUID === experiment.uuid}
+              disabled={currentUUID === experiment.uuid}
               onClick={(e) => {
                 e.preventDefault();
                 router.push(`?uuid=${experiment.uuid}`);
