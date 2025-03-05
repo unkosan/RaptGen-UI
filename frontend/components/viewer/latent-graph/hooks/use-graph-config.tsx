@@ -22,7 +22,7 @@ export const useGraphConfig = () => {
         showGMM,
       })
     );
-  }, [isValidMinCount, showGMM, minCount, graphConfig.minCount]);
+  }, [isValidMinCount, showGMM, minCount, dispatch, graphConfig.minCount]);
 
   const onMinCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
