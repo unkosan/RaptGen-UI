@@ -52,6 +52,7 @@ const App: React.FC = () => {
           <Col>
             <LatentGraph isLoading={isLoading} />
             <Tabs
+              id={"table-tabs"}
               defaultActiveKey={"registered-table"}
               activeKey={activeTableTab}
               onSelect={(key) =>
