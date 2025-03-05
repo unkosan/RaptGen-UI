@@ -9,47 +9,43 @@ import Navigator from "~/components/common/navigator";
 import { Col, Container, Row, SSRProvider } from "react-bootstrap";
 import LatentGraph from "~/components/viewer/latent-graph/index";
 import { Footer } from "~/components/common/footer";
-import ModelPicker from "~/components/viewer/model-picker/model-picker";
-import InteractionTables from "~/components/viewer/interaction-tables/interaction-tables";
-import DecoderInput from "~/components/viewer/decode-input/input";
-import DecoderOutput from "~/components/viewer/decode-output/output";
-import Downloader from "~/components/viewer/downloader/downloader";
-import EncodeInput from "~/components/viewer/encode-input/encode-input";
+import ModelPicker from "~/components/viewer/model-picker";
+import InteractionTables from "~/components/viewer/interaction-tables";
+import DecoderInput from "~/components/viewer/decode-input";
+import DecoderOutput from "~/components/viewer/decode-output";
+import Downloader from "~/components/viewer/downloader";
+import EncodeInput from "~/components/viewer/encode-input";
 
-const Home: React.FC = () => {
+const App: React.FC = () => {
   return (
-    <div className="vh-100 d-flex flex-column">
-      <Navigator currentPage="viewer" />
-      <main>
-        <Container>
-          <div className="py-2" />
-          <h1>Viewer</h1>
-          <hr />
-          <Row>
-            <Col md={4}>
-              <legend>Data and properties</legend>
-              <ModelPicker />
-              <legend>Encode sequences</legend>
-              <EncodeInput />
-              <legend>Decode latent points</legend>
-              <DecoderInput />
-              <DecoderOutput />
-              <legend>Download clusters</legend>
-              <Downloader />
-            </Col>
-            <Col>
-              <LatentGraph />
-              <InteractionTables />
-            </Col>
-          </Row>
-        </Container>
-      </main>
-      <Footer />
-    </div>
+    <main>
+      <Container>
+        <div className="py-2" />
+        <h1>Viewer</h1>
+        <hr />
+        <Row>
+          <Col md={4}>
+            <legend>Data and properties</legend>
+            <ModelPicker />
+            <legend>Encode sequences</legend>
+            <EncodeInput />
+            <legend>Decode latent points</legend>
+            <DecoderInput />
+            <DecoderOutput />
+            <legend>Download clusters</legend>
+            <Downloader />
+          </Col>
+          <Col>
+            <LatentGraph />
+            <InteractionTables />
+          </Col>
+        </Row>
+      </Container>
+    </main>
   );
 };
 
-const PageRoot: NextPage = () => {
+const Layout: NextPage = () => {
   return (
     <>
       <Head>
@@ -60,11 +56,15 @@ const PageRoot: NextPage = () => {
       </Head>
       <SSRProvider>
         <Provider store={store}>
-          <Home />
+          <div className="vh-100 d-flex flex-column">
+            <Navigator currentPage="viewer" />
+            <App />
+            <Footer />
+          </div>
         </Provider>
       </SSRProvider>
     </>
   );
 };
 
-export default PageRoot;
+export default Layout;
