@@ -24,7 +24,7 @@ import BayesOptConfig from "~/components/bayesopt/bayes-opt-config/index";
 import LatentGraph from "~/components/bayesopt/latent-graph/index";
 import RegisteredTable from "~/components/bayesopt/registered-table/index";
 import QueryTable from "~/components/bayesopt/query-table/index";
-import { useExperimentInitializer } from "~/components/bayesopt/experiment-initializer/hooks/use-experiment-initializer";
+import { useExperimentInitializer } from "~/components/bayesopt/hooks/use-experiment-initializer";
 
 const App: React.FC = () => {
   // Use the hook for navigation confirmation and session cleanup

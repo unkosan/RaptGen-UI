@@ -5,16 +5,15 @@ import { z } from "zod";
 import { apiClient } from "~/services/api-client";
 import { experimentState } from "~/services/route/bayesopt";
 import { responsePostEncode } from "~/services/route/session";
-import { AppDispatch } from "../../redux/store";
-import { setIsLoading } from "../../redux/is-loading";
-import { setIsDirty } from "../../redux/is-dirty";
-import { setBayesoptConfig } from "../../redux/bayesopt-config";
-import { setAcquisitionValues } from "../../redux/acquisition-values";
-import { setGraphConfig } from "../../redux/graph-config";
-import { setRegisteredValues } from "../../redux/registered-values";
-import { setQueriedValues } from "../../redux/queried-values";
-import { setSessionConfigByVaeIdName } from "../../redux/session-config";
-import { setVaeData } from "../../redux/vae-data";
+import { AppDispatch } from "../redux/store";
+import { setIsLoading } from "../redux/is-loading";
+import { setIsDirty } from "../redux/is-dirty";
+import { setBayesoptConfig } from "../redux/bayesopt-config";
+import { setAcquisitionValues } from "../redux/acquisition-values";
+import { setGraphConfig } from "../redux/graph-config";
+import { setRegisteredValues } from "../redux/registered-values";
+import { setQueriedValues } from "../redux/queried-values";
+import { setSessionConfigByVaeIdName } from "../redux/session-config";
 
 export const useExperimentInitializer = () => {
   const router = useRouter();
@@ -103,6 +102,18 @@ export const useExperimentInitializer = () => {
       },
     } as z.infer<typeof experimentState>;
 
+    if (response.VAE_uuid === "") {
+      console.log("No VAE model found");
+      return;
+    }
+
+    await dispatch(
+      setSessionConfigByVaeIdName({
+        vaeId: response.VAE_uuid,
+        vaeName: response.VAE_name,
+      })
+    );
+
     dispatch(
       setBayesoptConfig({
         targetColumn: response.optimization_config.target_column_name,
@@ -156,38 +167,6 @@ export const useExperimentInitializer = () => {
         masterboxChecked: false,
       })
     );
-
-    if (response.VAE_uuid === "") {
-      console.log("No VAE model found");
-      return;
-    }
-
-    const res = await dispatch(
-      setSessionConfigByVaeIdName({
-        vaeId: response.VAE_uuid,
-        vaeName: response.VAE_name,
-      })
-    );
-    const sessionId: string = (res.payload as any).sessionId;
-
-    const resCoords = await apiClient.getSelexData({
-      queries: { vae_uuid: response.VAE_uuid },
-    });
-    dispatch(
-      setVaeData(
-        resCoords.random_regions.map((value, index) => {
-          return {
-            key: index,
-            randomRegion: value,
-            duplicates: resCoords.duplicates[index],
-            coordX: resCoords.coord_x[index],
-            coordY: resCoords.coord_y[index],
-            isSelected: false,
-            isShown: true,
-          };
-        })
-      )
-    );
   };
 
   // restore experiment and set redux store
@@ -199,9 +178,11 @@ export const useExperimentInitializer = () => {
     const resSessionId = await apiClient.startSession({
       queries: { vae_uuid: response.VAE_uuid },
     });
+
     if (resSessionId.uuid === "") {
       throw "Failed to start session";
     }
+
     dispatch(
       setSessionConfigByVaeIdName({
         vaeId: response.VAE_uuid,
@@ -232,24 +213,6 @@ export const useExperimentInitializer = () => {
         showSelex: response.plot_config.show_training_data,
         showAcquisition: true,
       })
-    );
-
-    // set selex data
-    const resSelex = await apiClient.getSelexData({
-      queries: { vae_uuid: response.VAE_uuid },
-    });
-    dispatch(
-      setVaeData(
-        Array.from({ length: resSelex.coord_x.length }, (_, i) => ({
-          key: i,
-          randomRegion: resSelex.random_regions[i],
-          coordX: resSelex.coord_x[i],
-          coordY: resSelex.coord_y[i],
-          duplicates: resSelex.duplicates[i],
-          isSelected: false,
-          isShown: false,
-        }))
-      )
     );
 
     // set registered values
