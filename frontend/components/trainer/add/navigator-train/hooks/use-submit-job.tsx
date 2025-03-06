@@ -1,12 +1,10 @@
-import { Button, Spinner } from "react-bootstrap";
-import { ChevronLeft } from "react-bootstrap-icons";
 import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
+import { RootState } from "../../redux/store";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import { apiClient } from "~/services/api-client";
-import { useIsLoading } from "~/hooks/common";
 
-const Pagenation: React.FC = () => {
+export const useSubmitJob = () => {
   const trainConfig = useSelector((state: RootState) => state.trainConfig);
   const preprocessingConfig = useSelector(
     (state: RootState) => state.preprocessingConfig
@@ -14,13 +12,14 @@ const Pagenation: React.FC = () => {
   const selexData = useSelector((state: RootState) => state.selexData);
   const pageConfig = useSelector((state: RootState) => state.pageConfig);
 
-  const [isLoading, lock, unlock] = useIsLoading();
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { push } = useRouter();
 
   const onClickTrain = async () => {
-    lock();
+    setIsLoading(true);
     try {
-      const res = await apiClient.postSubmitJob({
+      const { uuid } = await apiClient.postSubmitJob({
         type: pageConfig.modelType,
         name: pageConfig.experimentName,
         params_preprocessing: {
@@ -47,37 +46,19 @@ const Pagenation: React.FC = () => {
           device: trainConfig.device,
         },
       });
-      unlock();
-      router.push(`/trainer?experiment=${res.uuid}`);
-      return;
-    } catch (e) {
-      console.error(e);
-      unlock();
-      return;
+      push(`/trainer?experiment=${uuid}`);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const onClickBack = () => {
-    router.push("");
+    push("");
   };
 
-  return (
-    <div className="d-flex justify-content-between my-3">
-      <Button onClick={onClickBack} variant="primary">
-        <div className="align-items-center d-flex">
-          <ChevronLeft />
-          &nbsp; Back
-        </div>
-      </Button>
-      <Button
-        onClick={onClickTrain}
-        variant="primary"
-        disabled={!trainConfig.isValidParams}
-      >
-        {isLoading ? <Spinner animation="border" size="sm" /> : "Train"}
-      </Button>
-    </div>
-  );
-};
+  const canTrain = trainConfig.isValidParams;
 
-export default Pagenation;
+  return { isLoading, canTrain, onClickTrain, onClickBack };
+};
