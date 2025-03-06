@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-type ParamsValid = {
+interface ParamsValid {
   gmmName: boolean;
   vaeId: boolean;
   minNumComponents: boolean;
   maxNumComponents: boolean;
   stepSize: boolean;
   numTrials: boolean;
-};
+}
 
 const paramsValidSlice = createSlice({
   name: "paramsValid",
