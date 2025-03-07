@@ -1,82 +1,93 @@
+import React from "react";
 import { Badge, ProgressBar } from "react-bootstrap";
-import { formatDuration, intervalToDuration } from "date-fns";
-import { useRouter } from "next/router";
+import { useJobCard, JobStatus } from "./hooks/use-job-card";
 
 type Props = {
   name: string;
-  status: "success" | "failure" | "pending" | "progress" | "suspend";
+  status: JobStatus;
   nCompleted: number;
   nTotal: number;
   duration: number;
   uuid: string;
 };
 
+/**
+ * JobCard component displays information about a GMM job
+ */
 const JobCard: React.FC<Props> = (props) => {
-  const router = useRouter();
-  const currentUUID = router.query.experiment;
-  return (
-    <div
-      style={{
-        width: "100%",
-        backgroundColor: props.uuid === currentUUID ? "lightgray" : "#E5E5E5",
-        borderRadius: "0.3rem",
-        border: true && true === null ? "1px solid gray" : "1px solid #E5E5E5",
-        paddingBlock: "0.7rem",
-        paddingInline: "1rem",
-        cursor: "pointer",
-        marginBlock: "1rem",
-        boxShadow: "0 0 0.5rem 0.1rem rgba(0, 0, 0, 0.1)",
-      }}
-      onClick={() => {
-        router.push(`?experiment=${props.uuid}`, undefined, {
-          scroll: false,
-        });
-      }}
-    >
+  const { name, status, nCompleted, nTotal, duration, uuid } = props;
+
+  const {
+    currentUUID,
+    handleClick,
+    getCardStyle,
+    formatJobDuration,
+    isProgressOrSuspend,
+  } = useJobCard({
+    uuid,
+    duration,
+  });
+
+  /**
+   * Render job title with status badge or duration
+   */
+  const renderTitle = () => {
+    return (
       <div className="d-flex justify-content-between align-self-center">
-        <span className="d-flex flex-column font-monospace">{props.name}</span>
+        <span className="d-flex flex-column font-monospace">{name}</span>
         <div className="d-flex">
-          {props.status === "progress" && (
-            <small className="fw-light">
-              {"Running for " +
-                formatDuration(
-                  intervalToDuration({ start: 0, end: props.duration * 1000 })
-                )}
-            </small>
+          {status === "progress" && (
+            <small className="fw-light">{formatJobDuration(duration)}</small>
           )}
-          {props.status === "success" && (
+          {status === "success" && (
             <Badge pill bg="success" className="align-self-center">
               success
             </Badge>
           )}
-          {props.status === "failure" && (
+          {status === "failure" && (
             <Badge pill bg="danger" className="align-self-center">
               failure
             </Badge>
           )}
-          {props.status === "pending" && (
+          {status === "pending" && (
             <Badge pill bg="warning" className="align-self-center">
               pending
             </Badge>
           )}
-          {props.status === "suspend" && (
+          {status === "suspend" && (
             <Badge pill bg="warning" className="align-self-center">
               suspended
             </Badge>
           )}
         </div>
       </div>
-      {["progress", "suspend"].includes(props.status) && (
+    );
+  };
+
+  /**
+   * Render progress bar for progress/suspend jobs
+   */
+  const renderProgress = () => {
+    if (isProgressOrSuspend(status)) {
+      return (
         <div className="d-flex justify-content-between">
           <ProgressBar
-            now={(props.nCompleted / props.nTotal) * 100}
+            now={(nCompleted / nTotal) * 100}
             className="w-100 align-self-center"
           />
           <small className="ms-3 font-monospace">
-            {props.nCompleted}&nbsp;/&nbsp;{props.nTotal}
+            {nCompleted}&nbsp;/&nbsp;{nTotal}
           </small>
         </div>
-      )}
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div style={getCardStyle(uuid === currentUUID)} onClick={handleClick}>
+      {renderTitle()}
+      {renderProgress()}
     </div>
   );
 };

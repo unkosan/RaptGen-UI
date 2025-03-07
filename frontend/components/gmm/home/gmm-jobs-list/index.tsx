@@ -1,78 +1,44 @@
+import React from "react";
 import { Alert } from "react-bootstrap";
 import JobCard from "./job-card";
-import { z } from "zod";
-import { responsePostGMMJobsSearch } from "~/services/route/gmm";
-import { useEffect, useState } from "react";
-import { apiClient } from "~/services/api-client";
+import { useGmmJobs } from "./hooks/use-gmm-jobs";
 
-type Jobs = z.infer<typeof responsePostGMMJobsSearch>;
-
+/**
+ * GmmJobsList component displays a list of GMM jobs, separated into running and finished categories.
+ * It uses the useGmmJobs hook for state management and data fetching.
+ */
 const GmmJobsList: React.FC = () => {
-  const [jobs, setJobs] = useState<Jobs>([]);
-  const [runningJobs, setRunningJobs] = useState<Jobs>([]);
-  const [finishedJobs, setFinishedJobs] = useState<Jobs>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const { runningJobs, finishedJobs } = useGmmJobs();
 
-  // Update jobs per 5 second
-  useEffect(() => {
-    const updateFunc = async () => {
-      const res = await apiClient.searchGMMJobs({
-        search_regex: searchQuery ? searchQuery : undefined,
-      });
-      setJobs(res);
-    };
-    updateFunc();
-    const interval = setInterval(updateFunc, 5000);
-
-    return () => clearInterval(interval);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    let fJobs: Jobs = [];
-    let rJobs: Jobs = [];
-    for (let job of jobs) {
-      if (job.status === "success" || job.status === "failure") {
-        fJobs.push(job);
-      } else {
-        rJobs.push(job);
-      }
-    }
-    setFinishedJobs(fJobs);
-    setRunningJobs(rJobs);
-  }, [jobs]);
+  /**
+   * Render job cards for a list of jobs
+   */
+  const renderJobCards = (jobs: typeof runningJobs) => {
+    return jobs.map((job) => (
+      <JobCard
+        key={job.uuid}
+        name={job.name}
+        status={job.status}
+        nCompleted={job.trials_current}
+        nTotal={job.trials_total}
+        duration={job.duration}
+        uuid={job.uuid}
+      />
+    ));
+  };
 
   return (
     <div>
       <div style={{ height: "1rem" }} />
       <legend>Running</legend>
       {runningJobs.length ? (
-        runningJobs.map((job) => (
-          <JobCard
-            key={job.uuid}
-            name={job.name}
-            status={job.status}
-            nCompleted={job.trials_current}
-            nTotal={job.trials_total}
-            duration={job.duration}
-            uuid={job.uuid}
-          />
-        ))
+        renderJobCards(runningJobs)
       ) : (
         <Alert variant="info">No running jobs</Alert>
       )}
       <legend>Finished</legend>
       {finishedJobs.length ? (
-        finishedJobs.map((job) => (
-          <JobCard
-            key={job.uuid}
-            name={job.name}
-            status={job.status}
-            nCompleted={job.trials_current}
-            nTotal={job.trials_total}
-            duration={job.duration}
-            uuid={job.uuid}
-          />
-        ))
+        renderJobCards(finishedJobs)
       ) : (
         <Alert variant="info">No finished jobs</Alert>
       )}

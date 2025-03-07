@@ -3,7 +3,7 @@ import { NextPage } from "next";
 import Head from "next/head";
 import { Alert, Button, Col, Row, Container } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
-import VaeJobsList from "~/components/trainer/home/vae-jobs-list/vae-jobs-list";
+import VaeJobsList from "~/components/trainer/home/vae-jobs-list";
 import { Provider } from "react-redux";
 import "@inovua/reactdatagrid-community/index.css";
 import Footer from "~/components/common/footer";
