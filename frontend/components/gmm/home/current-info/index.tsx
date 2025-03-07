@@ -1,20 +1,26 @@
+import { useEffect, useState } from "react";
 import { Alert } from "react-bootstrap";
 import { z } from "zod";
-import { useAsyncMemo } from "~/hooks/common";
 import { apiClient } from "~/services/api-client";
 import { responseGetGMMJobsItems } from "~/services/route/gmm";
 
 export const CurrentInfo: React.FC<{
   jobItem: z.infer<typeof responseGetGMMJobsItems>;
 }> = ({ jobItem }) => {
-  const vaeEntries = useAsyncMemo(
-    async () => {
-      const res = await apiClient.getVAEModelNames();
-      return res.entries;
-    },
-    [],
-    []
-  );
+  const [entries, setEntries] = useState<
+    {
+      uuid: string;
+      name: string;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchEntries = async () => {
+      const { entries } = await apiClient.getVAEModelNames();
+      setEntries(entries);
+    };
+    fetchEntries();
+  }, []);
 
   if (
     jobItem.status === "success" ||
@@ -27,7 +33,7 @@ export const CurrentInfo: React.FC<{
   return (
     <p>
       <span className="fw-semibold">Target: </span>
-      {vaeEntries.find((entry) => entry.uuid === jobItem.target)?.name}
+      {entries.find((entry) => entry.uuid === jobItem.target)?.name}
       <br />
       <span className="fw-semibold">
         The number of Gaussian distribution components:{" "}

@@ -6,6 +6,12 @@ import { responseGetGMMJobsItems } from "~/services/route/gmm";
 type JobItem = z.infer<typeof responseGetGMMJobsItems>;
 
 const ParamsTable: React.FC<{ params: JobItem["params"] }> = ({ params }) => {
+  const dataSource = Object.entries(params).map(([key, value]) => ({
+    id: key,
+    item: key,
+    value: value,
+  }));
+
   return (
     <Card className="mb-3">
       <Card.Header>Parameters</Card.Header>
@@ -30,18 +36,7 @@ const ParamsTable: React.FC<{ params: JobItem["params"] }> = ({ params }) => {
             header: "Value",
           },
         ]}
-        dataSource={[
-          {
-            item: "Minimum number of components",
-            value: params.minimum_n_components,
-          },
-          {
-            item: "Maximum number of components",
-            value: params.maximum_n_components,
-          },
-          { item: "Step size", value: params.step_size },
-          { item: "Number of trials", value: params.n_trials_per_component },
-        ]}
+        dataSource={dataSource}
         downloadable
         style={{ minHeight: 251 }}
       />

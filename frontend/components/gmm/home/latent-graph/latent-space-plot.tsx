@@ -2,30 +2,46 @@ import { cloneDeep, zip } from "lodash";
 import { eigs, cos, sin, pi, range, atan2, transpose } from "mathjs";
 import dynamic from "next/dynamic";
 import { PlotData } from "plotly.js";
-import { useMemo, useState } from "react";
-import { Card, Form, Tab, Tabs } from "react-bootstrap";
+import { useMemo } from "react";
+import { Card } from "react-bootstrap";
 import { latentGraphLayout } from "~/components/common/graph-layout";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+
+import { Props } from ".";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
-type Props = {
-  title: string;
-  vaeData: {
-    coordsX: number[];
-    coordsY: number[];
-    randomRegions: string[];
-    duplicates: number[];
-  };
-  gmmData: {
-    means: number[][];
-    covariances: number[][][];
-  };
+const calculateTraces = (mu: number[], sigma: number[][]) => {
+  sigma = cloneDeep(sigma);
+  const eig = eigs(sigma);
+  let [lambda1, lambda2] = eig.values as number[];
+  let [v1, v2] = transpose(eig.vectors) as number[][];
+
+  if (lambda1 < lambda2) {
+    [lambda1, lambda2] = [lambda2, lambda1];
+    [v1, v2] = [v2, v1];
+  }
+
+  const [v1x, v1y] = v1;
+  const theta = atan2(v1y, v1x);
+  const width = 2 * Math.sqrt(lambda1);
+  const height = 2 * Math.sqrt(lambda2);
+
+  const trace = range(0, 2 * pi, 0.01, true)
+    .map((t) => {
+      const x =
+        mu[0] + width * cos(t) * cos(theta) - height * sin(t) * sin(theta);
+      const y =
+        mu[1] + width * cos(t) * sin(theta) + height * sin(t) * cos(theta);
+      return [x, y];
+    })
+    .toArray() as number[][];
+
+  return trace;
 };
 
-const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
-  const [minCount, setMinCount] = useState(5);
-  const [validMinCount, setValidMinCount] = useState(true);
-
+const useVaeDataPlot = (vaeData: Props["vaeData"], minCount: number) => {
   const vaeDataPlot: Partial<PlotData> = useMemo(() => {
     const { coordsX, coordsY, randomRegions, duplicates } = vaeData;
     const mask = duplicates.map((value) => value >= minCount);
@@ -54,6 +70,10 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
     return trace;
   }, [vaeData, minCount]);
 
+  return { vaeDataPlot };
+};
+
+const useGmmDataPlot = (gmmData: Props["gmmData"]) => {
   const gmmDataPlot: Partial<PlotData>[] = useMemo(() => {
     if (gmmData.means.length === 0) {
       return [];
@@ -110,82 +130,34 @@ const LatentGraph: React.FC<Props> = ({ vaeData, gmmData }) => {
     return gmmDataPlot;
   }, [gmmData]);
 
+  return { gmmDataPlot };
+};
+
+export const LatentSpacePlot: React.FC<Props> = ({ vaeData, gmmData }) => {
+  const { minCount } = useSelector((state: RootState) => state.graphConfig);
+  const { vaeDataPlot } = useVaeDataPlot(vaeData, minCount);
+  const { gmmDataPlot } = useGmmDataPlot(gmmData);
+
   return (
-    <Tabs defaultActiveKey="latent-graph" id="gmm-latent-graph">
-      <Tab eventKey="latent-graph" title="Latent Space">
-        <Card className="mb-3">
-          <Card.Body>
-            <div
-              className="justify-content-center align-items-center w-100"
-              style={{
-                aspectRatio: "1 / 1",
-              }}
-            >
-              <Plot
-                data={[vaeDataPlot, ...gmmDataPlot]}
-                useResizeHandler={true}
-                layout={latentGraphLayout("")}
-                config={{ responsive: true }}
-                className="w-100 h-100"
-              />
-            </div>
-          </Card.Body>
-        </Card>
-      </Tab>
-      <Tab eventKey="plot-config" title="Plot Config">
-        <Card className="mb-3">
-          <Card.Body>
-            <Form.Group className="">
-              <Form.Label>Minimum count</Form.Label>
-              <Form.Control
-                type="number"
-                value={minCount}
-                onChange={(e) => {
-                  const minCount = parseInt(e.target.value);
-                  if (!isNaN(minCount) && minCount > 0) {
-                    setMinCount(minCount);
-                    setValidMinCount(true);
-                  } else {
-                    setValidMinCount(true);
-                  }
-                }}
-                isInvalid={!validMinCount}
-              />
-            </Form.Group>
-          </Card.Body>
-        </Card>
-      </Tab>
-    </Tabs>
+    <Card className="mb-3">
+      <Card.Body>
+        <div
+          className="justify-content-center align-items-center w-100"
+          style={{
+            aspectRatio: "1 / 1",
+          }}
+        >
+          <Plot
+            data={[vaeDataPlot, ...gmmDataPlot]}
+            layout={latentGraphLayout("")}
+            config={{
+              responsive: true,
+              displayModeBar: false,
+            }}
+            className="w-100 h-100"
+          />
+        </div>
+      </Card.Body>
+    </Card>
   );
 };
-
-const calculateTraces = (mu: number[], sigma: number[][]) => {
-  sigma = cloneDeep(sigma);
-  const eig = eigs(sigma);
-  let [lambda1, lambda2] = eig.values as number[];
-  let [v1, v2] = transpose(eig.vectors) as number[][];
-
-  if (lambda1 < lambda2) {
-    [lambda1, lambda2] = [lambda2, lambda1];
-    [v1, v2] = [v2, v1];
-  }
-
-  const [v1x, v1y] = v1;
-  const theta = atan2(v1y, v1x);
-  const width = 2 * Math.sqrt(lambda1);
-  const height = 2 * Math.sqrt(lambda2);
-
-  const trace = range(0, 2 * pi, 0.01, true)
-    .map((t) => {
-      const x =
-        mu[0] + width * cos(t) * cos(theta) - height * sin(t) * sin(theta);
-      const y =
-        mu[1] + width * cos(t) * sin(theta) + height * sin(t) * cos(theta);
-      return [x, y];
-    })
-    .toArray() as number[][];
-
-  return trace;
-};
-
-export default LatentGraph;

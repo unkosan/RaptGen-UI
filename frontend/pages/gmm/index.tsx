@@ -1,12 +1,12 @@
 import "bootswatch/dist/cerulean/bootstrap.min.css";
+import "@inovua/reactdatagrid-community/index.css";
 import { NextPage } from "next";
 import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
-import "@inovua/reactdatagrid-community/index.css";
 import Footer from "~/components/common/footer";
 import AddJobButton from "~/components/gmm/home/add-job-button";
-import GmmJobsList from "~/components/gmm/home/gmm-jobs-list/gmm-jobs-list";
+import GmmJobsList from "~/components/gmm/home/gmm-jobs-list";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Alert, Button } from "react-bootstrap";
@@ -23,6 +23,8 @@ import { CurrentInfo } from "~/components/gmm/home/current-info";
 import { GmmNumComponentSelector } from "~/components/gmm/home/gmm-job-handler";
 import LatentGraph from "~/components/gmm/home/latent-graph";
 import BicGraph from "~/components/gmm/home/bic-graph";
+import { Provider } from "react-redux";
+import { store } from "~/components/gmm/home/redux/store";
 
 type JobItem = z.infer<typeof responseGetGMMJobsItems>;
 
@@ -51,7 +53,7 @@ const OptimalGmmPane: React.FC<{
           <legend>Optimal GMM</legend>
           <GmmNumComponentSelector uuid={uuid} jobItem={item} />
           <LatentGraph
-            title="Latent Space"
+            // title="Latent Space"
             vaeData={{
               coordsX: item.latent.coords_x,
               coordsY: item.latent.coords_y,
@@ -78,7 +80,7 @@ const OptimalGmmPane: React.FC<{
           <legend>Optimal GMM</legend>
           <GmmNumComponentSelector uuid={uuid} jobItem={item} />
           <LatentGraph
-            title="Latent Space"
+            // title="Latent Space"
             vaeData={{
               coordsX: item.latent.coords_x,
               coordsY: item.latent.coords_y,
@@ -167,32 +169,28 @@ const DetailPane: React.FC = () => {
   );
 };
 
-const Home: React.FC = () => {
+const App: React.FC = () => {
   return (
-    <div className="vh-100 d-flex flex-column">
-      <Navigator currentPage="gmm-trainer" />
-      <main>
-        <Container>
-          <div className="py-2" />
-          <h1>GMM Trainer</h1>
-          <hr />
-          <Row>
-            <Col md={4}>
-              <AddJobButton />
-              <GmmJobsList />
-            </Col>
-            <Col>
-              <DetailPane />
-            </Col>
-          </Row>
-        </Container>
-      </main>
-      <Footer />
-    </div>
+    <main>
+      <Container>
+        <div className="py-2" />
+        <h1>GMM Trainer</h1>
+        <hr />
+        <Row>
+          <Col md={4}>
+            <AddJobButton />
+            <GmmJobsList />
+          </Col>
+          <Col>
+            <DetailPane />
+          </Col>
+        </Row>
+      </Container>
+    </main>
   );
 };
 
-const PageRoot: NextPage = () => {
+const Layout: NextPage = () => {
   return (
     <>
       <Head>
@@ -204,9 +202,15 @@ const PageRoot: NextPage = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Home />
+      <Provider store={store}>
+        <div className="vh-100 d-flex flex-column">
+          <Navigator currentPage="gmm-trainer" />
+          <App />
+          <Footer />
+        </div>
+      </Provider>
     </>
   );
 };
 
-export default PageRoot;
+export default Layout;

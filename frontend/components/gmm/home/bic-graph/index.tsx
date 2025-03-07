@@ -52,6 +52,7 @@ const BicGraph: React.FC<BicProps> = (props) => {
       pad: 5,
     },
   };
+
   return (
     <Card className="mb-3">
       <Card.Header>

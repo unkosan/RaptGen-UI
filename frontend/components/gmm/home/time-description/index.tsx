@@ -4,15 +4,19 @@ export const TimeDescription: React.FC<{
   startTimeSecond: number;
   durationTimeSecond: number;
 }> = ({ startTimeSecond, durationTimeSecond }) => {
+  const startTime = new Date(startTimeSecond * 1000);
+  const duration = intervalToDuration({
+    start: 0,
+    end: durationTimeSecond * 1000,
+  });
+
   return (
     <p>
       <span className="fw-semibold">Start time: </span>
-      {new Date(startTimeSecond * 1000).toLocaleString()}
+      {startTime.toLocaleString()}
       <br />
       <span className="fw-semibold">Running duration: </span>
-      {formatDuration(
-        intervalToDuration({ start: 0, end: durationTimeSecond * 1000 })
-      )}
+      {formatDuration(duration)}
     </p>
   );
 };
