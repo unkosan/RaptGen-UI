@@ -4,12 +4,12 @@ import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
 import { Provider } from "react-redux";
-import { store } from "~/components/gmm/add/redux/store";
+import { store } from "~/components/gmm-add/redux/store";
 import "@inovua/reactdatagrid-community/index.css";
-import Forms from "~/components/gmm/add/forms";
+import Forms from "~/components/gmm-add/forms";
 import Footer from "~/components/common/footer";
-import LatentGraph from "~/components/gmm/add/latent-graph";
-import PagenationGMM from "~/components/gmm/add/pagenation-gmm";
+import LatentGraph from "~/components/gmm-add/latent-graph";
+import PagenationGMM from "~/components/gmm-add/pagenation-gmm";
 
 const App: React.FC = () => {
   return (

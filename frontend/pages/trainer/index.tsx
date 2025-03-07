@@ -3,11 +3,11 @@ import { NextPage } from "next";
 import Head from "next/head";
 import { Alert, Button, Col, Row, Container } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
-import VaeJobsList from "~/components/trainer/home/vae-jobs-list";
+import VaeJobsList from "~/components/trainer-home/vae-jobs-list";
 import { Provider } from "react-redux";
 import "@inovua/reactdatagrid-community/index.css";
 import Footer from "~/components/common/footer";
-import AddJobButton from "~/components/trainer/home/add-job-button";
+import AddJobButton from "~/components/trainer-home/add-job-button";
 import { useState } from "react";
 import { apiClient } from "~/services/api-client";
 
@@ -21,15 +21,15 @@ import { useAsyncMemo, useIsLoading } from "~/hooks/common";
 import {
   ChildJobParams,
   ParentJobParams,
-} from "~/components/trainer/home/job-params";
-import { ActionButtons } from "~/components/trainer/home/action-buttons";
-import { Summary } from "~/components/trainer/home/summary";
-import { TrainingParams } from "~/components/trainer/home/training-params";
-import { ChildJobHandler } from "~/components/trainer/home/child-job-handler";
-import { LatentGraph } from "~/components/trainer/home/latent-graph";
-import { LossesGraph } from "~/components/trainer/home/losses-graph";
+} from "~/components/trainer-home/job-params";
+import { ActionButtons } from "~/components/trainer-home/action-buttons";
+import { Summary } from "~/components/trainer-home/summary";
+import { TrainingParams } from "~/components/trainer-home/training-params";
+import { ChildJobHandler } from "~/components/trainer-home/child-job-handler";
+import { LatentGraph } from "~/components/trainer-home/latent-graph";
+import { LossesGraph } from "~/components/trainer-home/losses-graph";
 import LoadingPane from "~/components/common/loading-pane";
-import { store } from "~/components/trainer/home/redux/store";
+import { store } from "~/components/trainer-home/redux/store";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type ParentItem = z.infer<typeof responseGetItem>;
