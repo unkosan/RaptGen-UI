@@ -29,6 +29,7 @@ import { ChildJobHandler } from "~/components/trainer/home/child-job-handler";
 import { LatentGraph } from "~/components/trainer/home/latent-graph";
 import { LossesGraph } from "~/components/trainer/home/losses-graph";
 import LoadingPane from "~/components/common/loading-pane";
+import { store } from "~/components/trainer/home/redux/store";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type ParentItem = z.infer<typeof responseGetItem>;
@@ -151,14 +152,15 @@ const calculateDefaultChildModelId = (item: ParentItem): number => {
         return summary.indices[firstOccurrence];
       }
     case "success":
-      const nlls = summary.minimum_NLLs.flatMap((value, index) => {
-        return value === null || isNaN(value) ? [Infinity] : [value];
+      const nlls = summary.minimum_NLLs.map((value, index) => {
+        return value === null || isNaN(value) ? Infinity : value;
       });
-      const successIndex = _.minBy(nlls);
-      if (successIndex === undefined) {
+      const optimal = nlls.indexOf(_.min(nlls) as number);
+
+      if (optimal === -1) {
         return 0;
       } else {
-        return summary.indices[successIndex];
+        return summary.indices[optimal];
       }
     default:
       return 0;
@@ -204,7 +206,6 @@ const DetailPane: React.FC<{
         isNaN(parseInt(childId)) ||
         parentItem.reiteration <= parseInt(childId)
       ) {
-        // return null;
         const defaultChildId = calculateDefaultChildModelId(parentItem);
         const item = await apiClient.getChildItem({
           params: {
@@ -262,36 +263,32 @@ const DetailPane: React.FC<{
   );
 };
 
-const Home: React.FC = () => {
+const App: React.FC = () => {
   const router = useRouter();
   const parentId = router.query.experiment as string | undefined;
   const childId = router.query.job as string | undefined;
 
   return (
-    <div className="vh-100 d-flex flex-column">
-      <Navigator currentPage="vae-trainer" />
-      <main>
-        <Container>
-          <div className="py-2" />
-          <h1>VAE Trainer</h1>
-          <hr />
-          <Row>
-            <Col md={4}>
-              <AddJobButton />
-              <VaeJobsList />
-            </Col>
-            <Col>
-              <DetailPane parentId={parentId} childId={childId} />
-            </Col>
-          </Row>
-        </Container>
-      </main>
-      <Footer />
-    </div>
+    <main>
+      <Container>
+        <div className="py-2" />
+        <h1>VAE Trainer</h1>
+        <hr />
+        <Row>
+          <Col md={4}>
+            <AddJobButton />
+            <VaeJobsList />
+          </Col>
+          <Col>
+            <DetailPane parentId={parentId} childId={childId} />
+          </Col>
+        </Row>
+      </Container>
+    </main>
   );
 };
 
-const PageRoot: NextPage = () => {
+const Layout: NextPage = () => {
   return (
     <>
       <Head>
@@ -300,9 +297,15 @@ const PageRoot: NextPage = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Home />
+      <Provider store={store}>
+        <div className="vh-100 d-flex flex-column">
+          <Navigator currentPage="vae-trainer" />
+          <App />
+          <Footer />
+        </div>
+      </Provider>
     </>
   );
 };
 
-export default PageRoot;
+export default Layout;

@@ -1,10 +1,15 @@
 import { Layout, PlotData } from "plotly.js";
 import { useMemo } from "react";
-import dynamic from "next/dynamic";
-import { Badge, Card } from "react-bootstrap";
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
-export const returnLayout = (title: string): Partial<Layout> => {
+export type LossData = {
+  epochs: number[];
+  trainLosses: number[];
+  testLosses: number[];
+  testRecons: number[];
+  testKlds: number[];
+};
+
+export const useLayout = (title: string): Partial<Layout> => {
   return {
     title: title,
     plot_bgcolor: "#EDEDED",
@@ -45,18 +50,7 @@ export const returnLayout = (title: string): Partial<Layout> => {
   };
 };
 
-type Props = {
-  title: string;
-  lossData: {
-    epochs: number[];
-    trainLosses: number[];
-    testLosses: number[];
-    testRecons: number[];
-    testKlds: number[];
-  };
-};
-
-export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
+export const useLossDataPlot = (lossData: LossData) => {
   const lossDataPlot: Partial<PlotData>[] = useMemo(() => {
     const { epochs, trainLosses, testLosses, testRecons, testKlds } = lossData;
     const traceTrainLosses: Partial<PlotData> = {
@@ -110,6 +104,10 @@ export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
     return [traceTrainLosses, traceTestLosses, traceTestRecons, traceTestKlds];
   }, [lossData]);
 
+  return lossDataPlot;
+};
+
+export const useDownloadCsv = (lossData: LossData) => {
   const onClickSave = () => {
     const csvHeader = "epoch, train_loss, test_loss, test_recon, test_kld";
     let csvData = "";
@@ -140,33 +138,5 @@ export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
     document.body.removeChild(a);
   };
 
-  return (
-    <Card className="mb-3">
-      <Card.Header className="d-flex justify-content-between">
-        <span>Loss Transition</span>
-        <span>
-          <Badge
-            pill
-            bg="success"
-            className="mx-1"
-            onClick={onClickSave}
-            style={{ cursor: "pointer" }}
-          >
-            Download Loss Transitions
-          </Badge>
-        </span>
-      </Card.Header>
-      <Card.Body>
-        <div style={{ aspectRatio: "2 / 1" }}>
-          <Plot
-            data={lossDataPlot}
-            useResizeHandler={true}
-            layout={returnLayout(title)}
-            config={{ responsive: true }}
-            className="w-100 h-100"
-          />
-        </div>
-      </Card.Body>
-    </Card>
-  );
+  return { onClickSave };
 };

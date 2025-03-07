@@ -1,24 +1,8 @@
-import { responseGetItemChild } from "~/services/route/train";
-import { responseGetItem } from "~/services/route/train";
 import { z } from "zod";
+import { responseGetItemChild } from "~/services/route/train";
 import { formatDuration, intervalToDuration } from "date-fns";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
-type ParentItem = z.infer<typeof responseGetItem>;
-
-export const ParentJobParams: React.FC<{
-  item: ParentItem;
-}> = ({ item }) => {
-  return (
-    <p>
-      <span className="fw-semibold">Start time: </span>
-      {new Date(item.start * 1000).toLocaleString()}
-      <br />
-      <span className="fw-semibold">The number of models to train: </span>
-      {item.reiteration}
-    </p>
-  );
-};
 
 export const ChildJobParams: React.FC<{
   item: ChildItem;
