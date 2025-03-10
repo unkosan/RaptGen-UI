@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { responseGetItem } from "~/services/route/train";
-import { JobStatusToLabel } from "~/components/common/status-to-label";
+import { Badge } from "react-bootstrap";
 
 export type SummaryType = z.infer<typeof responseGetItem>["summary"];
 
@@ -23,7 +23,34 @@ export const useSummary = (value: SummaryType) => {
       render: (props: CellProps) => {
         return (
           <center>
-            <JobStatusToLabel status={props.data.status} />
+            {((status: string) => {
+              switch (status) {
+                case "success":
+                  return (
+                    <Badge pill bg="success">
+                      {status}
+                    </Badge>
+                  );
+                case "progress":
+                  return (
+                    <Badge pill bg="primary">
+                      {status}
+                    </Badge>
+                  );
+                case "failure":
+                  return (
+                    <Badge pill bg="danger">
+                      {status}
+                    </Badge>
+                  );
+                default:
+                  return (
+                    <Badge pill bg="warning">
+                      {status}
+                    </Badge>
+                  );
+              }
+            })(props.data.status)}
           </center>
         );
       },

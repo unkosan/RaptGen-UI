@@ -142,7 +142,7 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
   }, [cells]);
 
   return (
-    <ClientOnly>
+    <ClientOnly fallback={<div>Loading...</div>}>
       <ReactDataGrid
         {...props}
         style={{ ...props.style }}

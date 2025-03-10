@@ -25,12 +25,6 @@ const Navigator: React.FC<Props> = ({ currentPage }) => {
           >
             Viewer
           </Nav.Link>
-          {/* <Nav.Link
-            href="/uploader"
-            className={currentPage === "uploader" ? "text-white" : ""}
-          >
-            Uploader
-          </Nav.Link> */}
           <Nav.Link
             href="/trainer"
             className={currentPage === "vae-trainer" ? "text-white" : ""}
