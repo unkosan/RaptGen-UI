@@ -1,4 +1,4 @@
-import { range, set } from "lodash";
+import { range } from "lodash";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Alert, Button, Form, InputGroup } from "react-bootstrap";
@@ -58,13 +58,10 @@ export const GmmNumComponentSelector: React.FC<{
               scroll: false,
             });
           }}
+          value={jobItem.gmm.current_n_components}
         >
           {numComponents.map((n) => (
-            <option
-              key={n}
-              value={n}
-              selected={jobItem.gmm.current_n_components === n}
-            >
+            <option key={n} value={n}>
               {n}
               {n === jobItem.gmm.optimal_n_components ? "(optimal)" : null}
             </option>

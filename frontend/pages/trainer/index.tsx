@@ -1,23 +1,19 @@
 import "bootswatch/dist/cerulean/bootstrap.min.css";
+import "@inovua/reactdatagrid-community/index.css";
 import { NextPage } from "next";
 import Head from "next/head";
 import { Alert, Button, Col, Row, Container } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
 import VaeJobsList from "~/components/trainer-home/vae-jobs-list";
 import { Provider } from "react-redux";
-import "@inovua/reactdatagrid-community/index.css";
 import Footer from "~/components/common/footer";
 import AddJobButton from "~/components/trainer-home/add-job-button";
-import { useState } from "react";
-import { apiClient } from "~/services/api-client";
 
 import { responseGetItemChild } from "~/services/route/train";
 import { responseGetItem } from "~/services/route/train";
 import { z } from "zod";
 import _ from "lodash";
-import { useRouter } from "next/router";
 import { ArrowClockwise } from "react-bootstrap-icons";
-import { useAsyncMemo, useIsLoading } from "~/hooks/common";
 import {
   ChildJobParams,
   ParentJobParams,
@@ -30,6 +26,7 @@ import { LatentGraph } from "~/components/trainer-home/latent-graph";
 import { LossesGraph } from "~/components/trainer-home/losses-graph";
 import LoadingPane from "~/components/common/loading-pane";
 import { store } from "~/components/trainer-home/redux/store";
+import { useJobItem } from "~/components/trainer-home/hooks/use-job-item";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type ParentItem = z.infer<typeof responseGetItem>;
@@ -138,135 +135,15 @@ const ChildPane: React.FC<{
   }
 };
 
-const calculateDefaultChildModelId = (item: ParentItem): number => {
-  const summary = item.summary;
-  switch (item.status) {
-    case "progress":
-    case "suspend":
-    case "failure":
-    case "pending":
-      const firstOccurrence = summary.statuses.indexOf(item.status);
-      if (firstOccurrence === -1) {
-        return 0;
-      } else {
-        return summary.indices[firstOccurrence];
-      }
-    case "success":
-      const nlls = summary.minimum_NLLs.map((value, index) => {
-        return value === null || isNaN(value) ? Infinity : value;
-      });
-      const optimal = nlls.indexOf(_.min(nlls) as number);
-
-      if (optimal === -1) {
-        return 0;
-      } else {
-        return summary.indices[optimal];
-      }
-    default:
-      return 0;
-  }
-};
-
-const DetailPane: React.FC<{
-  parentId: string | undefined;
-  childId: string | undefined;
-}> = ({ parentId, childId }) => {
-  const [reloadFlag, setReloadFlag] = useState(false);
-  const [loadingParent, lockParent, unlockParent] = useIsLoading();
-  const [loadingChild, lockChild, unlockChild] = useIsLoading();
-
-  // items shown on the page
-  const parentItem: ParentItem | null = useAsyncMemo(
-    async () => {
-      if (parentId === undefined) {
-        return null;
-      }
-      lockParent();
-      const item = await apiClient.getItem({
-        params: {
-          parent_uuid: parentId,
-        },
-      });
-      unlockParent();
-      return item;
-    },
-    [parentId, reloadFlag],
-    null
-  );
-
-  const childItem: ChildItem | null = useAsyncMemo(
-    async () => {
-      if (parentItem === null) {
-        return null;
-      } // parentItem must be available
-
-      lockChild();
-      if (
-        childId === undefined ||
-        isNaN(parseInt(childId)) ||
-        parentItem.reiteration <= parseInt(childId)
-      ) {
-        const defaultChildId = calculateDefaultChildModelId(parentItem);
-        const item = await apiClient.getChildItem({
-          params: {
-            parent_uuid: parentItem.uuid,
-            child_id: defaultChildId,
-          },
-        });
-        unlockChild();
-        return item;
-      } // if valid childId is not available, default item is set
-      else {
-        const item = await apiClient.getChildItem({
-          params: {
-            parent_uuid: parentItem.uuid,
-            child_id: parseInt(childId),
-          },
-        });
-        unlockChild();
-        return item;
-      }
-    },
-    [parentItem, childId, reloadFlag],
-    null
-  );
-
-  if (parentId === undefined) {
-    return <div>Please click the entry on the left</div>;
-  }
-
-  if (loadingParent || !parentItem) {
-    return <LoadingPane label="Loading Job Group..." />;
-  }
-
-  if (loadingChild) {
-    return (
-      <>
-        <ParentPane
-          item={parentItem}
-          refreshFunc={() => setReloadFlag(!reloadFlag)}
-        />
-        <LoadingPane label="Loading Job..." />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <ParentPane
-        item={parentItem}
-        refreshFunc={() => setReloadFlag(!reloadFlag)}
-      />
-      <legend>Job information</legend>
-      <ChildPane childItem={childItem} parentItem={parentItem} />
-    </>
-  );
-};
-
 const App: React.FC = () => {
-  const router = useRouter();
-  const parentId = router.query.experiment as string | undefined;
-  const childId = router.query.job as string | undefined;
+  const {
+    isLoading,
+    pid: parentId,
+    cid: childId,
+    pItem: parentItem,
+    cItem: childItem,
+    refresh,
+  } = useJobItem();
 
   return (
     <main>
@@ -280,7 +157,23 @@ const App: React.FC = () => {
             <VaeJobsList />
           </Col>
           <Col>
-            <DetailPane parentId={parentId} childId={childId} />
+            {(() => {
+              if (parentId === undefined) {
+                return <div>Please click the entry on the left</div>;
+              }
+
+              if (isLoading || !parentItem) {
+                return <LoadingPane label="Loading Job..." />;
+              }
+
+              return (
+                <>
+                  <ParentPane item={parentItem} refreshFunc={refresh} />
+                  <legend>Job information</legend>
+                  <ChildPane childItem={childItem} parentItem={parentItem} />
+                </>
+              );
+            })()}
           </Col>
         </Row>
       </Container>

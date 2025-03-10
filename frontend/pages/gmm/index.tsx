@@ -7,14 +7,10 @@ import Navigator from "~/components/common/navigator";
 import Footer from "~/components/common/footer";
 import AddJobButton from "~/components/gmm-home/add-job-button";
 import GmmJobsList from "~/components/gmm-home/gmm-jobs-list";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import { Alert, Button } from "react-bootstrap";
 import { z } from "zod";
-import { apiClient } from "~/services/api-client";
 import { responseGetGMMJobsItems } from "~/services/route/gmm";
 import { ArrowClockwise } from "react-bootstrap-icons";
-import { useIsLoading } from "~/hooks/common";
 import LoadingPane from "~/components/common/loading-pane";
 import TimeDescription from "~/components/gmm-home/time-description";
 import { ActionButtons } from "~/components/gmm-home/action-buttons";
@@ -25,6 +21,7 @@ import LatentGraph from "~/components/gmm-home/latent-graph";
 import BicGraph from "~/components/gmm-home/bic-graph";
 import { Provider } from "react-redux";
 import { store } from "~/components/gmm-home/redux/store";
+import { useJobItem } from "../../components/gmm-home/hooks/use-job-item";
 
 type JobItem = z.infer<typeof responseGetGMMJobsItems>;
 
@@ -103,40 +100,13 @@ const OptimalGmmPane: React.FC<{
 };
 
 const DetailPane: React.FC = () => {
-  const router = useRouter();
-  const currentUUID = router.query.experiment as string | undefined;
-  const currentNumComponents = router.query.n_components as string | undefined;
-  const [jobItem, setJobItem] = useState<JobItem | null>(null);
-  const [loadingJob, lock, unlock] = useIsLoading();
+  const { uuid, isLoading, jobItem, refresh } = useJobItem();
 
-  const refresh = async () => {
-    if (!currentUUID) {
-      return;
-    }
-
-    lock();
-    const res = await apiClient.getGMMJobs({
-      queries: {
-        n_components:
-          currentNumComponents === undefined
-            ? undefined
-            : parseInt(currentNumComponents),
-      },
-      params: { uuid: currentUUID },
-    });
-    setJobItem(res);
-    unlock();
-  };
-
-  useEffect(() => {
-    refresh();
-  }, [currentUUID, currentNumComponents]);
-
-  if (!currentUUID) {
+  if (!uuid) {
     return <div>Please select items listed left.</div>;
   }
 
-  if (loadingJob || !jobItem) {
+  if (isLoading || !jobItem) {
     return <LoadingPane label="Loading..." />;
   }
 
@@ -158,13 +128,13 @@ const DetailPane: React.FC = () => {
         durationTimeSecond={jobItem.duration}
       />
       <ActionButtons
-        uuid={currentUUID}
+        uuid={uuid}
         refreshFunc={refresh}
         jobName={jobItem.name}
         jobStatus={jobItem.status}
       />
       <ParamsTable params={jobItem.params} />
-      <OptimalGmmPane uuid={currentUUID} item={jobItem} />
+      <OptimalGmmPane uuid={uuid} item={jobItem} />
     </div>
   );
 };

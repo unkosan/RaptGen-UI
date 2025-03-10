@@ -9,7 +9,7 @@ export const ActionButtons: React.FC<{
   uuid: string;
   jobName: string;
   jobStatus: "success" | "failure" | "progress" | "suspend" | "pending";
-  refreshFunc: () => {};
+  refreshFunc: () => void;
 }> = ({ uuid, jobName, jobStatus, refreshFunc }) => {
   const { push } = useRouter();
 
