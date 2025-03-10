@@ -1,7 +1,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import { Card } from "react-bootstrap";
-import { latentGraphLayout } from "~/components/common/graph-layout";
+import { latentGraphLayout } from "~/components/common/graph-helper";
 import LoadingPane from "~/components/common/loading-pane";
 import { useLatentSpacePlot } from "./hooks/use-latent-space-plot";
 import { useGraphConfig } from "./hooks/use-graph-config";

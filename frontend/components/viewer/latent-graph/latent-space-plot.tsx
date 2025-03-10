@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { Card } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { latentGraphLayout } from "../../common/graph-layout";
+import { latentGraphLayout } from "../../common/graph-helper";
 import LoadingPane from "../../common/loading-pane";
 import {
   useVaePlotData,

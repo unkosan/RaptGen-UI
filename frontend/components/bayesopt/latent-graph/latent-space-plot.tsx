@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 import React from "react";
 import { Card } from "react-bootstrap";
-import { latentGraphLayout } from "../../common/graph-layout";
+import { latentGraphLayout } from "../../common/graph-helper";
 import LoadingPane from "../../common/loading-pane";
 import {
   useVaePlotData,

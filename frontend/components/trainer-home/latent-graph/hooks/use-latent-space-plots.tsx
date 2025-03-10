@@ -2,7 +2,7 @@ import { PlotData } from "plotly.js";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import { latentGraphLayout } from "~/components/common/graph-layout";
+import { latentGraphLayout } from "~/components/common/graph-helper";
 
 export type VaeData = {
   coordsX: number[];

@@ -3,11 +3,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { apiClient } from "~/services/api-client";
-import calculateTraces from "~/hooks/calculate-traces";
 import { zip } from "lodash";
 import { PlotData, PlotDatum, PlotSelectionEvent } from "plotly.js";
 import { Data } from "plotly.js";
 import { setSelectedPoints } from "../../redux/selected-points";
+import { calculateGMMRings } from "~/components/common/graph-helper";
 
 // Types for plot selection event
 interface PlotDatumAmend extends PlotDatum {
@@ -152,7 +152,7 @@ export const useGmmDataPlot = (
             "]";
 
           const trace = zip(
-            ...calculateTraces(gmm.means[i], gmm.covariances[i])
+            ...calculateGMMRings(gmm.means[i], gmm.covariances[i])
           ) as unknown as number[][];
 
           const circle: Partial<PlotData> = {
