@@ -113,6 +113,8 @@ export const useGmmDataPlot = (
   useEffect(() => {
     const fetchGmmData = async () => {
       if (!showGMM || !gmmId) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        //TODO: Identify what is causing re-rendering and remove this line
         setGmmDataPlot([]);
         return;
       }
