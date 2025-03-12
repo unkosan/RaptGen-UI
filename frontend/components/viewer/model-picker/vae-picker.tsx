@@ -3,8 +3,10 @@ import { useState } from "react";
 import { ListGroup, Stack } from "react-bootstrap";
 import { Pencil, XLg } from "react-bootstrap-icons";
 import { apiClient } from "~/services/api-client";
-import { DeleteModal, RenameModal } from "./modals";
+// import { DeleteModal, RenameModal } from "./modals";
 import { usePickVAE } from "./hooks/use-dispatchers";
+import ConfirmModal from "~/components/common/confirm-modal";
+import RenameModal from "~/components/common/form-modal";
 
 /**
  * VAE model picker. Renders a list of VAE models.
@@ -33,6 +35,35 @@ const VAEPicker: React.FC<{
   const [pickedName, setPickedName] = useState<string>("");
 
   // const { modelId, setModelId } = usePickVAE();
+
+  const onRename = async (name: string) => {
+    await apiClient.patchVaeItems(
+      {
+        target: "name",
+        value: name,
+      },
+      {
+        params: {
+          vae_uuid: pickedId,
+        },
+      }
+    );
+    refreshFunc();
+  };
+
+  const onDelete = async () => {
+    await apiClient.deleteVaeItems(undefined, {
+      params: {
+        vae_uuid: pickedId,
+      },
+    });
+    refreshFunc();
+    if (pickedId === selectedId) {
+      router.push(``, undefined, {
+        shallow: true,
+      });
+    }
+  };
 
   return (
     <div
@@ -101,45 +132,17 @@ const VAEPicker: React.FC<{
         label="Please enter a new name for the VAE model."
         isOpen={isRenameModelOpen}
         setIsOpen={setIsRenameModelOpen}
-        onSubmit={async (name) => {
-          await apiClient.patchVaeItems(
-            {
-              target: "name",
-              value: name,
-            },
-            {
-              params: {
-                vae_uuid: pickedId,
-              },
-            }
-          );
-          refreshFunc();
-        }}
+        onSubmit={onRename}
       />
 
-      <DeleteModal
+      <ConfirmModal
+        title="Delete VAE model"
+        label="Are you sure you want to delete this VAE model?"
         isOpen={isDeleteModalOpen}
         setIsOpen={setIsDeleteModalOpen}
-        title="Delete VAE model"
-        label={
-          <p>
-            Are you sure you want to delete the VAE model{" "}
-            <span className="fw-bold">{pickedName}</span>
-          </p>
-        }
-        onSubmit={async () => {
-          await apiClient.deleteVaeItems(undefined, {
-            params: {
-              vae_uuid: pickedId,
-            },
-          });
-          refreshFunc();
-          if (pickedId === selectedId) {
-            router.push(``, undefined, {
-              shallow: true,
-            });
-          }
-        }}
+        onSubmit={onDelete}
+        confirmText="Delete"
+        variant="danger"
       />
     </div>
   );

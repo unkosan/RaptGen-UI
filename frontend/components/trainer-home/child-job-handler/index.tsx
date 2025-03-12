@@ -4,7 +4,7 @@ import { Button, Form, InputGroup } from "react-bootstrap";
 import { z } from "zod";
 import { responseGetItemChild, responseGetItem } from "~/services/route/train";
 import { apiClient } from "~/services/api-client";
-import { ApplyViewerModal } from "./modal";
+import FormModal from "~/components/common/form-modal";
 
 type ChildItem = z.infer<typeof responseGetItemChild>;
 type ParentItem = z.infer<typeof responseGetItem>;
@@ -37,7 +37,8 @@ export const ChildJobHandler: React.FC<{
 
   return (
     <>
-      <ApplyViewerModal
+      <FormModal
+        defaultName={parentItem.name}
         title="Apply to Viewer Dataset"
         label="Enter the name of the experiment to apply to the viewer dataset."
         isOpen={isModalOpen}

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Badge } from "react-bootstrap";
+import ConfirmModal from "~/components/common/confirm-modal";
+import FormModal from "~/components/common/form-modal";
 import { apiClient } from "~/services/api-client";
-import { ConfirmModal } from "./confirm-modal";
-import { RenameModal } from "./rename-modal";
 
 export type ActionButtonsProps = {
   uuid: string;
@@ -113,7 +113,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
         Rename
       </Badge>
 
-      <RenameModal
+      <FormModal
         defaultName={name}
         title="Rename Experiment"
         label="Enter the new name of the experiment."

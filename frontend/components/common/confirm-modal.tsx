@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Modal, Spinner } from "react-bootstrap";
 
-export const ConfirmModal: React.FC<{
+const ConfirmModal: React.FC<{
   title: string;
   label: string | JSX.Element;
   isOpen: boolean;
@@ -58,3 +58,5 @@ export const ConfirmModal: React.FC<{
     </Modal>
   );
 };
+
+export default ConfirmModal;

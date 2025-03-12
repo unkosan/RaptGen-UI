@@ -1,22 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Form, Modal, Spinner } from "react-bootstrap";
 
-export const ApplyViewerModal: React.FC<{
+const FormModal: React.FC<{
+  defaultName: string;
   title: string;
   label: string;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  onSubmit: (name: string) => Promise<void>;
-}> = ({ title, label, isOpen, setIsOpen, onSubmit }) => {
+  onSubmit: (newName: string) => Promise<void>;
+}> = ({ defaultName, title, label, isOpen, setIsOpen, onSubmit }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [name, setName] = useState("");
+  const [newName, setNewName] = useState(defaultName);
+
+  useEffect(() => {
+    if (isOpen) {
+      setNewName(defaultName);
+    }
+  }, [isOpen, defaultName]);
 
   return (
     <Modal
       show={isOpen}
       onHide={() => {
         setIsOpen(false);
-        setName("");
+        setNewName(defaultName);
       }}
     >
       <Modal.Header closeButton>
@@ -26,9 +33,8 @@ export const ApplyViewerModal: React.FC<{
         <p>{label}</p>
         <Form.Control
           type="text"
-          placeholder="Experiment Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
         />
       </Modal.Body>
       <Modal.Footer>
@@ -36,7 +42,7 @@ export const ApplyViewerModal: React.FC<{
           variant="secondary"
           onClick={() => {
             setIsOpen(false);
-            setName("");
+            setNewName(defaultName);
           }}
         >
           Cancel
@@ -45,19 +51,17 @@ export const ApplyViewerModal: React.FC<{
           variant="primary"
           onClick={async () => {
             setIsLoading(true);
-            await onSubmit(name);
+            await onSubmit(newName);
             setIsLoading(false);
             setIsOpen(false);
           }}
-          disabled={!name || isLoading}
+          disabled={!newName || isLoading}
         >
-          {isLoading ? (
-            <Spinner animation="border" size="sm" />
-          ) : (
-            "Add to Viewer Dataset"
-          )}
+          {isLoading ? <Spinner animation="border" size="sm" /> : "OK"}
         </Button>
       </Modal.Footer>
     </Modal>
   );
 };
+
+export default FormModal;

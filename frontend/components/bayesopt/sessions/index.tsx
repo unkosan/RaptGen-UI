@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, ListGroup, Stack } from "react-bootstrap";
 import { PlusLg, Pencil, XLg } from "react-bootstrap-icons";
 import { useRouter } from "next/router";
 import { useSessions } from "./hooks/use-sessions";
-import { SaveAsModal, RenameModal, DeleteModal } from "./modals";
+import FormModal from "~/components/common/form-modal";
+import ConfirmModal from "~/components/common/confirm-modal";
 
 /**
  * Sessions component
@@ -12,23 +13,20 @@ import { SaveAsModal, RenameModal, DeleteModal } from "./modals";
  */
 const Sessions: React.FC = () => {
   const router = useRouter();
+  // Modal states
+  const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const {
     // State
-    list,
-    currentUUID,
+    sessionEntries,
+    currentSessionId,
+    currentSessionName,
     isDirty,
-    isLoading,
-
-    // Modal states
-    isSaveAsModalOpen,
-    setIsSaveAsModalOpen,
-    isRenameModalOpen,
-    setIsRenameModalOpen,
-    isDeleteModalOpen,
-    setIsDeleteModalOpen,
 
     // Selected experiment
-    selectedExperimentName,
+    targetEntryName,
 
     // Actions
     onSave,
@@ -36,8 +34,7 @@ const Sessions: React.FC = () => {
     onNew,
     onRename,
     onDelete,
-    handleRenameClick,
-    handleDeleteClick,
+    setTargetEntry,
   } = useSessions();
 
   return (
@@ -50,33 +47,32 @@ const Sessions: React.FC = () => {
         }}
       >
         <ListGroup variant="flush">
-          {list.map((experiment, i) => (
+          {sessionEntries.map(({ uuid, name, last_modified }, i) => (
             <ListGroup.Item
               action
               key={i}
-              active={currentUUID === experiment.uuid}
+              active={currentSessionId === uuid}
               onClick={(e) => {
                 e.preventDefault();
-                if (currentUUID === experiment.uuid) {
+                if (currentSessionId === uuid) {
                   router.reload();
                 } else {
-                  router.push(`?uuid=${experiment.uuid}`);
+                  router.push(`?uuid=${uuid}`);
                 }
               }}
             >
               <Stack direction="horizontal" gap={3}>
-                <span className="fs-5 me-2">{experiment.name}</span>
+                <span className="fs-5 me-2">{name}</span>
                 <span className="fs-6 fw-light ms-auto">
                   last modified:{" "}
-                  {new Date(
-                    experiment.last_modified * 1000
-                  ).toLocaleDateString()}
+                  {new Date(last_modified * 1000).toLocaleDateString()}
                 </span>
                 <Pencil
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleRenameClick(experiment.uuid, experiment.name);
+                    setTargetEntry(uuid, name);
+                    setIsRenameModalOpen(true);
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.color = "lightgreen";
@@ -89,7 +85,8 @@ const Sessions: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleDeleteClick(experiment.uuid, experiment.name);
+                    setTargetEntry(uuid, name);
+                    setIsDeleteModalOpen(true);
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.color = "red";
@@ -127,27 +124,37 @@ const Sessions: React.FC = () => {
       </Stack>
 
       {/* Modals */}
-      <SaveAsModal
+      <FormModal
+        defaultName={`New ${currentSessionName}`}
+        title="Save Experiment"
+        label="Please enter the name for the experiment."
         isOpen={isSaveAsModalOpen}
         setIsOpen={setIsSaveAsModalOpen}
         onSubmit={onSaveAs}
-        isLoading={isLoading}
       />
 
-      <RenameModal
-        defaultName={selectedExperimentName}
+      <FormModal
+        defaultName={targetEntryName}
+        title="Rename Experiment"
         isOpen={isRenameModalOpen}
         setIsOpen={setIsRenameModalOpen}
         onSubmit={onRename}
-        isLoading={isLoading}
+        label="Please enter the new name for the experiment."
       />
 
-      <DeleteModal
-        experimentName={selectedExperimentName}
+      <ConfirmModal
+        title="Delete Experiment"
         isOpen={isDeleteModalOpen}
         setIsOpen={setIsDeleteModalOpen}
         onSubmit={onDelete}
-        isLoading={isLoading}
+        label={
+          <p>
+            Are you sure you want to delete the experiment{" "}
+            <span className="fw-bold">{targetEntryName}</span>?
+          </p>
+        }
+        confirmText="Delete"
+        variant="danger"
       />
     </>
   );
