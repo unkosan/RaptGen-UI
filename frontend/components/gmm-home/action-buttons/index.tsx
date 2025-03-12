@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { apiClient } from "~/services/api-client";
-import { useRouter } from "next/router";
-import { ConfirmModal } from "./confirm-modal";
-import { RenameModal } from "./rename-modal";
+import ConfirmModal from "../../common/confirm-modal";
+import FormModal from "../../common/form-modal";
 import { Badge } from "react-bootstrap";
+import { useActions } from "./hooks/use-actions";
 
 export const ActionButtons: React.FC<{
   uuid: string;
@@ -11,64 +10,15 @@ export const ActionButtons: React.FC<{
   jobStatus: "success" | "failure" | "progress" | "suspend" | "pending";
   refreshFunc: () => void;
 }> = ({ uuid, jobName, jobStatus, refreshFunc }) => {
-  const { push } = useRouter();
-
   const [isOpenRenameModal, setIsOpenRenameModal] = useState(false);
   const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
   const [isOpenStopModal, setIsOpenStopModal] = useState(false);
   const [isOpenResumeModal, setIsOpenResumeModal] = useState(false);
 
-  const handleRename = async (newName: string) => {
-    try {
-      await apiClient.updateGMMJobs(
-        {
-          target: "name",
-          value: newName,
-        },
-        {
-          params: {
-            uuid: uuid,
-          },
-        }
-      );
-      await refreshFunc();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      await apiClient.deleteGMMJobs(undefined, {
-        params: {
-          uuid: uuid,
-        },
-      });
-    } catch (error) {
-      console.error(error);
-    }
-    push("/gmm");
-  };
-
-  const handleStop = async () => {
-    try {
-      await apiClient.suspendGMMJobs({ uuid });
-      await refreshFunc();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleResume = async () => {
-    try {
-      await apiClient.resumeGMMJobs({
-        uuid: uuid,
-      });
-      await refreshFunc();
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const { handleRename, handleDelete, handleStop, handleResume } = useActions(
+    uuid,
+    refreshFunc
+  );
 
   return (
     <p className="d-flex flex-row">
@@ -122,7 +72,7 @@ export const ActionButtons: React.FC<{
         Delete
       </Badge>
       <>
-        <RenameModal
+        <FormModal
           defaultName={jobName}
           title="Rename Job"
           label="Enter the new name of the job."

@@ -13,27 +13,22 @@ import { setIsDirty } from "../../redux/is-dirty";
  */
 export const useSessions = () => {
   // State for experiment list
-  const [list, setList] = useState<z.infer<typeof responseGetBayesoptItems>>(
-    []
-  );
-
-  // Modal states
-  const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
-  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [sessionEntries, setSessionEntries] = useState<
+    z.infer<typeof responseGetBayesoptItems>
+  >([]);
 
   // Selected experiment states
   const [selectedExperimentId, setSelectedExperimentId] = useState<string>("");
   const [selectedExperimentName, setSelectedExperimentName] =
     useState<string>("");
 
-  // Loading state
-  const [isLoading, setIsLoading] = useState(false);
-
   // Router and Redux
-  const router = useRouter();
+  const { query, isReady, push } = useRouter();
+  const currentSessionId = (query.uuid as string) || "";
   const dispatch = useDispatch();
-  const currentUUID = router.query.uuid as string;
+
+  // Name of current session
+  const [currentSessionName, setCurrentSessionName] = useState<string>("");
 
   // Redux state selectors
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
@@ -54,16 +49,29 @@ export const useSessions = () => {
    * Fetch the list of experiments
    */
   const updateList = useCallback(async () => {
-    const res = await apiClient.listExperiments();
-    setList(res);
+    const entries = await apiClient.listExperiments();
+    setSessionEntries(entries);
   }, []);
+
+  /**
+   * Set the current session name based on the UUID
+   */
+  useEffect(() => {
+    if (isReady) {
+      setCurrentSessionName(
+        sessionEntries.find(({ uuid }) => uuid === currentSessionId)?.name ?? ""
+      );
+    }
+  }, [currentSessionId, isReady, sessionEntries]);
 
   /**
    * Initialize the list when the component mounts or UUID changes
    */
   useEffect(() => {
-    updateList();
-  }, [router.query.uuid, updateList]);
+    if (isReady) {
+      updateList();
+    }
+  }, [isReady, updateList]);
 
   /**
    * Get the current state of the experiment for saving
@@ -135,34 +143,27 @@ export const useSessions = () => {
    * Save the current experiment
    */
   const onSave = useCallback(async () => {
-    if (!currentUUID) {
-      setIsSaveAsModalOpen(true);
+    if (!currentSessionId) {
       return;
     }
-
-    setIsLoading(true);
 
     try {
       const states = getStates();
       await apiClient.updateExperiment(states, {
-        params: { uuid: currentUUID },
+        params: { uuid: currentSessionId },
       });
 
       dispatch(setIsDirty(false));
     } catch (error) {
       console.error("Error saving experiment:", error);
-    } finally {
-      setIsLoading(false);
     }
-  }, [currentUUID, getStates, dispatch]);
+  }, [currentSessionId, getStates, dispatch]);
 
   /**
    * Save the current experiment with a new name
    */
   const onSaveAs = useCallback(
     async (title: string) => {
-      setIsLoading(true);
-
       try {
         const states = getStates();
         const res = await apiClient.submitExperiment({
@@ -171,15 +172,12 @@ export const useSessions = () => {
         });
 
         dispatch(setIsDirty(false));
-        setIsSaveAsModalOpen(false);
-        router.push(`?uuid=${res.uuid}`);
+        push(`?uuid=${res.uuid}`);
       } catch (error) {
         console.error("Error saving experiment as:", error);
-      } finally {
-        setIsLoading(false);
       }
     },
-    [getStates, dispatch, router]
+    [getStates, dispatch]
   );
 
   /**
@@ -189,8 +187,8 @@ export const useSessions = () => {
     if (isDirty) {
       if (!window.confirm("Discard changes?")) return;
     }
-    router.push(`?uuid=`);
-  }, [isDirty, router]);
+    push(`?uuid=`);
+  }, [isDirty]);
 
   /**
    * Rename an experiment
@@ -198,8 +196,6 @@ export const useSessions = () => {
   const onRename = useCallback(
     async (newName: string) => {
       if (!selectedExperimentId) return;
-
-      setIsLoading(true);
 
       try {
         await apiClient.patchExperiment(
@@ -213,11 +209,8 @@ export const useSessions = () => {
         );
 
         await updateList();
-        setIsRenameModalOpen(false);
       } catch (error) {
         console.error("Error renaming experiment:", error);
-      } finally {
-        setIsLoading(false);
       }
     },
     [selectedExperimentId, updateList]
@@ -229,67 +222,35 @@ export const useSessions = () => {
   const onDelete = useCallback(async () => {
     if (!selectedExperimentId) return;
 
-    setIsLoading(true);
-
     try {
       await apiClient.deleteExperiment(undefined, {
         params: { uuid: selectedExperimentId },
       });
 
-      if (selectedExperimentId === currentUUID) {
-        router.push(`?uuid=`);
+      if (selectedExperimentId === currentSessionId) {
+        push(`?uuid=`);
       }
 
       await updateList();
-      setIsDeleteModalOpen(false);
     } catch (error) {
       console.error("Error deleting experiment:", error);
-    } finally {
-      setIsLoading(false);
     }
-  }, [selectedExperimentId, currentUUID, router, updateList]);
+  }, [selectedExperimentId, currentSessionId, updateList]);
 
-  /**
-   * Handle experiment selection for rename
-   */
-  const handleRenameClick = useCallback(
-    (experimentId: string, experimentName: string) => {
-      setSelectedExperimentId(experimentId);
-      setSelectedExperimentName(experimentName);
-      setIsRenameModalOpen(true);
-    },
-    []
-  );
-
-  /**
-   * Handle experiment selection for delete
-   */
-  const handleDeleteClick = useCallback(
-    (experimentId: string, experimentName: string) => {
-      setSelectedExperimentId(experimentId);
-      setSelectedExperimentName(experimentName);
-      setIsDeleteModalOpen(true);
-    },
-    []
-  );
+  const setTargetEntry = useCallback((uuid: string, name: string) => {
+    setSelectedExperimentId(uuid);
+    setSelectedExperimentName(name);
+  }, []);
 
   return {
     // State
-    list,
-    currentUUID,
+    sessionEntries,
+    currentSessionId,
+    currentSessionName,
     isDirty,
-    isLoading,
-
-    // Modal states
-    isSaveAsModalOpen,
-    setIsSaveAsModalOpen,
-    isRenameModalOpen,
-    setIsRenameModalOpen,
-    isDeleteModalOpen,
-    setIsDeleteModalOpen,
 
     // Selected experiment
-    selectedExperimentName,
+    targetEntryName: selectedExperimentName,
 
     // Actions
     onSave,
@@ -297,7 +258,6 @@ export const useSessions = () => {
     onNew,
     onRename,
     onDelete,
-    handleRenameClick,
-    handleDeleteClick,
+    setTargetEntry,
   };
 };

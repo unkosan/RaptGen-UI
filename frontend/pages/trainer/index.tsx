@@ -14,10 +14,8 @@ import { responseGetItem } from "~/services/route/train";
 import { z } from "zod";
 import _ from "lodash";
 import { ArrowClockwise } from "react-bootstrap-icons";
-import {
-  ChildJobParams,
-  ParentJobParams,
-} from "~/components/trainer-home/job-params";
+import { ChildJobParams } from "~/components/trainer-home/child-job-params";
+import { ParentJobParams } from "~/components/trainer-home/parent-job-params";
 import { ActionButtons } from "~/components/trainer-home/action-buttons";
 import { Summary } from "~/components/trainer-home/summary";
 import { TrainingParams } from "~/components/trainer-home/training-params";

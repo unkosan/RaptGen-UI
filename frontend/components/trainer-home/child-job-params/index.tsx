@@ -21,9 +21,6 @@ export const ChildJobParams: React.FC<{
 
   return (
     <p>
-      {/* <span className="fw-semibold">Status: </span>
-      <JobStatusToLabel status={item.status} />
-      <br /> */}
       <span className="fw-semibold">Duration for training: </span>
       {formatDuration(intervalToDuration({ start: 0, end: net_duration }))}
       {suspend_duration ? (

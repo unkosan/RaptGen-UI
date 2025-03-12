@@ -10,20 +10,20 @@ import CustomDataGrid from "~/components/common/custom-datagrid";
 import { useQueryTable } from "./hooks/use-query-table";
 import { useAddQueryButton } from "./hooks/use-add-query-button";
 
-const gridStyle = { minHeight: 400, width: "100%", zIndex: 950 };
-
-type QueryTableProps = {
+type Props = {
   setActiveTab: React.Dispatch<
     React.SetStateAction<"registered-table" | "query-table">
   >;
 };
 
-const QueryTable: React.FC<QueryTableProps> = ({ setActiveTab }) => {
+const QueryTable: React.FC<Props> = ({ setActiveTab }) => {
   // Table logic
   const { dataSource, onSelectionChange, selectedIndices } = useQueryTable();
 
   // Button logic
   const { onClick, isLoading } = useAddQueryButton();
+
+  const gridStyle = { minHeight: 400, width: "100%", zIndex: 950 };
 
   return (
     <>

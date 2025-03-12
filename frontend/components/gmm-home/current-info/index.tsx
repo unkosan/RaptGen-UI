@@ -1,26 +1,12 @@
-import { useEffect, useState } from "react";
 import { Alert } from "react-bootstrap";
 import { z } from "zod";
-import { apiClient } from "~/services/api-client";
 import { responseGetGMMJobsItems } from "~/services/route/gmm";
+import { useEntriesVAE } from "./hooks/use-entries-vae";
 
 export const CurrentInfo: React.FC<{
   jobItem: z.infer<typeof responseGetGMMJobsItems>;
 }> = ({ jobItem }) => {
-  const [entries, setEntries] = useState<
-    {
-      uuid: string;
-      name: string;
-    }[]
-  >([]);
-
-  useEffect(() => {
-    const fetchEntries = async () => {
-      const { entries } = await apiClient.getVAEModelNames();
-      setEntries(entries);
-    };
-    fetchEntries();
-  }, []);
+  const { entries } = useEntriesVAE();
 
   if (
     jobItem.status === "success" ||

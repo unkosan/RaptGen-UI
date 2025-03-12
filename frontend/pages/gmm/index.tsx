@@ -16,7 +16,7 @@ import TimeDescription from "~/components/gmm-home/time-description";
 import { ActionButtons } from "~/components/gmm-home/action-buttons";
 import ParamsTable from "~/components/gmm-home/params-table";
 import { CurrentInfo } from "~/components/gmm-home/current-info";
-import { GmmNumComponentSelector } from "~/components/gmm-home/gmm-job-handler";
+import { GmmNumComponentSelector } from "~/components/gmm-home/gmm-num-component-selector";
 import LatentGraph from "~/components/gmm-home/latent-graph";
 import BicGraph from "~/components/gmm-home/bic-graph";
 import { Provider } from "react-redux";
@@ -48,7 +48,7 @@ const OptimalGmmPane: React.FC<{
       return (
         <>
           <legend>Optimal GMM</legend>
-          <GmmNumComponentSelector uuid={uuid} jobItem={item} />
+          <GmmNumComponentSelector jobItem={item} />
           <LatentGraph
             // title="Latent Space"
             vaeData={{
@@ -75,7 +75,7 @@ const OptimalGmmPane: React.FC<{
           <legend>Running Job info</legend>
           <CurrentInfo jobItem={item} />
           <legend>Optimal GMM</legend>
-          <GmmNumComponentSelector uuid={uuid} jobItem={item} />
+          <GmmNumComponentSelector jobItem={item} />
           <LatentGraph
             // title="Latent Space"
             vaeData={{
