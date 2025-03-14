@@ -23,13 +23,19 @@ export const useGraphConfig = () => {
       setMinCount(e.target.value);
       setIsValidMinCount(isValid);
 
-      if (isValid) {
+      if (!isValid) {
+        return;
+      }
+
+      try {
         dispatch(
           setGraphConfig({
             ...graphConfig,
             minCount: value,
           })
         );
+      } catch (error) {
+        console.error("Error setting graph config:", error);
       }
     },
     [dispatch, graphConfig]
