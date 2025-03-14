@@ -2,6 +2,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { setDecoded, setEncoded } from "../../redux/interaction-data";
+import { useCallback } from "react";
 
 /**
  * Action button styles used across action components
@@ -57,7 +58,7 @@ export const useDecoderActions = (index: number) => {
     (state: RootState) => state.interactionData.decoded
   );
 
-  const onClickShow = async () => {
+  const handleClickShow = useCallback(async () => {
     const newShown = decodeData.shown.map((e, i) => (i === index ? !e : e));
     dispatch(
       setDecoded({
@@ -65,9 +66,9 @@ export const useDecoderActions = (index: number) => {
         shown: newShown,
       })
     );
-  };
+  }, [decodeData, dispatch, index]);
 
-  const onClickDelete = async () => {
+  const handleClickDelete = useCallback(async () => {
     dispatch(
       setDecoded({
         ids: decodeData.ids.filter((_, i) => i !== index),
@@ -77,11 +78,11 @@ export const useDecoderActions = (index: number) => {
         shown: decodeData.shown.filter((_, i) => i !== index),
       })
     );
-  };
+  }, [decodeData, dispatch, index]);
 
   return {
-    onClickShow,
-    onClickDelete,
+    handleClickShow,
+    handleClickDelete,
   };
 };
 
@@ -96,7 +97,7 @@ export const useEncoderActions = (index: number) => {
     (state: RootState) => state.interactionData.encoded
   );
 
-  const onClickShow = async () => {
+  const handleClickShow = useCallback(async () => {
     const newShown = encodeData.shown.map((e, i) => (i === index ? !e : e));
     dispatch(
       setEncoded({
@@ -104,9 +105,9 @@ export const useEncoderActions = (index: number) => {
         shown: newShown,
       })
     );
-  };
+  }, [encodeData, dispatch, index]);
 
-  const onClickDelete = async () => {
+  const handleClickDelete = useCallback(async () => {
     dispatch(
       setEncoded({
         ids: encodeData.ids.filter((_, i) => i !== index),
@@ -116,10 +117,10 @@ export const useEncoderActions = (index: number) => {
         shown: encodeData.shown.filter((_, i) => i !== index),
       })
     );
-  };
+  }, [encodeData, dispatch, index]);
 
   return {
-    onClickShow,
-    onClickDelete,
+    handleClickShow,
+    handleClickDelete,
   };
 };

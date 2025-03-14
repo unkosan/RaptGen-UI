@@ -14,9 +14,9 @@ const BayesOptConfig: React.FC = () => {
     targetColumn,
     queryBudget,
     isValidBudget,
-    onChangeColumnName,
-    onChangeBudget,
-    onChangeOptimizationType,
+    handleChangeColumnName,
+    handleChangeBudget,
+    handleChangeOptimizationType,
   } = useBayesOptConfig();
 
   return (
@@ -25,14 +25,14 @@ const BayesOptConfig: React.FC = () => {
         <Form.Label>Optimization method</Form.Label>
         <Form.Select
           value={optimizationType}
-          onChange={onChangeOptimizationType}
+          onChange={handleChangeOptimizationType}
         >
           <option>qEI (multiple query)</option>
         </Form.Select>
       </Form.Group>
       <Form.Group className="mb-3">
         <Form.Label>The name of the value to optimize</Form.Label>
-        <Form.Select onChange={onChangeColumnName} value={targetColumn}>
+        <Form.Select onChange={handleChangeColumnName} value={targetColumn}>
           {columns.map((column) => (
             <option key={column}>{column}</option>
           ))}
@@ -42,7 +42,7 @@ const BayesOptConfig: React.FC = () => {
         <Form.Label>Query budget (The number of proposal values)</Form.Label>
         <Form.Control
           type="number"
-          onChange={onChangeBudget}
+          onChange={handleChangeBudget}
           value={queryBudget}
           isInvalid={!isValidBudget}
         />

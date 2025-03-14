@@ -19,7 +19,7 @@ export interface ActionProps {
 export const DecoderActions: React.FC<ActionProps> = (props) => {
   const { data } = props;
   const index = data.key; // key is index
-  const { onClickShow, onClickDelete } = useDecoderActions(index);
+  const { handleClickShow, handleClickDelete } = useDecoderActions(index);
 
   return (
     <div className="d-flex">
@@ -27,11 +27,11 @@ export const DecoderActions: React.FC<ActionProps> = (props) => {
         style={
           data.isShown ? actionButtonStyles.shown : actionButtonStyles.notShown
         }
-        onClick={onClickShow}
+        onClick={handleClickShow}
       >
         {data.isShown ? <Eye size={16} /> : <EyeSlash size={16} />}
       </span>
-      <span style={actionButtonStyles.delete} onClick={onClickDelete}>
+      <span style={actionButtonStyles.delete} onClick={handleClickDelete}>
         <Trash size={16} />
       </span>
     </div>
@@ -41,7 +41,7 @@ export const DecoderActions: React.FC<ActionProps> = (props) => {
 export const EncoderActions: React.FC<ActionProps> = (props) => {
   const { data } = props;
   const index = data.key; // key is index
-  const { onClickShow, onClickDelete } = useEncoderActions(index);
+  const { handleClickShow, handleClickDelete } = useEncoderActions(index);
 
   return (
     <div className="d-flex">
@@ -49,11 +49,11 @@ export const EncoderActions: React.FC<ActionProps> = (props) => {
         style={
           data.isShown ? actionButtonStyles.shown : actionButtonStyles.notShown
         }
-        onClick={onClickShow}
+        onClick={handleClickShow}
       >
         {data.isShown ? <Eye size={16} /> : <EyeSlash size={16} />}
       </span>
-      <span style={actionButtonStyles.delete} onClick={onClickDelete}>
+      <span style={actionButtonStyles.delete} onClick={handleClickDelete}>
         <Trash size={16} />
       </span>
     </div>

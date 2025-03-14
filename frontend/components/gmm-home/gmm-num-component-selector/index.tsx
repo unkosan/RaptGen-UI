@@ -8,7 +8,7 @@ export const GmmNumComponentSelector: React.FC<{
 }> = ({ jobItem }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const { value, optimalValue, range, onSelect, onSubmit } =
+  const { value, optimalValue, range, handleSelect, handleSubmit } =
     useNumComponents(jobItem);
 
   if (jobItem.status === "failure" || jobItem.status == "pending") {
@@ -25,12 +25,12 @@ export const GmmNumComponentSelector: React.FC<{
         }
         isOpen={isModalOpen}
         setIsOpen={setIsModalOpen}
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit}
       />
 
       <InputGroup className="mb-3">
         <InputGroup.Text>Number of components</InputGroup.Text>
-        <Form.Select onChange={onSelect} value={value}>
+        <Form.Select onChange={handleSelect} value={value}>
           {range.map((n) => (
             <option key={n} value={n}>
               {n}

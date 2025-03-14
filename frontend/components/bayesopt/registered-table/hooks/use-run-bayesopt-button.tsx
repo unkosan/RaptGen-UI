@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { RootState } from "../../redux/store";
 import { setQueriedValues } from "../../redux/queried-values";
 import { setAcquisitionValues } from "../../redux/acquisition-values";
@@ -62,7 +62,7 @@ export const useRunBayesOptButton = () => {
   };
 
   // Handle button click to run Bayesian optimization
-  const onClick = async () => {
+  const handleClick = useCallback(async () => {
     if (!validate()) return;
 
     setIsLoading(true);
@@ -153,10 +153,10 @@ export const useRunBayesOptButton = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [bayesoptConfig, registeredData, queryData, sessionId, dispatch]);
 
   return {
     isLoading,
-    onClick,
+    handleClick,
   };
 };

@@ -4,7 +4,6 @@ import { Card } from "react-bootstrap";
 import { latentGraphLayout } from "~/components/common/graph-helper";
 import LoadingPane from "~/components/common/loading-pane";
 import { useLatentSpacePlot } from "./hooks/use-latent-space-plot";
-import { useGraphConfig } from "./hooks/use-graph-config";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 

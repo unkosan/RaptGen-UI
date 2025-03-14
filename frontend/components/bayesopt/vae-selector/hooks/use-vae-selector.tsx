@@ -41,7 +41,7 @@ export const useVaeSelector = () => {
     dispatch(setIsDirty(true));
   };
 
-  const onModelChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleModelChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const uuid = e.target.value;
     const name = models.find((model) => model.uuid === uuid)?.name;
     if (!uuid || !name) return;
@@ -107,6 +107,6 @@ export const useVaeSelector = () => {
     isLoading,
     models,
     selectedModel,
-    onModelChange,
+    handleModelChange,
   };
 };

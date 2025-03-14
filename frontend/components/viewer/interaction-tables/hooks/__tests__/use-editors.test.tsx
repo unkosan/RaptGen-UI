@@ -66,7 +66,7 @@ describe("useTextInputWithValidation", () => {
         target: { value: "ab" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     expect(result.current.value).toBe("ab");
@@ -78,7 +78,7 @@ describe("useTextInputWithValidation", () => {
         target: { value: "abcd" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     expect(result.current.value).toBe("abcd");
@@ -146,7 +146,7 @@ describe("useCoordXEditor", () => {
 
     expect(result.current.valueX).toBe("2.5");
     expect(result.current.valid).toBe(true);
-    expect(result.current.onCancel).toBe(mockOnCancel);
+    expect(result.current.handleCancel).toBe(mockOnCancel);
   });
 
   it("should validate numerical input", () => {
@@ -160,7 +160,7 @@ describe("useCoordXEditor", () => {
         target: { value: "not-a-number" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     expect(result.current.valueX).toBe("not-a-number");
@@ -172,7 +172,7 @@ describe("useCoordXEditor", () => {
         target: { value: "4.2" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     expect(result.current.valueX).toBe("4.2");
@@ -190,12 +190,12 @@ describe("useCoordXEditor", () => {
         target: { value: "7.5" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     // Confirm the edit
     await act(async () => {
-      await result.current.onConfirmClick();
+      await result.current.handleConfirmClick();
     });
 
     // Check that API was called correctly
@@ -265,7 +265,7 @@ describe("useCoordYEditor", () => {
 
     expect(result.current.valueY).toBe("3.5");
     expect(result.current.valid).toBe(true);
-    expect(result.current.onCancel).toBe(mockOnCancel);
+    expect(result.current.handleCancel).toBe(mockOnCancel);
   });
 
   it("should update decoded data on confirm click", async () => {
@@ -279,12 +279,12 @@ describe("useCoordYEditor", () => {
         target: { value: "8.5" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     // Confirm the edit
     await act(async () => {
-      await result.current.onConfirmClick();
+      await result.current.handleConfirmClick();
     });
 
     // Check that API was called correctly
@@ -358,7 +358,7 @@ describe("useIdEditor", () => {
         target: { value: "" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     expect(result.current.value).toBe("");
@@ -376,12 +376,12 @@ describe("useIdEditor", () => {
         target: { value: "new-id" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     // Confirm the edit
     await act(async () => {
-      await result.current.onConfirmClick();
+      await result.current.handleConfirmClick();
     });
 
     // Check that the Redux action was dispatched with updated ID
@@ -455,7 +455,7 @@ describe("useSequenceEditor", () => {
         target: { value: "INVALID123" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     expect(result.current.value).toBe("INVALID123");
@@ -467,7 +467,7 @@ describe("useSequenceEditor", () => {
         target: { value: "ATGCU" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     // Should convert T to U
@@ -486,12 +486,12 @@ describe("useSequenceEditor", () => {
         target: { value: "AUGCUA" },
       } as React.ChangeEvent<HTMLInputElement>;
 
-      result.current.onChange(mockEvent);
+      result.current.handleChange(mockEvent);
     });
 
     // Confirm the edit
     await act(async () => {
-      await result.current.onConfirmClick();
+      await result.current.handleConfirmClick();
     });
 
     // Check that API was called correctly

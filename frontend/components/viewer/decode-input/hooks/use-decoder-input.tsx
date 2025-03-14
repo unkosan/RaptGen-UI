@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { setDecodeGrid } from "../../redux/interaction-data";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -13,17 +13,23 @@ export const useCoords = () => {
 
   const dispatch = useDispatch();
 
-  const onChangeX = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPointX(value);
-    setIsValidX(!isNaN(parseFloat(value)));
-  };
+  const handleChangeX = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setPointX(value);
+      setIsValidX(!isNaN(parseFloat(value)));
+    },
+    []
+  );
 
-  const onChangeY = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPointY(value);
-    setIsValidY(!isNaN(parseFloat(value)));
-  };
+  const handleChangeY = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setPointY(value);
+      setIsValidY(!isNaN(parseFloat(value)));
+    },
+    []
+  );
 
   useEffect(() => {
     if (isValidX && isValidY) {
@@ -34,33 +40,33 @@ export const useCoords = () => {
         })
       );
     }
-  });
+  }, [isValidX, isValidY, pointX, pointY, dispatch]);
 
   return {
     pointX,
     pointY,
     isValidX,
     isValidY,
-    onChangeX,
-    onChangeY,
+    handleChangeX,
+    handleChangeY,
   };
 };
 
 export const useGridConfig = () => {
   const dispatch = useDispatch();
-  const graphConfig2 = useSelector((state: RootState) => state.graphConfig);
+  const graphConfig = useSelector((state: RootState) => state.graphConfig);
 
-  const onChangeShowGrid = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeShowGrid = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(
       setGraphConfig({
-        ...graphConfig2,
+        ...graphConfig,
         showDecodeGrid: e.target.checked,
       })
     );
   };
 
   return {
-    showGrid: graphConfig2.showDecodeGrid,
-    onChangeShowGrid,
+    showGrid: graphConfig.showDecodeGrid,
+    handleChangeShowGrid,
   };
 };

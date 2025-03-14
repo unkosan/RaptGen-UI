@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -23,7 +23,7 @@ export const usePreprocessSelexData = () => {
     (state: RootState) => state.preprocessingConfig.isValidParams
   );
 
-  const onClickNext = async () => {
+  const handleClickNext = useCallback(async () => {
     if (!isDirty) {
       // do nothing and go to next page
       router.push("?page=raptgen");
@@ -49,16 +49,25 @@ export const usePreprocessSelexData = () => {
       console.error(error);
       setIsLoading(false);
     }
-  };
+  }, [
+    isDirty,
+    router,
+    dispatch,
+    forwardAdapter,
+    reverseAdapter,
+    targetLength,
+    tolerance,
+    minCount,
+  ]);
 
-  const onClickBack = () => {
+  const handleClickBack = useCallback(() => {
     router.push("/trainer");
-  };
+  }, [router]);
 
   return {
     isLoading,
-    onClickNext,
-    onClickBack,
+    handleClickNext,
+    handleClickBack,
     canProceed: isValidParams && !!experimentName,
   };
 };

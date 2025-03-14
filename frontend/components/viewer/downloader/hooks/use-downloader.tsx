@@ -112,7 +112,7 @@ export const useDownloader = (
    * Downloads the data as a CSV file
    * @param cluster The index of cluster, "-1" means all clusters
    */
-  const onDownloadCSV = useCallback(
+  const handleDownloadCSV = useCallback(
     async (cluster: number) => {
       setIsSavingCSV(true);
 
@@ -198,7 +198,7 @@ export const useDownloader = (
    * @param cluster The index of cluster, does not support donwloading all clusters
    * @returns
    */
-  const onDownloadFASTA = useCallback(
+  const handleDownloadFASTA = useCallback(
     async (cluster: number) => {
       setIsSavingFASTA(true);
 
@@ -264,7 +264,7 @@ export const useDownloader = (
     isSavingCSV,
     isSavingFASTA,
     numComponents: gmmParams.weights.length,
-    onDownloadCSV,
-    onDownloadFASTA,
+    handleDownloadCSV,
+    handleDownloadFASTA,
   };
 };

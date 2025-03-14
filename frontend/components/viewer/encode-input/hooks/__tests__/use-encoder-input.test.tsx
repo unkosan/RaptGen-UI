@@ -51,7 +51,7 @@ describe("useFastaEncoder", () => {
 
     expect(result.current.isValid).toBe(true);
     expect(result.current.isLoading).toBe(false);
-    expect(typeof result.current.onFileChange).toBe("function");
+    expect(typeof result.current.handleFileChange).toBe("function");
   });
 
   it("should do nothing if sessionId is not provided", async () => {
@@ -67,7 +67,7 @@ describe("useFastaEncoder", () => {
     } as unknown as React.ChangeEvent<HTMLInputElement>;
 
     await act(async () => {
-      await result.current.onFileChange(fileChangeEvent);
+      await result.current.handleFileChange(fileChangeEvent);
     });
 
     expect(apiClient.encode).not.toHaveBeenCalled();
@@ -84,7 +84,7 @@ describe("useFastaEncoder", () => {
     } as unknown as React.ChangeEvent<HTMLInputElement>;
 
     await act(async () => {
-      await result.current.onFileChange(fileChangeEvent);
+      await result.current.handleFileChange(fileChangeEvent);
     });
 
     expect(apiClient.encode).not.toHaveBeenCalled();
@@ -120,7 +120,7 @@ describe("useFastaEncoder", () => {
     } as unknown as React.ChangeEvent<HTMLInputElement>;
 
     await act(async () => {
-      result.current.onFileChange(fileChangeEvent);
+      result.current.handleFileChange(fileChangeEvent);
     });
 
     // Simulate FileReader completing
@@ -183,7 +183,7 @@ describe("useFastaEncoder", () => {
     } as unknown as React.ChangeEvent<HTMLInputElement>;
 
     await act(async () => {
-      result.current.onFileChange(fileChangeEvent);
+      result.current.handleFileChange(fileChangeEvent);
     });
 
     // Simulate FileReader completing
@@ -239,7 +239,7 @@ describe("useFastaEncoder", () => {
     } as unknown as React.ChangeEvent<HTMLInputElement>;
 
     await act(async () => {
-      result.current.onFileChange(fileChangeEvent);
+      result.current.handleFileChange(fileChangeEvent);
     });
 
     // Verify error is logged
@@ -287,8 +287,8 @@ describe("useFormEncoder", () => {
     expect(result.current.value).toBe("");
     expect(result.current.isValid).toBe(true);
     expect(result.current.isLoading).toBe(false);
-    expect(typeof result.current.onChange).toBe("function");
-    expect(typeof result.current.onAdd).toBe("function");
+    expect(typeof result.current.handleChange).toBe("function");
+    expect(typeof result.current.handleAdd).toBe("function");
   });
 
   it("should update value and validate on onChange", () => {
@@ -296,7 +296,7 @@ describe("useFormEncoder", () => {
 
     // Valid input
     act(() => {
-      result.current.onChange({
+      result.current.handleChange({
         target: { value: "ACGT" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
@@ -306,7 +306,7 @@ describe("useFormEncoder", () => {
 
     // Invalid input
     act(() => {
-      result.current.onChange({
+      result.current.handleChange({
         target: { value: "ACGTXYZ" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
@@ -320,14 +320,14 @@ describe("useFormEncoder", () => {
 
     // Set a valid value
     act(() => {
-      result.current.onChange({
+      result.current.handleChange({
         target: { value: "ACGT" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
 
     // Try to add
     await act(async () => {
-      await result.current.onAdd();
+      await result.current.handleAdd();
     });
 
     expect(apiClient.encode).not.toHaveBeenCalled();
@@ -339,14 +339,14 @@ describe("useFormEncoder", () => {
 
     // Set an invalid value
     act(() => {
-      result.current.onChange({
+      result.current.handleChange({
         target: { value: "ACGTXYZ" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
 
     // Try to add
     await act(async () => {
-      await result.current.onAdd();
+      await result.current.handleAdd();
     });
 
     expect(apiClient.encode).not.toHaveBeenCalled();
@@ -358,14 +358,14 @@ describe("useFormEncoder", () => {
 
     // Set a valid value
     act(() => {
-      result.current.onChange({
+      result.current.handleChange({
         target: { value: "ACGT" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
 
     // Add the sequence
     await act(async () => {
-      await result.current.onAdd();
+      await result.current.handleAdd();
     });
 
     // Verify API call
@@ -398,14 +398,14 @@ describe("useFormEncoder", () => {
 
     // Set a valid value
     act(() => {
-      result.current.onChange({
+      result.current.handleChange({
         target: { value: "ACGT" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
 
     // Add the sequence
     await act(async () => {
-      await result.current.onAdd();
+      await result.current.handleAdd();
     });
 
     // Verify error is logged

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { setGraphConfig } from "../../redux/graph-config";
@@ -24,15 +24,18 @@ export const useGraphConfig = () => {
     );
   }, [isValidMinCount, minCount, dispatch, graphConfig.minCount]);
 
-  const onMinCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    setIsValidMinCount(!isNaN(value) && value > 0);
-    setMinCount(value);
-  };
+  const handleMinCountChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = parseInt(e.target.value);
+      setIsValidMinCount(!isNaN(value) && value > 0);
+      setMinCount(value);
+    },
+    []
+  );
 
   return {
     minCount,
     isValidMinCount,
-    onMinCountChange,
+    handleMinCountChange,
   };
 };

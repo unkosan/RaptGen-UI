@@ -3,18 +3,19 @@ import { ChevronLeft } from "react-bootstrap-icons";
 import { useSubmitJob } from "./hooks/use-submit-job";
 
 const NavigatorTrain: React.FC = () => {
-  const { isLoading, canTrain, onClickTrain, onClickBack } = useSubmitJob();
+  const { isLoading, canTrain, handleClickTrain, handleClickBack } =
+    useSubmitJob();
 
   return (
     <div className="d-flex justify-content-between my-3">
-      <Button onClick={onClickBack} variant="primary">
+      <Button onClick={handleClickBack} variant="primary">
         <div className="align-items-center d-flex">
           <ChevronLeft />
           &nbsp; Back
         </div>
       </Button>
       <Button
-        onClick={onClickTrain}
+        onClick={handleClickTrain}
         variant="primary"
         disabled={!canTrain || isLoading}
       >

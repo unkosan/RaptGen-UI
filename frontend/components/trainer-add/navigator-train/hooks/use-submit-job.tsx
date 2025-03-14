@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { apiClient } from "~/services/api-client";
 
@@ -16,7 +16,7 @@ export const useSubmitJob = () => {
 
   const { push } = useRouter();
 
-  const onClickTrain = async () => {
+  const handleClickTrain = useCallback(async () => {
     setIsLoading(true);
     try {
       const { uuid } = await apiClient.postSubmitJob({
@@ -52,13 +52,13 @@ export const useSubmitJob = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pageConfig, preprocessingConfig, selexData, trainConfig, push]);
 
-  const onClickBack = () => {
+  const handleClickBack = useCallback(() => {
     push("");
-  };
+  }, [push]);
 
   const canTrain = trainConfig.isValidParams;
 
-  return { isLoading, canTrain, onClickTrain, onClickBack };
+  return { isLoading, canTrain, handleClickTrain, handleClickBack };
 };

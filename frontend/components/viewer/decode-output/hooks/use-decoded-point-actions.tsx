@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setDecoded } from "../../redux/interaction-data";
 
@@ -32,7 +32,7 @@ export const useDecodedPointActions = (
   /**
    * Add the current grid point to the decoded data
    */
-  const onAdd = async () => {
+  const handleAdd = useCallback(async () => {
     setIsLoading(true);
     try {
       await dispatch(
@@ -49,7 +49,7 @@ export const useDecodedPointActions = (
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dispatch, decodeData, gridPoint, sequence]);
 
-  return { isLoading, onAdd };
+  return { isLoading, handleAdd };
 };

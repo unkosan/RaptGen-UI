@@ -18,13 +18,13 @@ const RegisteredTable: React.FC<RegisteredTableProps> = ({ setActiveTab }) => {
   const {
     dataSource,
     displayColumns,
-    onEditComplete,
-    onSelectionChange,
+    handleEditComplete,
+    handleSelectionChange,
     defaultSelected,
   } = useRegisteredTable();
 
   // Button logic
-  const { onClick, isLoading } = useRunBayesOptButton();
+  const { handleClick, isLoading } = useRunBayesOptButton();
 
   return (
     <>
@@ -55,9 +55,9 @@ const RegisteredTable: React.FC<RegisteredTableProps> = ({ setActiveTab }) => {
         pagination
         downloadable
         editable
-        onEditComplete={onEditComplete}
+        onEditComplete={handleEditComplete}
         defaultSelected={defaultSelected}
-        onSelectionChange={onSelectionChange}
+        onSelectionChange={handleSelectionChange}
         checkboxOnlyRowSelect
         copiable
       />
@@ -65,7 +65,7 @@ const RegisteredTable: React.FC<RegisteredTableProps> = ({ setActiveTab }) => {
       <Button
         variant="primary"
         onClick={() => {
-          onClick();
+          handleClick();
           setActiveTab("query-table");
         }}
         className="mb-3"

@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { apiClient } from "~/services/api-client";
 
@@ -19,7 +19,7 @@ export const useSubmitJob = () => {
 
   const { push } = useRouter();
 
-  const onClickTrain = async () => {
+  const handleClickTrain = useCallback(async () => {
     setIsLoading(true);
     try {
       const { uuid } = await apiClient.submitGMMJobs({
@@ -38,14 +38,23 @@ export const useSubmitJob = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [
+    vaeId,
+    gmmName,
+    minNumComponents,
+    maxNumComponents,
+    stepSize,
+    numTrials,
+    push,
+    setIsLoading,
+  ]);
 
-  const onClickBack = () => {
+  const handleClickBack = useCallback(() => {
     push("/gmm");
-  };
+  }, [push]);
 
   // every item of paramsValid are true
   const canTrain = Object.values(paramsValid).every((value) => value);
 
-  return { isLoading, canTrain, onClickTrain, onClickBack };
+  return { isLoading, canTrain, handleClickTrain, handleClickBack };
 };

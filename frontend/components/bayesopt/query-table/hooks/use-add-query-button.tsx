@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { cloneDeep } from "lodash";
 import { RootState } from "../../redux/store";
 import { QueriedValues, setQueriedValues } from "../../redux/queried-values";
@@ -15,7 +15,7 @@ export const useAddQueryButton = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const onClick = () => {
+  const handleClick = useCallback(() => {
     setIsLoading(true);
 
     let newRegisteredData = cloneDeep(registeredData);
@@ -62,10 +62,10 @@ export const useAddQueryButton = () => {
     dispatch(setIsDirty(true));
 
     setIsLoading(false);
-  };
+  }, [dispatch, registeredData, queryData, setIsLoading]);
 
   return {
-    onClick,
+    handleClick,
     isLoading,
   };
 };

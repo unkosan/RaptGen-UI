@@ -49,7 +49,7 @@ describe("useCoords", () => {
 
     // Valid input
     act(() => {
-      result.current.onChangeX({
+      result.current.handleChangeX({
         target: { value: "1.5" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
@@ -59,7 +59,7 @@ describe("useCoords", () => {
 
     // Invalid input
     act(() => {
-      result.current.onChangeX({
+      result.current.handleChangeX({
         target: { value: "abc" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
@@ -73,7 +73,7 @@ describe("useCoords", () => {
 
     // Valid input
     act(() => {
-      result.current.onChangeY({
+      result.current.handleChangeY({
         target: { value: "2.5" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
@@ -83,7 +83,7 @@ describe("useCoords", () => {
 
     // Invalid input
     act(() => {
-      result.current.onChangeY({
+      result.current.handleChangeY({
         target: { value: "xyz" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
@@ -97,13 +97,13 @@ describe("useCoords", () => {
 
     // Set valid coordinates
     act(() => {
-      result.current.onChangeX({
+      result.current.handleChangeX({
         target: { value: "1.5" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
 
     act(() => {
-      result.current.onChangeY({
+      result.current.handleChangeY({
         target: { value: "2.5" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
@@ -128,13 +128,13 @@ describe("useCoords", () => {
 
     // Set invalid X coordinate
     act(() => {
-      result.current.onChangeX({
+      result.current.handleChangeX({
         target: { value: "abc" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
 
     act(() => {
-      result.current.onChangeY({
+      result.current.handleChangeY({
         target: { value: "2.5" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
@@ -157,13 +157,13 @@ describe("useCoords", () => {
 
     // Set invalid Y coordinate
     act(() => {
-      result.current.onChangeX({
+      result.current.handleChangeX({
         target: { value: "1.5" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
 
     act(() => {
-      result.current.onChangeY({
+      result.current.handleChangeY({
         target: { value: "xyz" },
       } as React.ChangeEvent<HTMLInputElement>);
     });
@@ -205,7 +205,7 @@ describe("useGridConfig", () => {
 
     // Toggle grid visibility to true
     act(() => {
-      result.current.onChangeShowGrid({
+      result.current.handleChangeShowGrid({
         target: { checked: true },
       } as React.ChangeEvent<HTMLInputElement>);
     });
@@ -232,7 +232,7 @@ describe("useGridConfig", () => {
 
     // Toggle grid visibility to false
     act(() => {
-      result.current.onChangeShowGrid({
+      result.current.handleChangeShowGrid({
         target: { checked: false },
       } as React.ChangeEvent<HTMLInputElement>);
     });

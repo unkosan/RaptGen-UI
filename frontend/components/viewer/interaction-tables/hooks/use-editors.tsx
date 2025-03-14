@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -55,7 +55,7 @@ export const useTextInputWithValidation = (
     validator ? validator(initialValue) : true
   );
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setValue(newValue);
     setValid(validator ? validator(newValue) : true);
@@ -64,7 +64,7 @@ export const useTextInputWithValidation = (
   return {
     value,
     valid,
-    onChange,
+    handleChange,
     setValue,
     setValid,
   };
@@ -88,7 +88,7 @@ export const useCoordXEditor = (
   const {
     value: valueX,
     valid,
-    onChange,
+    handleChange,
   } = useTextInputWithValidation(
     initialValueX,
     (value) => !isNaN(parseFloat(value))
@@ -102,7 +102,7 @@ export const useCoordXEditor = (
   );
   const dispatch = useDispatch();
 
-  const onConfirmClick = async () => {
+  const handleConfirmClick = useCallback(async () => {
     const res = await apiClient.decode({
       session_uuid: sessionId,
       coords_x: [parseFloat(valueX)],
@@ -127,14 +127,14 @@ export const useCoordXEditor = (
     );
 
     onComplete();
-  };
+  }, [valueX, valueY, dispatch, decodeData, onComplete, sessionId]);
 
   return {
     valueX,
     valid,
-    onChange,
-    onConfirmClick,
-    onCancel,
+    handleChange,
+    handleConfirmClick,
+    handleCancel: onCancel,
   };
 };
 
@@ -156,7 +156,7 @@ export const useCoordYEditor = (
   const {
     value: valueY,
     valid,
-    onChange,
+    handleChange,
   } = useTextInputWithValidation(
     initialValueY,
     (value) => !isNaN(parseFloat(value))
@@ -170,7 +170,7 @@ export const useCoordYEditor = (
     (state: RootState) => state.sessionConfig.sessionId
   );
 
-  const onConfirmClick = async () => {
+  const handleConfirmClick = useCallback(async () => {
     const res = await apiClient.decode({
       session_uuid: sessionId,
       coords_x: [parseFloat(valueX)],
@@ -195,14 +195,14 @@ export const useCoordYEditor = (
     );
 
     onComplete();
-  };
+  }, [valueX, valueY, dispatch, decodeData, onComplete, sessionId]);
 
   return {
     valueY,
     valid,
-    onChange,
-    onConfirmClick,
-    onCancel,
+    handleChange,
+    handleConfirmClick,
+    handleCancel: onCancel,
   };
 };
 
@@ -223,7 +223,7 @@ export const useIdEditor = (
   const {
     value: currentValue,
     valid,
-    onChange,
+    handleChange,
   } = useTextInputWithValidation(value, (value) => value.length > 0);
 
   const encodeData = useSelector(
@@ -231,7 +231,7 @@ export const useIdEditor = (
   );
   const dispatch = useDispatch();
 
-  const onConfirmClick = async () => {
+  const handleConfirmClick = useCallback(async () => {
     const index: number = cellProps.data.key;
     dispatch(
       setEncoded({
@@ -244,14 +244,14 @@ export const useIdEditor = (
     );
 
     onComplete();
-  };
+  }, [currentValue, dispatch, encodeData, onComplete]);
 
   return {
     value: currentValue,
     valid,
-    onChange,
-    onConfirmClick,
-    onCancel,
+    handleChange,
+    handleConfirmClick,
+    handleCancel: onCancel,
   };
 };
 
@@ -272,7 +272,7 @@ export const useSequenceEditor = (
   const {
     value: currentValue,
     valid,
-    onChange: baseOnChange,
+    handleChange: baseHandleChange,
     setValue,
   } = useTextInputWithValidation(value, (value) => /^[ATGCU]+$/.test(value));
 
@@ -284,17 +284,19 @@ export const useSequenceEditor = (
   );
   const dispatch = useDispatch();
 
-  const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    const value = e.target.value.toUpperCase().replaceAll("T", "U");
-    setValue(value);
-    const isValid = /^[ATGCU]+$/.test(value);
-    baseOnChange({
-      ...e,
-      target: { ...e.target, value },
-    } as React.ChangeEvent<HTMLInputElement>);
-  };
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value.toUpperCase().replaceAll("T", "U");
+      setValue(value);
+      baseHandleChange({
+        ...e,
+        target: { ...e.target, value },
+      } as React.ChangeEvent<HTMLInputElement>);
+    },
+    [setValue, baseHandleChange]
+  );
 
-  const onConfirmClick = async () => {
+  const handleConfirmClick = useCallback(async () => {
     const res = await apiClient.encode({
       session_uuid: sessionId,
       sequences: [currentValue],
@@ -315,13 +317,13 @@ export const useSequenceEditor = (
     );
 
     onComplete();
-  };
+  }, [currentValue, dispatch, encodeData, onComplete, sessionId]);
 
   return {
     value: currentValue,
     valid,
-    onChange,
-    onConfirmClick,
-    onCancel,
+    handleChange,
+    handleConfirmClick,
+    handleCancel: onCancel,
   };
 };

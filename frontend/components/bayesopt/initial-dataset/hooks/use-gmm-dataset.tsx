@@ -53,7 +53,7 @@ export const useGmmDataset = () => {
   }, [sessionConfig.vaeId]);
 
   // Handle GMM model selection and data loading
-  const onClickApplyGMM = useCallback(async () => {
+  const handleClickApplyGMM = useCallback(async () => {
     if (selectedModel === "") return;
 
     setIsLoading(true);
@@ -129,6 +129,6 @@ export const useGmmDataset = () => {
     selectedModel,
     setSelectedModel,
     isLoading,
-    onClickApplyGMM,
+    handleClickApplyGMM,
   };
 };

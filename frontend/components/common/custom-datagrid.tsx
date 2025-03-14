@@ -5,7 +5,7 @@
 
 import ReactDataGrid from "@inovua/reactdatagrid-community";
 import ClientOnly from "./client-only";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   TypeCellSelection,
   TypeColumn,
@@ -54,42 +54,48 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
   const [cells, setCells] = React.useState<TypeCellSelection>({});
   const [canCopy, setCanCopy] = React.useState<boolean>(false); // if no cells are selected, can't copy
 
-  const onCopy = (e: any) => {
-    const entries = Object.entries(cells as unknown as [string, boolean]);
-    const selected = entries.map((value) => {
-      const [row, col] = value[0].split(",");
-      return [parseInt(row), col];
-    }) as [number, string][];
-    const rowNum = _.uniq(selected.map((value) => value[0])).length;
-    const mapped = selected.map((value) => {
-      return (props.dataSource as any[])[value[0]][value[1]];
-    });
+  const handleCopy = useCallback(
+    (e: any) => {
+      const entries = Object.entries(cells as unknown as [string, boolean]);
+      const selected = entries.map((value) => {
+        const [row, col] = value[0].split(",");
+        return [parseInt(row), col];
+      }) as [number, string][];
+      const rowNum = _.uniq(selected.map((value) => value[0])).length;
+      const mapped = selected.map((value) => {
+        return (props.dataSource as any[])[value[0]][value[1]];
+      });
 
-    const tsvBody = _.chunk(mapped, mapped.length / rowNum)
-      .map((row) => row.join("\t"))
-      .join("\n");
+      const tsvBody = _.chunk(mapped, mapped.length / rowNum)
+        .map((row) => row.join("\t"))
+        .join("\n");
 
-    console.log(tsvBody);
+      console.log(tsvBody);
 
-    copyToClipboard(tsvBody);
-  };
+      copyToClipboard(tsvBody);
+    },
+    [cells, props.dataSource]
+  );
 
-  const onDownload = (e: any) => {
-    console.log("download");
-    console.log("props.dataSource", props.dataSource);
-    const dataSource = props.dataSource as any[];
-    const csvHeader = Object.keys(dataSource[0])
-      // .filter((key) => !props.notDownloadColumns?.includes(key))
-      .join(",");
+  const handleDownload = useCallback(
+    (e: any) => {
+      console.log("download");
+      console.log("props.dataSource", props.dataSource);
+      const dataSource = props.dataSource as any[];
+      const csvHeader = Object.keys(dataSource[0])
+        // .filter((key) => !props.notDownloadColumns?.includes(key))
+        .join(",");
 
-    const csvBody = dataSource
-      .map((row) => Object.values(row).join(","))
-      .join("\n");
+      const csvBody = dataSource
+        .map((row) => Object.values(row).join(","))
+        .join("\n");
 
-    const csv = csvHeader + "\n" + csvBody;
+      const csv = csvHeader + "\n" + csvBody;
 
-    download("data.csv", csv);
-  };
+      download("data.csv", csv);
+    },
+    [props.dataSource]
+  );
 
   const columns = props.columns?.map((column) => {
     return {
@@ -106,7 +112,7 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
             <>
               <Button
                 disabled={props.copyButtonDisabled}
-                onClick={onCopy}
+                onClick={handleCopy}
                 className="me-2"
               >
                 <span className="d-flex align-items-center">
@@ -119,7 +125,7 @@ export const CustomDataGrid: React.FC<CustomDataGridProps> = (props) => {
           {props.downloadable && (
             <Button
               disabled={props.downloadButtonDisabled}
-              onClick={onDownload}
+              onClick={handleDownload}
               className="me-2"
             >
               <span className="d-flex align-items-center">

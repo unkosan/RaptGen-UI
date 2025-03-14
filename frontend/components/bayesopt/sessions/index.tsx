@@ -29,11 +29,11 @@ const Sessions: React.FC = () => {
     targetEntryName,
 
     // Actions
-    onSave,
-    onSaveAs,
-    onNew,
-    onRename,
-    onDelete,
+    handleSave,
+    handleSaveAs,
+    handleNew,
+    handleRename,
+    handleDelete,
     setTargetEntry,
   } = useSessions();
 
@@ -101,7 +101,7 @@ const Sessions: React.FC = () => {
         </ListGroup>
       </div>
       <Stack direction="horizontal" className="mt-2" gap={3}>
-        <Button variant="outline-primary" onClick={onNew}>
+        <Button variant="outline-primary" onClick={handleNew}>
           <div className="d-flex align-items-center">
             <PlusLg />
             &nbsp; New
@@ -110,7 +110,7 @@ const Sessions: React.FC = () => {
         <Button
           variant="outline-primary"
           className="ms-auto"
-          onClick={onSave}
+          onClick={handleSave}
           disabled={!isDirty}
         >
           Save
@@ -130,7 +130,7 @@ const Sessions: React.FC = () => {
         label="Please enter the name for the experiment."
         isOpen={isSaveAsModalOpen}
         setIsOpen={setIsSaveAsModalOpen}
-        onSubmit={onSaveAs}
+        onSubmit={handleSaveAs}
       />
 
       <FormModal
@@ -138,7 +138,7 @@ const Sessions: React.FC = () => {
         title="Rename Experiment"
         isOpen={isRenameModalOpen}
         setIsOpen={setIsRenameModalOpen}
-        onSubmit={onRename}
+        onSubmit={handleRename}
         label="Please enter the new name for the experiment."
       />
 
@@ -146,7 +146,7 @@ const Sessions: React.FC = () => {
         title="Delete Experiment"
         isOpen={isDeleteModalOpen}
         setIsOpen={setIsDeleteModalOpen}
-        onSubmit={onDelete}
+        onSubmit={handleDelete}
         label={
           <p>
             Are you sure you want to delete the experiment{" "}

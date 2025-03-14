@@ -14,7 +14,7 @@ const InitialDataset: React.FC = () => {
   const {
     isLoading: csvLoading,
     isValid: csvValid,
-    onFileChange,
+    handleFileChange,
   } = useCsvDataset();
 
   // GMM dataset handling
@@ -23,7 +23,7 @@ const InitialDataset: React.FC = () => {
     selectedModel,
     setSelectedModel,
     isLoading: gmmLoading,
-    onClickApplyGMM,
+    handleClickApplyGMM,
   } = useGmmDataset();
 
   return (
@@ -67,7 +67,7 @@ const InitialDataset: React.FC = () => {
         ) : (
           <Form.Control
             type="file"
-            onChange={onFileChange}
+            onChange={handleFileChange}
             isInvalid={!csvValid}
           />
         )}
@@ -111,7 +111,7 @@ const InitialDataset: React.FC = () => {
           </Form.Control>
           <Button
             variant="outline-primary"
-            onClick={onClickApplyGMM}
+            onClick={handleClickApplyGMM}
             disabled={gmmLoading}
           >
             {gmmLoading ? <Spinner animation="border" size="sm" /> : "Load"}

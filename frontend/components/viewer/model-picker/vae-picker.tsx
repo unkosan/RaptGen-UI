@@ -36,7 +36,7 @@ const VAEPicker: React.FC<{
 
   // const { modelId, setModelId } = usePickVAE();
 
-  const onRename = async (name: string) => {
+  const handleRename = async (name: string) => {
     await apiClient.patchVaeItems(
       {
         target: "name",
@@ -51,7 +51,7 @@ const VAEPicker: React.FC<{
     refreshFunc();
   };
 
-  const onDelete = async () => {
+  const handleDelete = async () => {
     await apiClient.deleteVaeItems(undefined, {
       params: {
         vae_uuid: pickedId,
@@ -132,7 +132,7 @@ const VAEPicker: React.FC<{
         label="Please enter a new name for the VAE model."
         isOpen={isRenameModelOpen}
         setIsOpen={setIsRenameModelOpen}
-        onSubmit={onRename}
+        onSubmit={handleRename}
       />
 
       <ConfirmModal
@@ -140,7 +140,7 @@ const VAEPicker: React.FC<{
         label="Are you sure you want to delete this VAE model?"
         isOpen={isDeleteModalOpen}
         setIsOpen={setIsDeleteModalOpen}
-        onSubmit={onDelete}
+        onSubmit={handleDelete}
         confirmText="Delete"
         variant="danger"
       />

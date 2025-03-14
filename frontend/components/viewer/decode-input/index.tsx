@@ -3,9 +3,9 @@ import RangeSlider from "react-bootstrap-range-slider";
 import { useCoords, useGridConfig } from "./hooks/use-decoder-input";
 
 const DecoderInput: React.FC = () => {
-  const { pointX, pointY, isValidX, isValidY, onChangeX, onChangeY } =
+  const { pointX, pointY, isValidX, isValidY, handleChangeX, handleChangeY } =
     useCoords();
-  const { showGrid, onChangeShowGrid } = useGridConfig();
+  const { showGrid, handleChangeShowGrid } = useGridConfig();
 
   return (
     <Card className="mb-3">
@@ -14,7 +14,7 @@ const DecoderInput: React.FC = () => {
         <Form.Switch
           label="Show Grid Line"
           checked={showGrid}
-          onChange={onChangeShowGrid}
+          onChange={handleChangeShowGrid}
           className="mb-2"
         />
         <InputGroup hasValidation>
@@ -26,7 +26,7 @@ const DecoderInput: React.FC = () => {
           >
             <RangeSlider
               value={pointX}
-              onChange={onChangeX}
+              onChange={handleChangeX}
               min={-3.5}
               max={3.5}
               step={0.1}
@@ -36,7 +36,7 @@ const DecoderInput: React.FC = () => {
             type="number"
             step={0.1}
             value={pointX}
-            onChange={onChangeX}
+            onChange={handleChangeX}
             isInvalid={!isValidX}
           />
           <Form.Control.Feedback type="invalid">
@@ -52,7 +52,7 @@ const DecoderInput: React.FC = () => {
           >
             <RangeSlider
               value={pointY}
-              onChange={onChangeY}
+              onChange={handleChangeY}
               min={-3.5}
               max={3.5}
               step={0.1}
@@ -63,7 +63,7 @@ const DecoderInput: React.FC = () => {
             type="number"
             step={0.1}
             value={pointY}
-            onChange={onChangeY}
+            onChange={handleChangeY}
             isInvalid={!isValidY}
           />
           <Form.Control.Feedback type="invalid">

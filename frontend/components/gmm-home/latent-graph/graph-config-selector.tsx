@@ -11,8 +11,8 @@ const GraphConfigSelector: React.FC = () => {
     showGMM,
     minCount,
     isValidMinCount,
-    onMinCountChange,
-    onShowGMMChange,
+    handleMinCountChange,
+    handleShowGMMChange,
   } = useGraphConfig();
 
   return (
@@ -23,7 +23,7 @@ const GraphConfigSelector: React.FC = () => {
           <Form.Control
             type="number"
             value={minCount}
-            onChange={onMinCountChange}
+            onChange={handleMinCountChange}
             isInvalid={!isValidMinCount}
           />
         </Form.Group>
@@ -31,7 +31,7 @@ const GraphConfigSelector: React.FC = () => {
           <Form.Switch
             label="Show GMM"
             checked={showGMM}
-            onChange={onShowGMMChange}
+            onChange={handleShowGMMChange}
           />
         </Form.Group>
       </Card.Body>

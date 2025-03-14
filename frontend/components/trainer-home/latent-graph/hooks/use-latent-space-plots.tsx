@@ -1,5 +1,5 @@
 import { PlotData } from "plotly.js";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { latentGraphLayout } from "~/components/common/graph-helper";
@@ -59,7 +59,7 @@ export const useVaeDataPlot = (vaeData: VaeData) => {
  * Hook for CSV download functionality
  */
 export const useDownloadCsv = (vaeData: VaeData) => {
-  const onClickSave = () => {
+  const handleClickSave = useCallback(() => {
     const csvHeader = "random_region, x, y, duplicate";
     let csvData = "";
     for (let i = 0; i < vaeData.randomRegions.length; i++) {
@@ -85,7 +85,7 @@ export const useDownloadCsv = (vaeData: VaeData) => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  };
+  }, [vaeData]);
 
-  return { onClickSave };
+  return { handleClickSave };
 };

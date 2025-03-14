@@ -15,8 +15,8 @@ const Downloader: React.FC = () => {
     isSavingCSV,
     isSavingFASTA,
     numComponents,
-    onDownloadCSV,
-    onDownloadFASTA,
+    handleDownloadCSV,
+    handleDownloadFASTA,
   } = useDownloader(gmmId, vaeId, vaeName);
 
   return (
@@ -37,7 +37,7 @@ const Downloader: React.FC = () => {
           </Form.Select>
           <Button
             className="me-2"
-            onClick={() => onDownloadCSV(cluster)}
+            onClick={() => handleDownloadCSV(cluster)}
             disabled={isSavingCSV || isSavingFASTA}
           >
             {isSavingCSV ? (
@@ -47,7 +47,7 @@ const Downloader: React.FC = () => {
             )}
           </Button>
           <Button
-            onClick={() => onDownloadFASTA(cluster)}
+            onClick={() => handleDownloadFASTA(cluster)}
             disabled={isSavingCSV || isSavingFASTA}
           >
             {isSavingFASTA ? (

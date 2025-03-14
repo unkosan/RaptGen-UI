@@ -50,62 +50,52 @@ const Editor: React.FC<{
 };
 
 export const CoordXEditor: React.FC<EditorProps> = (props) => {
-  const { valueX, valid, onChange, onConfirmClick, onCancel } = useCoordXEditor(
-    props.cellProps,
-    props.onComplete,
-    props.onCancel
-  );
+  const { valueX, valid, handleChange, handleConfirmClick, handleCancel } =
+    useCoordXEditor(props.cellProps, props.onComplete, props.onCancel);
 
   return (
     <Editor
       value={valueX}
       isInvalid={!valid}
-      onChange={onChange}
-      onConfirmClick={onConfirmClick}
-      onCancel={onCancel}
+      onChange={handleChange}
+      onConfirmClick={handleConfirmClick}
+      onCancel={handleCancel}
     />
   );
 };
 
 export const CoordYEditor: React.FC<EditorProps> = (props) => {
-  const { valueY, valid, onChange, onConfirmClick, onCancel } = useCoordYEditor(
-    props.cellProps,
-    props.onComplete,
-    props.onCancel
-  );
+  const { valueY, valid, handleChange, handleConfirmClick, handleCancel } =
+    useCoordYEditor(props.cellProps, props.onComplete, props.onCancel);
 
   return (
     <Editor
       value={valueY}
       isInvalid={!valid}
-      onChange={onChange}
-      onConfirmClick={onConfirmClick}
-      onCancel={onCancel}
+      onChange={handleChange}
+      onConfirmClick={handleConfirmClick}
+      onCancel={handleCancel}
     />
   );
 };
 
 export const IdEditor: React.FC<EditorProps> = (props) => {
-  const { value, valid, onChange, onConfirmClick, onCancel } = useIdEditor(
-    props.cellProps,
-    props.value,
-    props.onComplete,
-    props.onCancel
-  );
+  const { value, valid, handleChange, handleConfirmClick, handleCancel } =
+    useIdEditor(props.cellProps, props.value, props.onComplete, props.onCancel);
 
   return (
     <Editor
       value={value}
       isInvalid={!valid}
-      onChange={onChange}
-      onConfirmClick={onConfirmClick}
-      onCancel={onCancel}
+      onChange={handleChange}
+      onConfirmClick={handleConfirmClick}
+      onCancel={handleCancel}
     />
   );
 };
 
 export const SequenceEditor: React.FC<EditorProps> = (props) => {
-  const { value, valid, onChange, onConfirmClick, onCancel } =
+  const { value, valid, handleChange, handleConfirmClick, handleCancel } =
     useSequenceEditor(
       props.cellProps,
       props.value,
@@ -117,9 +107,9 @@ export const SequenceEditor: React.FC<EditorProps> = (props) => {
     <Editor
       value={value}
       isInvalid={!valid}
-      onChange={onChange}
-      onConfirmClick={onConfirmClick}
-      onCancel={onCancel}
+      onChange={handleChange}
+      onConfirmClick={handleConfirmClick}
+      onCancel={handleCancel}
     />
   );
 };

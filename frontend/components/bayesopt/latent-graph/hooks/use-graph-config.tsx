@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { setIsDirty } from "../../redux/is-dirty";
@@ -13,76 +13,85 @@ export const useGraphConfig = () => {
   const [showContour, setShowContour] = useState(graphConfig.showAcquisition);
   const [isValidMinCount, setIsValidMinCount] = useState(true);
 
-  const setDirty = () => {
+  const setDirty = useCallback(() => {
     dispatch(setIsDirty(true));
-  };
+  }, [dispatch]);
 
-  const onMinCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDirty();
+  const handleMinCountChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setDirty();
 
-    const value = parseInt(e.currentTarget.value);
-    const isValid = !isNaN(value) && value > 0;
-    setMinCount(value);
-    setIsValidMinCount(isValid);
+      const value = parseInt(e.currentTarget.value);
+      const isValid = !isNaN(value) && value > 0;
+      setMinCount(value);
+      setIsValidMinCount(isValid);
 
-    if (!isValid) {
-      return;
-    }
+      if (!isValid) {
+        return;
+      }
 
-    try {
-      dispatch(
-        setGraphConfig({
-          ...graphConfig,
-          minCount: parseInt(e.currentTarget.value),
-        })
-      );
-    } catch (e) {
-      console.error(e);
-      return;
-    }
-  };
+      try {
+        dispatch(
+          setGraphConfig({
+            ...graphConfig,
+            minCount: parseInt(e.currentTarget.value),
+          })
+        );
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+    },
+    [dispatch, graphConfig, setDirty]
+  );
 
-  const onShowSelexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDirty();
-    setShowSelex(e.currentTarget.checked);
+  const handleShowSelexChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setDirty();
+      setShowSelex(e.currentTarget.checked);
 
-    try {
-      dispatch(
-        setGraphConfig({
-          ...graphConfig,
-          showSelex: e.currentTarget.checked,
-        })
-      );
-    } catch (e) {
-      console.error(e);
-      return;
-    }
-  };
+      try {
+        dispatch(
+          setGraphConfig({
+            ...graphConfig,
+            showSelex: e.currentTarget.checked,
+          })
+        );
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+    },
+    [dispatch, graphConfig, setDirty]
+  );
 
-  const onChangeShowContour = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDirty();
-    setShowContour(e.currentTarget.checked);
+  const handleChangeShowContour = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setDirty();
+      setShowContour(e.currentTarget.checked);
 
-    try {
-      dispatch(
-        setGraphConfig({
-          ...graphConfig,
-          showAcquisition: e.currentTarget.checked,
-        })
-      );
-    } catch (e) {
-      console.error(e);
-      return;
-    }
-  };
+      try {
+        dispatch(
+          setGraphConfig({
+            ...graphConfig,
+            showAcquisition: e.currentTarget.checked,
+          })
+        );
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+    },
+    [dispatch, graphConfig, setDirty]
+  );
 
   return {
     minCount,
     showSelex,
     showContour,
     isValidMinCount,
-    onMinCountChange,
-    onShowSelexChange,
-    onChangeShowContour,
+    handleMinCountChange,
+    handleShowSelexChange,
+    handleChangeShowContour,
   };
 };

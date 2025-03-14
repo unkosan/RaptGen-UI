@@ -24,7 +24,7 @@ export const useQueryTable = () => {
 
   // Handle selection changes in the grid table
   // This section complicated because ReactDataGrid does not provide instinctive API
-  const onSelectionChange = useCallback(
+  const handleSelectionChange = useCallback(
     (e: TypeOnSelectionChangeArg) => {
       let newData = cloneDeep(queryData);
       if (e.selected === true) {
@@ -66,7 +66,7 @@ export const useQueryTable = () => {
 
   return {
     dataSource,
-    onSelectionChange,
+    handleSelectionChange,
     selectedIndices,
   };
 };

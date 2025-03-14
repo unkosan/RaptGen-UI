@@ -56,7 +56,7 @@ describe("useDecodedPointActions", () => {
 
     // Call onAdd
     await act(async () => {
-      await result.current.onAdd();
+      await result.current.handleAdd();
     });
 
     // Check that setDecoded was called with correct data
@@ -80,7 +80,7 @@ describe("useDecodedPointActions", () => {
     // Start the onAdd operation
     let addPromise: Promise<void>;
     act(() => {
-      addPromise = result.current.onAdd();
+      addPromise = result.current.handleAdd();
     });
 
     // Now check that isLoading is true during the operation
@@ -111,7 +111,7 @@ describe("useDecodedPointActions", () => {
 
     // Call onAdd
     await act(async () => {
-      await result.current.onAdd();
+      await result.current.handleAdd();
     });
 
     // Check that error was logged

@@ -13,7 +13,7 @@ export const useFastaEncoder = (sessionId: string) => {
   const [isValid, setIsValid] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const onFileChange = useCallback(
+  const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!sessionId) {
         return;
@@ -83,7 +83,7 @@ export const useFastaEncoder = (sessionId: string) => {
   return {
     isValid,
     isLoading,
-    onFileChange,
+    handleFileChange,
   };
 };
 
@@ -96,12 +96,12 @@ export const useFormEncoder = (sessionId: string) => {
   const [isValid, setIsValid] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value.toUpperCase().replace(/T/g, "U"));
     setIsValid(/^[ACGTUacgtu]+$/.test(e.target.value));
   }, []);
 
-  const onAdd = useCallback(async () => {
+  const handleAdd = useCallback(async () => {
     if (!sessionId) {
       return;
     }
@@ -135,7 +135,7 @@ export const useFormEncoder = (sessionId: string) => {
     value,
     isValid,
     isLoading,
-    onChange,
-    onAdd,
+    handleChange,
+    handleAdd,
   };
 };

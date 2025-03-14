@@ -18,10 +18,11 @@ type Props = {
 
 const QueryTable: React.FC<Props> = ({ setActiveTab }) => {
   // Table logic
-  const { dataSource, onSelectionChange, selectedIndices } = useQueryTable();
+  const { dataSource, handleSelectionChange, selectedIndices } =
+    useQueryTable();
 
   // Button logic
-  const { onClick, isLoading } = useAddQueryButton();
+  const { handleClick, isLoading } = useAddQueryButton();
 
   const gridStyle = { minHeight: 400, width: "100%", zIndex: 950 };
 
@@ -99,14 +100,14 @@ const QueryTable: React.FC<Props> = ({ setActiveTab }) => {
         downloadable
         copiable
         defaultSelected={selectedIndices}
-        onSelectionChange={onSelectionChange}
+        onSelectionChange={handleSelectionChange}
         checkboxOnlyRowSelect
       />
 
       <Button
         variant="primary"
         onClick={() => {
-          onClick();
+          handleClick();
           setActiveTab("registered-table");
         }}
         className="mb-3"

@@ -18,7 +18,7 @@ type Props = {
 export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
   const layout = useLayout(title);
   const lossDataPlot = useLossDataPlot(lossData);
-  const { onClickSave } = useDownloadCsv(lossData);
+  const { handleClickSave } = useDownloadCsv(lossData);
 
   return (
     <Card className="mb-3">
@@ -29,7 +29,7 @@ export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
             pill
             bg="success"
             className="mx-1"
-            onClick={onClickSave}
+            onClick={handleClickSave}
             style={{ cursor: "pointer" }}
           >
             Download Loss Transitions

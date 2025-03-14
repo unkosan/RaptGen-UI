@@ -43,7 +43,7 @@ export const useBayesOptConfig = () => {
     dispatch(setIsDirty(true));
   }, [dispatch]);
 
-  const onChangeColumnName = useCallback(
+  const handleChangeColumnName = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
       const value = event.target.value;
       setTargetColumn(value);
@@ -52,7 +52,7 @@ export const useBayesOptConfig = () => {
     [bayesoptConfig, dispatch, setDirty]
   );
 
-  const onChangeBudget = useCallback(
+  const handleChangeBudget = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = parseFloat(e.target.value);
       const isValid = !isNaN(value) && value > 0;
@@ -64,7 +64,7 @@ export const useBayesOptConfig = () => {
   );
 
   // Implement in the future
-  const onChangeOptimizationType = useCallback(
+  const handleChangeOptimizationType = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {},
     [bayesoptConfig, dispatch, setDirty]
   );
@@ -75,8 +75,8 @@ export const useBayesOptConfig = () => {
     targetColumn,
     queryBudget,
     isValidBudget,
-    onChangeColumnName,
-    onChangeBudget,
-    onChangeOptimizationType,
+    handleChangeColumnName,
+    handleChangeBudget,
+    handleChangeOptimizationType,
   };
 };

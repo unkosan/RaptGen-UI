@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { useDispatch, useSelector } from "react-redux";
 import { useDecoderActions, useEncoderActions } from "../use-actions";
 import { setDecoded, setEncoded } from "../../../redux/interaction-data";
@@ -44,15 +44,15 @@ describe("useDecoderActions", () => {
   it("should provide onClickShow and onClickDelete functions", () => {
     const { result } = renderHook(() => useDecoderActions(testIndex));
 
-    expect(typeof result.current.onClickShow).toBe("function");
-    expect(typeof result.current.onClickDelete).toBe("function");
+    expect(typeof result.current.handleClickShow).toBe("function");
+    expect(typeof result.current.handleClickDelete).toBe("function");
   });
 
   it("should toggle visibility on onClickShow", async () => {
     const { result } = renderHook(() => useDecoderActions(testIndex));
 
     await act(async () => {
-      await result.current.onClickShow();
+      await result.current.handleClickShow();
     });
 
     // The visibility should be toggled for the specific index (in this case, index 1 was false, should become true)
@@ -76,7 +76,7 @@ describe("useDecoderActions", () => {
     const { result } = renderHook(() => useDecoderActions(testIndex));
 
     await act(async () => {
-      await result.current.onClickDelete();
+      await result.current.handleClickDelete();
     });
 
     // All arrays should have the item at testIndex removed
@@ -119,15 +119,15 @@ describe("useEncoderActions", () => {
   it("should provide onClickShow and onClickDelete functions", () => {
     const { result } = renderHook(() => useEncoderActions(testIndex));
 
-    expect(typeof result.current.onClickShow).toBe("function");
-    expect(typeof result.current.onClickDelete).toBe("function");
+    expect(typeof result.current.handleClickShow).toBe("function");
+    expect(typeof result.current.handleClickDelete).toBe("function");
   });
 
   it("should toggle visibility on onClickShow", async () => {
     const { result } = renderHook(() => useEncoderActions(testIndex));
 
     await act(async () => {
-      await result.current.onClickShow();
+      await result.current.handleClickShow();
     });
 
     // The visibility should be toggled for the specific index (in this case, index 1 was false, should become true)
@@ -151,7 +151,7 @@ describe("useEncoderActions", () => {
     const { result } = renderHook(() => useEncoderActions(testIndex));
 
     await act(async () => {
-      await result.current.onClickDelete();
+      await result.current.handleClickDelete();
     });
 
     // All arrays should have the item at testIndex removed

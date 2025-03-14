@@ -14,7 +14,7 @@ export const useRegisteredTable = () => {
   );
 
   // Handle edit completion in the grid
-  const onEditComplete = useCallback(
+  const handleEditComplete = useCallback(
     (e: TypeEditInfo) => {
       let newData = cloneDeep(registeredData);
       if (e.columnId === "seq_id") {
@@ -42,7 +42,7 @@ export const useRegisteredTable = () => {
 
   // Handle selection changes in the grid
   // This section complicated because ReactDataGrid does not provide instinctive API
-  const onSelectionChange = useCallback(
+  const handleSelectionChange = useCallback(
     (e: TypeOnSelectionChangeArg) => {
       let newData = cloneDeep(registeredData);
       if (e.selected === true) {
@@ -114,8 +114,8 @@ export const useRegisteredTable = () => {
   return {
     dataSource,
     displayColumns,
-    onEditComplete,
-    onSelectionChange,
+    handleEditComplete,
+    handleSelectionChange,
     defaultSelected,
   };
 };

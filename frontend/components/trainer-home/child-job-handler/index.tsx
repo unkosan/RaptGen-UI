@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import { z } from "zod";
@@ -17,23 +17,26 @@ export const ChildJobHandler: React.FC<{
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const router = useRouter();
 
-  const handleSubmit = async (name: string) => {
-    try {
-      const childId = isNaN(parseInt(router.query.job as string))
-        ? undefined
-        : parseInt(router.query.job as string);
+  const handleSubmit = useCallback(
+    async (name: string) => {
+      try {
+        const childId = isNaN(parseInt(router.query.job as string))
+          ? undefined
+          : parseInt(router.query.job as string);
 
-      await apiClient.postPublish({
-        uuid: parentItem.uuid,
-        multi: childId,
-        name,
-      });
+        await apiClient.postPublish({
+          uuid: parentItem.uuid,
+          multi: childId,
+          name,
+        });
 
-      setPublished(true);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+        setPublished(true);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [router, parentItem.uuid]
+  );
 
   return (
     <>

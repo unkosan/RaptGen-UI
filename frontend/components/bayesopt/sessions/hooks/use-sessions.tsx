@@ -142,7 +142,7 @@ export const useSessions = () => {
   /**
    * Save the current experiment
    */
-  const onSave = useCallback(async () => {
+  const handleSave = useCallback(async () => {
     if (!currentSessionId) {
       return;
     }
@@ -162,7 +162,7 @@ export const useSessions = () => {
   /**
    * Save the current experiment with a new name
    */
-  const onSaveAs = useCallback(
+  const handleSaveAs = useCallback(
     async (title: string) => {
       try {
         const states = getStates();
@@ -183,7 +183,7 @@ export const useSessions = () => {
   /**
    * Create a new experiment
    */
-  const onNew = useCallback(async () => {
+  const handleNew = useCallback(async () => {
     if (isDirty) {
       if (!window.confirm("Discard changes?")) return;
     }
@@ -193,7 +193,7 @@ export const useSessions = () => {
   /**
    * Rename an experiment
    */
-  const onRename = useCallback(
+  const handleRename = useCallback(
     async (newName: string) => {
       if (!selectedExperimentId) return;
 
@@ -219,7 +219,7 @@ export const useSessions = () => {
   /**
    * Delete an experiment
    */
-  const onDelete = useCallback(async () => {
+  const handleDelete = useCallback(async () => {
     if (!selectedExperimentId) return;
 
     try {
@@ -253,11 +253,11 @@ export const useSessions = () => {
     targetEntryName: selectedExperimentName,
 
     // Actions
-    onSave,
-    onSaveAs,
-    onNew,
-    onRename,
-    onDelete,
+    handleSave,
+    handleSaveAs,
+    handleNew,
+    handleRename,
+    handleDelete,
     setTargetEntry,
   };
 };

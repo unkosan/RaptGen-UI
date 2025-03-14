@@ -7,7 +7,7 @@ import { useGraphConfig } from "./hooks/use-graph-config";
  * Allows users to set minimum count for data points
  */
 const GraphConfigSelector: React.FC = () => {
-  const { minCount, isValidMinCount, onMinCountChange } = useGraphConfig();
+  const { minCount, isValidMinCount, handleMinCountChange } = useGraphConfig();
 
   return (
     <Card className="mb-3">
@@ -17,7 +17,7 @@ const GraphConfigSelector: React.FC = () => {
           <Form.Control
             type="number"
             value={minCount}
-            onChange={onMinCountChange}
+            onChange={handleMinCountChange}
             isInvalid={!isValidMinCount}
           />
         </Form.Group>

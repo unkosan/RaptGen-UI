@@ -1,5 +1,5 @@
 import { Layout, PlotData } from "plotly.js";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 export type LossData = {
   epochs: number[];
@@ -108,7 +108,7 @@ export const useLossDataPlot = (lossData: LossData) => {
 };
 
 export const useDownloadCsv = (lossData: LossData) => {
-  const onClickSave = () => {
+  const handleClickSave = useCallback(() => {
     const csvHeader = "epoch, train_loss, test_loss, test_recon, test_kld";
     let csvData = "";
     for (let i = 0; i < lossData.trainLosses.length; i++) {
@@ -136,7 +136,7 @@ export const useDownloadCsv = (lossData: LossData) => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  };
+  }, [lossData]);
 
-  return { onClickSave };
+  return { handleClickSave };
 };

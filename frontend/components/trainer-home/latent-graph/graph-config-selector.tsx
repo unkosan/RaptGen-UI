@@ -13,8 +13,8 @@ type Props = {
 };
 
 const GraphConfigSelector: React.FC<Props> = ({ vaeData }) => {
-  const { minCount, isValidMinCount, onMinCountChange } = useGraphConfig();
-  const { onClickSave } = useDownloadCsv(vaeData);
+  const { minCount, isValidMinCount, handleMinCountChange } = useGraphConfig();
+  const { handleClickSave } = useDownloadCsv(vaeData);
 
   return (
     <Card className="mb-3">
@@ -24,7 +24,7 @@ const GraphConfigSelector: React.FC<Props> = ({ vaeData }) => {
           <Form.Control
             type="number"
             value={minCount}
-            onChange={onMinCountChange}
+            onChange={handleMinCountChange}
             isInvalid={!isValidMinCount}
           />
         </Form.Group>
@@ -32,7 +32,7 @@ const GraphConfigSelector: React.FC<Props> = ({ vaeData }) => {
           variant="success"
           className="mx-1"
           style={{ cursor: "pointer" }}
-          onClick={onClickSave}
+          onClick={handleClickSave}
         >
           Download Latent Points
         </Button>

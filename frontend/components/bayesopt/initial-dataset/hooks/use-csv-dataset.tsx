@@ -95,7 +95,7 @@ export const useCsvDataset = () => {
   /**
    * Handle file upload and process CSV data
    */
-  const onFileChange = useCallback(
+  const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -181,6 +181,6 @@ export const useCsvDataset = () => {
   return {
     isLoading,
     isValid,
-    onFileChange,
+    handleFileChange,
   };
 };

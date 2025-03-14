@@ -11,14 +11,14 @@ const EncodeInput: React.FC = () => {
   const {
     isLoading: isLoadingFasta,
     isValid: isValidFasta,
-    onFileChange,
+    handleFileChange,
   } = useFastaEncoder(sessionId);
   const {
     value: formValue,
     isLoading: isLoadingForm,
     isValid: isValidForm,
-    onChange: onChangeForm,
-    onAdd: onAddForm,
+    handleChange: handleChangeForm,
+    handleAdd: handleAddForm,
   } = useFormEncoder(sessionId);
 
   return (
@@ -28,14 +28,14 @@ const EncodeInput: React.FC = () => {
         <InputGroup hasValidation className="mb-2">
           <Form.Control
             id="newSeqInput"
-            onChange={onChangeForm}
+            onChange={handleChangeForm}
             value={formValue}
             isInvalid={!(isValidForm || formValue === "")}
           />
           <Button
             id="addSeqButton"
             disabled={!isValidForm || isLoadingForm}
-            onClick={onAddForm}
+            onClick={handleAddForm}
           >
             {isLoadingForm ? (
               <Spinner animation="border" size="sm" />
@@ -64,7 +64,7 @@ const EncodeInput: React.FC = () => {
           ) : (
             <Form.Control
               type="file"
-              onChange={onFileChange}
+              onChange={handleFileChange}
               isInvalid={!isValidFasta}
             />
           )}

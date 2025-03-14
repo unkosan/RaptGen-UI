@@ -122,7 +122,7 @@ describe("useDownloader", () => {
     });
 
     await act(async () => {
-      await result.current.onDownloadCSV(0);
+      await result.current.handleDownloadCSV(0);
     });
 
     expect(apiClient.getSelexData).toHaveBeenCalledWith({
@@ -145,7 +145,7 @@ describe("useDownloader", () => {
     let downloadPromise: Promise<void>;
 
     act(() => {
-      downloadPromise = result.current.onDownloadCSV(0);
+      downloadPromise = result.current.handleDownloadCSV(0);
     });
 
     expect(result.current.isSavingCSV).toBe(true);
@@ -174,7 +174,7 @@ describe("useDownloader", () => {
     });
 
     await act(async () => {
-      await result.current.onDownloadCSV(0);
+      await result.current.handleDownloadCSV(0);
     });
 
     expect(consoleSpy).toHaveBeenCalled();
@@ -194,7 +194,7 @@ describe("useDownloader", () => {
     });
 
     await act(async () => {
-      await result.current.onDownloadCSV(0);
+      await result.current.handleDownloadCSV(0);
     });
 
     // Check that downloadFileFromText was called
@@ -221,7 +221,7 @@ describe("useDownloader", () => {
     });
 
     await act(async () => {
-      await result.current.onDownloadCSV(ALL_CLUSTERS);
+      await result.current.handleDownloadCSV(ALL_CLUSTERS);
     });
 
     // Check that downloadFileFromText was called
@@ -243,7 +243,7 @@ describe("useDownloader", () => {
     });
 
     await act(async () => {
-      await result.current.onDownloadFASTA(0);
+      await result.current.handleDownloadFASTA(0);
     });
 
     expect(apiClient.getSelexData).toHaveBeenCalledWith({
@@ -266,7 +266,7 @@ describe("useDownloader", () => {
     let downloadPromise: Promise<void>;
 
     act(() => {
-      downloadPromise = result.current.onDownloadFASTA(0);
+      downloadPromise = result.current.handleDownloadFASTA(0);
     });
 
     expect(result.current.isSavingFASTA).toBe(true);
@@ -295,7 +295,7 @@ describe("useDownloader", () => {
     });
 
     await act(async () => {
-      await result.current.onDownloadFASTA(0);
+      await result.current.handleDownloadFASTA(0);
     });
 
     expect(consoleSpy).toHaveBeenCalled();
@@ -315,7 +315,7 @@ describe("useDownloader", () => {
     });
 
     await act(async () => {
-      await result.current.onDownloadFASTA(0);
+      await result.current.handleDownloadFASTA(0);
     });
 
     // Check that downloadFileFromText was called
@@ -340,7 +340,7 @@ describe("useDownloader", () => {
     });
 
     await act(async () => {
-      await result.current.onDownloadFASTA(ALL_CLUSTERS);
+      await result.current.handleDownloadFASTA(ALL_CLUSTERS);
     });
 
     // Check that downloadFileFromText was called
@@ -363,7 +363,7 @@ describe("useDownloader", () => {
 
     // First download
     await act(async () => {
-      await result.current.onDownloadCSV(0);
+      await result.current.handleDownloadCSV(0);
     });
 
     expect(apiClient.getSelexData).toHaveBeenCalledTimes(1);
@@ -374,7 +374,7 @@ describe("useDownloader", () => {
     // Second download with the same vaeId
     await act(async () => {
       console.log("First download");
-      await result.current.onDownloadCSV(1);
+      await result.current.handleDownloadCSV(1);
     });
 
     // Should not call the API again
@@ -393,7 +393,7 @@ describe("useDownloader", () => {
     });
 
     await act(async () => {
-      await result.current.onDownloadCSV(0);
+      await result.current.handleDownloadCSV(0);
     });
 
     // Verify that mathjs functions were called during probability calculation
