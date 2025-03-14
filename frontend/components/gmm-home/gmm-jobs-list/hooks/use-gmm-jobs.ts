@@ -26,10 +26,14 @@ export function useGmmJobs(): UseGmmJobsReturn {
   // Fetch jobs data and set up interval for periodic updates
   useEffect(() => {
     const updateFunc = async () => {
-      const res = await apiClient.searchGMMJobs({
-        search_regex: searchQuery ? searchQuery : undefined,
-      });
-      setJobs(res);
+      try {
+        const res = await apiClient.searchGMMJobs({
+          search_regex: searchQuery ? searchQuery : undefined,
+        });
+        setJobs(res);
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
     };
     updateFunc();
     const interval = setInterval(updateFunc, 5000);

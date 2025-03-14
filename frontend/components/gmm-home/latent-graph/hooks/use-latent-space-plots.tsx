@@ -38,6 +38,7 @@ export const useVaeDataPlot = (vaeData: Props["vaeData"], minCount: number) => {
 };
 
 export const useGmmDataPlot = (gmmData: Props["gmmData"]) => {
+  console.log("gmmData", gmmData);
   const gmmDataPlot: Partial<PlotData>[] = useMemo(() => {
     if (gmmData.means.length === 0) {
       return [];
