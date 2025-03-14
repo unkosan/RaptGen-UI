@@ -142,11 +142,13 @@ export const useSessions = () => {
   /**
    * Save the current experiment
    */
+  const [isSaving, setIsSaving] = useState(false);
   const handleSave = useCallback(async () => {
     if (!currentSessionId) {
       return;
     }
 
+    setIsSaving(true);
     try {
       const states = getStates();
       await apiClient.updateExperiment(states, {
@@ -156,6 +158,8 @@ export const useSessions = () => {
       dispatch(setIsDirty(false));
     } catch (error) {
       console.error("Error saving experiment:", error);
+    } finally {
+      setIsSaving(false);
     }
   }, [currentSessionId, getStates, dispatch]);
 
@@ -248,6 +252,7 @@ export const useSessions = () => {
     currentSessionId,
     currentSessionName,
     isDirty,
+    isSaving,
 
     // Selected experiment
     targetEntryName: selectedExperimentName,

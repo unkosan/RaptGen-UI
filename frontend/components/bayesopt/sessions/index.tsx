@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, ListGroup, Stack } from "react-bootstrap";
+import { Button, ListGroup, Spinner, Stack } from "react-bootstrap";
 import { PlusLg, Pencil, XLg } from "react-bootstrap-icons";
 import { useRouter } from "next/router";
 import { useSessions } from "./hooks/use-sessions";
@@ -24,6 +24,7 @@ const Sessions: React.FC = () => {
     currentSessionId,
     currentSessionName,
     isDirty,
+    isSaving,
 
     // Selected experiment
     targetEntryName,
@@ -107,14 +108,20 @@ const Sessions: React.FC = () => {
             &nbsp; New
           </div>
         </Button>
-        <Button
-          variant="outline-primary"
-          className="ms-auto"
-          onClick={handleSave}
-          disabled={!isDirty}
-        >
-          Save
-        </Button>
+        {isSaving ? (
+          <Button variant="outline-primary" className="ms-auto" disabled>
+            <Spinner as="span" animation="border" size="sm" role="status" />
+          </Button>
+        ) : (
+          <Button
+            variant="outline-primary"
+            className="ms-auto"
+            onClick={handleSave}
+            disabled={!isDirty}
+          >
+            Save
+          </Button>
+        )}
         <Button
           variant="outline-primary"
           onClick={() => setIsSaveAsModalOpen(true)}
