@@ -1,12 +1,12 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-type GraphConfig = {
+interface GraphConfig {
   vaeName: string;
   minCount: number;
 
   showSelex: boolean;
   showAcquisition: boolean;
-};
+}
 
 const graphConfigSlice = createSlice({
   name: "graphConfig",

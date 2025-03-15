@@ -1,10 +1,10 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-type AcquisitionValues = {
+interface AcquisitionValues {
   acquisitionValues: number[];
   coordX: number[];
   coordY: number[];
-};
+}
 
 const acquisitionValuesSlice = createSlice({
   name: "acquisitionValues",

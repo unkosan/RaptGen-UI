@@ -18,7 +18,6 @@ interface InteractionDataState {
   decodeGrid: {
     coordX: number;
     coordY: number;
-    randomRegion: string;
   };
 }
 
@@ -40,7 +39,6 @@ const initialState: InteractionDataState = {
   decodeGrid: {
     coordX: 0,
     coordY: 0,
-    randomRegion: "",
   },
 };
 

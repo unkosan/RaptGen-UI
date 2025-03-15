@@ -1,28 +1,27 @@
 import "bootswatch/dist/cerulean/bootstrap.min.css";
+import "@inovua/reactdatagrid-community/index.css";
 import { NextPage } from "next";
 import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
-import "@inovua/reactdatagrid-community/index.css";
 import Footer from "~/components/common/footer";
-import AddJobButton from "~/components/gmm/home/add-job-button";
-import GmmJobsList from "~/components/gmm/home/gmm-jobs-list/gmm-jobs-list";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import AddJobButton from "~/components/gmm-home/add-job-button";
+import GmmJobsList from "~/components/gmm-home/gmm-jobs-list";
 import { Alert, Button } from "react-bootstrap";
 import { z } from "zod";
-import { apiClient } from "~/services/api-client";
 import { responseGetGMMJobsItems } from "~/services/route/gmm";
 import { ArrowClockwise } from "react-bootstrap-icons";
-import { useIsLoading } from "~/hooks/common";
 import LoadingPane from "~/components/common/loading-pane";
-import TimeDescription from "~/components/gmm/home/time-description";
-import { ActionButtons } from "~/components/gmm/home/action-buttons";
-import ParamsTable from "~/components/gmm/home/params-table";
-import { CurrentInfo } from "~/components/gmm/home/current-info";
-import { GmmNumComponentSelector } from "~/components/gmm/home/gmm-job-handler";
-import LatentGraph from "~/components/gmm/home/latent-graph";
-import BicGraph from "~/components/gmm/home/bic-graph";
+import TimeDescription from "~/components/gmm-home/time-description";
+import { ActionButtons } from "~/components/gmm-home/action-buttons";
+import ParamsTable from "~/components/gmm-home/params-table";
+import { CurrentInfo } from "~/components/gmm-home/current-info";
+import { GmmNumComponentSelector } from "~/components/gmm-home/gmm-num-component-selector";
+import LatentGraph from "~/components/gmm-home/latent-graph";
+import BicGraph from "~/components/gmm-home/bic-graph";
+import { Provider } from "react-redux";
+import { store } from "~/components/gmm-home/redux/store";
+import { useJobItem } from "../../components/gmm-home/hooks/use-job-item";
 
 type JobItem = z.infer<typeof responseGetGMMJobsItems>;
 
@@ -49,9 +48,9 @@ const OptimalGmmPane: React.FC<{
       return (
         <>
           <legend>Optimal GMM</legend>
-          <GmmNumComponentSelector uuid={uuid} jobItem={item} />
+          <GmmNumComponentSelector jobItem={item} />
           <LatentGraph
-            title="Latent Space"
+            // title="Latent Space"
             vaeData={{
               coordsX: item.latent.coords_x,
               coordsY: item.latent.coords_y,
@@ -76,9 +75,9 @@ const OptimalGmmPane: React.FC<{
           <legend>Running Job info</legend>
           <CurrentInfo jobItem={item} />
           <legend>Optimal GMM</legend>
-          <GmmNumComponentSelector uuid={uuid} jobItem={item} />
+          <GmmNumComponentSelector jobItem={item} />
           <LatentGraph
-            title="Latent Space"
+            // title="Latent Space"
             vaeData={{
               coordsX: item.latent.coords_x,
               coordsY: item.latent.coords_y,
@@ -101,40 +100,13 @@ const OptimalGmmPane: React.FC<{
 };
 
 const DetailPane: React.FC = () => {
-  const router = useRouter();
-  const currentUUID = router.query.experiment as string | undefined;
-  const currentNumComponents = router.query.n_components as string | undefined;
-  const [jobItem, setJobItem] = useState<JobItem | null>(null);
-  const [loadingJob, lock, unlock] = useIsLoading();
+  const { uuid, isLoading, jobItem, refresh } = useJobItem();
 
-  const refresh = async () => {
-    if (!currentUUID) {
-      return;
-    }
-
-    lock();
-    const res = await apiClient.getGMMJobs({
-      queries: {
-        n_components:
-          currentNumComponents === undefined
-            ? undefined
-            : parseInt(currentNumComponents),
-      },
-      params: { uuid: currentUUID },
-    });
-    setJobItem(res);
-    unlock();
-  };
-
-  useEffect(() => {
-    refresh();
-  }, [currentUUID, currentNumComponents]);
-
-  if (!currentUUID) {
+  if (!uuid) {
     return <div>Please select items listed left.</div>;
   }
 
-  if (loadingJob || !jobItem) {
+  if (isLoading || !jobItem) {
     return <LoadingPane label="Loading..." />;
   }
 
@@ -156,43 +128,39 @@ const DetailPane: React.FC = () => {
         durationTimeSecond={jobItem.duration}
       />
       <ActionButtons
-        uuid={currentUUID}
+        uuid={uuid}
         refreshFunc={refresh}
         jobName={jobItem.name}
         jobStatus={jobItem.status}
       />
       <ParamsTable params={jobItem.params} />
-      <OptimalGmmPane uuid={currentUUID} item={jobItem} />
+      <OptimalGmmPane uuid={uuid} item={jobItem} />
     </div>
   );
 };
 
-const Home: React.FC = () => {
+const App: React.FC = () => {
   return (
-    <div className="vh-100 d-flex flex-column">
-      <Navigator currentPage="gmm-trainer" />
-      <main>
-        <Container>
-          <div className="py-2" />
-          <h1>GMM Trainer</h1>
-          <hr />
-          <Row>
-            <Col md={4}>
-              <AddJobButton />
-              <GmmJobsList />
-            </Col>
-            <Col>
-              <DetailPane />
-            </Col>
-          </Row>
-        </Container>
-      </main>
-      <Footer />
-    </div>
+    <main>
+      <Container>
+        <div className="py-2" />
+        <h1>GMM Trainer</h1>
+        <hr />
+        <Row>
+          <Col md={4}>
+            <AddJobButton />
+            <GmmJobsList />
+          </Col>
+          <Col>
+            <DetailPane />
+          </Col>
+        </Row>
+      </Container>
+    </main>
   );
 };
 
-const PageRoot: NextPage = () => {
+const Layout: NextPage = () => {
   return (
     <>
       <Head>
@@ -204,9 +172,15 @@ const PageRoot: NextPage = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Home />
+      <Provider store={store}>
+        <div className="vh-100 d-flex flex-column">
+          <Navigator currentPage="gmm-trainer" />
+          <App />
+          <Footer />
+        </div>
+      </Provider>
     </>
   );
 };
 
-export default PageRoot;
+export default Layout;

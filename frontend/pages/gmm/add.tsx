@@ -4,39 +4,35 @@ import Head from "next/head";
 import { Col, Container, Row } from "react-bootstrap";
 import Navigator from "~/components/common/navigator";
 import { Provider } from "react-redux";
-import { store } from "~/components/gmm/add/redux/store";
+import { store } from "~/components/gmm-add/redux/store";
 import "@inovua/reactdatagrid-community/index.css";
-import Forms from "~/components/gmm/add/forms";
+import Forms from "~/components/gmm-add/forms";
 import Footer from "~/components/common/footer";
-import LatentGraph from "~/components/gmm/add/latent-graph";
-import PagenationNav from "~/components/gmm/add/pagenation-nav";
+import LatentGraph from "~/components/gmm-add/latent-graph";
+import PagenationGMM from "~/components/gmm-add/pagenation-gmm";
 
-const Home: React.FC = () => {
+const App: React.FC = () => {
   return (
-    <div className="vh-100 d-flex flex-column">
-      <Navigator currentPage="gmm-trainer" />
-      <main>
-        <Container>
-          <div className="py-2" />
-          <h1>GMM Trainer</h1>
-          <hr />
-          <Row>
-            <Col md={4}>
-              <Forms />
-            </Col>
-            <Col>
-              <LatentGraph />
-              <PagenationNav />
-            </Col>
-          </Row>
-        </Container>
-      </main>
-      <Footer />
-    </div>
+    <main>
+      <Container>
+        <div className="py-2" />
+        <h1>GMM Trainer</h1>
+        <hr />
+        <Row>
+          <Col md={4}>
+            <Forms />
+          </Col>
+          <Col>
+            <LatentGraph />
+            <PagenationGMM />
+          </Col>
+        </Row>
+      </Container>
+    </main>
   );
 };
 
-const PageRoot: NextPage = () => {
+const Layout: NextPage = () => {
   return (
     <>
       <Head>
@@ -46,10 +42,14 @@ const PageRoot: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Provider store={store}>
-        <Home />
+        <div className="vh-100 d-flex flex-column">
+          <Navigator currentPage="gmm-trainer" />
+          <App />
+          <Footer />
+        </div>
       </Provider>
     </>
   );
 };
 
-export default PageRoot;
+export default Layout;
