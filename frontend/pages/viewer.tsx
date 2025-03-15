@@ -1,75 +1,51 @@
 import "bootswatch/dist/cerulean/bootstrap.min.css";
+import "@inovua/reactdatagrid-community/index.css";
+import "react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css";
 import { NextPage } from "next";
 import { Provider } from "react-redux";
 import { store } from "~/components/viewer/redux/store";
 import Head from "next/head";
 import Navigator from "~/components/common/navigator";
-import { Col, Container, Row, SSRProvider, Tab, Tabs } from "react-bootstrap";
-import LatentGraph from "~/components/viewer/latent-graph";
-import SelectionTable from "~/components/viewer/selection-table";
-import "@inovua/reactdatagrid-community/index.css";
+import { Col, Container, Row, SSRProvider } from "react-bootstrap";
+import LatentGraph from "~/components/viewer/latent-graph/index";
 import { Footer } from "~/components/common/footer";
-import DataSelector from "~/components/viewer/data-selector/data-selector";
-import VAEParamsTable from "~/components/viewer/vae-params-table";
-import GMMParamsTable from "~/components/viewer/gmm-params-table";
-import Encode from "~/components/viewer/encode/encode";
-import Decode from "~/components/viewer/decode/decode";
-import EncodeTable from "~/components/viewer/encode-table";
-import DecodeTable from "~/components/viewer/decode-table";
-import DownloadCluster from "~/components/viewer/download-cluster";
+import ModelPicker from "~/components/viewer/model-picker";
+import InteractionTables from "~/components/viewer/interaction-tables";
+import DecoderInput from "~/components/viewer/decode-input";
+import DecoderOutput from "~/components/viewer/decode-output";
+import Downloader from "~/components/viewer/downloader";
+import EncodeInput from "~/components/viewer/encode-input";
 
-const Home: React.FC = () => {
+const App: React.FC = () => {
   return (
-    <div className="vh-100 d-flex flex-column">
-      <Navigator currentPage="viewer" />
-      <main>
-        <Container>
-          <h1 style={{ marginTop: "1rem" }}>Viewer</h1>
-          <hr />
-          <Row>
-            <Col md={4}>
-              <legend>Data and properties</legend>
-              <Tabs defaultActiveKey="dataSelector" id="dataControl">
-                <Tab eventKey="dataSelector" title="Data">
-                  <DataSelector />
-                </Tab>
-                <Tab eventKey="vaeParamsTable" title="VAE parameters">
-                  <VAEParamsTable />
-                </Tab>
-                <Tab eventKey="gmmParamsTable" title="GMM parameters">
-                  <GMMParamsTable />
-                </Tab>
-              </Tabs>
-              <legend>Encode sequences</legend>
-              <Encode />
-              <legend>Decode latent points</legend>
-              <Decode />
-              <legend>Download clusters</legend>
-              <DownloadCluster />
-            </Col>
-            <Col>
-              <LatentGraph />
-              <Tabs defaultActiveKey="selected-points" id="interaction-table">
-                <Tab eventKey="selected-points" title="Selected points">
-                  <SelectionTable />
-                </Tab>
-                <Tab eventKey="encoded-sequences" title="Encoded sequences">
-                  <EncodeTable />
-                </Tab>
-                <Tab eventKey="decoded-points" title="Decoded points">
-                  <DecodeTable />
-                </Tab>
-              </Tabs>
-            </Col>
-          </Row>
-        </Container>
-      </main>
-      <Footer />
-    </div>
+    <main>
+      <Container>
+        <div className="py-2" />
+        <h1>Viewer</h1>
+        <hr />
+        <Row>
+          <Col md={4}>
+            <legend>Data and properties</legend>
+            <ModelPicker />
+            <legend>Encode sequences</legend>
+            <EncodeInput />
+            <legend>Decode latent points</legend>
+            <DecoderInput />
+            <DecoderOutput />
+            <legend>Download clusters</legend>
+            <Downloader />
+          </Col>
+          <Col>
+            <LatentGraph />
+            <InteractionTables />
+          </Col>
+        </Row>
+      </Container>
+    </main>
   );
 };
 
-const PageRoot: NextPage = () => {
+const Layout: NextPage = () => {
   return (
     <>
       <Head>
@@ -80,11 +56,15 @@ const PageRoot: NextPage = () => {
       </Head>
       <SSRProvider>
         <Provider store={store}>
-          <Home />
+          <div className="vh-100 d-flex flex-column">
+            <Navigator currentPage="viewer" />
+            <App />
+            <Footer />
+          </div>
         </Provider>
       </SSRProvider>
     </>
   );
 };
 
-export default PageRoot;
+export default Layout;

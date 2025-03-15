@@ -1,63 +1,90 @@
 import { PayloadAction, createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import { apiClient } from "~/services/api-client";
-// import { RootState } from "./store";
+import { apiClient } from "~/services/api-client";
+import { RootState } from "./store";
 
-type SessionConfig = {
-  vaeId: string; // UUID of the VAE model
+interface SessionConfigState {
   sessionId: string; // UUID of the session
+  vaeId: string; // UUID of the VAE model
+  vaeName: string; // Name of the VAE model
+}
+
+const initialState: SessionConfigState = {
+  sessionId: "",
+  vaeId: "",
+  vaeName: "",
 };
+
+const setSessionConfigByVaeIdName = createAsyncThunk<
+  SessionConfigState,
+  {
+    vaeId: string;
+    vaeName?: string;
+  },
+  {
+    state: RootState;
+  }
+>(
+  "sessionConfig/setByVaeIdName",
+  async (
+    vaeConfig: {
+      vaeId: string;
+      vaeName?: string;
+    },
+    thunkAPI
+  ) => {
+    const currentState: RootState = thunkAPI.getState();
+
+    try {
+      let newSessionId = "";
+      if (vaeConfig.vaeId) {
+        const resStart = await apiClient.startSession({
+          queries: {
+            vae_uuid: vaeConfig.vaeId,
+          },
+        });
+        newSessionId = resStart.uuid;
+      }
+
+      if (currentState.sessionConfig.sessionId) {
+        await apiClient.endSession({
+          queries: {
+            session_uuid: currentState.sessionConfig.sessionId,
+          },
+        });
+      }
+
+      return {
+        sessionId: newSessionId,
+        vaeId: vaeConfig.vaeId,
+        vaeName: vaeConfig.vaeName || "",
+      };
+    } catch (error) {
+      console.error(error);
+      return initialState;
+    }
+  }
+);
 
 const sessionConfigSlice = createSlice({
   name: "sessionConfig",
-  initialState: {
-    vaeId: "",
-    sessionId: "",
-  },
+  initialState,
   reducers: {
-    set: (state: SessionConfig, action: PayloadAction<SessionConfig>) => {
+    setSessionConfig: (state, action: PayloadAction<SessionConfigState>) => {
       return action.payload;
     },
-    //   extraReducers: (builder) => {
-    //     builder.addCase(fetchSessionIdThunk.fulfilled, (state, action) => {
-    //       state.vaeId = action.payload.vaeId;
-    //       state.sessionId = action.payload.sessionId;
-    //     });
-    //     builder.addCase(fetchSessionIdThunk.rejected, (state) => {
-    //       console.log("Failed to start session");
-    //       state.vaeId = "";
-    //       state.sessionId = "";
-    //     });
+  },
+  extraReducers: (builder) => {
+    builder.addCase(setSessionConfigByVaeIdName.fulfilled, (state, action) => {
+      state.sessionId = action.payload.sessionId;
+      state.vaeId = action.payload.vaeId;
+      state.vaeName = action.payload.vaeName;
+    });
   },
 });
-
-// use thunk to dispatch async actions
-// const fetchSessionIdThunk = createAsyncThunk(
-//   "sessionConfig/setByVaeId",
-//   async (vaeId: string, { getState }) => {
-//     const state = getState() as RootState;
-//     if (state.sessionConfig.sessionId !== "") {
-//       await apiClient.endSession({
-//         queries: {
-//           session_id: state.sessionConfig.sessionId,
-//         },
-//       });
-//     }
-
-//     const res = await apiClient.startSession({
-//       queries: {
-//         vae_uuid: vaeId,
-//       },
-//     });
-
-//     return {
-//       vaeId: vaeId,
-//       sessionId: res.uuid,
-//     };
-//   }
-// );
 
 const sessionConfigReducer = sessionConfigSlice.reducer;
 
 export default sessionConfigReducer;
-// export { fetchSessionIdThunk };
-export type { SessionConfig };
+export const { setSessionConfig } = sessionConfigSlice.actions;
+export type { SessionConfigState };
+export { setSessionConfigByVaeIdName };

@@ -40,7 +40,7 @@ const setSessionConfigByVaeIdName = createAsyncThunk<
 
     try {
       let newSessionId = "";
-      if (vaeConfig.vaeId !== "") {
+      if (vaeConfig.vaeId) {
         const resStart = await apiClient.startSession({
           queries: {
             vae_uuid: vaeConfig.vaeId,
@@ -49,7 +49,7 @@ const setSessionConfigByVaeIdName = createAsyncThunk<
         newSessionId = resStart.uuid;
       }
 
-      if (currentState.sessionConfig.sessionId !== "") {
+      if (currentState.sessionConfig.sessionId) {
         await apiClient.endSession({
           queries: {
             session_uuid: currentState.sessionConfig.sessionId,
@@ -61,8 +61,8 @@ const setSessionConfigByVaeIdName = createAsyncThunk<
         sessionId: newSessionId,
         vaeId: vaeConfig.vaeId,
         vaeName: vaeConfig.vaeName || "",
-        gmmId: "",
-        gmmName: "",
+        gmmId: currentState.sessionConfig.gmmId,
+        gmmName: currentState.sessionConfig.gmmName,
       };
     } catch (error) {
       console.error(error);

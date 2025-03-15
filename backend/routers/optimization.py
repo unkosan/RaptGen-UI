@@ -551,20 +551,20 @@ async def update_experiment_item(
     session: Session = Depends(get_db_session),
 ):
     # check if the experiment uuid exists
-    if (
+    old = (
         session.query(db.Experiments)
         .filter(db.Experiments.uuid == experiment_uuid)
         .one_or_none()
-        is None
-    ):
+    )
+    if old is None:
         raise HTTPException(
             status_code=404, detail=f"Experiment with uuid {experiment_uuid} not found"
         )
 
     # call delete API then call submit API
     await delete_experiment_item(experiment_uuid, session)
+    request.experiment_name = old.name  # type: ignore
     response = await submit_bayesian_optimization(request, session)
-
     new_uuid = response["uuid"]
 
     # Update Experiments
