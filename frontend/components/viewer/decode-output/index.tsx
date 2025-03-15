@@ -66,7 +66,7 @@ const DecoderOutput: React.FC = () => {
   } = useSecondaryStructureImage(gridPoint, forward, reverse, sequence, lock);
 
   // Actions for adding decoded points to the table
-  const { isLoading: isAdding, onAdd } = useDecodedPointActions(
+  const { isLoading: isAdding, handleAdd } = useDecodedPointActions(
     gridPoint,
     sequence,
     decodeData
@@ -101,7 +101,7 @@ const DecoderOutput: React.FC = () => {
           <Form.Control value={sequence} readOnly />
           <Button
             disabled={isAddButtonDisabled}
-            onClick={onAdd}
+            onClick={handleAdd}
             title="Add to decoded points"
           >
             {renderAddButtonContent()}

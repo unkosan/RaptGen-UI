@@ -11,18 +11,6 @@ export const useNumComponents = (item: Job) => {
   const { push } = useRouter();
   const { status, uuid, params } = item;
 
-  if (status === "failure" || status === "pending") {
-    return {
-      value: NaN,
-      optimalValue: NaN,
-      range: [],
-      handleSelect: () => {},
-      handleSubmit: async () => {
-        throw new Error("Invalid job submitted");
-      },
-    };
-  }
-
   const numComponents = range(
     params.minimum_n_components,
     params.maximum_n_components + 1,
@@ -61,14 +49,26 @@ export const useNumComponents = (item: Job) => {
         console.error(error);
       }
     },
-    [item.status, uuid, item.gmm?.current_n_components]
+    [item, uuid]
   );
 
-  return {
-    value: item.gmm.current_n_components,
-    optimalValue: item.gmm.current_n_components,
-    range: numComponents,
-    handleSelect,
-    handleSubmit,
-  };
+  if (status === "failure" || status === "pending") {
+    return {
+      value: NaN,
+      optimalValue: NaN,
+      range: [],
+      handleSelect: () => {},
+      handleSubmit: async () => {
+        throw new Error("Invalid job submitted");
+      },
+    };
+  } else {
+    return {
+      value: item.gmm.current_n_components,
+      optimalValue: item.gmm.current_n_components,
+      range: numComponents,
+      handleSelect,
+      handleSubmit,
+    };
+  }
 };
