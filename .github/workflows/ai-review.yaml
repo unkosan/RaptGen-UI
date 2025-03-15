@@ -26,7 +26,7 @@ jobs:
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '[run review]') && github.event.issue.pull_request) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '[run review]')) ||
       (github.event_name == 'pull_request' && !contains(github.event.pull_request.title, 'release') && !contains(github.event.pull_request.title, 'Release'))
-    timeout-minutes: 15
+    timeout-minutes: 60
     steps:
       - uses: wisteria30/ai-pr-reviewer@v1
         env:
@@ -34,7 +34,7 @@ jobs:
           AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
           AZURE_OPENAI_API_INSTANCE_NAME: ${{ secrets.AZURE_OPENAI_API_INSTANCE_NAME }}
           AZURE_OPENAI_API_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_API_DEPLOYMENT_NAME }}
-          AZURE_OPENAI_API_VERSION: '2023-03-15-preview'
+          AZURE_OPENAI_API_VERSION: "2025-02-01-preview"
         with:
           debug: false
           review_simple_changes: false
