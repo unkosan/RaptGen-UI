@@ -19,18 +19,22 @@ export const useGraphConfig = () => {
 
   const handleMinCountChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setDirty();
-
       const value = parseInt(e.currentTarget.value);
       const isValid = !isNaN(value) && value > 0;
       setMinCount(value);
       setIsValidMinCount(isValid);
 
       if (!isValid) {
+        try {
+          setDirty();
+        } catch (e) {
+          console.error(e);
+        }
         return;
       }
 
       try {
+        setDirty();
         dispatch(
           setGraphConfig({
             ...graphConfig,
@@ -39,7 +43,6 @@ export const useGraphConfig = () => {
         );
       } catch (e) {
         console.error(e);
-        return;
       }
     },
     [dispatch, graphConfig, setDirty]
@@ -47,10 +50,10 @@ export const useGraphConfig = () => {
 
   const handleShowSelexChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setDirty();
       setShowSelex(e.currentTarget.checked);
 
       try {
+        setDirty();
         dispatch(
           setGraphConfig({
             ...graphConfig,
@@ -59,7 +62,6 @@ export const useGraphConfig = () => {
         );
       } catch (e) {
         console.error(e);
-        return;
       }
     },
     [dispatch, graphConfig, setDirty]
@@ -67,10 +69,10 @@ export const useGraphConfig = () => {
 
   const handleChangeShowContour = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setDirty();
       setShowContour(e.currentTarget.checked);
 
       try {
+        setDirty();
         dispatch(
           setGraphConfig({
             ...graphConfig,
@@ -79,7 +81,6 @@ export const useGraphConfig = () => {
         );
       } catch (e) {
         console.error(e);
-        return;
       }
     },
     [dispatch, graphConfig, setDirty]
