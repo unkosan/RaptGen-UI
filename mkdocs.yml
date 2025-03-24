@@ -39,6 +39,7 @@ theme:
 
 markdown_extensions:
   - admonition
+  - attr_list
 
 extra:
   social:
