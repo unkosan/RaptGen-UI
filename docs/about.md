@@ -1,11 +1,10 @@
 # About
 
-## Author
+## Developers
 
-Design and Engineering: [Ryota Nakano](https://github.com/unkosan) and [Natsuki Iwano](https://github.com/Xilorole)
+Design and engineering: [Ryota Nakano](https://github.com/unkosan) and [Natsuki Iwano](https://github.com/Xilorole)
 
-Testing and Supervisor: [Akiko Ichinose](https://github.com/
-ntakkicns) and [Michiaki Hamada](https://www.hamadalab.com/)
+Testing and supervisor: [Akiko Ichinose](https://github.com/ntakkicns) and [Michiaki Hamada](https://www.hamadalab.com/)
 
 Affiliation: [Hamada Laboratory](https://www.hamadalab.com/) / Waseda University, Tokyo, Japan
 
@@ -13,35 +12,40 @@ Affiliation: [Hamada Laboratory](https://www.hamadalab.com/) / Waseda University
 
 **Frontend**
 
-- [![TypeScript][TypeScript]][TypeScript-url]
-- [![Next.js][Next.js]][Next.js-url]
-- [![Bootstrap][Bootstrap]][Bootstrap-url]
-- [![Redux][Redux]][Redux-url]
-- [![Plotly][Plotly]][Plotly-url]
+- [![TypeScript][TypeScript]][TypeScript-url] Programming language
+- [![Next.js][Next.js]][Next.js-url] React framework
+- [![Bootstrap][Bootstrap]][Bootstrap-url] Front-end component library
+- [![Redux][Redux]][Redux-url] State management
+- [![Plotly][Plotly]][Plotly-url] Data visualization
 
 **Backend**
 
-- [![Python][Python]][Python-url]
-- [![FastAPI][FastAPI]][FastAPI-url]
-- [![PyTorch][PyTorch]][PyTorch-url]
-- [![Celery][Celery]][Celery-url]
+- [![Python][Python]][Python-url] Programming language
+- [![FastAPI][FastAPI]][FastAPI-url] Web framework
+- [![PyTorch][PyTorch]][PyTorch-url] Machine learning framework
+- [![Celery][Celery]][Celery-url] Task queue
 
 **Database**
 
-- [![PostgreSQL][PostgreSQL]][PostgreSQL-url]
-- [![Redis][Redis]][Redis-url]
+- [![PostgreSQL][PostgreSQL]][PostgreSQL-url] Relational database
+- [![Redis][Redis]][Redis-url] In-memory task queue database for Celery
 
 **Deployment**
 
-- [![Docker Compose][Docker Compose]][Docker Compose-url]
+- [![Docker Compose][Docker Compose]][Docker Compose-url]: Container orchestration
 
 ## Funding
 
 This work was partially supported by CREST (Core Research for Evolutional Science and Technology) from the Japan Science and Technology Agency (JST) (Grant Number JPMJCR21F1)
 
+## Contribution
+
+If you find any bugs or have any suggestions, please open an issue or submit a pull request.
+This project has two repositories: [`unkosan/RaptGen-UI`](https://github.com/unkosan/RaptGen-UI) (for dev) and [`hmdlab/RaptGen-UI`](https://github.com/hmdlab/RaptGen-UI) (for users.) Please access to [`unkosan/RaptGen-UI`](https://github.com/unkosan/RaptGen-UI) if you want to contribute to the development of RaptGen-UI.
+
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](https://github.com/unkosan/RaptGen-UI/blob/main/LICENSE). You can freely use, modify, and distribute this software for personal or commercial purposes.
 
 <!-- Links -->
 
@@ -57,7 +61,6 @@ This project is licensed under the [MIT License](LICENSE).
 [PostgreSQL]: https://img.shields.io/badge/PostgreSQL-4169E1.svg?logo=postgresql&style=flat&logoColor=white
 [Redis]: https://img.shields.io/badge/Redis-DC382D.svg?logo=redis&style=flat&logoColor=white
 [Docker Compose]: https://img.shields.io/badge/Docker%20Compose-2496ED.svg?logo=docker&style=flat&logoColor=white
-
 [TypeScript-url]: https://www.typescriptlang.org/
 [Next.js-url]: https://nextjs.org/
 [Bootstrap-url]: https://getbootstrap.com/
