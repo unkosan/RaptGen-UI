@@ -92,7 +92,7 @@ export const responsePostSearchJobs = z.array(
           item_epochs_current: z.number().int().min(0),
         }),
       ])
-    ),
+    ).transform((x) => x.sort((a, b) => a.item_id - b.item_id)),
   })
 );
 
@@ -114,6 +114,15 @@ export const responseGetItem = z.object({
     ),
     epochs_finished: z.array(z.number().int().min(0)),
     minimum_NLLs: z.array(z.union([z.null(), z.number().min(0)])),
+  }).transform((x) => {
+    const newIndices = Array.from({ length: x.indices.length }, (_, i) => i)
+    const reorderedIndices = newIndices.map((_, i) => x.indices.indexOf(i))
+    return {
+      indices: newIndices,
+      statuses: x.statuses.map((_, i) => x.statuses[reorderedIndices[i]]),
+      epochs_finished: x.epochs_finished.map((_, i) => x.epochs_finished[reorderedIndices[i]]),
+      minimum_NLLs: x.minimum_NLLs.map((_, i) => x.minimum_NLLs[reorderedIndices[i]]),
+    }
   }),
 });
 
