@@ -2,7 +2,7 @@
 
 ## Preliminaries
 
-Please check if the Docker compose is installed. like
+Please check if the Docker compose is installed on your machine.
 
 ```shell
 $ docker -v     
