@@ -45,6 +45,12 @@ export const requestPostWeblogo = z.object({
 });
 export const responsePostWeblogo = z.string().nonempty();
 
+// API POST /session/decode/weblogo-map (return image)
+export const requestPostWeblogoMap = z.object({
+  session_uuid: z.string().uuid(),
+});
+export const responsePostWeblogoMap = z.string().nonempty();
+
 export const apiSession = makeApi([
   {
     alias: "startSession",
@@ -127,5 +133,20 @@ export const apiSession = makeApi([
       },
     ],
     response: responsePostWeblogo,
+  },
+  {
+    alias: "getWeblogoMap",
+    method: "post",
+    path: "/session/decode/weblogo-map",
+    description: "Get weblogo map",
+    parameters: [
+      {
+        name: "request",
+        description: "Request body",
+        type: "Body",
+        schema: requestPostWeblogoMap,
+      },
+    ],
+    response: responsePostWeblogoMap,
   },
 ]);

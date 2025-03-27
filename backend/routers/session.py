@@ -1,26 +1,25 @@
-from typing import Dict, List
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import Response
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
 import pickle
-import torch
-import numpy as np
-from uuid import uuid4
-import matplotlib.pyplot as plt
-from io import BytesIO
-import tempfile
 import subprocess
-from core.db import (
-    ViewerVAE,
-    get_db_session,
-)
+import tempfile
+from io import BytesIO
+from typing import Dict, List
+from uuid import uuid4
+
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
 from core.algorithms import (
     CNN_PHMM_VAE,
+    draw_logo,
     embed_sequences,
     get_most_probable_seq,
-    draw_logo,
+    map_logo,
 )
+from core.db import ViewerVAE, get_db_session
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -34,6 +33,10 @@ class CPU_Unpickler(pickle.Unpickler):
 
 
 sessions: Dict[str, CNN_PHMM_VAE] = dict()
+
+
+class RequestSession(BaseModel):
+    session_uuid: str
 
 
 class RequestCoordinates(BaseModel):
@@ -172,19 +175,44 @@ async def get_weblogo(request: RequestCoordinates):
     )
 
 
+@router.post(
+    "/api/session/decode/weblogo-map",
+    responses={200: {"content": {"image/png": {}}}},
+    response_class=Response,
+)
+async def get_weblogo_map(request: RequestSession):
+    if request.session_uuid not in sessions.keys():
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    model = sessions[request.session_uuid]
+    fig = map_logo(
+        model=model,
+        xlim=(-3.5, 3.5),
+        ylim=(-3.5, 3.5),
+        resolution=15,
+        dpi=150,
+    )
+    bytes_io = BytesIO()
+    fig.savefig(bytes_io, format="png")
+    bytes_io.seek(0)
+    figdata = bytes_io.read()
+    return Response(
+        content=figdata,
+        media_type="image/png",
+    )
+
+
 @router.get(
     "/api/tool/secondary-structure",
     responses={200: {"content": {"image/png": {}}}},
     response_class=Response,
 )
 async def get_secondary_structure(sequence: str):
-    with tempfile.NamedTemporaryFile(
-        "w+", suffix=".fasta"
-    ) as tempf_fasta, tempfile.NamedTemporaryFile(
-        "w+", suffix=".ps"
-    ) as tempf_ps, tempfile.NamedTemporaryFile(
-        "w+b", suffix=".png"
-    ) as tempf_png:
+    with (
+        tempfile.NamedTemporaryFile("w+", suffix=".fasta") as tempf_fasta,
+        tempfile.NamedTemporaryFile("w+", suffix=".ps") as tempf_ps,
+        tempfile.NamedTemporaryFile("w+b", suffix=".png") as tempf_png,
+    ):
         tempf_fasta.write(f">\n{sequence}")
         tempf_fasta.flush()
         subprocess.run(
