@@ -43,12 +43,12 @@ markdown_extensions:
 
 extra:
   social:
-    - icon: fontawesome/solid/book-open
-      link: https://biorxiv.org/
-      name: Preprint
+    # - icon: fontawesome/solid/book-open
+    #   link: https://biorxiv.org/
+    #   name: Preprint
     - icon: fontawesome/solid/envelope
-      link: mailto:ryota.nakano@hamadalab.com
-      name: Mail to maintainer
+      link: mailto:ryota.nakano@hamadalab.com?cc=mhamada@waseda.jp&subject=[RaptGen-UI]%20Feedback
+      name: Mail to the maintainers
     - icon: fontawesome/brands/github
       link: https://github.com/unkosan/RaptGen-UI
       name: GitHub Repository

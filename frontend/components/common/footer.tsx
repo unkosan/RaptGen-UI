@@ -17,7 +17,7 @@ export const Footer: React.FC = () => {
                 <Tooltip id="tooltip-home">Mail to the maintainers</Tooltip>
               }
             >
-              <Link href="mailto:ryota.nakano@hamadalab.com">
+              <Link href="mailto:ryota.nakano@hamadalab.com?cc=mhamada@waseda.jp&subject=[RaptGen-UI]%20Feedback">
                 <Envelope size={24} color="white" />
               </Link>
             </OverlayTrigger>
@@ -32,7 +32,7 @@ export const Footer: React.FC = () => {
               </Link>
             </OverlayTrigger>
           </li>
-          <li className="ms-3">
+          {/* <li className="ms-3">
             <OverlayTrigger
               placement="top"
               overlay={<Tooltip id="tooltip-biorxiv">Preprint</Tooltip>}
@@ -41,7 +41,7 @@ export const Footer: React.FC = () => {
                 <JournalText size={24} color="white" />
               </Link>
             </OverlayTrigger>
-          </li>
+          </li> */}
         </ul>
       </div>
     </footer>
