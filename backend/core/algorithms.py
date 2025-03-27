@@ -642,7 +642,9 @@ def draw_logo(
         coords=[coord],
         model=model,
         proba_is_log=True,
-    )[1][0]:  # head of states list
+    )[1][
+        0
+    ]:  # head of states list
         if not 0 < index <= len(emission_probs):
             continue
 
