@@ -6,16 +6,17 @@
 from itertools import groupby
 from time import time
 from typing import Callable, List, Tuple, Union
-from matplotlib.axes import Axes
-from torch import Tensor, nn
-import torch.nn.functional as F
-import torch
-import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 
-from .preprocessing import Transition, NucleotideID, State, ID_encode
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import torch.nn.functional as F
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from PIL import Image, ImageDraw, ImageFont
+from torch import Tensor, nn
+
+from .preprocessing import ID_encode, NucleotideID, State, Transition
 
 # from raptgen.core.preprocessing import Transition, NucleotideID, State, ID_encode
 

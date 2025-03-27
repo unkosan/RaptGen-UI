@@ -1,27 +1,25 @@
-from typing import Dict, List
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import Response
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
 import pickle
-import torch
-import numpy as np
-from uuid import uuid4
-import matplotlib.pyplot as plt
-from io import BytesIO
-import tempfile
 import subprocess
-from core.db import (
-    ViewerVAE,
-    get_db_session,
-)
+import tempfile
+from io import BytesIO
+from typing import Dict, List
+from uuid import uuid4
+
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
 from core.algorithms import (
     CNN_PHMM_VAE,
+    draw_logo,
     embed_sequences,
     get_most_probable_seq,
-    draw_logo,
     map_logo,
 )
+from core.db import ViewerVAE, get_db_session
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
