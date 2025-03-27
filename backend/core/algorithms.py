@@ -704,6 +704,7 @@ def map_logo(
     xlim: Tuple[float, float] = (-3.5, 3.5),
     ylim: Tuple[float, float] = (-3.5, 3.5),
     resolution: int = 15,
+    dpi: int = 100,
 ) -> Figure:
     """
     Parameters
@@ -732,7 +733,7 @@ def map_logo(
     y_max = ylim[1]
     y_unit = (y_max - y_offset) / (resolution - 1)
 
-    fig, axes = plt.subplots(resolution + 1, resolution + 1, figsize=(20, 10), dpi=200)
+    fig, axes = plt.subplots(resolution + 1, resolution + 1, figsize=(20, 10), dpi=dpi)
     for i, ax in enumerate(axes[0, 1:]):
         ax.text(
             0.5, 0.5, str(i * x_unit + x_offset), fontsize=15, ha="center", va="center"

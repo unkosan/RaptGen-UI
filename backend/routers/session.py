@@ -190,6 +190,7 @@ async def get_weblogo_map(request: RequestSession):
         xlim=(-3.5, 3.5),
         ylim=(-3.5, 3.5),
         resolution=15,
+        dpi=150,
     )
     bytes_io = BytesIO()
     fig.savefig(bytes_io, format="png")
