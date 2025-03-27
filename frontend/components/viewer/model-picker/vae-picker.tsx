@@ -127,7 +127,7 @@ const VAEPicker: React.FC<{
       </ListGroup>
 
       <RenameModal
-        defaultName={pickedId}
+        defaultName={pickedName}
         title="Rename VAE model"
         label="Please enter a new name for the VAE model."
         isOpen={isRenameModelOpen}

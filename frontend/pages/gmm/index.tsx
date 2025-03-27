@@ -113,7 +113,7 @@ const DetailPane: React.FC = () => {
   return (
     <div>
       <div className="justify-content-between d-flex">
-        <h3>Experiment: {jobItem.name}</h3>
+        <h3>{jobItem.name}</h3>
         <div>
           <Button variant="primary" onClick={refresh}>
             <div className="align-items-center d-flex">

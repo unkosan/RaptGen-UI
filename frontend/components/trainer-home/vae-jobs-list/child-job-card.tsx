@@ -32,9 +32,6 @@ const ChildJobCard: React.FC<Props> = (props) => {
     : undefined;
 
   const { formatDurationText, handleClick, getCardStyle } = useChildJobCard({
-    status,
-    duration,
-    isSelected,
     onClick: props.onClick,
   });
 
