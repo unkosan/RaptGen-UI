@@ -1,43 +1,9 @@
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
-import { apiClient } from "~/services/api-client";
 import { Card, Image } from "react-bootstrap";
 import LoadingPane from "~/components/common/loading-pane";
+import { useWeblogoMap } from "./hooks/use-weblogo-map";
 
 const WeblogoMap: React.FC = () => {
-  const sessionId = useSelector(
-    (state: RootState) => state.sessionConfig.sessionId
-  );
-  const [weblogoBase64, setWeblogoBase64] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!sessionId) {
-      setWeblogoBase64("");
-    }
-
-    setIsLoading(true);
-
-    (async () => {
-      try {
-        const res = await apiClient.getWeblogoMap(
-          {
-            session_uuid: sessionId,
-          },
-          {
-            responseType: "arraybuffer",
-          }
-        );
-        const base64 = Buffer.from(res, "binary").toString("base64");
-        setWeblogoBase64(base64);
-      } catch (error) {
-        console.error("Error fetching weblogo map:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [sessionId]);
+  const { isLoading, weblogoBase64 } = useWeblogoMap();
 
   return (
     <Card className="mb-3">
