@@ -606,7 +606,7 @@ def draw_logo(
         logo の高さを調整するための補正値。
     font_file : str = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
         logo に使用するフォントファイル。
-    
+
     Returns
     -------
     ax : Axes
@@ -642,9 +642,7 @@ def draw_logo(
         coords=[coord],
         model=model,
         proba_is_log=True,
-    )[1][
-        0
-    ]:  # head of states list
+    )[1][0]:  # head of states list
         if not 0 < index <= len(emission_probs):
             continue
 
@@ -698,6 +696,7 @@ def draw_logo(
 
     return ax
 
+
 def map_logo(
     model: CNN_PHMM_VAE,
     xlim: Tuple[float, float] = (-3.5, 3.5),
@@ -733,13 +732,17 @@ def map_logo(
 
     fig, axes = plt.subplots(resolution + 1, resolution + 1, figsize=(20, 10), dpi=200)
     for i, ax in enumerate(axes[0, 1:]):
-        ax.text(0.5, 0.5, str(i * x_unit + x_offset), fontsize=15, ha="center", va="center")
+        ax.text(
+            0.5, 0.5, str(i * x_unit + x_offset), fontsize=15, ha="center", va="center"
+        )
         ax.set_xticks([])
         ax.set_yticks([])
         for spine in ax.spines.values():
             spine.set_visible(False)
     for i, ax in enumerate(axes[1:, 0]):
-        ax.text(0.5, 0.5, str(y_max - i * y_unit), fontsize=15, ha="center", va="center")
+        ax.text(
+            0.5, 0.5, str(y_max - i * y_unit), fontsize=15, ha="center", va="center"
+        )
         ax.set_xticks([])
         ax.set_yticks([])
         for spine in ax.spines.values():
@@ -758,6 +761,6 @@ def map_logo(
             )
             ax.set_xticks([])
             ax.set_yticks([])
-    
+
     fig.tight_layout()
     return fig

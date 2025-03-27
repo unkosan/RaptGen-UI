@@ -34,8 +34,10 @@ class CPU_Unpickler(pickle.Unpickler):
 
 sessions: Dict[str, CNN_PHMM_VAE] = dict()
 
+
 class RequestSession(BaseModel):
     session_uuid: str
+
 
 class RequestCoordinates(BaseModel):
     session_uuid: str
@@ -172,6 +174,7 @@ async def get_weblogo(request: RequestCoordinates):
         media_type="image/png",
     )
 
+
 @router.post(
     "/api/session/decode/weblogo-map",
     responses={200: {"content": {"image/png": {}}}},
@@ -204,13 +207,11 @@ async def get_weblogo_map(request: RequestSession):
     response_class=Response,
 )
 async def get_secondary_structure(sequence: str):
-    with tempfile.NamedTemporaryFile(
-        "w+", suffix=".fasta"
-    ) as tempf_fasta, tempfile.NamedTemporaryFile(
-        "w+", suffix=".ps"
-    ) as tempf_ps, tempfile.NamedTemporaryFile(
-        "w+b", suffix=".png"
-    ) as tempf_png:
+    with (
+        tempfile.NamedTemporaryFile("w+", suffix=".fasta") as tempf_fasta,
+        tempfile.NamedTemporaryFile("w+", suffix=".ps") as tempf_ps,
+        tempfile.NamedTemporaryFile("w+b", suffix=".png") as tempf_png,
+    ):
         tempf_fasta.write(f">\n{sequence}")
         tempf_fasta.flush()
         subprocess.run(
