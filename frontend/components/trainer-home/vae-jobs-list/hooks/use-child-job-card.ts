@@ -1,10 +1,7 @@
-import { formatDuration, intervalToDuration } from "date-fns";
+import { intervalToDuration } from "date-fns";
 import { JobStatus } from "./use-job-card";
 
 export interface UseChildJobCardProps {
-  status: JobStatus;
-  duration?: number;
-  isSelected?: boolean;
   onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
@@ -18,9 +15,6 @@ export interface UseChildJobCardReturn {
  * Custom hook for managing ChildJobCard state and interactions
  */
 export function useChildJobCard({
-  status,
-  duration,
-  isSelected,
   onClick,
 }: UseChildJobCardProps): UseChildJobCardReturn {
   /**
@@ -36,7 +30,27 @@ export function useChildJobCard({
       end: duration,
     });
 
-    return `Running for ${formatDuration(durationObj)}`;
+    // Convert days to hours and add to existing hours
+    const totalHours = (durationObj.days || 0) * 24 + (durationObj.hours || 0);
+
+    // Create abbreviated format: "xxh xxm xxs"
+    const parts: string[] = [];
+
+    if (totalHours > 0) {
+      parts.push(`${totalHours}h`);
+    }
+
+    if (durationObj.minutes) {
+      parts.push(`${durationObj.minutes}m`);
+    }
+
+    if (durationObj.seconds) {
+      parts.push(`${durationObj.seconds}s`);
+    }
+
+    const str = parts.join(" ");
+
+    return `Running for ${str}`;
   };
 
   /**

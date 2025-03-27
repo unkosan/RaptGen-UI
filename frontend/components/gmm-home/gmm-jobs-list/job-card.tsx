@@ -21,11 +21,10 @@ const JobCard: React.FC<Props> = (props) => {
     currentUUID,
     handleClick,
     getCardStyle,
-    formatJobDuration,
+    formatDurationText,
     isProgressOrSuspend,
   } = useJobCard({
     uuid,
-    duration,
   });
 
   /**
@@ -37,7 +36,9 @@ const JobCard: React.FC<Props> = (props) => {
         <span className="d-flex flex-column font-monospace">{name}</span>
         <div className="d-flex">
           {status === "progress" && (
-            <small className="fw-light">{formatJobDuration(duration)}</small>
+            <small className="fw-light">
+              {formatDurationText(status, duration)}
+            </small>
           )}
           {status === "success" && (
             <Badge pill bg="success" className="align-self-center">

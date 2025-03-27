@@ -10,24 +10,20 @@ export type JobStatus =
 
 export interface UseJobCardProps {
   uuid: string;
-  duration: number;
 }
 
 export interface UseJobCardReturn {
   currentUUID: string | string[] | undefined;
   handleClick: () => void;
   getCardStyle: (isSelected: boolean) => React.CSSProperties;
-  formatJobDuration: (duration: number) => string;
+  formatDurationText: (status: JobStatus, duration?: number) => string;
   isProgressOrSuspend: (status: JobStatus) => boolean;
 }
 
 /**
  * Custom hook for managing JobCard state and interactions
  */
-export function useJobCard({
-  uuid,
-  duration,
-}: UseJobCardProps): UseJobCardReturn {
+export function useJobCard({ uuid }: UseJobCardProps): UseJobCardReturn {
   const router = useRouter();
   const currentUUID = router.query.experiment;
 
@@ -60,11 +56,37 @@ export function useJobCard({
   /**
    * Format duration text
    */
-  const formatJobDuration = (duration: number): string => {
-    return (
-      "Running for " +
-      formatDuration(intervalToDuration({ start: 0, end: duration * 1000 }))
-    );
+  const formatDurationText = (status: JobStatus, duration?: number): string => {
+    if (status !== "progress" || !duration) {
+      return "";
+    }
+
+    const durationObj = intervalToDuration({
+      start: 0,
+      end: duration,
+    });
+
+    // Convert days to hours and add to existing hours
+    const totalHours = (durationObj.days || 0) * 24 + (durationObj.hours || 0);
+
+    // Create abbreviated format: "xxh xxm xxs"
+    const parts: string[] = [];
+
+    if (totalHours > 0) {
+      parts.push(`${totalHours}h`);
+    }
+
+    if (durationObj.minutes) {
+      parts.push(`${durationObj.minutes}m`);
+    }
+
+    if (durationObj.seconds) {
+      parts.push(`${durationObj.seconds}s`);
+    }
+
+    const str = parts.join(" ");
+
+    return `Running for ${str}`;
   };
 
   /**
@@ -78,7 +100,7 @@ export function useJobCard({
     currentUUID,
     handleClick,
     getCardStyle,
-    formatJobDuration,
+    formatDurationText,
     isProgressOrSuspend,
   };
 }
