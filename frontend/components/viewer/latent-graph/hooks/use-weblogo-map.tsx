@@ -14,6 +14,7 @@ export const useWeblogoMap = () => {
     const fetchWeblogoMap = async () => {
       if (!sessionId) {
         setWeblogoBase64("");
+        return;
       }
 
       setIsLoading(true);
@@ -27,10 +28,14 @@ export const useWeblogoMap = () => {
             responseType: "arraybuffer",
           }
         );
+        if (!res) {
+          throw new Error("Received empty response from getWeblogoMap API");
+        }
         const base64 = Buffer.from(res, "binary").toString("base64");
         setWeblogoBase64(base64);
       } catch (error) {
         console.error("Error fetching weblogo map:", error);
+        setWeblogoBase64("");
       } finally {
         setIsLoading(false);
       }
