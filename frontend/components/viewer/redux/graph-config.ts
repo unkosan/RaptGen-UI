@@ -4,12 +4,14 @@ interface GraphConfigState {
   minCount: number;
   showGMM: boolean;
   showDecodeGrid: boolean;
+  showTitle: boolean; 
 }
 
 const initialState: GraphConfigState = {
   minCount: 5,
   showGMM: true,
   showDecodeGrid: false,
+  showTitle: false,
 };
 
 const graphConfigSlice = createSlice({

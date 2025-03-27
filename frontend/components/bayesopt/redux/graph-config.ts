@@ -3,6 +3,7 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 interface GraphConfig {
   vaeName: string;
   minCount: number;
+  showTitle: boolean;
 
   showSelex: boolean;
   showAcquisition: boolean;
@@ -14,6 +15,7 @@ const graphConfigSlice = createSlice({
     vaeName: "",
     minCount: 5,
     showSelex: true,
+    showTitle: false,
     showAcquisition: true,
   },
   reducers: {

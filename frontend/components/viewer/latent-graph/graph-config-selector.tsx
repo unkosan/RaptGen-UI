@@ -9,10 +9,12 @@ import { useGraphConfig } from "./hooks/use-graph-config";
 const GraphConfigSelector: React.FC = () => {
   const {
     showGMM,
+    showTitle,
     minCount,
     isValidMinCount,
     handleMinCountChange,
     handleShowGMMChange,
+    handleShowTitleChange,
   } = useGraphConfig();
 
   return (
@@ -27,11 +29,18 @@ const GraphConfigSelector: React.FC = () => {
             isInvalid={!isValidMinCount}
           />
         </Form.Group>
-        <Form.Group className="">
+        <Form.Group className="mb-2">
           <Form.Switch
             label="Show GMM"
             checked={showGMM}
             onChange={handleShowGMMChange}
+          />
+        </Form.Group>
+        <Form.Group className="">
+          <Form.Switch
+          label="Show Title"
+          checked={showTitle}
+          onChange={handleShowTitleChange}
           />
         </Form.Group>
       </Card.Body>

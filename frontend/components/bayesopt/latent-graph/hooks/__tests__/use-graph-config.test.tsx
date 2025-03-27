@@ -33,6 +33,7 @@ describe("useGraphConfig", () => {
   const mockGraphConfig = {
     minCount: 5,
     showSelex: true,
+    showTitle: false,
     showAcquisition: false,
     vaeName: "test-vae",
   };
@@ -59,6 +60,7 @@ describe("useGraphConfig", () => {
     // Check that local state is initialized correctly
     expect(result.current.minCount).toBe(5);
     expect(result.current.showSelex).toBe(true);
+    expect(result.current.showTitle).toBe(false);
     expect(result.current.showContour).toBe(false);
     expect(result.current.isValidMinCount).toBe(true);
   });
@@ -165,7 +167,7 @@ describe("useGraphConfig", () => {
 
     // Call handleShowSelexChange
     act(() => {
-      result.current.handleShowSelexChange(changeEvent);
+      result.current.handleChangeShowSelex(changeEvent);
     });
 
     // Check that local state is updated correctly
@@ -213,6 +215,37 @@ describe("useGraphConfig", () => {
 
     // Check that dispatch was called for each action
     expect(mockDispatch).toHaveBeenCalledTimes(2);
+  });
+
+  it("should handle showTitle change", () => {
+    const { result } = renderHook(() => useGraphConfig());
+
+    // Mock change event
+    const changeEvent = {
+      currentTarget: {
+        checked: true,
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+
+    // Call handleChangeShowTitle
+    act(() => {
+      result.current.handleChangeShowTitle(changeEvent);
+    });
+
+    // Check that local state is updated correctly
+    expect(result.current.showTitle).toBe(true);
+
+    // Check that setIsDirty was not called
+    expect(setIsDirty).not.toHaveBeenCalled();
+
+    // Check that setGraphConfig was called with correct parameters
+    expect(setGraphConfig).toHaveBeenCalledWith({
+      ...mockGraphConfig,
+      showTitle: true,
+    });
+
+    // Check that dispatch was called for once
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
   });
 
   it("should handle errors when updating graph config", () => {

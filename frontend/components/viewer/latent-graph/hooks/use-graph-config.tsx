@@ -7,6 +7,7 @@ import { setGraphConfig } from "../../redux/graph-config";
 // Hook for graph configuration
 export const useGraphConfig = () => {
   const [showGMM, setShowGMM] = useState<boolean>(true);
+  const [showTitle, setShowTitle] = useState<boolean>(false);
   const [minCount, setMinCount] = useState<number>(5);
   const [isValidMinCount, setIsValidMinCount] = useState<boolean>(true);
 
@@ -20,9 +21,10 @@ export const useGraphConfig = () => {
         ...graphConfig,
         minCount: isValidMinCount ? minCount : graphConfig.minCount,
         showGMM,
+        showTitle,
       })
     );
-  }, [isValidMinCount, showGMM, minCount, dispatch, graphConfig.minCount]);
+  }, [isValidMinCount, showGMM, showTitle, minCount, dispatch, graphConfig.minCount]);
 
   const handleMinCountChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,11 +42,20 @@ export const useGraphConfig = () => {
     []
   );
 
+  const handleShowTitleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setShowTitle(e.target.checked);
+    },
+    []
+  )
+
   return {
     showGMM,
+    showTitle,
     minCount,
     isValidMinCount,
     handleMinCountChange,
     handleShowGMMChange,
+    handleShowTitleChange,
   };
 };

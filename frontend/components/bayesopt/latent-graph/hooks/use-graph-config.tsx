@@ -9,6 +9,7 @@ export const useGraphConfig = () => {
   const graphConfig = useSelector((state: RootState) => state.graphConfig);
 
   const [minCount, setMinCount] = useState(graphConfig.minCount);
+  const [showTitle, setShowTitle] = useState(graphConfig.showTitle);
   const [showSelex, setShowSelex] = useState(graphConfig.showSelex);
   const [showContour, setShowContour] = useState(graphConfig.showAcquisition);
   const [isValidMinCount, setIsValidMinCount] = useState(true);
@@ -48,7 +49,7 @@ export const useGraphConfig = () => {
     [dispatch, graphConfig, setDirty]
   );
 
-  const handleShowSelexChange = useCallback(
+  const handleChangeShowSelex = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setShowSelex(e.currentTarget.checked);
 
@@ -86,13 +87,34 @@ export const useGraphConfig = () => {
     [dispatch, graphConfig, setDirty]
   );
 
+  const handleChangeShowTitle = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setShowTitle(e.currentTarget.checked);
+
+      try {
+        dispatch(
+          setGraphConfig({
+            ...graphConfig,
+            showTitle: e.currentTarget.checked,
+          })
+        );
+      } catch (e) {
+        console.error(e);
+      }
+      return;
+    },
+    [dispatch, graphConfig, setDirty]
+  );
+
   return {
     minCount,
     showSelex,
     showContour,
+    showTitle,
     isValidMinCount,
     handleMinCountChange,
-    handleShowSelexChange,
+    handleChangeShowSelex,
     handleChangeShowContour,
+    handleChangeShowTitle,
   };
 };

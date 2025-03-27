@@ -7,10 +7,12 @@ const GraphConfigSelector: React.FC = () => {
     minCount,
     showSelex,
     showContour,
+    showTitle,
     isValidMinCount,
     handleMinCountChange,
-    handleShowSelexChange,
+    handleChangeShowSelex,
     handleChangeShowContour,
+    handleChangeShowTitle,
   } = useGraphConfig();
 
   return (
@@ -35,14 +37,21 @@ const GraphConfigSelector: React.FC = () => {
             <Form.Switch
               label="Show SELEX dataset"
               checked={showSelex}
-              onChange={handleShowSelexChange}
+              onChange={handleChangeShowSelex}
             />
           </Form.Group>
-          <Form.Group>
+          <Form.Group className="mb-2">
             <Form.Switch
+              label="Show contour plot"
               checked={showContour}
               onChange={handleChangeShowContour}
-              label="Show contour plot"
+            />
+          </Form.Group>
+          <Form.Group className="">
+            <Form.Switch
+            label="Show title"
+            checked={showTitle}
+            onChange={handleChangeShowTitle}
             />
           </Form.Group>
         </Card.Body>
