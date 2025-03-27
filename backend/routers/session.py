@@ -20,6 +20,7 @@ from core.algorithms import (
     embed_sequences,
     get_most_probable_seq,
     draw_logo,
+    map_logo,
 )
 
 router = APIRouter()
@@ -35,6 +36,8 @@ class CPU_Unpickler(pickle.Unpickler):
 
 sessions: Dict[str, CNN_PHMM_VAE] = dict()
 
+class RequestSession(BaseModel):
+    session_uuid: str
 
 class RequestCoordinates(BaseModel):
     session_uuid: str
@@ -161,6 +164,31 @@ async def get_weblogo(request: RequestCoordinates):
         ax=ax,
         coord=np.array([request.coords_x[0], request.coords_y[0]]),
         model=model,
+    )
+    bytes_io = BytesIO()
+    fig.savefig(bytes_io, format="png")
+    bytes_io.seek(0)
+    figdata = bytes_io.read()
+    return Response(
+        content=figdata,
+        media_type="image/png",
+    )
+
+@router.post(
+    "/api/session/decode/weblogo-map",
+    responses={200: {"content": {"image/png": {}}}},
+    response_class=Response,
+)
+async def get_weblogo_map(request: RequestSession):
+    if request.session_uuid not in sessions.keys():
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    model = sessions[request.session_uuid]
+    fig = map_logo(
+        model=model,
+        xlim=(-3.5, 3.5),
+        ylim=(-3.5, 3.5),
+        resolution=15,
     )
     bytes_io = BytesIO()
     fig.savefig(bytes_io, format="png")

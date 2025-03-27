@@ -12,6 +12,8 @@ import torch.nn.functional as F
 import torch
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 
 from .preprocessing import Transition, NucleotideID, State, ID_encode
 
@@ -583,6 +585,32 @@ def draw_logo(
     correction: float = 0,
     font_file: str = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
 ) -> Axes:
+    """
+    Coord で示される潜在空間座標から decode した pHMM パラメータを参照して、Axes に logo を描画する。
+
+    Parameters
+    ----------
+    ax : Axes
+        描画対象の Axes。
+    coord : np.ndarray
+        潜在空間座標。(coord_x, coord_y) の ndim 1 の ndarray。
+    model : CNN_PHMM_VAE
+        coord に対応する pHMM パラメータを計算する VAE モデル。
+    is_RNA : bool = True
+        生成される logo が RNA の場合 True, DNA の場合 False。
+    calc_h_em : bool = True
+        emission 確率を bit 数に変換して、その値を logo の高さとするかどうか。
+        True の場合は、emission 確率の bit 数を logo の高さとする。
+    correction : float = 0
+        logo の高さを調整するための補正値。
+    font_file : str = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
+        logo に使用するフォントファイル。
+    
+    Returns
+    -------
+    ax : Axes
+        描画対象の Axes。
+    """
     assert coord.ndim == 1
 
     red = "#d50000"
@@ -668,3 +696,67 @@ def draw_logo(
     ax.xaxis.grid(False)
 
     return ax
+
+def map_logo(
+    model: CNN_PHMM_VAE,
+    xlim: Tuple[float, float] = (-3.5, 3.5),
+    ylim: Tuple[float, float] = (-3.5, 3.5),
+    resolution: int = 15,
+) -> Figure:
+    """
+    Parameters
+    ----------
+    model : CNN_PHMM_VAE
+        pHMM モデルを含む VAE モデル。
+    xlim : Tuple[int, int], default = (-3.5, 3.5)
+        x 軸の範囲。（下端，上端）
+    ylim : Tuple[int, int], default = (-3.5, 3.5)
+        y 軸の範囲。（下端，上端）
+    resolution : int, default = 15
+        一辺に含まれる weblogo の数。
+
+    Returns
+    -------
+    fig : plt.Figure
+        pHMM モデルの埋め込み空間を weblogo で可視化した図。
+    """
+    assert xlim[0] <= xlim[1]
+    assert ylim[0] <= ylim[1]
+
+    x_offset = xlim[0]
+    x_max = xlim[1]
+    x_unit = (x_max - x_offset) / (resolution - 1)
+    y_offset = ylim[0]
+    y_max = ylim[1]
+    y_unit = (y_max - y_offset) / (resolution - 1)
+
+    fig, axes = plt.subplots(resolution + 1, resolution + 1, figsize=(20, 10), dpi=200)
+    for i, ax in enumerate(axes[0, 1:]):
+        ax.text(0.5, 0.5, str(i * x_unit + x_offset), fontsize=15, ha="center", va="center")
+        ax.set_xticks([])
+        ax.set_yticks([])
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+    for i, ax in enumerate(axes[1:, 0]):
+        ax.text(0.5, 0.5, str(y_max - i * y_unit), fontsize=15, ha="center", va="center")
+        ax.set_xticks([])
+        ax.set_yticks([])
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+    axes[0, 0].set_xticks([])
+    axes[0, 0].set_yticks([])
+    axes[0, 0].set_visible(False)
+
+    for i in range(resolution):
+        for j in range(resolution):
+            ax = axes[i + 1, j + 1]
+            draw_logo(
+                ax=ax,
+                coord=np.array([i * x_unit - x_offset, y_max - j * y_unit]),
+                model=model,
+            )
+            ax.set_xticks([])
+            ax.set_yticks([])
+    
+    fig.tight_layout()
+    return fig
