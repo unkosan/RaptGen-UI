@@ -3,6 +3,8 @@ import { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { latentGraphLayout } from "~/components/common/graph-helper";
+import { downloadFileFromText } from "~/components/viewer/downloader/hooks/utils";
+import { zip } from "lodash";
 
 export type VaeData = {
   coordsX: number[];
@@ -18,12 +20,18 @@ export const useVaeDataPlot = (vaeData: VaeData) => {
   const { minCount } = useSelector((state: RootState) => state.graphConfig);
 
   const vaeDataPlot: Partial<PlotData> = useMemo(() => {
-    const { coordsX, coordsY, randomRegions, duplicates } = vaeData;
-    const mask = duplicates.map((value) => value >= minCount);
-    const trace: Partial<PlotData> = {
-      x: coordsX.filter((_, index) => mask[index]),
-      y: coordsY.filter((_, index) => mask[index]),
-      type: "scattergl",
+    const mcMask = vaeData.duplicates.map((value) => value >= minCount);
+    const coordsX = vaeData.coordsX.filter((_, index) => mcMask[index]);
+    const coordsY = vaeData.coordsY.filter((_, index) => mcMask[index]);
+    const duplicates = vaeData.duplicates.filter((_, index) => mcMask[index]);
+    const randomRegions = vaeData.randomRegions.filter(
+      (_, index) => mcMask[index]
+    );
+
+    return {
+      x: coordsX,
+      y: coordsY,
+      type: "scatter",
       mode: "markers",
       marker: {
         size: duplicates.map((d) => Math.max(2, Math.sqrt(d))),
@@ -33,19 +41,15 @@ export const useVaeDataPlot = (vaeData: VaeData) => {
           color: "black",
         },
       },
-      customdata: mask
-        .map((value, index) =>
-          value ? [randomRegions[index], duplicates[index]] : null
-        )
-        .filter((value) => value !== null) as [string, number][],
+      customdata: zip(
+        randomRegions,
+        duplicates.map((d) => d.toString())
+      ) as unknown as string[],
       hovertemplate:
-        "<b>X</b>: %{x}<br>" +
-        "<b>Y</b>: %{y}<br>" +
+        "<b>Coord</b>: (%{x:.4f}, %{y:.4f})<br>" +
         "<b>Random Region</b>: %{customdata[0]}<br>" +
-        "<b>Duplicates</b>: %{customdata[1]}<br>" +
-        "<extra></extra>",
+        "<b>Duplicates</b>: %{customdata[1]}<br>",
     };
-    return trace;
   }, [vaeData, minCount]);
 
   const layout = useMemo(() => {
@@ -73,18 +77,9 @@ export const useDownloadCsv = (vaeData: VaeData) => {
         vaeData.duplicates[i] +
         "\n";
     }
+
     // download csv file
-    const blob = new Blob([csvHeader + "\n" + csvData], {
-      type: "text/csv",
-    });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.setAttribute("hidden", "");
-    a.setAttribute("href", url);
-    a.setAttribute("download", "latent_points.csv");
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    downloadFileFromText(csvHeader + "\n" + csvData, "latent_points.csv");
   }, [vaeData]);
 
   return { handleClickSave };

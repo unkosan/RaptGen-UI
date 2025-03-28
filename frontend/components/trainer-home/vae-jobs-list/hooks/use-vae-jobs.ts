@@ -108,11 +108,9 @@ export function useVaeJobs(): UseVaeJobsReturn {
   const calculateFinishedSeriesItem = (childJob: ChildJob): SeriesItem => {
     return {
       id: childJob.item_id,
-      duration: childJob.item_datetime_laststop
-        ? childJob.item_datetime_laststop
-        : Date.now() -
-          childJob.item_datetime_start -
-          childJob.item_duration_suspend,
+      duration: ((childJob.item_datetime_laststop as number) -
+        childJob.item_datetime_start -
+        childJob.item_duration_suspend) * 1000,
       status: childJob.item_status,
       epochsCurrent: childJob.item_epochs_current,
       epochsTotal: childJob.item_epochs_total,

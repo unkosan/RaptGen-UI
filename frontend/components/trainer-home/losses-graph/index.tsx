@@ -3,10 +3,10 @@ import dynamic from "next/dynamic";
 import { Badge, Card } from "react-bootstrap";
 import {
   LossData,
-  useLayout,
   useLossDataPlot,
   useDownloadCsv,
 } from "./hooks/use-losses-graph";
+import { Layout } from "plotly.js";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -16,9 +16,47 @@ type Props = {
 };
 
 export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
-  const layout = useLayout(title);
   const lossDataPlot = useLossDataPlot(lossData);
   const { handleClickSave } = useDownloadCsv(lossData);
+
+  const layout: Partial<Layout> = {
+    title: title,
+    plot_bgcolor: "#EDEDED",
+    xaxis: {
+      color: "#FFFFFF",
+      tickfont: {
+        color: "#000000",
+      },
+      gridcolor: "#FFFFFF",
+    },
+    yaxis: {
+      color: "#FFFFFF",
+      tickfont: {
+        color: "#000000",
+      },
+      gridcolor: "#FFFFFF",
+    },
+    hoverlabel: {
+      font: {
+        family: "monospace",
+      },
+    },
+    showlegend: true,
+    legend: {
+      xanchor: "right",
+      x: 1,
+      yanchor: "top",
+      y: 1,
+    },
+    clickmode: "event+select",
+    margin: {
+      l: 30,
+      r: 30,
+      b: 30,
+      t: 30,
+      pad: 5,
+    },
+  };
 
   return (
     <Card className="mb-3">
