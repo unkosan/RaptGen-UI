@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useVaeJobs } from '../use-vae-jobs';
 import { useRouter } from 'next/router';
 import { apiClient } from '~/services/api-client';
@@ -73,7 +73,7 @@ describe('useVaeJobs', () => {
   });
   
   it('should fetch jobs on mount and set up interval', async () => {
-    const { result, waitForNextUpdate } = renderHook(() => useVaeJobs());
+    const { result } = renderHook(() => useVaeJobs());
     
     // Initial state
     expect(result.current.runningJobs).toEqual([]);
@@ -82,31 +82,40 @@ describe('useVaeJobs', () => {
     expect(result.current.experimentId).toBe('job-1');
     
     // Wait for API call to resolve
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(apiClient.postSearchJobs).toHaveBeenCalledWith({
+        search_regex: undefined,
+      });
+    });
     
-    // Check API call
-    expect(apiClient.postSearchJobs).toHaveBeenCalledWith({
-      search_regex: undefined,
+    // Wait for state to update
+    await waitFor(() => {
+      expect(result.current.runningJobs).toHaveLength(1);
     });
     
     // Check state after API call
-    expect(result.current.runningJobs).toHaveLength(1);
     expect(result.current.runningJobs[0].uuid).toBe('job-1');
     expect(result.current.finishedJobs).toHaveLength(1);
     expect(result.current.finishedJobs[0].uuid).toBe('job-2');
     
     // Advance timer to trigger interval
-    jest.advanceTimersByTime(5000);
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
     
     // Check that API was called again
-    expect(apiClient.postSearchJobs).toHaveBeenCalledTimes(2);
+    await waitFor(() => {
+      expect(apiClient.postSearchJobs).toHaveBeenCalledTimes(2);
+    });
   });
   
   it('should update jobs when searchQuery changes', async () => {
-    const { result, waitForNextUpdate } = renderHook(() => useVaeJobs());
+    const { result } = renderHook(() => useVaeJobs());
     
     // Wait for initial API call to resolve
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(apiClient.postSearchJobs).toHaveBeenCalled();
+    });
     
     // Update search query
     act(() => {
@@ -114,8 +123,10 @@ describe('useVaeJobs', () => {
     });
     
     // Check API call with search query
-    expect(apiClient.postSearchJobs).toHaveBeenCalledWith({
-      search_regex: 'test',
+    await waitFor(() => {
+      expect(apiClient.postSearchJobs).toHaveBeenCalledWith({
+        search_regex: 'test',
+      });
     });
   });
   
@@ -218,7 +229,7 @@ describe('useVaeJobs', () => {
       expect(seriesItem.epochsTotal).toBe(100);
       
       // Duration should be approximately 1 hour (3600 ms)
-      expect(seriesItem.duration).toBeCloseTo(3_600_000, -4); 
+      expect(seriesItem.duration).toBeCloseTo(3_600_000, -4);
     });
   });
   

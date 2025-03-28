@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { useLossDataPlot, useDownloadCsv, LossData } from '../use-losses-graph';
 import { downloadFileFromText } from '~/components/viewer/downloader/hooks/utils';
 
@@ -122,7 +122,7 @@ describe('useDownloadCsv', () => {
     
     // Expected CSV content
     const expectedCsvHeader = 'epoch, train_loss, test_loss, test_recon, test_kld';
-    const expectedCsvData = 
+    const expectedCsvData =
       '0,0.5,0.6,0.4,0.2\n' +
       '1,0.4,0.5,0.35,0.15\n' +
       '2,0.3,0.45,0.3,0.15\n';
@@ -167,7 +167,7 @@ describe('useDownloadCsv', () => {
     
     // Expected updated CSV content
     const expectedCsvHeader = 'epoch, train_loss, test_loss, test_recon, test_kld';
-    const expectedCsvData = 
+    const expectedCsvData =
       '0,0.3,0.4,0.2,0.1\n' +
       '1,0.2,0.3,0.15,0.05\n';
     

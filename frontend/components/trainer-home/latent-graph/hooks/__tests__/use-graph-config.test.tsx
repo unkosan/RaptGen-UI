@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { useGraphConfig } from '../use-graph-config';
 import { useDispatch, useSelector } from 'react-redux';
 import { setGraphConfig } from '../../../redux/graph-config';

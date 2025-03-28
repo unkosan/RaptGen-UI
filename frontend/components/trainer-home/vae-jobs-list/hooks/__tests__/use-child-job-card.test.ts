@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { useChildJobCard } from '../use-child-job-card';
 import { intervalToDuration } from 'date-fns';
 

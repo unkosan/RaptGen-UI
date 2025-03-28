@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { useVaeDataPlot, useDownloadCsv, VaeData } from '../use-latent-space-plots';
 import { useSelector } from 'react-redux';
 import { latentGraphLayout } from '~/components/common/graph-helper';
@@ -187,7 +187,7 @@ describe('useDownloadCsv', () => {
     
     // Expected CSV content
     const expectedCsvHeader = 'random_region, x, y, duplicate';
-    const expectedCsvData = 
+    const expectedCsvData =
       'region1,0.1,1.1,3\n' +
       'region2,0.2,1.2,5\n' +
       'region3,0.3,1.3,2\n';
@@ -231,7 +231,7 @@ describe('useDownloadCsv', () => {
     
     // Expected updated CSV content
     const expectedCsvHeader = 'random_region, x, y, duplicate';
-    const expectedCsvData = 
+    const expectedCsvData =
       'region4,0.4,1.4,4\n' +
       'region5,0.5,1.5,6\n';
     

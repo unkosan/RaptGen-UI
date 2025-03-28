@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useJobItem } from '../use-job-item';
 import { useRouter } from 'next/router';
 import { apiClient } from '~/services/api-client';
@@ -60,7 +60,7 @@ describe('useJobItem', () => {
   });
   
   it('should fetch parent and child items on mount', async () => {
-    const { result, waitForNextUpdate } = renderHook(() => useJobItem());
+    const { result } = renderHook(() => useJobItem());
     
     // Initial state
     expect(result.current.isLoading).toBe(true);
@@ -69,29 +69,29 @@ describe('useJobItem', () => {
     expect(result.current.pItem).toBeNull();
     expect(result.current.cItem).toBeNull();
     
-    // Wait for API calls to resolve
-    await waitForNextUpdate();
-    
-    // After parent fetch
-    expect(apiClient.getItem).toHaveBeenCalledWith({
-      params: { parent_uuid: 'parent-123' },
+    // Wait for parent fetch to complete
+    await waitFor(() => {
+      expect(apiClient.getItem).toHaveBeenCalledWith({
+        params: { parent_uuid: 'parent-123' },
+      });
     });
     
-    // Wait for child fetch
-    await waitForNextUpdate();
-    
-    // After child fetch
-    expect(apiClient.getChildItem).toHaveBeenCalledWith({
-      params: {
-        parent_uuid: 'parent-123',
-        child_id: 1,
-      },
+    // Wait for child fetch to complete
+    await waitFor(() => {
+      expect(apiClient.getChildItem).toHaveBeenCalledWith({
+        params: {
+          parent_uuid: 'parent-123',
+          child_id: 1,
+        },
+      });
     });
     
-    // Final state
-    expect(result.current.isLoading).toBe(false);
-    expect(result.current.pItem).toEqual(mockParentItem);
-    expect(result.current.cItem).toEqual(mockChildItem);
+    // Wait for final state
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.pItem).toEqual(mockParentItem);
+      expect(result.current.cItem).toEqual(mockChildItem);
+    });
   });
   
   it('should not fetch data if router is not ready', async () => {
@@ -102,6 +102,11 @@ describe('useJobItem', () => {
     });
     
     renderHook(() => useJobItem());
+    
+    // Wait a bit to ensure any potential API calls would have happened
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
     
     // API should not be called
     expect(apiClient.getItem).not.toHaveBeenCalled();
@@ -117,17 +122,24 @@ describe('useJobItem', () => {
     
     renderHook(() => useJobItem());
     
+    // Wait a bit to ensure any potential API calls would have happened
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+    
     // API should not be called
     expect(apiClient.getItem).not.toHaveBeenCalled();
     expect(apiClient.getChildItem).not.toHaveBeenCalled();
   });
   
   it('should refresh data when refresh function is called', async () => {
-    const { result, waitForNextUpdate } = renderHook(() => useJobItem());
+    const { result } = renderHook(() => useJobItem());
     
     // Wait for initial fetches to complete
-    await waitForNextUpdate();
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.pItem).toEqual(mockParentItem);
+      expect(result.current.cItem).toEqual(mockChildItem);
+    });
     
     // Clear mocks to check if they're called again
     jest.clearAllMocks();
@@ -138,20 +150,19 @@ describe('useJobItem', () => {
     });
     
     // Wait for refreshed fetches
-    await waitForNextUpdate();
-    
-    // APIs should be called again
-    expect(apiClient.getItem).toHaveBeenCalledWith({
-      params: { parent_uuid: 'parent-123' },
+    await waitFor(() => {
+      expect(apiClient.getItem).toHaveBeenCalledWith({
+        params: { parent_uuid: 'parent-123' },
+      });
     });
     
-    await waitForNextUpdate();
-    
-    expect(apiClient.getChildItem).toHaveBeenCalledWith({
-      params: {
-        parent_uuid: 'parent-123',
-        child_id: 1,
-      },
+    await waitFor(() => {
+      expect(apiClient.getChildItem).toHaveBeenCalledWith({
+        params: {
+          parent_uuid: 'parent-123',
+          child_id: 1,
+        },
+      });
     });
   });
   
@@ -163,13 +174,12 @@ describe('useJobItem', () => {
     // Spy on console.error
     jest.spyOn(console, 'error').mockImplementation(() => {});
     
-    const { result, waitForNextUpdate } = renderHook(() => useJobItem());
+    const { result } = renderHook(() => useJobItem());
     
     // Wait for API call to fail
-    await waitForNextUpdate();
-    
-    // Should log error
-    expect(console.error).toHaveBeenCalledWith(mockError);
+    await waitFor(() => {
+      expect(console.error).toHaveBeenCalledWith(mockError);
+    });
     
     // Should reset loading state
     expect(result.current.isLoading).toBe(false);
@@ -201,20 +211,16 @@ describe('useJobItem', () => {
       },
     });
     
-    const { waitForNextUpdate } = renderHook(() => useJobItem());
+    renderHook(() => useJobItem());
     
-    // Wait for parent fetch
-    await waitForNextUpdate();
-    
-    // Wait for child fetch
-    await waitForNextUpdate();
-    
-    // Should use index 1 (with minimum NLL)
-    expect(apiClient.getChildItem).toHaveBeenCalledWith({
-      params: {
-        parent_uuid: 'parent-123',
-        child_id: 1, // Index with minimum NLL
-      },
+    // Wait for parent and child fetches to complete
+    await waitFor(() => {
+      expect(apiClient.getChildItem).toHaveBeenCalledWith({
+        params: {
+          parent_uuid: 'parent-123',
+          child_id: 1, // Index with minimum NLL
+        },
+      });
     });
   });
   
@@ -240,20 +246,16 @@ describe('useJobItem', () => {
       },
     });
     
-    const { waitForNextUpdate } = renderHook(() => useJobItem());
+    renderHook(() => useJobItem());
     
-    // Wait for parent fetch
-    await waitForNextUpdate();
-    
-    // Wait for child fetch
-    await waitForNextUpdate();
-    
-    // Should use index 1 (first occurrence of 'progress')
-    expect(apiClient.getChildItem).toHaveBeenCalledWith({
-      params: {
-        parent_uuid: 'parent-123',
-        child_id: 1, // Index of first 'progress' status
-      },
+    // Wait for parent and child fetches to complete
+    await waitFor(() => {
+      expect(apiClient.getChildItem).toHaveBeenCalledWith({
+        params: {
+          parent_uuid: 'parent-123',
+          child_id: 1, // Index of first 'progress' status
+        },
+      });
     });
   });
   
@@ -279,20 +281,16 @@ describe('useJobItem', () => {
       },
     });
     
-    const { waitForNextUpdate } = renderHook(() => useJobItem());
+    renderHook(() => useJobItem());
     
-    // Wait for parent fetch
-    await waitForNextUpdate();
-    
-    // Wait for child fetch
-    await waitForNextUpdate();
-    
-    // Should use index 1 (only valid NLL)
-    expect(apiClient.getChildItem).toHaveBeenCalledWith({
-      params: {
-        parent_uuid: 'parent-123',
-        child_id: 1, // Index with valid NLL
-      },
+    // Wait for parent and child fetches to complete
+    await waitFor(() => {
+      expect(apiClient.getChildItem).toHaveBeenCalledWith({
+        params: {
+          parent_uuid: 'parent-123',
+          child_id: 1, // Index with valid NLL
+        },
+      });
     });
   });
   
@@ -318,20 +316,16 @@ describe('useJobItem', () => {
       },
     });
     
-    const { waitForNextUpdate } = renderHook(() => useJobItem());
+    renderHook(() => useJobItem());
     
-    // Wait for parent fetch
-    await waitForNextUpdate();
-    
-    // Wait for child fetch
-    await waitForNextUpdate();
-    
-    // Should default to child ID 0
-    expect(apiClient.getChildItem).toHaveBeenCalledWith({
-      params: {
-        parent_uuid: 'parent-123',
-        child_id: 0, // Default index
-      },
+    // Wait for parent and child fetches to complete
+    await waitFor(() => {
+      expect(apiClient.getChildItem).toHaveBeenCalledWith({
+        params: {
+          parent_uuid: 'parent-123',
+          child_id: 0, // Default index
+        },
+      });
     });
   });
 });
