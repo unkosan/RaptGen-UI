@@ -33,7 +33,8 @@ export const LatentSpacePlot: React.FC<{ isLoading: boolean }> = ({
   const { queryDataPlot } = useQueryDataPlot();
 
   // Get layout for the graph
-  const layout = latentGraphLayout("");
+  const showTitle = graphConfig.showTitle;
+  const layout = latentGraphLayout(showTitle ? sessionConfig.vaeName : "");
 
   return (
     <Card className="mb-3">

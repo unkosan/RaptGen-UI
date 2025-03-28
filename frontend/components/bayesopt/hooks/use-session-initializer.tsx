@@ -134,6 +134,7 @@ export const useSessionInitializer = () => {
         vaeName: response.VAE_name,
         minCount: response.plot_config.minimum_count,
         showSelex: response.plot_config.show_training_data,
+        showTitle: false,
         showAcquisition: true,
       })
     );
@@ -210,6 +211,7 @@ export const useSessionInitializer = () => {
         vaeName: response.VAE_name,
         minCount: response.plot_config.minimum_count,
         showSelex: response.plot_config.show_training_data,
+        showTitle: false,
         showAcquisition: true,
       })
     );

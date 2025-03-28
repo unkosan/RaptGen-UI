@@ -44,7 +44,8 @@ const LatentSpacePlot: React.FC = () => {
   const isLoading = vaeLoading || gmmLoading;
 
   // Get layout for the graph
-  const layout = latentGraphLayout("");
+  const showTitle = graphConfig.showTitle;
+  const layout = latentGraphLayout(showTitle ? sessionConfig.vaeName : "");
 
   return (
     <Card className="mb-3">
