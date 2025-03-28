@@ -226,6 +226,8 @@ export const usePreprocessingParams = (): PreprocessingParameters => {
             })
           );
         }
+      } catch (e) {
+        console.error(e);
       } finally {
         setIsLoadingTargetlen(false);
       }

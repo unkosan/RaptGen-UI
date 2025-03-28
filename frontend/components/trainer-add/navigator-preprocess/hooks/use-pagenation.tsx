@@ -27,6 +27,7 @@ export const usePreprocessSelexData = () => {
     if (!isDirty) {
       // do nothing and go to next page
       router.push("?page=raptgen");
+      return;
     }
 
     setIsLoading(true);

@@ -1,5 +1,6 @@
 import { Layout, PlotData } from "plotly.js";
 import { useCallback, useMemo } from "react";
+import { downloadFileFromText } from "~/components/viewer/downloader/hooks/utils";
 
 export type LossData = {
   epochs: number[];
@@ -7,47 +8,6 @@ export type LossData = {
   testLosses: number[];
   testRecons: number[];
   testKlds: number[];
-};
-
-export const useLayout = (title: string): Partial<Layout> => {
-  return {
-    title: title,
-    plot_bgcolor: "#EDEDED",
-    xaxis: {
-      color: "#FFFFFF",
-      tickfont: {
-        color: "#000000",
-      },
-      gridcolor: "#FFFFFF",
-    },
-    yaxis: {
-      color: "#FFFFFF",
-      tickfont: {
-        color: "#000000",
-      },
-      gridcolor: "#FFFFFF",
-    },
-    hoverlabel: {
-      font: {
-        family: "monospace",
-      },
-    },
-    showlegend: true,
-    legend: {
-      xanchor: "right",
-      x: 1,
-      yanchor: "top",
-      y: 1,
-    },
-    clickmode: "event+select",
-    margin: {
-      l: 30,
-      r: 30,
-      b: 30,
-      t: 30,
-      pad: 5,
-    },
-  };
 };
 
 export const useLossDataPlot = (lossData: LossData) => {
@@ -124,18 +84,9 @@ export const useDownloadCsv = (lossData: LossData) => {
         lossData.testKlds[i] +
         "\n";
     }
+
     // download csv file
-    const blob = new Blob([csvHeader + "\n" + csvData], {
-      type: "text/csv",
-    });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.setAttribute("hidden", "");
-    a.setAttribute("href", url);
-    a.setAttribute("download", "losses.csv");
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    downloadFileFromText(csvHeader + "\n" + csvData, "losses.csv");
   }, [lossData]);
 
   return { handleClickSave };
