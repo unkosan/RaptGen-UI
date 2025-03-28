@@ -15,11 +15,8 @@ type Props = {
   lossData: LossData;
 };
 
-export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
-  const lossDataPlot = useLossDataPlot(lossData);
-  const { handleClickSave } = useDownloadCsv(lossData);
-
-  const layout: Partial<Layout> = {
+const createLayout = (title: string): Partial<Layout> => {
+  return {
     title: title,
     plot_bgcolor: "#EDEDED",
     xaxis: {
@@ -56,7 +53,14 @@ export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
       t: 30,
       pad: 5,
     },
-  };
+  }
+};
+
+export const LossesGraph: React.FC<Props> = ({ title, lossData }) => {
+  const lossDataPlot = useLossDataPlot(lossData);
+  const { handleClickSave } = useDownloadCsv(lossData);
+
+  const layout = createLayout(title);
 
   return (
     <Card className="mb-3">

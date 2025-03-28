@@ -71,7 +71,6 @@ describe('useVaeDataPlot', () => {
     
     // Check plot data
     const plot = result.current.vaeDataPlot;
-    console.log(plot);
     
     // Should filter out points with duplicates < minCount (3)
     expect(plot.x).toEqual([0.1, 0.2, 0.4]);
