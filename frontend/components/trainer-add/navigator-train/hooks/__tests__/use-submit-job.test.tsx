@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { useSubmitJob } from '../use-submit-job';
 import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';

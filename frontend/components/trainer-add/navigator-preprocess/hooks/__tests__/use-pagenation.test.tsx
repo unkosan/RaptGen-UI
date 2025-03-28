@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { usePreprocessSelexData } from '../use-pagenation';
 import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';

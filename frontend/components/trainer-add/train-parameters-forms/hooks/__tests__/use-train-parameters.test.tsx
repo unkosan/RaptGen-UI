@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { useTrainParameters, useDeviceSelection, useModelLengthEffect } from '../use-train-parameters';
 import { useDispatch, useSelector } from 'react-redux';
 import { setTrainConfig } from '../../../redux/train-config';
@@ -294,16 +294,19 @@ describe('useDeviceSelection', () => {
     // Mock API response
     (apiClient.getDevices as jest.Mock).mockResolvedValue(['cpu', 'cuda']);
     
-    const { result, waitForNextUpdate } = renderHook(() => useDeviceSelection());
+    const { result } = renderHook(() => useDeviceSelection());
     
     // Initial state
     expect(result.current.value).toBe('cpu');
     expect(result.current.options).toEqual(['cpu']);
     
     // Wait for API call to resolve
-    await waitForNextUpdate();
+    await act(async () => {
+      // Wait for the effect to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
     
-    // Updated options
+    // Check updated options
     expect(result.current.options).toEqual(['cpu', 'cuda']);
     expect(apiClient.getDevices).toHaveBeenCalled();
   });

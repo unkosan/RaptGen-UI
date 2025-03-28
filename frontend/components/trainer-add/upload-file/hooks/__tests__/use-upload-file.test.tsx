@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { useUploadFile } from '../use-upload-file';
 import { useDispatch } from 'react-redux';
 import { setSelexDataState } from '../../../redux/selex-data';

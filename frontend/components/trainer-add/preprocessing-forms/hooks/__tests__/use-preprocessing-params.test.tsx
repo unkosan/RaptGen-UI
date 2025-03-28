@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { usePreprocessingParams, useModelTypeSelection } from '../use-preprocessing-params';
 import { useDispatch, useSelector } from 'react-redux';
 import { setPreprocessingConfig } from '../../../redux/preprocessing-config';

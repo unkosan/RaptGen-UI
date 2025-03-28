@@ -44,5 +44,5 @@ frontend
 
 ## Testing
 
-- use `testing-library/react` for testing hooks.
+- use `testing-library/react` for testing hooks. DO NOT USE `testing-library/react-hooks`
 - root directory of the frontend is `/frontend`, so if you want to run test, you should run `yarn test` in `/frontend` directory.
