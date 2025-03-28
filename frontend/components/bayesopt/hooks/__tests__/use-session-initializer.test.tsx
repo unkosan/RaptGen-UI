@@ -190,6 +190,7 @@ describe("useSessionInitializer", () => {
       vaeName: "Model 1",
       minCount: 5,
       showSelex: true,
+      showTitle: false,
       showAcquisition: true,
     });
 
@@ -264,6 +265,7 @@ describe("useSessionInitializer", () => {
       vaeName: "Model 1",
       minCount: 5,
       showSelex: true,
+      showTitle: false,
       showAcquisition: true,
     });
 
