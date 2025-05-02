@@ -38,7 +38,7 @@ $ docker compose up -d
 
 !!! info
 
-    This command will build the containers from `docker-compose.yml` on the root directory of the repository. If you change the `docker-compose.yml` file, you need to run `docker compose build` to update the containers.
+    This command will build the containers from `compose.yml` on the root directory of the repository. If you change the `compose.yml` file, you need to run `docker compose build` to update the containers.
 
 Please wait before all the containers are ready. This may take a few minutes. Even if Docker says they are ready, it may take some extra time for the `frontend` container to be working.
 
@@ -54,7 +54,7 @@ $ cd RaptGen-UI
 Build and run containers with following docker-compose.
 
 ```shell
-$ docker compose -f docker-compose.gpu.yml up -d
+$ docker compose -f compose.gpu.yml up -d
 ```
 
 !!! info
