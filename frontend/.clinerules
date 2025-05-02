@@ -1,0 +1,48 @@
+## Filetree for frontend
+
+You must follow the structure of the filetree as shown below.
+You can free to name the files and directories when they are described with the `[]` symbol.
+
+```
+frontend
+├── .clinerules
+├── components
+│   ├── common: where you put components that are used in multiple pages
+│   ├── [page-a]: put components that are used in page-a
+│   └── [page-b]: put components that are used in page-b
+│       ├── [comp-a]: component
+│       └── [comp-b]: component
+│           ├── index.tsx: entry point for comp-b
+│           ├── hooks: custom hooks for comp-b
+│           │   ├── __test__: test files for hooks
+│           │   ├── [hook-a.ts(x)]: implementation of hook-a
+│           │   └── [hook-b.ts(x)]: implementation of hook-b
+│           ├── utils.ts(x): utility functions for comp-b
+│           ├── [sub-comp-a.ts]: subsidiary component a which is used in index.tsx file
+│           └── [sub-comp-b.ts]: subsidiary component b which is used in index.tsx file
+├── services: api calls
+└── styles: some global styles
+```
+
+## Components and hooks
+
+- we mainly use functional components with custom hooks.
+  - If there are no other ways to implement the component, we can use class components.
+- we should use hooks to manage states and effects. If components are like following, we don't need to use hooks.
+  - no state or effect, just render something
+  - include just only constants
+  - include just only simple `handle*` functions to handle events (if you think it is complicated, you can replace it with hooks)
+- In hooks, we should use `useCallback` and `useMemo` when we need to pass functions as props.
+
+## General rules
+
+- naming style
+  - use `camelCase` for naming variables, functions
+  - use `PascalCase` for naming (functional) components
+  - use `UPPER_CASE` for naming global constants
+- use `handle*` for event handlers, but for props, use `on*`
+
+## Testing
+
+- use `testing-library/react` for testing hooks. DO NOT USE `testing-library/react-hooks`
+- root directory of the frontend is `/frontend`, so if you want to run test, you should run `yarn test` in `/frontend` directory.

@@ -1,0 +1,35 @@
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+
+interface GraphConfig {
+  vaeName: string;
+  minCount: number;
+  showTitle: boolean;
+
+  showSelex: boolean;
+  showAcquisition: boolean;
+}
+
+const graphConfigSlice = createSlice({
+  name: "graphConfig",
+  initialState: {
+    vaeName: "",
+    minCount: 5,
+    showSelex: true,
+    showTitle: false,
+    showAcquisition: true,
+  },
+  reducers: {
+    setGraphConfig: (
+      state: GraphConfig,
+      action: PayloadAction<GraphConfig>
+    ) => {
+      return action.payload;
+    },
+  },
+});
+
+const graphConfigReducer = graphConfigSlice.reducer;
+
+export default graphConfigReducer;
+export type { GraphConfig };
+export const { setGraphConfig } = graphConfigSlice.actions;

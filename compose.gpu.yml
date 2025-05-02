@@ -1,0 +1,71 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: raptgen
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile
+    container_name: frontend
+    tty: true
+    ports:
+      - 18042:18042
+    volumes:
+      - ./frontend:/app
+    environment:
+      - WATCHPACK_POLLING=true
+    command: sh -c "yarn install; yarn next build; yarn next start --port 18042"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: gpu.dockerfile
+    container_name: backend
+    tty: true
+    volumes:
+      - ./backend:/app
+      - /etc/localtime:/etc/localtime
+    environment:
+      - PYTHONPATH=/app
+    command: sh -c "uvicorn --host 0.0.0.0 api:app"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  redis:
+    image: redis
+    container_name: redis
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: gpu.dockerfile
+    container_name: worker
+    tty: true
+    depends_on:
+      - redis
+    volumes:
+      - ./backend:/app
+    environment:
+      - PYTHONPATH=/app
+    command: sh -c "celery --app=tasks.celery worker --loglevel=info --pool=threads"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

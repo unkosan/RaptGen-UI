@@ -1,78 +1,72 @@
-<p align="center">
-   <img src="docs/images/logo.png" width="400"><br>
+<div align="center">
+   <img src="docs/assets/images/logo-full.png" alt="RaptGen-UI" width="400"><br>
    The GUI for RaptGen developed with React and FastAPI
+</div>
+
+## What is RaptGen-UI?
+
+RaptGen-UI is a web-based user-friendly interface for RaptGen, a powerful Latent Space Bayesian Optimization (LSBO) method for identifying and optimizing aptamers from high-throughput SELEX data. For more information about RaptGen, please refer to the [RaptGen paper](https://doi.org/10.1038/s43588-022-00249-6).
+
+## Overview
+
+<p align="center">
+   <img src="docs/assets/images/overview.png" alt="Overview of RaptGen-UI pipeline"><br>
 </p>
+
+Currently, RaptGen-UI supports four modules: 
+
+* [Viewer](https://unkosan.github.io/RaptGen-UI/guides/viewer/): Explore the latent space of the trained VAE model.
+* [VAE Trainer](https://unkosan.github.io/RaptGen-UI/guides/vae-trainer/): Train a VAE model to embed the SELEX data into a latent space.
+* [GMM Trainer](https://unkosan.github.io/RaptGen-UI/guides/gmm-trainer/): Train a GMM model to cluster the latent space.
+* [Bayesian Optimization](https://unkosan.github.io/RaptGen-UI/guides/bayesian-optimization/): Optimize aptamers by Bayesian Optimization.
+
+Click on the links to learn more about each module.
 
 ## How to Launch
 
-### Preliminaries
-
-Please check if the Docker is installed. like
+Git clone this repository.
 
 ```shell
-$ docker -v
-Docker version 20.10.21, build baeda1f
+$ git clone https://github.com/Unkosan/RaptGen-UI.git
+$ cd RaptGen-UI
 ```
 
-### Procedure
+And just run the following command inside the directory!
 
-1. Open your terminal. If you would like to run this application on a remote server, use SSH with port-forwarding.
-   ```shell
-   $ ssh -L 3000:localhost:3000 username@hostname.com
-   ```
-   Otherwise, skip this step.
-2. Clone this repository wherever you want, then go into `RaptGen-UI` directory.
-   ```shell
-   $ git clone https://github.com/hmdlab/RaptGen-UI.git
-   $ cd RaptGen-UI
-   ```
-3. Export your UID and GID environmental variables with the following command (needed for the `worker` container to work successfully.)
-   ```shell
-   $ export UID GID
-   ```
-4. Build and run containers with docker-compose. If you have GPU devices which supports CUDA, run with `docker-compose.gpu.yml` file.
-   ```shell
-   $ docker compose -f docker-compose.gpu.yml up -d
-   ```
-   Otherwise, you need to assign `docker-compose.prod.yml` file.
-   ```shell
-   $ docker compose -f docker-compose.prod.yml up -d
-   ```
-5. Please wait before all the containers are ready. This may take a few minutes. Even if Docker says they are ready, it may take some extra time for the `frontend` container to be working.
-6. Access http://localhost:3000 with your favorite internet browser.
-7. If you would like to stop the containers, please type the following command. This stops containers and all data will be retained in `db` container.
-   ```shell
-   $ docker compose stop
-   ```
-   If you send `down` command, all data will be lost (containers are removed.)
+```shell
+$ docker compose up -d
+```
 
-## Usage
+After waiting for a while, you can access the RaptGen-UI by going to http://localhost:18042.
 
-For now, four application is available. They are `Viewer`, `VAE Trainer`, `GMM Trainer`, and `Bayesian Optimization`. For more information, please refer to the following links.
+This application is deployed on Docker compose. 
+If you want to run it on your local machine, you need to install Docker and Docker Compose.
+For more information about installation, please refer to the [setup manual](https://unkosan.github.io/RaptGen-UI/setup/) on the documentation.
 
-### [Viewer](docs/Viewer.md)
+## Documentation
 
-Visualize the latent map of the HT-SELEX data.
+The detailed procedure can be found in the [documentation](https://unkosan.github.io/RaptGen-UI/).
 
-You can encode a single nucleotide sequence or batch sequences from fasta file. However decoding from a batch coordinates file is not supported.
-Downloading is also supported. You can select which cluster to download.
+## Contributing
 
-![View of Viewer](docs/images/viewer.png)
+Contributions are welcome!
+If you find any bugs or have any suggestions, please feel free to open an issue or submit a pull request.
 
-### [VAE Trainer](docs/VAE_Trainer.md)
+<!-- Just make sure to follow the [Code of Conduct](CODE_OF_CONDUCT.md). -->
 
-Train a VAE model on HT-SELEX data.
+## Citation
 
-![View of VAE Trainer](docs/images/vae-trainer.png)
+If you use RaptGen-UI in your research, please cite the following paper:
 
-### [GMM Trainer](docs/GMM_Trainer.md)
+```bibtex
+@article{nakano2025raptgenui,
+   title={RaptGen-UI: Interactive Interface for RNA Aptamer Identification Using Latent Space Bayesian Optimization}
+   author={Nakano, Ryota and Iwano, Natsuki and Ichinose, Akiko and Hamada, Michiaki}
+   year={2025},
+}
+```
 
-Train a GMM model on latent space of HT-SELEX data.
+## License
 
-![View of GMM Trainer](docs/images/gmm-trainer.png)
-
-### [Bayesian Optimization](docs/BO.md)
-
-Optimize aptamers using Bayesian Optimization.
-
-![View of Bayesian Optimization](docs/images/bo.png)
+This project is licensed under the [MIT License](LICENSE).
+You are free to use, modify, and distribute this software for personal or commercial purposes.
