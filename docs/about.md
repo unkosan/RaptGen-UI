@@ -1,5 +1,9 @@
 # About
 
+## Paper
+
+[RaptGen-UI: an integrated platform for exploring and analyzing the sequence landscape of HT-SELEX experiments](https://doi.org/10.1093/bioadv/vbaf120)
+
 ## Developers
 
 Design and engineering: [Ryota Nakano](https://github.com/unkosan) and [Natsuki Iwano](https://github.com/Xilorole)
