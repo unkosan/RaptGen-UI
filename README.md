@@ -52,17 +52,24 @@ The detailed procedure can be found in the [documentation](https://unkosan.githu
 Contributions are welcome!
 If you find any bugs or have any suggestions, please feel free to open an issue or submit a pull request.
 
-<!-- Just make sure to follow the [Code of Conduct](CODE_OF_CONDUCT.md). -->
-
 ## Citation
 
 If you use RaptGen-UI in your research, please cite the following paper:
 
 ```bibtex
 @article{nakano2025raptgenui,
-   title={RaptGen-UI: Interactive Interface for RNA Aptamer Identification Using Latent Space Bayesian Optimization}
-   author={Nakano, Ryota and Iwano, Natsuki and Ichinose, Akiko and Hamada, Michiaki}
-   year={2025},
+    author = {Nakano, Ryota and Iwano, Natsuki and Ichinose, Akiko and Hamada, Michiaki},
+    title = {RaptGen-UI: an integrated platform for exploring and analyzing the sequence landscape of HT-SELEX experiments},
+    journal = {Bioinformatics Advances},
+    volume = {5},
+    number = {1},
+    pages = {vbaf120},
+    year = {2025},
+    month = {05},
+    issn = {2635-0041},
+    doi = {10.1093/bioadv/vbaf120},
+    url = {https://doi.org/10.1093/bioadv/vbaf120},
+    eprint = {https://academic.oup.com/bioinformaticsadvances/article-pdf/5/1/vbaf120/63309611/vbaf120.pdf},
 }
 ```
 
