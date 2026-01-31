@@ -1,24 +1,23 @@
-from typing import List, Optional, Literal
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
-
-from core.db import GMMJob, OptimalTrial, BIC
 import re
-from fastapi import HTTPException
-from core.gmmjobs import initialize_job_gmm, run_job_gmm
 from time import time
-from celery.contrib.abortable import AbortableAsyncResult
-from tasks import celery
+from typing import List, Literal, Optional
 from uuid import uuid4
 
+from celery.contrib.abortable import AbortableAsyncResult
 from core.db import (
+    BIC,
+    GMMJob,
     JobStatus,
+    OptimalTrial,
     ViewerGMM,
     ViewerSequenceEmbeddings,
     get_db_session,
 )
-
+from core.gmmjobs import initialize_job_gmm, run_job_gmm
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from tasks import celery
 
 router = APIRouter()
 

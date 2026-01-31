@@ -1,21 +1,13 @@
 import time
-from uuid import uuid4
-from celery.contrib.abortable import AbortableTask
-
-from sqlalchemy.orm import Session
-
-from core.db import (
-    GMMJob,
-    OptimalTrial,
-    BIC,
-    ViewerSequenceEmbeddings,
-    get_db_session,
-)
-from tasks import celery
 from threading import Semaphore
-import numpy as np
-from sklearn.mixture import GaussianMixture
+from uuid import uuid4
 
+import numpy as np
+from celery.contrib.abortable import AbortableTask
+from core.db import BIC, GMMJob, OptimalTrial, ViewerSequenceEmbeddings, get_db_session
+from sklearn.mixture import GaussianMixture
+from sqlalchemy.orm import Session
+from tasks import celery
 
 semaphore = Semaphore(value=2)
 

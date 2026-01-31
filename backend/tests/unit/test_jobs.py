@@ -1,26 +1,24 @@
+import os
+from time import sleep
+
+import numpy as np
+import pandas as pd
 import pytest
 import pytest_postgresql.factories as factories
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
 from celery.contrib.abortable import AbortableAsyncResult
-from time import sleep
-import pandas as pd
-import os
-import numpy as np
-
-from core.jobs import run_job_raptgen, ChildJobTask, initialize_job_raptgen
 from core.db import (
     BaseSchema,
-    ParentJob,
     ChildJob,
-    SequenceData,
+    ParentJob,
     PreprocessingParams,
     RaptGenParams,
+    SequenceData,
 )
+from core.jobs import ChildJobTask, initialize_job_raptgen, run_job_raptgen
 from core.schemas import RaptGenTrainingParams
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 from tasks import celery
-
 
 raptgen_parent_params = {
     "uuid": "8aab26d7-7657-47fa-b624-ed752864ae76",
