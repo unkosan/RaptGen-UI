@@ -2,7 +2,7 @@
 
 ## Welcome to RaptGen-UI
 
-RaptGen-UI is a web-based user-friendly interface for RaptGen, a powerful Latent Space Bayesian Optimization (LSBO) method for identifying and optimizing aptamers from high-throughput SELEX data. For more information about RaptGen, please refer to the [RaptGen paper](https://doi.org/10.1038/s43588-022-00249-6).
+RaptGen-UI is a web-based user-friendly interface for RaptGen, a powerful Latent Space Bayesian Optimization (LSBO) method for identifying and optimizing aptamers from high-throughput SELEX data. For more information about RaptGen-UI, please refer to the [paper](https://doi.org/10.1093/bioadv/vbaf120).
 
 ## Overview of Pipeline
 

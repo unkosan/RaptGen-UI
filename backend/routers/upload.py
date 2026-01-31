@@ -3,17 +3,18 @@ from fastapi import APIRouter, File, Form
 router = APIRouter()
 
 import os
-from io import BytesIO
 import pickle
-from typing import List, Optional, Tuple, Dict, Any, OrderedDict
-from pydantic import BaseModel
-from core.preprocessing import calc_target_length, estimate_adapters
-from core.algorithms import CNN_PHMM_VAE
 from datetime import datetime
-import torch
-import pandas as pd
-import numpy as np
+from io import BytesIO
+from typing import Any, Dict, List, Optional, OrderedDict, Tuple
 
+import numpy as np
+import pandas as pd
+import torch
+from core.algorithms import CNN_PHMM_VAE
+from core.preprocessing import calc_target_length, estimate_adapters
+from pydantic import BaseModel
+from sklearn.mixture import GaussianMixture
 
 DATA_PATH = "/app/data/"
 
@@ -250,9 +251,6 @@ def _validate_pHMM_model(pickle_state_dict: BytesIO) -> Dict[str, Any]:
     }
 
 
-from sklearn.mixture import GaussianMixture
-
-
 @router.post("/api/upload/validate-GMM-model")
 async def validate_GMM_model(gmm_data: bytes = File(...)):
     result = _validate_GMM_model(BytesIO(gmm_data))
@@ -286,8 +284,8 @@ def _validate_GMM_model(pickle_gmm: BytesIO) -> Dict[str, Any]:
     }
 
 
-from tasks import batch_encode, celery
 from fastapi import Form
+from tasks import batch_encode, celery
 
 
 @router.post("/api/upload/batch-encode")
